@@ -28,20 +28,16 @@
                     value="{{ old('uraian') }}">
             </div>
             <div class="mb-3">
-                <label for="diterima" class="form-label">Diterima</label>
-                <input type="number" class="form-control" id="diterima" name="diterima" placeholder="Jumlah Barang/Kemasan Diterima"
+                <label for="diterima" class="form-label">Diterima per-satuan</label>
+                <input type="number" class="form-control" id="diterima" name="diterima" placeholder="Jumlah Barang Diterima per-satuan!" min="0"
                     value="{{ old('diterima') }}">
             </div>
             <div class="mb-3">
-                <label for="dikeluarkan" class="form-label">Dikeluarkan</label>
-                <input type="number" class="form-control" id="dikeluarkan" name="dikeluarkan" placeholder="Jumlah Barang/Kemasan Dikeluarkan"
+                <label for="dikeluarkan" class="form-label">Dikeluarkan per-satuan</label>
+                <input type="number" class="form-control" id="dikeluarkan" name="dikeluarkan" placeholder="Jumlah Barang/Kemasan Dikeluarkan" min="0"
                     value="{{ old('dikeluarkan') ?? 0 }}">
             </div>
-            <div class="mb-3">
-                <label for="saldo_persatuan" class="form-label">Jumlah Stok Diterima per-Satuan</label>
-                <input type="number" class="form-control" id="saldo_persatuan" name="saldo_persatuan"
-                    placeholder="Jumlah Stok per-Satuan" required value="{{ old('saldo_persatuan') }}">
-            </div>
+            <input type="hidden" name="barang_id" value="{{ $barang->id }}">
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
@@ -74,9 +70,9 @@
             Swal.fire({
                 icon: 'success',
                 title: 'Sukses!',
-                text: '{ session('success') }',
+                text: '{{ session('success') }}',
                 showConfirmButton: false,
-                timer: 1800,
+                timer: 3000,
                 toast: true,
                 position: 'top-end',
                 showClass: {

@@ -14,6 +14,7 @@
           <table class="table table-sm pendapatan-table">
               <thead>
                   <tr>
+                      <th>Kode</th>
                       <th>Tanggal</th>
                       <th>Uraian</th>
                       <th>Debit</th>
@@ -24,6 +25,7 @@
               <tbody>
                   @forelse ($dataPiutang as $item)
                       <tr>
+                          <td>{{$item->kode ?? "-"}}</td>
                           <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
                           <td>{{ $item->uraian }}</td>
                           <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>

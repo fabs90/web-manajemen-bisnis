@@ -86,6 +86,8 @@ class PendapatanController extends Controller
         $validated = $request->validated();
         try {
             DB::beginTransaction();
+            // 🔹 Kode unik untuk satu transaksi pendapatan (dipakai di semua buku besar)
+            $kodeTransaksi = Str::uuid();
 
             switch ($request->jenis_pendapatan) {
                 case "tunai":
@@ -95,6 +97,7 @@ class PendapatanController extends Controller
                         $request->potongan_pembelian;
 
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                        "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
                         "uraian" => $request->uraian_pendapatan,
                         "potongan_pembelian" =>
@@ -112,35 +115,37 @@ class PendapatanController extends Controller
                         auth()->id(),
                     )->first();
 
-                    $bukuBesarKas = BukuBesarKas::create([
-                        "kode" => Str::uuid(),
-                        "uraian" => $request->uraian_pendapatan,
-                        "tanggal" => $request->tanggal,
-                        "debit" => $saldoFinal,
-                        "kredit" => 0,
-                        "saldo" => $saldoFinal,
-                        "neraca_awal_id" => $neracaAwalBefore->id,
-                        "neraca_akhir_id" => null,
-                        "user_id" => auth()->id(),
-                    ]);
-
-                    break;
-
-                case "piutang":
-                    $saldoTerakhir = BukuBesarPiutang::where(
-                        "kode",
-                        $validated["piutang_aktif"],
+                    $bukuBesarKasBefore = BukuBesarKas::where(
+                        "user_id",
+                        auth()->id(),
                     )
                         ->latest()
                         ->first();
 
+                    $saldoBaru =
+                        ($bukuBesarKasBefore->saldo ?? 0) + $saldoFinal;
+
+                    BukuBesarKas::create([
+                        "kode" => $kodeTransaksi,
+                        "uraian" => $request->uraian_pendapatan,
+                        "tanggal" => $request->tanggal,
+                        "debit" => $saldoFinal,
+                        "kredit" => 0,
+                        "saldo" => $saldoBaru,
+                        "neraca_awal_id" => $neracaAwalBefore->id,
+                        "neraca_akhir_id" => null,
+                        "user_id" => auth()->id(),
+                    ]);
+                    break;
+
+                case "piutang":
                     $saldoFinal =
                         $request->jumlah +
                         $request->biaya_lain -
                         $request->potongan_pembelian;
 
-                    // Handle Buku Besar Pendapatan
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                        "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
                         "uraian" => $request->uraian_pendapatan,
                         "potongan_pembelian" =>
@@ -153,40 +158,79 @@ class PendapatanController extends Controller
                         "user_id" => auth()->id(),
                     ]);
 
-                    // Handle piutang
-                    $bukuBesarPiutang = BukuBesarPiutang::create([
-                        "kode" => $saldoTerakhir->kode,
-                        "pelanggan_id" => $request->nama_pelanggan,
-                        "uraian" => $request->uraian_pendapatan,
-                        "tanggal" => $request->tanggal,
-                        "debit" => $saldoFinal,
-                        "kredit" => 0,
-                        "saldo" => $saldoTerakhir->saldo + $saldoFinal,
-                        "buku_besar_pendapatan_id" => $bukuBesarPendapatan->id,
-                        "user_id" => auth()->id(),
-                    ]);
+                    // 🔹 Update piutang
+                    if ($validated["jenis_pendapatan"] === "piutang") {
+                        $piutangAktif = $validated["piutang_aktif"] ?? null;
+                        if ($piutangAktif) {
+                            // Tambah saldo piutang lama
+                            $piutangLama = BukuBesarPiutang::where(
+                                "kode",
+                                $piutangAktif,
+                            )->first();
+                            if ($piutangLama) {
+                                BukuBesarPiutang::create([
+                                    "kode" => $piutangLama->kode,
+                                    "pelanggan_id" =>
+                                        $piutangLama->pelanggan_id,
+                                    "debit" => $validated["jumlah"],
+                                    "kredit" => 0,
+                                    "saldo" =>
+                                        $piutangLama->saldo +
+                                        $validated["jumlah"],
+                                    "uraian" => $validated["uraian_pendapatan"],
+                                    "tanggal" => $validated["tanggal"],
+                                    "buku_besar_pendapatan_id" =>
+                                        $bukuBesarPendapatan->id,
+                                    "user_id" => auth()->id(),
+                                ]);
+                            }
+                        } else {
+                            // Piutang baru
+                            BukuBesarPiutang::create([
+                                "kode" => Str::uuid(),
+                                "pelanggan_id" => $validated["nama_pelanggan"],
+                                "debit" => $validated["jumlah"],
+                                "kredit" => 0,
+                                "saldo" => $validated["jumlah"],
+                                "uraian" => $validated["uraian_pendapatan"],
+                                "tanggal" => $validated["tanggal"],
+                                "buku_besar_pendapatan_id" =>
+                                    $bukuBesarPendapatan->id,
+                                "user_id" => auth()->id(),
+                            ]);
+                        }
+                    }
 
                     $neracaAwalBefore = NeracaAwal::where(
                         "user_id",
                         auth()->id(),
                     )->first();
+                    $bukuBesarKasBefore = BukuBesarKas::where(
+                        "user_id",
+                        auth()->id(),
+                    )
+                        ->latest()
+                        ->first();
 
-                    $bukuBesarKas = BukuBesarKas::create([
-                        "kode" => $saldoTerakhir->kode,
-                        "uraian" => $request->uraian_pendapatan,
+                    // 🔹 Kas tidak berubah karena piutang belum diterima
+                    BukuBesarKas::create([
+                        "kode" => $kodeTransaksi,
+                        "uraian" =>
+                            "Penjualan Piutang: " . $request->uraian_pendapatan,
                         "tanggal" => $request->tanggal,
-                        "debit" => $saldoFinal,
+                        "debit" => 0,
                         "kredit" => 0,
-                        "saldo" => $saldoFinal,
+                        "saldo" => $bukuBesarKasBefore->saldo ?? 0,
                         "neraca_awal_id" => $neracaAwalBefore->id,
-                        "neraca_akhir_id" => null,
                         "user_id" => auth()->id(),
                     ]);
                     break;
 
                 case "kredit":
-                    $saldoTerakhir = BukuBesarPiutang::select("kode", "saldo")
-                        ->where("kode", $validated["hutang_aktif"])
+                    $saldoTerakhir = BukuBesarPiutang::where(
+                        "kode",
+                        $validated["hutang_aktif"],
+                    )
                         ->latest()
                         ->first();
 
@@ -196,6 +240,7 @@ class PendapatanController extends Controller
                         $request->potongan_pembelian;
 
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                        "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
                         "uraian" => $request->uraian_pendapatan,
                         "potongan_pembelian" =>
@@ -209,7 +254,7 @@ class PendapatanController extends Controller
                     ]);
 
                     BukuBesarPiutang::create([
-                        "kode" => $saldoTerakhir->kode,
+                        "kode" => $kodeTransaksi,
                         "pelanggan_id" => $request->nama_pelanggan,
                         "uraian" => $request->uraian_pendapatan,
                         "tanggal" => $request->tanggal,
@@ -224,16 +269,25 @@ class PendapatanController extends Controller
                         "user_id",
                         auth()->id(),
                     )->first();
+                    $bukuBesarKasBefore = BukuBesarKas::where(
+                        "user_id",
+                        auth()->id(),
+                    )
+                        ->latest()
+                        ->first();
 
-                    $bukuBesarKas = BukuBesarKas::create([
-                        "kode" => $saldoTerakhir->kode,
-                        "uraian" => $request->uraian_pendapatan,
+                    $saldoBaru =
+                        ($bukuBesarKasBefore->saldo ?? 0) + $saldoFinal;
+
+                    BukuBesarKas::create([
+                        "kode" => $kodeTransaksi,
+                        "uraian" =>
+                            "Pelunasan Piutang: " . $request->uraian_pendapatan,
                         "tanggal" => $request->tanggal,
-                        "debit" => 0,
-                        "kredit" => $saldoFinal,
-                        "saldo" => $saldoFinal,
+                        "debit" => $saldoFinal,
+                        "kredit" => 0,
+                        "saldo" => $saldoBaru,
                         "neraca_awal_id" => $neracaAwalBefore->id,
-                        "neraca_akhir_id" => null,
                         "user_id" => auth()->id(),
                     ]);
                     break;

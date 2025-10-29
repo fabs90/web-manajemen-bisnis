@@ -109,6 +109,11 @@ Route::middleware(["web", "auth"])->group(function () {
             "keuangan.pengeluaran.rugi-laba",
         );
 
+        Route::get("/rugi-laba/pdf-export", [
+            RugiLabaController::class,
+            "exportToPdf",
+        ])->name("keuangan.pengeluaran.rugi-laba.pdf");
+
         // Neraca Akhir
         Route::get("/neraca-akhir", [
             NeracaAkhirController::class,

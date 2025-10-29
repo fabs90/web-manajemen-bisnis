@@ -97,8 +97,10 @@ class AsetHutangController extends Controller
             }
 
             // Buku besar kas
+            $kodeTransaksi = Str::uuid(); // gunakan satu kode sama untuk kas & modal
+
             BukuBesarKas::create([
-                "kode" => Str::uuid(),
+                "kode" => $kodeTransaksi,
                 "tanggal" => now(),
                 "uraian" => "Modal awal disetor",
                 "debit" => $validated["kas"],
@@ -106,8 +108,18 @@ class AsetHutangController extends Controller
                 "saldo" => $validated["kas"],
                 "neraca_awal_id" => $neracaAwal->id,
                 "user_id" => auth()->id(),
-                "created_at" => now(),
-                "updated_at" => now(),
+            ]);
+
+            // === Tambahkan buku besar modal (lawannya kas) ===
+            \App\Models\BukuBesarModal::create([
+                "user_id" => auth()->id(),
+                "kode" => $kodeTransaksi, // sama dengan kas agar mudah dilacak
+                "tanggal" => now(),
+                "uraian" => "Modal awal disetor ke kas",
+                "debit" => 0,
+                "kredit" => $modal, // modal bertambah
+                "saldo" => $modal,
+                "neraca_awal_id" => $neracaAwal->id,
             ]);
 
             // Buku besar piutang
@@ -122,7 +134,7 @@ class AsetHutangController extends Controller
                                 $piutang["jatuh_tempo_piutang"] ?? now(),
                             "uraian" => $piutang["uraian"] ?? "-",
                             "saldo" => $piutang["jumlah"],
-                            "debit" => 0,
+                            "debit" => $piutang["jumlah"],
                             "kredit" => 0,
                             "neraca_awal_id" => $neracaAwal->id,
                         ]);
@@ -142,7 +154,7 @@ class AsetHutangController extends Controller
                             "uraian" => $hutang["uraian"] ?? "-",
                             "saldo" => $hutang["jumlah"],
                             "debit" => 0,
-                            "kredit" => 0,
+                            "kredit" => $hutang["jumlah"],
                             "neraca_awal_id" => $neracaAwal->id,
                         ]);
                     }

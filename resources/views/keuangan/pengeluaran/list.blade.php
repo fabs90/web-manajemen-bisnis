@@ -80,13 +80,14 @@
                     <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="3" class="text-center text-muted py-3">
-                        <em>Tidak ada data hutang🙂‍↕️.</em>
-                    </td>
-                </tr>
-            @endforelse
+                @empty
+                    <tr>
+
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <em>Tidak ada data hutang🙂‍↕️.</em>
+                        </td>
+                    </tr>
+                @endforelse
         </tbody>
     </table>
 </div>
@@ -108,6 +109,7 @@
             pageLength: 10,
             ordering: true,
             responsive: true,
+            info: false,
             language: {
                 emptyTable: "Tidak ada data untuk ditampilkan",
                 search: "Cari:"

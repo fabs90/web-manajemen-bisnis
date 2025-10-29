@@ -87,8 +87,11 @@ class PendapatanRequest extends FormRequest
             // PIUTANG / HUTANG
             // -------------------------------------------------
             "piutang_aktif" => [
-                Rule::requiredIf(fn() => $jenis === "piutang"),
-                Rule::prohibitedIf(fn() => $jenis !== "piutang"),
+                Rule::requiredIf(
+                    fn() => $jenis === "piutang" &&
+                        $this->ada_debitur_check === true &&
+                        $this->filled("piutang_aktif"),
+                ),
                 "nullable",
                 "string",
                 Rule::exists("buku_besar_piutang", "kode"),

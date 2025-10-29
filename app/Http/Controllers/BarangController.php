@@ -101,19 +101,40 @@ class BarangController extends Controller
             "uraian" => "required|string",
             "diterima" => "required|integer",
             "dikeluarkan" => "required|integer",
-            "saldo_persatuan" => "required|integer",
         ]);
 
         try {
+            $barang = Barang::findOrFail($barangId);
+            $lastKartu = KartuGudang::where("barang_id", $barangId)
+                ->latest()
+                ->first();
+
+            // Ambil saldo sebelumnya (jika ada)
+            $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
+            $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
+
+            // Hitung saldo baru
+            $saldoPersatuanBaru =
+                $saldoPersatuanSebelumnya +
+                ($request->diterima ?? 0) -
+                ($request->dikeluarkan ?? 0);
+            $saldoPerKemasanBaru =
+                $saldoPerKemasanSebelumnya +
+                ($request->saldo_perkemasan ??
+                    round(
+                        $request->diterima / $barang->jumlah_unit_per_kemasan,
+                        0,
+                    ));
+
             $data = KartuGudang::create([
                 "user_id" => auth()->id(),
                 "barang_id" => $barangId,
                 "tanggal" => $request->tanggal,
                 "uraian" => $request->uraian,
-                "diterima" => $request->saldo_persatuan,
+                "diterima" => $request->diterima,
                 "dikeluarkan" => $request->dikeluarkan,
-                "saldo_persatuan" => $request->saldo_persatuan,
-                "saldo_perkemasan" => $request->diterima,
+                "saldo_persatuan" => $saldoPersatuanBaru,
+                "saldo_perkemasan" => $saldoPerKemasanBaru,
             ]);
 
             return redirect()

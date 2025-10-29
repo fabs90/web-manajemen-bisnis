@@ -117,7 +117,7 @@
                             </li>
 
                             <li class="submenu-item">
-                                <a href="extra-component-toastify.html" class="submenu-link">Neraca Akhir</a>
+                                <a href="{{route("keuangan.pengeluaran.neraca-akhir")}}" class="submenu-link">Neraca Akhir</a>
                             </li>
                         </ul>
                     </li>
