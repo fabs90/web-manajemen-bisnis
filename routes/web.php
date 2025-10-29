@@ -1,0 +1,205 @@
+<?php
+
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\PendapatanController;
+use App\Http\Controllers\PengeluaranController;
+use App\Http\Controllers\RugiLabaController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DebiturController;
+use App\Http\Controllers\AsetHutangController;
+use App\Http\Controllers\NeracaAkhirController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReturController;
+
+// Halaman publik (tidak perlu login)
+Route::get("/", [PageController::class, "index"]);
+
+// Halaman Dashboard — hanya bisa diakses setelah login
+Route::middleware(["web", "auth"])->group(function () {
+    Route::get("/dashboard", [PageController::class, "dashboard"])->name(
+        "dashboard",
+    );
+
+    Route::get("/dashboard/chart-data", [
+        PageController::class,
+        "chartData",
+    ])->name("dashboard.chartData");
+
+    // =============================
+    // 📘 GROUP: KEUANGAN
+    // =============================
+    Route::prefix("keuangan")->group(function () {
+        // Aset & Hutang
+        Route::get("/aset-hutang", [
+            AsetHutangController::class,
+            "index",
+        ])->name("aset-hutang.index");
+        Route::get("/aset-hutang/create", [
+            AsetHutangController::class,
+            "create",
+        ])->name("aset-hutang.create");
+        Route::post("/aset-hutang", [
+            AsetHutangController::class,
+            "store",
+        ])->name("aset-hutang.store");
+        Route::get("/aset-hutang/{id}", [
+            AsetHutangController::class,
+            "show",
+        ])->name("aset-hutang.show");
+
+        // Neraca Awal
+        Route::get("/neraca-awal/{id}", [
+            AsetHutangController::class,
+            "show",
+        ])->name("keuangan.neraca-awal.show");
+
+        // Pendapatan
+        Route::get("/pendapatan", [PendapatanController::class, "index"])->name(
+            "keuangan.pendapatan.list",
+        );
+        Route::get("/pendapatan/create", [
+            PendapatanController::class,
+            "create",
+        ])->name("keuangan.pendapatan.create");
+
+        Route::post("/pendapatan", [
+            PendapatanController::class,
+            "store",
+        ])->name("keuangan.pendapatan.store");
+
+        Route::delete("/pendapatan/{id}", [
+            PendapatanController::class,
+            "destroy",
+        ])->name("keuangan.pendapatan.destroy");
+
+        Route::get("/pendapatan/lain-lain", [
+            PendapatanController::class,
+            "createLain",
+        ])->name("keuangan.pendapatan.create_lain");
+
+        Route::post("/pendapatan/lain-lain", [
+            PendapatanController::class,
+            "storeLain",
+        ])->name("keuangan.pendapatan.store_lain");
+
+        // Pengeluaran
+        Route::get("/pengeluaran", [
+            PengeluaranController::class,
+            "list",
+        ])->name("keuangan.pengeluaran.list");
+
+        Route::get("/pengeluaran/create", [
+            PengeluaranController::class,
+            "create",
+        ])->name("keuangan.pengeluaran.create");
+
+        Route::post("/pengeluaran", [
+            PengeluaranController::class,
+            "store",
+        ])->name("keuangan.pengeluaran.store");
+
+        Route::delete("/pengeluaran/{id}", [
+            PengeluaranController::class,
+            "destroy",
+        ])->name("keuangan.pengeluaran.destroy");
+
+        // Rugi Laba
+        Route::get("/rugi-laba", [RugiLabaController::class, "index"])->name(
+            "keuangan.pengeluaran.rugi-laba",
+        );
+
+        // Neraca Akhir
+        Route::get("/neraca-akhir", [
+            NeracaAkhirController::class,
+            "index",
+        ])->name("keuangan.pengeluaran.neraca-akhir");
+    });
+
+    // =============================
+    // 🚚 GROUP: Retur
+    // =============================
+    Route::prefix("retur")->group(function () {
+        Route::get("/", [ReturController::class, "list"])->name("retur.list");
+
+        Route::get("/create/pendapatan", [
+            ReturController::class,
+            "create",
+        ])->name("retur.create");
+        Route::post("/", [ReturController::class, "store"])->name(
+            "retur.store",
+        );
+
+        Route::get("/create/pengeluaran", [
+            ReturController::class,
+            "create_pengeluaran",
+        ])->name("retur.create-pengeluaran");
+
+        Route::post("/pengeluaran", [
+            ReturController::class,
+            "store_pengeluaran",
+        ])->name("retur.store-pengeluaran");
+    });
+
+    // =============================
+    // 💳 GROUP: DEBITUR
+    // =============================
+    Route::prefix("debitur-kreditur")->group(function () {
+        Route::get("/list", [DebiturController::class, "list"])->name(
+            "debitur-kreditur.list",
+        );
+        Route::get("/create", [DebiturController::class, "create"])->name(
+            "debitur-kreditur.create",
+        );
+        Route::post("/", [DebiturController::class, "store"])->name(
+            "debitur-kreditur.store",
+        );
+    });
+
+    // =============================
+    // 📦 GROUP: BARANG
+    // =============================
+    Route::prefix("barang")->group(function () {
+        // Barang utama
+        Route::get("/list", [BarangController::class, "index"])->name(
+            "barang.index",
+        );
+        Route::get("/create", [BarangController::class, "create"])->name(
+            "barang.create",
+        );
+        Route::post("/", [BarangController::class, "store"])->name(
+            "barang.store",
+        );
+
+        // Kartu Gudang
+        Route::get("/kartu-gudang", [
+            BarangController::class,
+            "indexKartuGudang",
+        ])->name("kartu-gudang.index");
+        Route::get("/kartu-gudang/{barang_id}", [
+            BarangController::class,
+            "createKartuGudang",
+        ])->name("kartu-gudang.create");
+        Route::post("/kartu-gudang/{barang_id}", [
+            BarangController::class,
+            "storeKartuGudang",
+        ])->name("kartu-gudang.store");
+    });
+
+    // =============================
+    // 👤 GROUP: PROFILE (Bawaan Breeze)
+    // =============================
+    Route::prefix("profile")->group(function () {
+        Route::get("/", [ProfileController::class, "edit"])->name(
+            "profile.edit",
+        );
+        Route::patch("/", [ProfileController::class, "update"])->name(
+            "profile.update",
+        );
+        Route::delete("/", [ProfileController::class, "destroy"])->name(
+            "profile.destroy",
+        );
+    });
+});
+
+require __DIR__ . "/auth.php";
