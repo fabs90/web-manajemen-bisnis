@@ -220,7 +220,7 @@
                     pdfText.removeClass('d-none');
                     loadingSpinner.addClass('d-none');
                     button.removeClass('disabled').attr('disabled', false);
-                }, 5000); // Kembali normal setelah 10 detik
+                }, 5000);
             });
 </script>
 @endpush

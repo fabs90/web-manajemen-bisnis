@@ -247,5 +247,29 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.rupiah').forEach(el => new AutoNumeric(el, options));
 
 });
+
+@if (session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Sukses!',
+        text: "{{ session('success') }}",
+        showConfirmButton: false,
+        timer: 2500,
+        toast: true,
+        position: 'top-end',
+    });
+@endif
+
+@if (session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: "{{ session('error') }}",
+        showConfirmButton: false,
+        timer: 5000,
+        toast: true,
+        position: 'top-end',
+    });
+@endif
 </script>
 @endpush
