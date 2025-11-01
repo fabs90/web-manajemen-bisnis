@@ -95,14 +95,17 @@
                         <td>{{ $kartu->saldo_perkemasan ?? '-' }}</td>
                         <td>{{ $kartu->created_at ?? '-' }}</td>
                         <td>
-                            @if($kartu->saldo_perkemasan > $barang->jumlah_min)
+                            @if (empty($kartu->saldo_perkemasan) || empty($barang->jumlah_min))
+                                <span class="badge bg-secondary">Data Belum Ada</span>
+                            @elseif ($kartu->saldo_perkemasan > $barang->jumlah_min)
                                 <span class="badge bg-success">Stok Cukup</span>
-                            @elseif($kartu->saldo_perkemasan - $barang->jumlah_min == 2)
+                            @elseif ($kartu->saldo_perkemasan - $barang->jumlah_min == 2)
                                 <span class="badge bg-warning">Isi Stok!</span>
                             @else
                                 <span class="badge bg-danger">Stok Kurang</span>
                             @endif
                         </td>
+
                     </tr>
                 @empty
                     <tr>
