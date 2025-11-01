@@ -84,11 +84,11 @@
                 <label class="form-label">Jenis Keperluan<span class="text-danger">*</span></label>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="jenis_keperluan" id="membeli_barang" value="membeli_barang" {{ old('jenis_keperluan') == 'membeli_barang' ? 'checked' : '' }} required>
-                    <label class="form-check-label" for="membeli_barang">Membeli Barang</label>
+                    <label class="form-check-label" for="membeli_barang">Membeli Barang / Menambah Hutang</label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="jenis_keperluan" id="membayar_hutang" value="membayar_hutang" {{ old('jenis_keperluan') == 'membayar_hutang' ? 'checked' : '' }} required>
-                    <label class="form-check-label" for="membayar_hutang">Membayar / Menambah Hutang</label>
+                    <label class="form-check-label" for="membayar_hutang">Membayar Hutang</label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="jenis_keperluan" id="lain_lain" value="lain_lain" {{ old('jenis_keperluan') == 'lain_lain' ? 'checked' : '' }} required>

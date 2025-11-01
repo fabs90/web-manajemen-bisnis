@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{{ asset('./datatables/datatables.min.css') }}">
     <link rel="stylesheet" href="{{ asset('./select2/select2.min.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+    @stack('styles')
 
 </head>
 <script src="{{ asset('./dist/assets/static/js/initTheme.js') }}"></script>

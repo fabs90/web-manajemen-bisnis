@@ -1,4 +1,4 @@
-<!-- Update view Anda (misalnya resources/views/dashboard.blade.php) dengan extend layout yang diberikan -->
+
 @extends('layouts.partial.layouts')
 
 @section("page-title", "Dashboard")
@@ -217,5 +217,31 @@
             })
             .catch(err => console.error(err));
     });
+
+    // Sweet alert ketika stok dibawah minimum
+    @php
+          $barangKurang = $barangDenganKartuTerbaru->filter(function ($barang) {
+              $kartu = $barang->kartuGudang->first();
+              return $kartu && $kartu->saldo_perkemasan < $barang->jumlah_min;
+          });
+    @endphp
+
+      @if ($barangKurang->count() > 0)
+          let barangKurangList = `
+              <ul style="text-align:left;">
+                  @foreach ($barangKurang as $barang)
+                      <li><b>{{ $barang->nama }}</b> — Stok: {{ $barang->kartuGudang->first()->saldo_perkemasan ?? 0 }}, Min: {{ $barang->jumlah_min }}</li>
+                  @endforeach
+              </ul>
+          `;
+
+          Swal.fire({
+              icon: 'warning',
+              title: '⚠️ Stok Barang di Bawah Minimum!',
+              html: `Beberapa barang memiliki stok perkemasan di bawah batas minimum:<br><br>${barangKurangList}`,
+              confirmButtonText: 'Oke, Saya Cek',
+              confirmButtonColor: '#d33'
+          });
+      @endif
 </script>
 @endpush

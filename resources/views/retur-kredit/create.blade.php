@@ -76,7 +76,7 @@
             </div>
 
             <div class="text-end">
-                <button type="submit" class="btn btn-danger">
+                <button type="submit" class="btn btn-success text-white">
                     Simpan Retur
                 </button>
             </div>

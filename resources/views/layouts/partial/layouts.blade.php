@@ -1,7 +1,5 @@
 @include('layouts.partial.header')
 
-@include('layouts.partial.navbar')
-
 @include('layouts.partial.sidebar')
 
 @include('layouts.partial.content')
