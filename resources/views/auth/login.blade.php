@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - {{ config('app.name') }}</title>
 
-    <link rel="stylesheet" href="{{ public_path('css/login.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 </head>
 <body>
 
@@ -66,6 +66,6 @@
             </form>
         </div>
     </div>
-    <script src="{{ public_path('js/login.js') }}"></script>
+    <script src="{{ asset('js/login.js') }}"></script>
 </body>
 </html>
