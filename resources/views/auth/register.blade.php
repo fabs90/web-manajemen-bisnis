@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Akun - {{ config('app.name') }}</title>
 
-    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+    <link rel="stylesheet" href="{{ public_path('css/register.css') }}">
 </head>
 <body>
 
@@ -69,5 +69,5 @@
     </div>
 
 </body>
-<script src="{{ asset('js/register.js') }}"></script>
+<script src="{{ public_path('js/register.js') }}"></script>
 </html>
