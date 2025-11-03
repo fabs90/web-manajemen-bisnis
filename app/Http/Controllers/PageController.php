@@ -24,8 +24,8 @@ class PageController extends Controller
 
     public function dashboard()
     {
-        $barang = Barang::all();
-        $kartuBarang = KartuGudang::all();
+        $barang = Barang::where("user_id", Auth::id())->get();
+        $kartuBarang = KartuGudang::where("user_id", Auth::id())->get();
         $barangDenganKartuTerbaru = Barang::with([
             "kartuGudang" => function ($query) {
                 $query->latest("id")->limit(1);

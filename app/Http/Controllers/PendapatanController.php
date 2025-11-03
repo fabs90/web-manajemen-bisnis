@@ -33,7 +33,7 @@ class PendapatanController extends Controller
             "uang_diterima",
         );
 
-        $allDatas = BukuBesarPendapatan::all();
+        $allDatas = BukuBesarPendapatan::where("user_id", $userId)->get();
         $dataPiutang = \App\Models\BukuBesarPiutang::where("user_id", $userId)
             ->with("pelanggan:id,nama")
             ->orderBy("pelanggan_id")
