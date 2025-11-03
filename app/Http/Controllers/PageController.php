@@ -46,9 +46,9 @@ class PageController extends Controller
         // Summary Analytics
         // Total Kas (dari buku_besar_kas, ambil saldo terakhir)
         $totalKas =
-            BukuBesarKas::where("user_id", $userId)
-                ->latest("tanggal")
-                ->value("saldo") ?? 0;
+            BukuBesarKas::where("user_id", $userId)->latest()->value("saldo") ??
+            0;
+        $detailKas = BukuBesarKas::where("user_id", $userId)->get();
 
         // Total Piutang (sum saldo dari buku_besar_piutang per pelanggan, ambil terbaru per pelanggan)
         $totalPiutang = BukuBesarPiutang::select(
@@ -182,6 +182,7 @@ class PageController extends Controller
                 "pendapatanPerBulan",
                 "pengeluaranPerBulan",
                 "transaksiTerbaru",
+                "detailKas",
             ),
         );
     }
@@ -293,4 +294,6 @@ class PageController extends Controller
             "pengeluaran" => $dataPengeluaran,
         ]);
     }
+
+    public function deleteAllData() {}
 }

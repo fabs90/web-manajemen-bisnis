@@ -5,22 +5,23 @@
 @section('section-row')
 <div class="card shadow-sm">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-white">RUGI/LABA</h5>
-            <form method="GET" class="d-flex gap-2">
-                <input type="date" name="start_date" value="{{ $startDate }}" class="form-control form-control-sm" required>
-                <input type="date" name="end_date" value="{{ $endDate }}" class="form-control form-control-sm" required>
-                <button type="submit" class="btn btn-light btn-sm">Filter</button>
-            </form>
-            <a href="{{ route('keuangan.pengeluaran.rugi-laba.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
-                          class="btn btn-danger btn-sm" id="downloadPdfButton">
-                          <i class="bi bi-file-earmark-pdf me-1"></i> Download to PDF
-                          {{-- Spinner/Loading state (hidden by default) --}}
-                                                    <span id="loadingSpinner" class="d-none">
-                                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                                        Loading...
-                                                    </span>
-                       </a>
-        </div>
+        <h5 class="mb-0 text-white">RUGI/LABA</h5>
+        <form method="GET" class="d-flex gap-2">
+            <input type="date" name="start_date" value="{{ $startDate }}" class="form-control form-control-sm" required>
+            <input type="date" name="end_date" value="{{ $endDate }}" class="form-control form-control-sm" required>
+            <button type="submit" class="btn btn-light btn-sm">Filter</button>
+        </form>
+
+        <a href="{{ route('keuangan.pengeluaran.rugi-laba.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
+            class="btn btn-danger btn-sm" id="downloadPdfButton">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Download to PDF
+            <span id="loadingSpinner" class="d-none">
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Loading...
+            </span>
+        </a>
+    </div>
+
     <div class="card-body p-0" id="laporan-rugi-laba">
         <table class="table table-bordered table-striped mb-0 pendapatan-table">
             <thead class="bg-light">
@@ -63,7 +64,7 @@
                     <td class="text-center">5</td>
                     <td><strong>Persediaan Barang Dagangan Awal</strong></td>
                     <td></td>
-                    <td class="text-end">Rp {{ number_format($persediaanBarangDaganganAwal, 0, ',', '.') }}</td>
+                    <td class="text-end">Rp {{ number_format($persediaanAwal, 0, ',', '.') }}</td>
                 </tr>
 
                 <!-- 6. Pembelian Kredit + Tunai -->
@@ -71,7 +72,7 @@
                     <td class="text-center">6</td>
                     <td><strong>Pembelian Secara Kredit + Tunai</strong></td>
                     <td></td>
-                    <td class="text-end">Rp {{ number_format($pembelianSecaraKredit + $pembelianSecaraTunai, 0, ',', '.') }}</td>
+                    <td class="text-end">Rp {{ number_format($pembelianKredit + $pembelianTunai, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <td></td>
@@ -85,19 +86,19 @@
                     <td class="text-end">Rp {{ number_format($potonganPembelian, 0, ',', '.') }}</td>
                     <td></td>
                 </tr>
-                <tr>
+                <tr class="table-secondary">
                     <td class="text-center">9</td>
                     <td><strong>Pembelian Bersih</strong></td>
                     <td></td>
-                    <td class="text-end">Rp {{ number_format($pembelianBersih, 0, ',', '.') }}</td>
+                    <td class="text-end"><strong>Rp {{ number_format($pembelianBersih, 0, ',', '.') }}</strong></td>
                 </tr>
 
                 <!-- 10. Barang Tersedia -->
                 <tr class="table-warning">
                     <td class="text-center">10</td>
-                    <td><strong>Barang yang Tersedia untuk dijual</strong></td>
+                    <td><strong>Barang yang Tersedia untuk Dijual</strong></td>
                     <td></td>
-                    <td class="text-end"><strong>Rp {{ number_format($barangTersediaDijual, 0, ',', '.') }}</strong></td>
+                    <td class="text-end"><strong>Rp {{ number_format($persediaanAwal + $pembelianBersih, 0, ',', '.') }}</strong></td>
                 </tr>
 
                 <!-- 11. Persediaan Akhir -->
@@ -105,7 +106,7 @@
                     <td class="text-center">11</td>
                     <td><strong>Persediaan Barang Dagangan Akhir</strong></td>
                     <td></td>
-                    <td class="text-end">Rp {{ number_format($persediaanBarangDagangan, 0, ',', '.') }}</td>
+                    <td class="text-end">Rp {{ number_format($persediaanAkhir, 0, ',', '.') }}</td>
                 </tr>
 
                 <!-- 12. HPP -->
@@ -187,40 +188,30 @@
 
 @push('script')
 <script>
-    $(document).ready(function() {
-        $('.pendapatan-table').DataTable({
-            searching: false,
-            paging: false,
-            info: false,
-            ordering: false,
-            responsive: true,
-            columnDefs: [
-                { targets: [0, 1], className: 'text-start' },
-                { targets: [2, 3], className: 'text-end' }
-            ]
-        });
+$(document).ready(function() {
+    $('.pendapatan-table').DataTable({
+        searching: false,
+        paging: false,
+        info: false,
+        ordering: false,
+        responsive: true,
+        columnDefs: [
+            { targets: [0, 1], className: 'text-start' },
+            { targets: [2, 3], className: 'text-end' }
+        ]
     });
+});
 
-    // --- Logika Loading Button PDF ---
-            $('#downloadPdfButton').on('click', function(e) {
-                // e.preventDefault(); // Jangan di-uncomment, karena kita ingin link tetap berfungsi
-                var button = $(this);
-                var pdfIcon = $('#pdfIcon');
-                var pdfText = $('#pdfText');
-                var loadingSpinner = $('#loadingSpinner');
+$('#downloadPdfButton').on('click', function() {
+    var button = $(this);
+    var loadingSpinner = $('#loadingSpinner');
+    loadingSpinner.removeClass('d-none');
+    button.addClass('disabled').attr('disabled', true);
 
-                pdfIcon.addClass('d-none');
-                pdfText.addClass('d-none');
-                loadingSpinner.removeClass('d-none');
-                button.addClass('disabled').attr('disabled', true);
-
-
-                setTimeout(function() {
-                    pdfIcon.removeClass('d-none');
-                    pdfText.removeClass('d-none');
-                    loadingSpinner.addClass('d-none');
-                    button.removeClass('disabled').attr('disabled', false);
-                }, 5000);
-            });
+    setTimeout(function() {
+        loadingSpinner.addClass('d-none');
+        button.removeClass('disabled').attr('disabled', false);
+    }, 5000);
+});
 </script>
 @endpush

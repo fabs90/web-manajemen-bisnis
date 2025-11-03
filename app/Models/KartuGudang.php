@@ -29,7 +29,7 @@ class KartuGudang extends Model
     }
     public function barang()
     {
-        return $this->belongsTo(Barang::class);
+        return $this->belongsTo(Barang::class, 'barang_id', 'id');
     }
 
     public function bukuBesarPendapatan()

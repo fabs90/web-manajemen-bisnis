@@ -75,6 +75,69 @@ class BarangController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        $barang = Barang::find($id);
+        if (!$barang) {
+            return back()->with([
+                "error" => "Barang tidak ditemukan.",
+            ]);
+        }
+
+        return view("barang.edit", compact("barang"));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $barang = Barang::find($id);
+        if (!$barang) {
+            return back()->with([
+                "error" => "Barang tidak ditemukan.",
+            ]);
+        }
+
+        $validatedData = $request->validate([
+            "kode_barang" => "required|string|max:255",
+            "nama" => "required|string|max:255",
+            "jumlah_max" => "required|integer|min:0",
+            "jumlah_min" => "required|integer|min:0",
+            "jumlah_unit_per_kemasan" => "required|integer|min:1",
+            "harga_beli_per_kemas" => "required|numeric|min:0",
+            "harga_beli_per_unit" => "required|numeric|min:0",
+            "harga_jual_per_unit" => "required|numeric|min:0",
+        ]);
+
+        $barang->update($validatedData);
+
+        return redirect()
+            ->route("barang.show", $barang->id)
+            ->with("success", "Barang berhasil diperbarui.");
+    }
+
+    public function destroy($id)
+    {
+        $barang = Barang::find($id);
+        if (!$barang) {
+            return back()->with([
+                "error" => "Barang tidak ditemukan.",
+            ]);
+        }
+
+        $barangDate = $barang->created_at->format("Y-m-d");
+
+        // hapus kartu gudang nya juga
+        KartuGudang::where("barang_id", $barang->id)->delete();
+
+
+
+
+        $barang->delete();
+
+        return redirect()
+            ->route("barang.index")
+            ->with("success", "Barang berhasil dihapus.");
+    }
+
     public function indexKartuGudang()
     {
         $barang = Barang::where("user_id", auth()->id())->get();
@@ -150,5 +213,15 @@ class BarangController extends Controller
                 ])
                 ->withInput();
         }
+    }
+
+    public function deleteKartuGudang($id)
+    {
+        $kartuGudang = KartuGudang::findOrFail($id);
+        $kartuGudang->delete();
+
+        return redirect()
+            ->route("kartu-gudang.index")
+            ->with("success", "Kartu gudang berhasil dihapus.");
     }
 }

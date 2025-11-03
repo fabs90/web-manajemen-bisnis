@@ -67,7 +67,7 @@
         <canvas id="financeChart" height="200"></canvas>
     </div>
 
-    <!-- Tabel Data Barang (seperti yang sudah ada) -->
+    <!-- Tabel Data Barang  -->
     <div class="mb-4">
         <h5>Data Barang dan Kartu Gudang Terbaru</h5>
         <table class="table table-bordered table-striped mt-3">
@@ -143,6 +143,66 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    <div class="mb-4">
+           <h5>Detail Kas</h5>
+           <!--Tabel Detail Kas-->
+           <table id="kasTable" class="table table-bordered table-striped table-sm">
+                           <thead>
+                               <tr>
+                                   <th width="5%" class="text-center">No</th>
+                                   <th width="10%" class="text-center">Tanggal</th>
+                                   <th>Uraian</th>
+                                   <th width="15%" class="text-end">Debit</th>
+                                   <th width="15%" class="text-end">Kredit</th>
+                                   <th width="15%" class="text-end">Saldo</th>
+                               </tr>
+                           </thead>
+                        @if($detailKas->count() > 0)
+                           <tbody>
+                               @forelse($detailKas as $index => $kas)
+                                   <tr>
+                                       <td class="text-center">{{ $index + 1 }}</td>
+                                       <td class="text-center">{{ \Carbon\Carbon::parse($kas->tanggal)->format('d/m/Y') }}</td>
+                                       <td>{{ $kas->uraian }}</td>
+                                       <td class="text-end">
+                                           {{ $kas->debit ? 'Rp ' . number_format($kas->debit, 0, ',', '.') : '-' }}
+                                       </td>
+                                       <td class="text-end">
+                                           {{ $kas->kredit ? 'Rp ' . number_format($kas->kredit, 0, ',', '.') : '-' }}
+                                       </td>
+                                       <td class="text-end fw-bold">
+                                           Rp {{ number_format($kas->saldo, 0, ',', '.') }}
+                                       </td>
+                                   </tr>
+                               @empty
+                                   <tr>
+                                       <td colspan="6" class="text-center text-muted">Tidak ada data kas untuk periode ini.</td>
+                                   </tr>
+                               @endforelse
+                           </tbody>
+                           @endif
+                           @if ($detailKas->isNotEmpty())
+                               <tfoot class="table fw-bold">
+                                   <tr>
+                                   <td>Saldo Terakhir: </td>
+                                       <td class="text-end" colspan="5">
+                                           Rp {{ number_format($detailKas->last()->saldo ?? 0, 0, ',', '.') }}
+                                       </td>
+                                   </tr>
+                               </tfoot>
+                            @else
+                            <tfoot class="table-secondary fw-bold">
+                            <tr>
+                            <td>Saldo Terakhir: </td>
+                                <td class="text-end" colspan="5">
+                                   -
+                                </td>
+                            </tr>
+                            </tfoot>
+                           @endif
+                       </table>
     </div>
 @endsection
 @push('script')

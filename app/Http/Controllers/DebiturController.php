@@ -10,7 +10,7 @@ class DebiturController extends Controller
 {
     public function list()
     {
-        $pelanggan = Pelanggan::all();
+        $pelanggan = Pelanggan::where("user_id", auth()->id())->get();
         return view("debitur.list", compact("pelanggan"));
     }
 

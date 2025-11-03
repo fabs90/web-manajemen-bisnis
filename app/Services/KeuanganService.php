@@ -1,64 +1,33 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
 
-use App\Models\BukuBesarHutang;
-use App\Models\BukuBesarPendapatan;
-use App\Models\BukuBesarPengeluaran;
-use App\Models\BukuBesarPiutang;
-use App\Models\KartuGudang;
-use App\Models\NeracaAwal;
-use App\Services\KeuanganService;
-use Illuminate\Http\Request;
+use App\Models\{
+    BukuBesarKas,
+    BukuBesarPiutang,
+    BukuBesarHutang,
+    BukuBesarPendapatan,
+    BukuBesarPengeluaran,
+    KartuGudang,
+    NeracaAwal,
+};
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
-class RugiLabaController extends Controller
+class KeuanganService
 {
-    public function index(Request $request, KeuanganService $keuangan)
+    public function hitungLabaRugi($startDate = null, $endDate = null)
     {
-        $startDate = $request->input(
-            "start_date",
-            now()->startOfYear()->format("Y-m-d"),
-        );
-        $endDate = $request->input(
-            "end_date",
-            now()->endOfYear()->format("Y-m-d"),
-        );
-
-        $data = $keuangan->hitungLabaRugi($startDate, $endDate);
-
-        return view(
-            "keuangan.rugi-laba.list",
-            array_merge($data, [
-                "startDate" => $startDate,
-                "endDate" => $endDate,
-            ]),
-        );
-    }
-
-    public function exportToPdf(Request $request)
-    {
-        // === Ambil parameter tanggal sama seperti di index() ===
-        $startDate = $request->input(
-            "start_date",
-            now()->startOfYear()->format("Y-m-d"),
-        );
-        $endDate = $request->input(
-            "end_date",
-            now()->endOfYear()->format("Y-m-d"),
-        );
-
-        // === Jalankan ulang perhitungan laba rugi dari index() ===
-        // Supaya hasil di PDF sama persis dengan di tampilan web
         $userId = Auth::id();
+
+        $startDate = $startDate ?? now()->startOfYear()->format("Y-m-d");
+        $endDate = $endDate ?? now()->endOfYear()->format("Y-m-d");
 
         $filter = function ($query) use ($startDate, $endDate) {
             return $query->whereBetween("tanggal", [$startDate, $endDate]);
         };
 
-        // === Sama persis seperti di index() ===
+        // === PENJUALAN ===
         $penjualanKredit = BukuBesarPiutang::where("user_id", $userId)
             ->where($filter)
             ->sum("debit");
@@ -78,13 +47,13 @@ class RugiLabaController extends Controller
             BukuBesarPiutang::where("user_id", $userId)
                 ->where($filter)
                 ->where(function ($q) {
-                    $q->where("uraian", "like", "%retur%")->orWhere(
+                    $q->where("uraian", "like", "%Retur%")->orWhere(
                         "uraian",
                         "like",
                         "%memo%",
                     );
                 })
-                ->sum("kredit") ?? 0;
+                ->sum("debit") ?? 0;
 
         $potonganPenjualan =
             BukuBesarPendapatan::where("user_id", $userId)
@@ -94,17 +63,18 @@ class RugiLabaController extends Controller
         $penjualanBersih =
             $totalPenjualan - ($returPenjualan + $potonganPenjualan);
 
-        $persediaanBarangDaganganAwal =
+        // === PERSEDIAAN AWAL ===
+        $persediaanAwal =
             NeracaAwal::where("user_id", $userId)
-                ->where("created_at", "<", $startDate)
-                ->latest("created_at")
+                ->where("created_at", "<=", $endDate)
                 ->value("total_persediaan") ?? 0;
 
-        $pembelianSecaraKredit = BukuBesarHutang::where("user_id", $userId)
+        // === PEMBELIAN ===
+        $pembelianKredit = BukuBesarHutang::where("user_id", $userId)
             ->where($filter)
             ->sum("kredit");
 
-        $pembelianSecaraTunai = BukuBesarPengeluaran::where("user_id", $userId)
+        $pembelianTunai = BukuBesarPengeluaran::where("user_id", $userId)
             ->where($filter)
             ->sum("jumlah_pembelian_tunai");
 
@@ -112,13 +82,13 @@ class RugiLabaController extends Controller
             BukuBesarHutang::where("user_id", $userId)
                 ->where($filter)
                 ->where(function ($q) {
-                    $q->where("uraian", "like", "%retur%")->orWhere(
+                    $q->where("uraian", "like", "%Retur%")->orWhere(
                         "uraian",
                         "like",
                         "%memo%",
                     );
                 })
-                ->sum("debit") ?? 0;
+                ->sum("kredit") ?? 0;
 
         $potonganPembelian =
             BukuBesarPengeluaran::where("user_id", $userId)
@@ -126,29 +96,31 @@ class RugiLabaController extends Controller
                 ->sum("potongan_pembelian") ?? 0;
 
         $pembelianBersih =
-            $pembelianSecaraKredit +
-            $pembelianSecaraTunai -
+            $pembelianKredit +
+            $pembelianTunai -
             $returPembelian -
             $potonganPembelian;
 
-        $barangTersediaDijual =
-            $persediaanBarangDaganganAwal + $pembelianBersih;
-
-        $persediaanBarangDagangan = KartuGudang::with("barang")
+        // === PERSEDIAAN AKHIR ===
+        $persediaanAkhir = KartuGudang::with("barang")
             ->where("user_id", $userId)
             ->where("tanggal", "<=", $endDate)
             ->get()
             ->groupBy("barang_id")
             ->map(function ($group) {
                 $last = $group->sortByDesc("tanggal")->first();
-                return ($last->saldo_persatuan ?? 0) *
-                    ($last->barang->harga_beli_per_unit ?? 0);
+                $hargaPerUnit = $last->barang->harga_beli_per_unit ?? 0;
+                $saldoTerakhir = $last->saldo_persatuan ?? 0;
+                return $saldoTerakhir * $hargaPerUnit;
             })
             ->sum();
 
-        $hpp = $barangTersediaDijual - $persediaanBarangDagangan;
+        // === HPP & LABA ===
+        $barangTersedia = $persediaanAwal + $pembelianBersih;
+        $hpp = $barangTersedia - $persediaanAkhir;
         $labaKotor = $penjualanBersih - $hpp;
 
+        // === BIAYA OPERASIONAL ===
         $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
             ->where($filter)
             ->where(function ($q) {
@@ -160,7 +132,7 @@ class RugiLabaController extends Controller
                     ->orWhere("uraian", "like", "%listrik%")
                     ->orWhere("uraian", "like", "%operasional%");
             })
-            ->sum("lain_lain");
+            ->sum("jumlah_pengeluaran");
 
         $labaOperasional = $labaKotor - $biayaOperasional;
 
@@ -178,8 +150,7 @@ class RugiLabaController extends Controller
         $pajak = $labaSebelumPajak > 0 ? $labaSebelumPajak * 0.15 : 0;
         $labaSetelahPajak = $labaSebelumPajak - $pajak;
 
-        // === Masukkan semua variabel ke dalam array $data ===
-        $data = compact(
+        return compact(
             "penjualanKredit",
             "penjualanTunai",
             "bungaPenjualan",
@@ -187,14 +158,13 @@ class RugiLabaController extends Controller
             "returPenjualan",
             "potonganPenjualan",
             "penjualanBersih",
-            "persediaanBarangDaganganAwal",
-            "pembelianSecaraKredit",
-            "pembelianSecaraTunai",
+            "persediaanAwal",
+            "pembelianKredit",
+            "pembelianTunai",
             "returPembelian",
             "potonganPembelian",
             "pembelianBersih",
-            "barangTersediaDijual",
-            "persediaanBarangDagangan",
+            "persediaanAkhir",
             "hpp",
             "labaKotor",
             "biayaOperasional",
@@ -204,19 +174,6 @@ class RugiLabaController extends Controller
             "labaSebelumPajak",
             "pajak",
             "labaSetelahPajak",
-            "startDate",
-            "endDate",
-        );
-
-        // === Buat PDF dari view laporan yang sama ===
-        $pdf = Pdf::loadView("keuangan.rugi-laba.pdf", $data)->setPaper(
-            "a4",
-            "portrait",
-        );
-
-        // === Download PDF ===
-        return $pdf->download(
-            "laporan-rugi-laba-" . now()->format("Y") . ".pdf",
         );
     }
 }

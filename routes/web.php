@@ -176,6 +176,18 @@ Route::middleware(["web", "auth"])->group(function () {
             "barang.store",
         );
 
+        Route::get("/detail/{id}", [BarangController::class, "show"])->name(
+            "barang.show",
+        );
+
+        Route::put("/{id}", [BarangController::class, "update"])->name(
+            "barang.update",
+        );
+
+        Route::delete("/{id}", [BarangController::class, "destroy"])->name(
+            "barang.destroy",
+        );
+
         // Kartu Gudang
         Route::get("/kartu-gudang", [
             BarangController::class,
@@ -189,6 +201,10 @@ Route::middleware(["web", "auth"])->group(function () {
             BarangController::class,
             "storeKartuGudang",
         ])->name("kartu-gudang.store");
+        Route::delete("/kartu-gudang/{id}", [
+            BarangController::class,
+            "deleteKartuGudang",
+        ])->name("kartu-gudang.destroy");
     });
 
     // =============================

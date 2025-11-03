@@ -34,7 +34,12 @@ class PendapatanController extends Controller
         );
 
         $allDatas = BukuBesarPendapatan::all();
-        $dataPiutang = BukuBesarPiutang::where("user_id", $userId)->get();
+        $dataPiutang = \App\Models\BukuBesarPiutang::where("user_id", $userId)
+            ->with("pelanggan:id,nama")
+            ->orderBy("pelanggan_id")
+            ->orderBy("tanggal")
+            ->get()
+            ->groupBy("pelanggan_id");
 
         return view(
             "keuangan.pendapatan.list",

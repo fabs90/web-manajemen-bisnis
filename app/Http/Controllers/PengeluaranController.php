@@ -26,7 +26,12 @@ class PengeluaranController extends Controller
         )->sum("jumlah_pengeluaran");
 
         $allDatas = BukuBesarPengeluaran::all();
-        $dataHutang = BukuBesarHutang::where("user_id", $userId)->get();
+        $dataHutang = \App\Models\BukuBesarHutang::where("user_id", $userId)
+            ->with("pelanggan:id,nama")
+            ->orderBy("pelanggan_id")
+            ->orderBy("tanggal")
+            ->get()
+            ->groupBy("pelanggan_id");
         return view(
             "keuangan.pengeluaran.list",
             compact(

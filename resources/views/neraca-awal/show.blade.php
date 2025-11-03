@@ -29,22 +29,22 @@
         </td>
         <td>
             <b>Hutang Dagang</b><br>
-            @forelse ($bukuBesarHutang as $hutang)
-                {{ $hutang->pelanggan->nama ?? 'Tanpa Nama' }} : Rp {{ number_format($hutang->saldo, 0, ',', '.') }}<br>
-            @empty
+            @if ($bukuBesarHutang)
+                {{ $bukuBesarHutang->pelanggan->nama ?? 'Tanpa Nama' }} : Rp {{ number_format($bukuBesarHutang->saldo, 0, ',', '.') }}<br>
+            @else
                 <i>Tidak ada hutang</i>
-            @endforelse
+            @endif
         </td>
     </tr>
 
     <tr>
         <td>
             <b>Piutang Dagang</b><br>
-            @forelse ($bukuBesarPiutang as $piutang)
-                {{ $piutang->pelanggan->nama ?? 'Tanpa Nama' }} : Rp {{ number_format($piutang->saldo, 0, ',', '.') }}<br>
-            @empty
+            @if ($bukuBesarPiutang)
+                {{ $bukuBesarPiutang->pelanggan->nama ?? 'Tanpa Nama' }} : Rp {{ number_format($bukuBesarPiutang->saldo, 0, ',', '.') }}<br>
+            @else
                 <i>Tidak ada piutang</i>
-            @endforelse
+            @endif
         </td>
         <td></td>
     </tr>

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\BukuBesarHutang;
+use App\Models\BukuBesarKas;
 use App\Models\BukuBesarPendapatan;
 use App\Models\BukuBesarPiutang;
 use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ReturController extends Controller
 {
@@ -101,29 +103,38 @@ class ReturController extends Controller
 
             if ($request->retur_penanganan === "kurangi_piutang") {
                 // Tambah kembali ke piutang
-                $saldoBaru += $returJumlah;
+                $saldoBaru -= $returJumlah;
             } else {
                 $saldoBaru -= $returJumlah;
             }
-            // Jika tunai_kembali → piutang tetap berkurang (sudah dilunasi), hanya kas keluar
 
             BukuBesarPiutang::create([
                 "kode" => $kodePiutang,
                 "pelanggan_id" => $pelangganId,
                 "uraian" => "Retur: {$keterangan}",
                 "tanggal" => $request->tanggal,
-                "debit" =>
-                    $request->retur_penanganan === "kurangi_piutang"
-                        ? $returJumlah
-                        : 0,
-                "kredit" =>
-                    $request->retur_penanganan === "tunai_kembali"
-                        ? $returJumlah
-                        : 0,
+                "debit" => 0,
+                "kredit" => $returJumlah,
                 "saldo" => $saldoBaru,
                 "buku_besar_pendapatan_id" => $pendapatan->id,
                 "user_id" => auth()->id(),
             ]);
+
+            if ($request->retur_penanganan === "tunai_kembali") {
+                $kasLama = BukuBesarKas::latest()->first();
+                $saldoKasBaru = $kasLama->saldo - $returJumlah;
+
+                BukuBesarKas::create([
+                    "kode" => Str::uuid(),
+                    "uraian" => "Pengembalian tunai retur piutang: {$keterangan}",
+                    "tanggal" => $request->tanggal,
+                    "debit" => 0,
+                    "kredit" => $returJumlah,
+                    "saldo" => $saldoKasBaru,
+                    "neraca_awal_id" => $kasLama->neraca_awal_id,
+                    "user_id" => auth()->id(),
+                ]);
+            }
 
             DB::commit();
 
@@ -175,7 +186,7 @@ class ReturController extends Controller
         try {
             DB::beginTransaction();
 
-            // Bersihkan format rupiah
+            // === Format & variable dasar ===
             $returJumlah = (float) preg_replace(
                 "/[^0-9]/",
                 "",
@@ -185,11 +196,12 @@ class ReturController extends Controller
             $pelangganId = $request->nama_pelanggan;
             $keterangan =
                 $request->retur_keterangan ?: "Retur pengeluaran ke kreditur";
+            $userId = auth()->id();
 
-            // === Ambil saldo terakhir dari BukuBesarHutang ===
+            // === Ambil saldo hutang terakhir ===
             $saldoTerakhir = BukuBesarHutang::where("kode", $kodeHutang)
                 ->where("pelanggan_id", $pelangganId)
-                ->where("user_id", auth()->id())
+                ->where("user_id", $userId)
                 ->orderByDesc("id")
                 ->first();
 
@@ -197,13 +209,15 @@ class ReturController extends Controller
                 throw new \Exception("Data hutang tidak ditemukan.");
             }
 
-            if ($saldoTerakhir->saldo < $returJumlah) {
+            if (
+                $saldoTerakhir->saldo < $returJumlah &&
+                $request->retur_penanganan === "tunai_kembali"
+            ) {
                 throw new \Exception(
                     "Jumlah retur melebihi saldo hutang aktif.",
                 );
             }
 
-            // === 1. Catat di Buku Besar Pendapatan (sebagai retur pengeluaran) ===
             $pendapatan = BukuBesarPendapatan::create([
                 "tanggal" => $request->tanggal,
                 "uraian" => "Retur Hutang - {$keterangan}",
@@ -213,27 +227,25 @@ class ReturController extends Controller
                 "lain_lain" => 0,
                 "uang_diterima" =>
                     $request->retur_penanganan === "tunai_kembali"
-                        ? -$returJumlah
+                        ? -$returJumlah // uang keluar, bukan masuk
                         : 0,
                 "bunga_bank" => 0,
-                "user_id" => auth()->id(),
+                "user_id" => $userId,
             ]);
 
-            // === 2. Update Buku Besar Hutang ===
             $debit = 0;
             $kredit = 0;
             $saldoBaru = $saldoTerakhir->saldo;
 
             if ($request->retur_penanganan === "kurangi_hutang") {
-                // Kembalikan ke hutang (tambah hutang)
-                $debit = $returJumlah;
-                $saldoBaru += $returJumlah;
+                // Hutang berkurang karena retur
+                $kredit = $returJumlah;
+                $saldoBaru -= $returJumlah;
             } else {
-                // Tunai kembali → hutang berkurang, kas keluar
+                // Tunai kembali → hutang berkurang juga
                 $kredit = $returJumlah;
                 $saldoBaru -= $returJumlah;
             }
-
             BukuBesarHutang::create([
                 "kode" => $kodeHutang,
                 "pelanggan_id" => $pelangganId,
@@ -243,8 +255,28 @@ class ReturController extends Controller
                 "kredit" => $kredit,
                 "saldo" => $saldoBaru,
                 "buku_besar_pendapatan_id" => $pendapatan->id,
-                "user_id" => auth()->id(),
+                "user_id" => $userId,
             ]);
+
+            if ($request->retur_penanganan === "tunai_kembali") {
+                $kasLama = BukuBesarKas::where("user_id", $userId)
+                    ->latest("id")
+                    ->first();
+
+                $saldoKasLama = $kasLama?->saldo ?? 0;
+                $saldoKasBaru = $saldoKasLama + $returJumlah;
+
+                BukuBesarKas::create([
+                    "kode" => Str::uuid(),
+                    "uraian" => "Pengembalian tunai retur hutang: {$keterangan}",
+                    "tanggal" => $request->tanggal,
+                    "debit" => 0,
+                    "kredit" => $returJumlah,
+                    "saldo" => $saldoKasBaru,
+                    "neraca_awal_id" => $kasLama->neraca_awal_id,
+                    "user_id" => $userId,
+                ]);
+            }
 
             DB::commit();
 

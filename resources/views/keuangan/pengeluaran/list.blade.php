@@ -62,7 +62,6 @@
     <table class="table table-sm hutang-table">
         <thead>
             <tr>
-                <th>Kode</th>
                 <th>Tanggal</th>
                 <th>Uraian</th>
                 <th>Debit</th>
@@ -71,23 +70,29 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($dataHutang as $item)
+        @forelse ($dataHutang as $pelangganId => $items)
+            <tr class="table-secondary fw-bold">
+                <td colspan="6">
+                    {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
+                </td>
+            </tr>
+
+            @foreach ($items as $item)
                 <tr>
-                    <td>{{ $item->kode }}</td>
                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
                     <td>{{ $item->uraian }}</td>
                     <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                 </tr>
-                @empty
-                    <tr>
-
-                        <td colspan="6" class="text-center text-muted py-3">
-                            <em>Tidak ada data hutang🙂‍↕️.</em>
-                        </td>
-                    </tr>
-                @endforelse
+            @endforeach
+        @empty
+            <tr>
+                <td colspan="6" class="text-center text-muted py-3">
+                    <em>Tidak ada data piutang.</em>
+                </td>
+            </tr>
+        @endforelse
         </tbody>
     </table>
 </div>

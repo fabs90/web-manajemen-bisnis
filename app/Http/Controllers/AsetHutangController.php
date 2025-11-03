@@ -197,14 +197,16 @@ class AsetHutangController extends Controller
             $userId,
         )
             ->whereDate("created_at", $tanggal)
-            ->get(["id", "pelanggan_id", "uraian", "saldo"]);
+            ->latest()
+            ->first(["id", "pelanggan_id", "uraian", "saldo"]);
 
         $bukuBesarHutang = \App\Models\BukuBesarHutang::where(
             "user_id",
             $userId,
         )
             ->whereDate("created_at", $tanggal)
-            ->get(["id", "pelanggan_id", "uraian", "saldo"]);
+            ->latest()
+            ->first(["id", "pelanggan_id", "uraian", "saldo"]);
 
         // 🔹 Ambil kartu gudang langsung berdasarkan relasi barang_id yang sudah dimiliki neraca_awal
         $barangIds = $neracaAwal->barang->pluck("id");

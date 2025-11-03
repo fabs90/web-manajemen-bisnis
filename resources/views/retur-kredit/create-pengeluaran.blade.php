@@ -45,7 +45,7 @@
                 <select name="hutang_aktif" id="hutang_aktif" class="form-control" required>
                     <option value="">-- Pilih Kreditur terlebih dahulu --</option>
                 </select>
-                <div class="form-text text-muted">Pilih debitur untuk melihat piutang aktif.</div>
+                <div class="form-text text-muted">Pilih kreditur untuk melihat hutang aktif.</div>
             </div>
 
             {{-- Jumlah Retur --}}

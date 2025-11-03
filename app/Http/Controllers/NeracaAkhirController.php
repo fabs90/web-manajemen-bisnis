@@ -8,23 +8,28 @@ use App\Models\BukuBesarPendapatan;
 use App\Models\BukuBesarPengeluaran;
 use App\Models\BukuBesarPiutang;
 use App\Models\KartuGudang;
+use App\Models\NeracaAwal;
 use App\Models\RugiLaba;
+use App\Services\KeuanganService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class NeracaAkhirController extends Controller
 {
-    public function index()
+    public function index(KeuanganService $keuangan)
     {
         $userId = auth()->id();
 
-        // === 1. Ambil saldo terakhir Kas ===
+        // Ambil data laba rugi biar pajak & laba sama persis
+        $dataLabaRugi = $keuangan->hitungLabaRugi();
+
+        // === KAS ===
         $kasTerakhir = BukuBesarKas::where("user_id", $userId)
             ->latest("created_at")
             ->first();
         $saldoKas = $kasTerakhir->saldo ?? 0;
 
-        // === 2. Ambil total saldo Piutang ===
+        // === PIUTANG ===
         $totalPiutang = BukuBesarPiutang::where("user_id", $userId)
             ->select(DB::raw("MAX(id) as id"))
             ->groupBy("pelanggan_id")
@@ -33,7 +38,7 @@ class NeracaAkhirController extends Controller
             "saldo",
         );
 
-        // === 3. Ambil total saldo Hutang ===
+        // === HUTANG ===
         $totalHutang = BukuBesarHutang::where("user_id", $userId)
             ->select(DB::raw("MAX(id) as id"))
             ->groupBy("pelanggan_id")
@@ -42,7 +47,7 @@ class NeracaAkhirController extends Controller
             "saldo",
         );
 
-        // === 4. Ambil nilai persediaan barang terakhir (Harga Beli x Saldo Gudang) ===
+        // === PERSEDIAAN BARANG ===
         $persediaan = KartuGudang::with("barang")
             ->where("user_id", $userId)
             ->select("barang_id", DB::raw("MAX(id) as id"))
@@ -52,45 +57,49 @@ class NeracaAkhirController extends Controller
         $nilaiPersediaan = KartuGudang::whereIn("id", $persediaan)
             ->with("barang")
             ->get()
-            ->sum(function ($item) {
-                return ($item->saldo_persatuan ?? 0) *
-                    ($item->barang->harga_beli_per_unit ?? 0);
-            });
+            ->sum(
+                fn($i) => ($i->saldo_persatuan ?? 0) *
+                    ($i->barang->harga_beli_per_unit ?? 0),
+            );
 
-        // === 5. Hitung Laba Rugi dari Buku Besar ===
+        // === AKTIVA TETAP ===
+        $neracaAwal = NeracaAwal::where("user_id", $userId)->first();
+        $tanah = $neracaAwal->tanah_bangunan ?? 0;
+        $kendaraan = $neracaAwal->kendaraan ?? 0;
+        $peralatan = $neracaAwal->meubel_peralatan ?? 0;
 
-        // Pendapatan: penjualan tunai + piutang + bunga bank + lain-lain
-        $totalPendapatan = BukuBesarPendapatan::where("user_id", $userId)->sum(
-            "uang_diterima",
+        // === LABA & PAJAK
+        $pajak = $dataLabaRugi["pajak"];
+        $labaBersih = $dataLabaRugi["labaSetelahPajak"];
+
+        // === TOTAL ===
+        $totalAktiva =
+            $saldoKas +
+            $saldoPiutang +
+            $nilaiPersediaan +
+            $tanah +
+            $kendaraan +
+            $peralatan;
+
+        $modal = $totalAktiva - $saldoHutang - $labaBersih - $pajak;
+        $totalPasiva = $saldoHutang + $labaBersih + $pajak + $modal;
+
+        return view(
+            "keuangan.neraca-akhir.index",
+            compact(
+                "saldoKas",
+                "saldoPiutang",
+                "saldoHutang",
+                "nilaiPersediaan",
+                "tanah",
+                "kendaraan",
+                "peralatan",
+                "totalAktiva",
+                "totalPasiva",
+                "pajak",
+                "labaBersih",
+                "modal",
+            ),
         );
-
-        // Pengeluaran: semua pengeluaran total (HPP + operasional + bunga + gaji + lain-lain)
-        $totalPengeluaran = BukuBesarPengeluaran::where(
-            "user_id",
-            $userId,
-        )->sum("jumlah_pengeluaran");
-
-        // Laba kotor & bersih
-        $labaKotor = $totalPendapatan - $totalPengeluaran;
-        $pajak = $labaKotor > 0 ? $labaKotor * 0.15 : 0;
-        $labaBersih = $labaKotor - $pajak;
-
-        // === 6. Hitung total Aktiva & Pasiva ===
-        $totalAktiva = $saldoKas + $saldoPiutang + $nilaiPersediaan;
-        $totalPasiva = $saldoHutang + $labaBersih;
-
-        return view("keuangan.neraca-akhir.index", [
-            "saldoKas" => $saldoKas,
-            "saldoPiutang" => $saldoPiutang,
-            "saldoHutang" => $saldoHutang,
-            "nilaiPersediaan" => $nilaiPersediaan,
-            "totalPendapatan" => $totalPendapatan,
-            "totalPengeluaran" => $totalPengeluaran,
-            "labaKotor" => $labaKotor,
-            "pajak" => $pajak,
-            "labaBersih" => $labaBersih,
-            "totalAktiva" => $totalAktiva,
-            "totalPasiva" => $totalPasiva,
-        ]);
     }
 }

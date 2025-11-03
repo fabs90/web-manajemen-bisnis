@@ -15,8 +15,7 @@
                     </small>
                 </div>
                 <div>
-                    <a href="{{ route('kartu-gudang.create', ['barang_id' => $item->id]) }}"
-                       class="btn btn-sm btn-primary">
+                    <a href="{{ route('kartu-gudang.create', ['barang_id' => $item->id]) }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-circle"></i> Tambah Data
                     </a>
                 </div>
@@ -34,6 +33,7 @@
                                 <th>Uraian</th>
                                 <th>Saldo Persatuan</th>
                                 <th>Saldo Perkemasan</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -45,6 +45,16 @@
                                     <td>{{ $kartu->uraian }}</td>
                                     <td>{{ $kartu->saldo_persatuan }}</td>
                                     <td>{{ $kartu->saldo_perkemasan }}</td>
+                                    <td>
+                                        <form action="{{ route('kartu-gudang.destroy', $kartu->id) }}" method="POST"
+                                            class="d-inline" onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -66,21 +76,54 @@
 @endsection
 
 @push('script')
-<script>
-    $(document).ready(function() {
-        $('.kartu-gudang-table').each(function() {
-            $(this).DataTable({
-                searching: false,
-                paging: false,
-                info: false,
-                responsive: false
-                order: [[0, 'desc']],
-                columnDefs: [{
-                    targets: "_all",
-                    defaultContent: ""
-                }]
+    <script>
+        $(document).ready(function() {
+            $('.kartu-gudang-table').each(function() {
+                $(this).DataTable({
+                    searching: false,
+                    paging: false,
+                    info: false,
+                    responsive: false,
+                    order: [
+                        [0, 'desc']
+                    ],
+                    columnDefs: [{
+                        targets: "_all",
+                        defaultContent: ""
+                    }]
+                });
             });
         });
-    });
-</script>
+
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses!',
+                text: '{{ session('success') }}',
+                showConfirmButton: true,
+                timer: 2500,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            });
+        @endif
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: '{{ session('error') }}',
+                showConfirmButton: true,
+                timer: 2500,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            });
+        @endif
+    </script>
 @endpush
