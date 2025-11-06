@@ -37,17 +37,6 @@
                     @enderror
                 </div>
 
-                {{-- Jumlah --}}
-                <div class="mb-3">
-                    <label for="jumlah" class="form-label">Jumlah Penjualan<span class="text-danger">*</span></label>
-                    <input type="text" name="jumlah" id="jumlah"
-                        class="form-control rupiah @error('jumlah') is-invalid @enderror" value="{{ old('jumlah') }}"
-                        placeholder="Jumlah Penjualan" required>
-                    @error('jumlah')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
                 {{-- Tanggal --}}
                 <div class="mb-3">
                     <label for="tanggal" class="form-label">Tanggal Transaksi<span class="text-danger">*</span></label>
@@ -67,7 +56,7 @@
                         <option value="" disabled {{ old('jenis_pendapatan') ? '' : 'selected' }}>-- Pilih Jenis --
                         </option>
                         <option value="tunai" {{ old('jenis_pendapatan') == 'tunai' ? 'selected' : '' }}>Tunai</option>
-                        <option value="piutang" {{ old('jenis_pendapatan') == 'piutang' ? 'selected' : '' }}>Piutang
+                        <option value="piutang" {{ old('jenis_pendapatan') == 'piutang' ? 'selected' : '' }}>Piutang (Menambah/Membuat Baru)
                         </option>
                         <option value="kredit" {{ old('jenis_pendapatan') == 'kredit' ? 'selected' : '' }}>Kredit
                             (Pelunasan)</option>
@@ -141,51 +130,47 @@
                     </div>
                 </div>
 
+                <div id="jumlah_piutang_container" class="mb-3 d-none">
+                    <label for="jumlah_piutang" class="form-label">Jumlah Piutang Non-barang (Opsional)<span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" name="jumlah_piutang" id="jumlah_piutang" min="1" placeholder="Masukkan jumlah piutang">
+                    <small class="text-muted">Akan ditambahkan ke total piutang.</small>
+                </div>
+
+                <div id="jumlah_kredit_container" class="mb-3 d-none">
+                    <label for="jumlah_kredit" class="form-label">Jumlah Kredit</label>
+                    <input type="number" class="form-control" name="jumlah_kredit" id="jumlah_kredit" min="1" placeholder="Masukkan jumlah kredit" value=>
+                </div>
+
+
                 {{-- Barang Terjual --}}
                 <div class="mb-3">
-                    <label for="barang_terjual" class="form-label">Barang Terjual</label>
+                    <label class="form-label">Barang Terjual</label>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" id="barang_terjual_check"
                             name="barang_terjual_check" value="1"
                             {{ old('barang_terjual_check') ? 'checked' : '' }}>
                         <label class="form-check-label" for="barang_terjual_check">Tidak ada barang terjual</label>
                     </div>
-                    <select name="barang_terjual" id="barang_terjual"
-                        class="form-control @error('barang_terjual') is-invalid @enderror">
-                        <option value="" disabled {{ old('barang_terjual') ? '' : 'selected' }}>-- Pilih Barang --
-                        </option>
-                        @foreach ($barang as $item)
-                            <option value="{{ $item->id }}"
-                                {{ old('barang_terjual') == $item->id ? 'selected' : '' }}>{{ $item->nama }} -
-                                Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}</option>
-                        @endforeach
-                    </select>
-                    @error('barang_terjual')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <div id="barang-section" class="d-none">
+                        <div id="barang-list">
+                            <!-- Barang rows will be added here dynamically -->
+                        </div>
+                        <button type="button" id="tambah-barang" class="btn btn-secondary btn-sm mt-2">
+                            <i class="bi bi-plus"></i> Tambah Barang
+                        </button>
+                    </div>
                 </div>
 
+                {{-- Jumlah Penjualan --}}
                 <div class="mb-3">
-                    <label for="jumlah_barang_dijual" class="form-label">Jumlah Barang (satuan)</label>
-                    <input type="number" name="jumlah_barang_dijual" id="jumlah_barang_dijual"
-                        class="form-control @error('jumlah_barang_dijual') is-invalid @enderror"
-                        value="{{ old('jumlah_barang_dijual') }}">
-                    @error('jumlah_barang_dijual')
+                    <label for="jumlah_penjualan" class="form-label">Jumlah Penjualan (Otomatis)</label>
+                    <input type="number" id="jumlah_penjualan" name="jumlah" class="form-control" value="0" readonly required>
+                    @error('jumlah')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                {{-- Biaya Tambahan --}}
-                <div class="mb-3">
-                    <label for="potongan_pembelian" class="form-label">Potongan</label>
-                    <input type="text" name="potongan_pembelian" id="potongan_pembelian"
-                        class="form-control rupiah @error('potongan_pembelian') is-invalid @enderror"
-                        value="{{ old('potongan_pembelian') }}" placeholder="Biaya Tambahan (Opsional)">
-                    @error('potongan_pembelian')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
+                <!--Lain lain -->
                 <div class="mb-3">
                     <label for="biaya_lain" class="form-label">Lain-lain</label>
                     <input type="text" name="biaya_lain" id="biaya_lain"
@@ -196,6 +181,7 @@
                     @enderror
                 </div>
 
+                <!--Bunga bank-->
                 <div class="mb-3">
                     <label for="bunga_bank" class="form-label">Bunga Bank</label>
                     <input type="text" name="bunga_bank" id="bunga_bank"
@@ -215,158 +201,264 @@
 @endsection
 
 @push('script')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const jenisSelect = document.getElementById('jenis_pendapatan');
-            const debiturCheckContainer = document.getElementById('debitur-check-container');
-            const adaDebiturCheck = document.getElementById('ada_debitur_check');
-            const debiturSection = document.getElementById('debitur-section');
-            const namaPelanggan = document.getElementById('nama_pelanggan');
-            const piutangContainer = document.getElementById('piutang_aktif_container');
-            const hutangContainer = document.getElementById('hutang_aktif_container');
-            const piutangSelect = document.getElementById('piutang_aktif');
-            const hutangSelect = document.getElementById('hutang_aktif');
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisSelect = document.getElementById('jenis_pendapatan');
+    const debiturCheckContainer = document.getElementById('debitur-check-container');
+    const adaDebiturCheck = document.getElementById('ada_debitur_check');
+    const debiturSection = document.getElementById('debitur-section');
+    const namaPelanggan = document.getElementById('nama_pelanggan');
+    const piutangContainer = document.getElementById('piutang_aktif_container');
+    const hutangContainer = document.getElementById('hutang_aktif_container');
+    const piutangSelect = document.getElementById('piutang_aktif');
+    const hutangSelect = document.getElementById('hutang_aktif');
+    const jumlahPiutangContainer = document.getElementById('jumlah_piutang_container');
+    const jumlahKreditContainer = document.getElementById('jumlah_kredit_container');
 
-            const barangCheck = document.getElementById('barang_terjual_check');
-            const barangSelect = document.getElementById('barang_terjual');
-            const jumlahBarang = document.getElementById('jumlah_barang_dijual');
+    const barangCheck = document.getElementById('barang_terjual_check');
+    const barangSection = document.getElementById('barang-section');
+    const barangList = document.getElementById('barang-list');
+    const tambahBarangBtn = document.getElementById('tambah-barang');
+    const jumlahPenjualan = document.getElementById('jumlah_penjualan');
 
-            const piutangOptions = Array.from(document.querySelectorAll('#piutang_aktif option.piutang-option'));
-            const hutangOptions = Array.from(document.querySelectorAll('#hutang_aktif option.hutang-option'));
+    const piutangOptions = Array.from(document.querySelectorAll('#piutang_aktif option.piutang-option'));
+    const hutangOptions = Array.from(document.querySelectorAll('#hutang_aktif option.hutang-option'));
 
-            function updateForm() {
-                const jenis = jenisSelect.value;
-                const adaDebitur = adaDebiturCheck.checked;
+    let barangIndex = 0;
 
-                // Reset semua
-                debiturCheckContainer.classList.add('d-none');
-                debiturSection.classList.add('d-none');
-                namaPelanggan.setAttribute('disabled', 'disabled');
-                namaPelanggan.removeAttribute('required');
-                piutangContainer.classList.add('d-none');
-                hutangContainer.classList.add('d-none');
-                piutangSelect.setAttribute('disabled', 'disabled');
-                hutangSelect.setAttribute('disabled', 'disabled');
+    const barangTemplate = `
+        <div class="barang-row row mb-2 align-items-end" data-index="{index}">
+            <div class="col-md-4">
+                <label class="form-label">Barang</label>
+                <select name="barang_terjual[{index}]" class="form-control barang-select" required>
+                    <option value="" disabled selected>-- Pilih Barang --</option>
+                    @foreach ($barang as $item)
+                        <option value="{{ $item->id }}" data-harga="{{ $item->harga_jual_per_unit }}">
+                            {{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Jumlah</label>
+                <input type="number" name="jumlah_barang_dijual[{index}]" class="form-control jumlah-input" min="1" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Potongan</label>
+                <input type="number" name="potongan_pembelian[{index}]" class="form-control potongan-input" min="0">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Subtotal</label>
+                <input type="number" class="form-control subtotal-input" readonly>
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-danger btn-sm hapus-barang">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
 
-                // Tampilkan checkbox jika jenis = piutang / kredit
-                if (jenis === 'piutang' || jenis === 'kredit') {
-                    debiturCheckContainer.classList.remove('d-none');
-                }
+    function updateForm() {
+        const jenis = jenisSelect.value;
+        const adaDebitur = adaDebiturCheck.checked;
 
-                // Jika ada debitur
-                if (adaDebitur && (jenis === 'piutang' || jenis === 'kredit')) {
-                    debiturSection.classList.remove('d-none');
-                    namaPelanggan.removeAttribute('disabled');
-                    namaPelanggan.setAttribute('required', 'required');
+        // Reset semua
+        debiturCheckContainer.classList.add('d-none');
+        debiturSection.classList.add('d-none');
+        namaPelanggan.setAttribute('disabled', 'disabled');
+        namaPelanggan.removeAttribute('required');
+        piutangContainer.classList.add('d-none');
+        hutangContainer.classList.add('d-none');
+        jumlahPiutangContainer.classList.add('d-none');
+        jumlahKreditContainer.classList.add('d-none');
+        piutangSelect.setAttribute('disabled', 'disabled');
+        hutangSelect.setAttribute('disabled', 'disabled');
 
-                    resetSelect(piutangSelect, '-- Pilih Piutang Aktif --');
-                    resetSelect(hutangSelect, '-- Pilih Hutang Aktif --');
+        if (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang') {
+            debiturCheckContainer.classList.remove('d-none');
+        }
 
-                    if (namaPelanggan.value) {
-                        showRelatedSelect(jenis, namaPelanggan.value);
-                    }
-                }
+        if (adaDebitur && (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang')) {
+            debiturSection.classList.remove('d-none');
+            namaPelanggan.removeAttribute('disabled');
+            namaPelanggan.setAttribute('required', 'required');
+
+            resetSelect(piutangSelect, '-- Pilih Piutang Aktif --');
+            resetSelect(hutangSelect, '-- Pilih Hutang Aktif --');
+
+            if (namaPelanggan.value) {
+                showRelatedSelect(jenis, namaPelanggan.value);
             }
+        }
 
-            function resetSelect(select, placeholder) {
-                select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
-                select.setAttribute('disabled', 'disabled');
+        if (jenis === 'piutang') {
+            jumlahPiutangContainer.classList.remove('d-none');
+        } else if (jenis === 'kredit') {
+            jumlahKreditContainer.classList.remove('d-none');
+        }
+
+        hitungTotal();
+    }
+
+    function resetSelect(select, placeholder) {
+        select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+        select.setAttribute('disabled', 'disabled');
+    }
+
+    function showRelatedSelect(jenis, debiturId) {
+        if (jenis === 'piutang' || jenis === 'pelunasan_piutang') {
+            piutangContainer.classList.remove('d-none');
+            filterAndPopulate(piutangSelect, piutangOptions, debiturId, '-- Pilih Piutang Aktif --');
+        } else if (jenis === 'kredit') {
+            hutangContainer.classList.remove('d-none');
+            filterAndPopulate(hutangSelect, hutangOptions, debiturId, '-- Pilih Hutang Aktif --');
+        }
+    }
+
+    function filterAndPopulate(select, options, debiturId, placeholder) {
+        select.innerHTML = '';
+        const matches = options.filter(opt => opt.getAttribute('data-debitur') === debiturId);
+        if (matches.length === 0) {
+            select.innerHTML = `<option value="" disabled selected>-- Tidak ada data aktif --</option>`;
+            select.setAttribute('disabled', 'disabled');
+            return;
+        }
+        const placeholderOpt = document.createElement('option');
+        placeholderOpt.value = '';
+        placeholderOpt.text = placeholder;
+        placeholderOpt.disabled = true;
+        placeholderOpt.selected = true;
+        select.appendChild(placeholderOpt);
+        matches.forEach(opt => select.appendChild(opt.cloneNode(true)));
+        select.removeAttribute('disabled');
+    }
+
+    function toggleBarangSection() {
+        if (barangCheck.checked) {
+            barangSection.classList.add('d-none');
+            barangList.innerHTML = '';
+            jumlahPenjualan.value = 0;
+        } else {
+            barangSection.classList.remove('d-none');
+            if (barangList.children.length === 0) {
+                tambahBarang();
             }
+        }
+    }
 
-            function showRelatedSelect(jenis, debiturId) {
-                if (jenis === 'piutang') {
-                    piutangContainer.classList.remove('d-none');
-                    filterAndPopulate(piutangSelect, piutangOptions, debiturId, '-- Pilih Piutang Aktif --');
-                } else if (jenis === 'kredit') {
-                    hutangContainer.classList.remove('d-none');
-                    filterAndPopulate(hutangSelect, hutangOptions, debiturId, '-- Pilih Hutang Aktif --');
-                }
-            }
+    function tambahBarang() {
+        const rowHtml = barangTemplate.replace(/{index}/g, barangIndex);
+        barangList.insertAdjacentHTML('beforeend', rowHtml);
+        const newRow = barangList.lastElementChild;
+        attachRowEvents(newRow);
+        barangIndex++;
+    }
 
-            function filterAndPopulate(select, options, debiturId, placeholder) {
-                select.innerHTML = '';
-                const matches = options.filter(opt => opt.getAttribute('data-debitur') === debiturId);
-                if (matches.length === 0) {
-                    select.innerHTML = `<option value="" disabled selected>-- Tidak ada data aktif --</option>`;
-                    select.setAttribute('disabled', 'disabled');
-                    return;
-                }
-                const placeholderOpt = document.createElement('option');
-                placeholderOpt.value = '';
-                placeholderOpt.text = placeholder;
-                placeholderOpt.disabled = true;
-                placeholderOpt.selected = true;
-                select.appendChild(placeholderOpt);
-                matches.forEach(opt => select.appendChild(opt.cloneNode(true)));
-                select.removeAttribute('disabled');
-            }
+    function attachRowEvents(row) {
+        const select = row.querySelector('.barang-select');
+        const jumlahInput = row.querySelector('.jumlah-input');
+        const potonganInput = row.querySelector('.potongan-input');
+        const subtotalInput = row.querySelector('.subtotal-input');
+        const hapusBtn = row.querySelector('.hapus-barang');
 
-            jenisSelect.addEventListener('change', updateForm);
-            adaDebiturCheck.addEventListener('change', updateForm);
+        function hitungSubtotal() {
+            const selectedOption = select.options[select.selectedIndex];
+            const harga = selectedOption ? parseFloat(selectedOption.getAttribute('data-harga')) || 0 : 0;
+            const qty = parseInt(jumlahInput.value) || 0;
+            const potongan = parseFloat(potonganInput.value) || 0;
+            const subtotal = Math.max((harga * qty) - potongan, 0);
+            subtotalInput.value = subtotal;
+            hitungTotal();
+        }
 
-            namaPelanggan.addEventListener('change', function() {
-                const jenis = jenisSelect.value;
-                if (this.value && (jenis === 'piutang' || jenis === 'kredit')) {
-                    showRelatedSelect(jenis, this.value);
-                } else {
-                    piutangContainer.classList.add('d-none');
-                    hutangContainer.classList.add('d-none');
-                }
-            });
-
-            // Barang terjual
-            barangCheck.addEventListener('change', function() {
-                if (this.checked) {
-                    barangSelect.setAttribute('disabled', 'disabled');
-                    jumlahBarang.setAttribute('disabled', 'disabled');
-                    barangSelect.value = '';
-                    jumlahBarang.value = '';
-                } else {
-                    barangSelect.removeAttribute('disabled');
-                    jumlahBarang.removeAttribute('disabled');
-                }
-            });
-
-            updateForm();
-
-            if (barangCheck.checked) {
-                barangSelect.setAttribute('disabled', 'disabled');
-                jumlahBarang.setAttribute('disabled', 'disabled');
-            }
-
-            // AutoNumeric
-            new AutoNumeric.multiple('.rupiah', {
-                digitGroupSeparator: '.',
-                decimalCharacter: ',',
-                decimalPlaces: 0,
-                unformatOnSubmit: true,
-                currencySymbol: 'Rp ',
-                minimumValue: '0'
-            });
-
-            @if (session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sukses!',
-                    text: "{{ session('success') }}",
-                    showConfirmButton: false,
-                    timer: 2500,
-                    toast: true,
-                    position: 'top-end',
-                });
-            @endif
-
-            @if (session('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops!',
-                    text: "{{ session('error') }}",
-                    showConfirmButton: false,
-                    timer: 5000,
-                    toast: true,
-                    position: 'top-end',
-                });
-            @endif
+        select.addEventListener('change', hitungSubtotal);
+        jumlahInput.addEventListener('input', hitungSubtotal);
+        potonganInput.addEventListener('input', hitungSubtotal);
+        hapusBtn.addEventListener('click', function() {
+            row.remove();
+            hitungTotal();
         });
-    </script>
+    }
+
+    function hitungTotal() {
+        let total = 0;
+        document.querySelectorAll('.subtotal-input').forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+        jumlahPenjualan.value = total;
+
+    }
+
+    // Saat piutang aktif dipilih
+    piutangSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const nominal = selectedOption ? parseFloat(selectedOption.getAttribute('data-nominal')) || 0 : 0;
+        if (nominal > 0) {
+            document.getElementById('jumlah_piutang').value = nominal;
+        }
+    });
+
+    // Saat hutang aktif dipilih
+    hutangSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const nominal = selectedOption ? parseFloat(selectedOption.getAttribute('data-nominal')) || 0 : 0;
+        if (nominal > 0) {
+            document.getElementById('jumlah_kredit').value = nominal;
+        }
+    });
+
+    jenisSelect.addEventListener('change', updateForm);
+    adaDebiturCheck.addEventListener('change', updateForm);
+    namaPelanggan.addEventListener('change', function() {
+        const jenis = jenisSelect.value;
+        if (this.value && (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang')) {
+            showRelatedSelect(jenis, this.value);
+        } else {
+            piutangContainer.classList.add('d-none');
+            hutangContainer.classList.add('d-none');
+        }
+    });
+
+    barangCheck.addEventListener('change', toggleBarangSection);
+    tambahBarangBtn.addEventListener('click', tambahBarang);
+
+    updateForm();
+    toggleBarangSection();
+
+    // AutoNumeric
+    new AutoNumeric.multiple('.rupiah', {
+        digitGroupSeparator: '.',
+        decimalCharacter: ',',
+        decimalPlaces: 0,
+        unformatOnSubmit: true,
+        currencySymbol: 'Rp ',
+        minimumValue: '0'
+    });
+
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Sukses!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 2500,
+            toast: true,
+            position: 'top-end',
+        });
+    @endif
+
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: "{{ session('error') }}",
+            showConfirmButton: false,
+            timer: 5000,
+            toast: true,
+            position: 'top-end',
+        });
+    @endif
+});
+</script>
 @endpush

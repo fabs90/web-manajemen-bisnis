@@ -26,6 +26,10 @@ class PengeluaranRequest extends FormRequest
         return [
             "uraian_pengeluaran" => "required|string|max:255",
             "jumlah" => "required|numeric|min:0",
+            "jumlah_hutang" => "nullable|numeric|min:0",
+            "jumlah_manual" =>
+                "required_if:jenis_keperluan,lain_lain,membayar_hutang|numeric|min:0",
+
             "tanggal" => "required|date",
             "jenis_pengeluaran" => "required|in:tunai,kredit",
 
@@ -36,10 +40,10 @@ class PengeluaranRequest extends FormRequest
                 "required|in:membeli_barang,lain_lain,membayar_hutang",
 
             // ✅ Membeli Barang
-            "barang_dibeli" =>
-                "required_if:jenis_keperluan,membeli_barang|nullable|exists:barang,id",
-            "jumlah_barang_dibeli" =>
-                "required_if:jenis_keperluan,membeli_barang|nullable|integer|min:1",
+            "barang_dibeli.*" =>
+                "required_if:jenis_keperluan,membeli_barang|exists:barang,id",
+            "jumlah_barang_dibeli.*" =>
+                "required_if:jenis_keperluan,membeli_barang|integer|min:1",
 
             // ✅ Membayar Hutang
             "hutang_id" =>
@@ -58,6 +62,11 @@ class PengeluaranRequest extends FormRequest
             "jumlah.required" => "Jumlah pengeluaran wajib diisi.",
             "jumlah.numeric" => "Jumlah pengeluaran harus berupa angka.",
             "tanggal.required" => "Tanggal transaksi pengeluaran wajib diisi.",
+            "jumlah_manual.required_if" =>
+                "Jumlah pengeluaran wajib diisi jika keperluan adalah membayar hutang atau lain-lain.",
+            "jumlah_manual.numeric" => "Jumlah pengeluaran harus berupa angka.",
+            "jumlah_manual.min" =>
+                "Jumlah pengeluaran tidak boleh kurang dari 0.",
 
             "jenis_pengeluaran.required" => "Jenis pengeluaran wajib dipilih.",
             "nama_kreditur.required_if" =>

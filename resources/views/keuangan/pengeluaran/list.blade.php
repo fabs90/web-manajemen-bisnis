@@ -18,6 +18,10 @@
                 <th>#</th>
                 <th>Tanggal</th>
                 <th>Uraian</th>
+                <th>Pot. Pembelian</th>
+                <th>Hutang Dagang</th>
+                <th>Pembelian Tunai</th>
+                <th>Lainnya</th>
                 <th>Jumlah Pengeluaran</th>
                 <th>Aksi</th>
             </tr>
@@ -28,6 +32,12 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
                     <td>{{ $data->uraian }}</td>
+                    <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($data->jumlah_hutang ?? 0, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($data->jumlah_pembelian_tunai ?? 0, 0, ',', '.') }}</td>
+                    <td>
+                        Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}
+                    </td>
                     <td>Rp {{ number_format($data->jumlah_pengeluaran ?? 0, 0, ',', '.') }}</td>
                     <td>
                         <form id="deleteForm-{{ $data->id }}" action="{{route('keuangan.pengeluaran.destroy', ["id" => $data->id])}}" method="POST" class="d-inline">

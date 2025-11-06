@@ -1,12 +1,12 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Aset & Hutang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Neraca Awal | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Aset Hutang ')
+@section('section-heading', 'Neraca Awal ')
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Daftar Aset & Hutang</h5>
+        <h5 class="mb-0">Daftar Neraca Awal</h5>
         <a href="{{ route('laporan-keuangan.aset-hutang.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Aset & Hutang
+            <i class="bi bi-plus-circle me-1"></i> Tambah Neraca Awal
         </a>
     </div>
 
@@ -31,7 +31,7 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <form action="#" method="POST" class="d-inline"
+                        <form action="{{route('laporan-keuangan.aset-hutang.destroy', ['id' => $item->id])}}" method="POST" class="d-inline"
                             onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
                             @csrf
                             @method('DELETE')

@@ -13,7 +13,7 @@ class PendapatanRequest extends FormRequest
     }
 
     /**
-     * Hanya bersihkan nilai yang benar-benar ada di request.
+     * Bersihkan nilai untuk array barang dan lainnya.
      */
     protected function prepareForValidation()
     {
@@ -21,21 +21,45 @@ class PendapatanRequest extends FormRequest
             ? null
             : (int) round((float) str_replace(["Rp ", "."], "", $val));
 
+        // Bersihkan array barang
+        $barangTerjual = [];
+        $jumlahBarangDijual = [];
+        $potonganPembelian = [];
+
+        if (
+            $this->filled("barang_terjual") &&
+            is_array($this->barang_terjual)
+        ) {
+            foreach ($this->barang_terjual as $index => $barang) {
+                $barangTerjual[$index] = $barang ? (int) $barang : null;
+                $jumlahBarangDijual[$index] = $this->filled(
+                    "jumlah_barang_dijual.{$index}",
+                )
+                    ? (int) $this->input("jumlah_barang_dijual.{$index}")
+                    : null;
+                $potonganPembelian[$index] = $this->filled(
+                    "potongan_pembelian.{$index}",
+                )
+                    ? $clean($this->input("potongan_pembelian.{$index}"))
+                    : null;
+            }
+        }
+
         $this->merge([
-            // Hanya merge bila ada di request (bisa null)
             "jumlah" => $this->filled("jumlah") ? $clean($this->jumlah) : null,
-            "potongan_pembelian" => $this->filled("potongan_pembelian")
-                ? $clean($this->potongan_pembelian)
-                : null,
-            // "biaya_lain" dihapus karena sudah dipindah ke halaman lain
             "bunga_bank" => $this->filled("bunga_bank")
                 ? $clean($this->bunga_bank)
                 : null,
-            "jumlah_barang_dijual" => $this->filled("jumlah_barang_dijual")
-                ? (int) $this->jumlah_barang_dijual
+            "biaya_lain" => $this->filled("biaya_lain")
+                ? $clean($this->biaya_lain)
                 : null,
 
-            // Checkbox → boolean (hanya true bila ter-centang)
+            // Array barang
+            "barang_terjual" => $barangTerjual,
+            "jumlah_barang_dijual" => $jumlahBarangDijual,
+            "potongan_pembelian" => $potonganPembelian,
+
+            // Checkbox → boolean
             "barang_terjual_check" => $this->has("barang_terjual_check"),
             "ada_debitur_check" => $this->has("ada_debitur_check"),
         ]);
@@ -53,23 +77,21 @@ class PendapatanRequest extends FormRequest
             "tanggal" => ["required", "date"],
             "jenis_pendapatan" => [
                 "required",
-                Rule::in(["tunai", "piutang", "kredit"]), // "lain-lain" dihapus karena sudah dipindah halaman
+                Rule::in(["tunai", "piutang", "kredit"]),
             ],
 
             // -------------------------------------------------
-            // JUMLAH (wajib untuk semua jenis yang tersisa)
+            // JUMLAH (wajib untuk semua jenis)
             // -------------------------------------------------
-            "jumlah" => [
-                "required", // Sekarang wajib untuk semua jenis
-                "integer",
-                "min:1",
-            ],
+            "jumlah" => ["required", "integer", "gte:0"],
+            "jumlah_piutang" => "nullable|numeric|min:0",
+            "jumlah_kredit" => "nullable|numeric|min:0",
 
             // -------------------------------------------------
             // BIAYA TAMBAHAN LAINNYA
             // -------------------------------------------------
-            "potongan_pembelian" => ["nullable", "integer", "min:0"],
             "bunga_bank" => ["nullable", "integer", "min:0"],
+            "biaya_lain" => ["nullable", "integer", "min:0"],
 
             // -------------------------------------------------
             // DEBITUR
@@ -106,9 +128,17 @@ class PendapatanRequest extends FormRequest
             ],
 
             // -------------------------------------------------
-            // BARANG TERJUAL
+            // BARANG TERJUAL (array)
             // -------------------------------------------------
             "barang_terjual" => [
+                Rule::when(
+                    fn() => $this->barang_terjual_check === false,
+                    ["required", "array", "min:1"],
+                    ["nullable", "array"],
+                ),
+            ],
+
+            "barang_terjual.*" => [
                 Rule::when(
                     fn() => $this->barang_terjual_check === false,
                     ["required", "integer", "exists:barang,id"],
@@ -119,10 +149,28 @@ class PendapatanRequest extends FormRequest
             "jumlah_barang_dijual" => [
                 Rule::when(
                     fn() => $this->barang_terjual_check === false,
+                    ["required", "array", "min:1"],
+                    ["nullable", "array"],
+                ),
+            ],
+
+            "jumlah_barang_dijual.*" => [
+                Rule::when(
+                    fn() => $this->barang_terjual_check === false,
                     ["required", "integer", "min:1"],
                     ["nullable", "integer"],
                 ),
             ],
+
+            "potongan_pembelian" => [
+                Rule::when(
+                    fn() => $this->barang_terjual_check === false,
+                    ["nullable", "array"],
+                    ["nullable", "array"],
+                ),
+            ],
+
+            "potongan_pembelian.*" => ["nullable", "integer", "min:0"],
         ];
     }
 
@@ -162,8 +210,19 @@ class PendapatanRequest extends FormRequest
             // barang
             "barang_terjual.required" =>
                 'Pilih barang atau centang "Tidak ada barang terjual".',
+            "barang_terjual.array" => "Barang terjual harus berupa array.",
+            "barang_terjual.min" => "Minimal satu barang harus dipilih.",
+            "barang_terjual.*.required" => "Barang wajib dipilih.",
+            "barang_terjual.*.exists" => "Barang tidak ditemukan.",
+
             "jumlah_barang_dijual.required" => "Jumlah barang wajib diisi.",
-            "jumlah_barang_dijual.min" => "Jumlah minimal 1.",
+            "jumlah_barang_dijual.array" => "Jumlah barang harus berupa array.",
+            "jumlah_barang_dijual.min" =>
+                "Minimal satu jumlah barang harus diisi.",
+            "jumlah_barang_dijual.*.required" => "Jumlah barang wajib diisi.",
+            "jumlah_barang_dijual.*.min" => "Jumlah minimal 1.",
+
+            "potongan_pembelian.*.min" => "Potongan minimal 0.",
         ];
     }
 
@@ -200,6 +259,38 @@ class PendapatanRequest extends FormRequest
                         ->add(
                             "hutang_aktif",
                             "Kode hutang tidak valid atau sudah lunas.",
+                        );
+                }
+            }
+
+            // ---- Validasi jumlah total dari subtotal barang ----
+            if (
+                $this->barang_terjual_check === false &&
+                $this->filled("barang_terjual")
+            ) {
+                $totalCalculated = 0;
+                foreach ($this->barang_terjual as $index => $barangId) {
+                    if ($barangId) {
+                        $barang = \App\Models\Barang::find($barangId);
+                        if ($barang) {
+                            $harga = $barang->harga_jual_per_unit;
+                            $qty =
+                                $this->input("jumlah_barang_dijual.{$index}") ??
+                                0;
+                            $potongan =
+                                $this->input("potongan_pembelian.{$index}") ??
+                                0;
+                            $subtotal = max($harga * $qty - $potongan, 0);
+                            $totalCalculated += $subtotal;
+                        }
+                    }
+                }
+                if ($totalCalculated != $this->jumlah) {
+                    $validator
+                        ->errors()
+                        ->add(
+                            "jumlah",
+                            "Jumlah total tidak sesuai dengan kalkulasi barang terjual.",
                         );
                 }
             }

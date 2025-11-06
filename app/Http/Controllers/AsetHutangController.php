@@ -187,6 +187,7 @@ class AsetHutangController extends Controller
         // 🔹 Ambil data Buku Besar berdasarkan neraca_awal_id
         $bukuBesarKas = \App\Models\BukuBesarKas::where("user_id", $userId)
             ->where("neraca_awal_id", $id)
+            ->where("kredit", 0)
             ->get();
 
         $bukuBesarPiutang = \App\Models\BukuBesarPiutang::where(
@@ -230,5 +231,48 @@ class AsetHutangController extends Controller
                 "user",
             ),
         );
+    }
+
+    public function destroy($id)
+    {
+        $userId = auth()->id();
+        $neracaAwal = NeracaAwal::where("user_id", $userId)->findOrFail($id);
+        DB::beginTransaction();
+        try {
+            // Delete from pivot table barang_neraca_awal
+            DB::table("barang_neraca_awal")
+                ->where("neraca_awal_id", $id)
+                ->where("user_id", $userId)
+                ->delete();
+            // Delete BukuBesarKas records
+            BukuBesarKas::where("neraca_awal_id", $id)
+                ->where("user_id", $userId)
+                ->delete();
+            // Delete BukuBesarModal records (assuming the model exists and is imported)
+            \App\Models\BukuBesarModal::where("neraca_awal_id", $id)
+                ->where("user_id", $userId)
+                ->delete();
+
+            // Delete BukuBesarPiutang records
+            BukuBesarPiutang::where("neraca_awal_id", $id)
+                ->where("user_id", $userId)
+                ->delete();
+            // Delete BukuBesarHutang records
+            BukuBesarHutang::where("neraca_awal_id", $id)
+                ->where("user_id", $userId)
+                ->delete();
+            // Finally, delete the NeracaAwal record
+            $neracaAwal->delete();
+            DB::commit();
+            return redirect()
+                ->route("laporan-keuangan.aset-hutang.index")
+                ->with("success", "Data berhasil dihapus.");
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error("Error deleting data: " . $e->getMessage());
+            return redirect()
+                ->route("laporan-keuangan.aset-hutang.index")
+                ->withErrors("Gagal menghapus: " . $e->getMessage());
+        }
     }
 }

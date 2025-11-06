@@ -36,8 +36,6 @@ class PendapatanController extends Controller
         $allDatas = BukuBesarPendapatan::where("user_id", $userId)->get();
         $dataPiutang = \App\Models\BukuBesarPiutang::where("user_id", $userId)
             ->with("pelanggan:id,nama")
-            ->orderBy("pelanggan_id")
-            ->orderBy("tanggal")
             ->get()
             ->groupBy("pelanggan_id");
 
@@ -91,7 +89,6 @@ class PendapatanController extends Controller
         $validated = $request->validated();
         try {
             DB::beginTransaction();
-            // 🔹 Kode unik untuk satu transaksi pendapatan (dipakai di semua buku besar)
             $kodeTransaksi = Str::uuid();
 
             switch ($request->jenis_pendapatan) {
@@ -99,14 +96,17 @@ class PendapatanController extends Controller
                     $saldoFinal =
                         $request->biaya_lain +
                         $request->jumlah -
-                        $request->potongan_pembelian;
+                        ($request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0);
 
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
                         "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
                         "uraian" => $request->uraian_pendapatan,
-                        "potongan_pembelian" =>
-                            $request->potongan_pembelian ?? 0,
+                        "potongan_pembelian" => $request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0,
                         "piutang_dagang" => 0,
                         "penjualan_tunai" => $request->jumlah ?? 0,
                         "lain_lain" => $request->biaya_lain ?? 0,
@@ -144,17 +144,24 @@ class PendapatanController extends Controller
                     break;
 
                 case "piutang":
+                    $piutangTambahan = $request->filled("jumlah_piutang")
+                        ? $request->jumlah_piutang
+                        : 0;
                     $saldoFinal =
                         $request->jumlah +
+                        $piutangTambahan +
                         $request->biaya_lain -
-                        $request->potongan_pembelian;
+                        ($request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0);
 
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
                         "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
                         "uraian" => $request->uraian_pendapatan,
-                        "potongan_pembelian" =>
-                            $request->potongan_pembelian ?? 0,
+                        "potongan_pembelian" => $request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0, // Sum potongan
                         "piutang_dagang" => $request->jumlah,
                         "penjualan_tunai" => 0,
                         "lain_lain" => $request->biaya_lain ?? 0,
@@ -163,40 +170,20 @@ class PendapatanController extends Controller
                         "user_id" => auth()->id(),
                     ]);
 
-                    // 🔹 Update piutang
-                    if ($validated["jenis_pendapatan"] === "piutang") {
-                        $piutangAktif = $validated["piutang_aktif"] ?? null;
-                        if ($piutangAktif) {
-                            // Tambah saldo piutang lama
-                            $piutangLama = BukuBesarPiutang::where(
-                                "kode",
-                                $piutangAktif,
-                            )->first();
-                            if ($piutangLama) {
-                                BukuBesarPiutang::create([
-                                    "kode" => $piutangLama->kode,
-                                    "pelanggan_id" =>
-                                        $piutangLama->pelanggan_id,
-                                    "debit" => $validated["jumlah"],
-                                    "kredit" => 0,
-                                    "saldo" =>
-                                        $piutangLama->saldo +
-                                        $validated["jumlah"],
-                                    "uraian" => $validated["uraian_pendapatan"],
-                                    "tanggal" => $validated["tanggal"],
-                                    "buku_besar_pendapatan_id" =>
-                                        $bukuBesarPendapatan->id,
-                                    "user_id" => auth()->id(),
-                                ]);
-                            }
-                        } else {
-                            // Piutang baru
+                    $piutangAktif = $validated["piutang_aktif"] ?? null;
+                    if ($piutangAktif) {
+                        // Tambah saldo piutang lama
+                        $piutangLama = BukuBesarPiutang::where(
+                            "kode",
+                            $piutangAktif,
+                        )->first();
+                        if ($piutangLama) {
                             BukuBesarPiutang::create([
-                                "kode" => Str::uuid(),
-                                "pelanggan_id" => $validated["nama_pelanggan"],
+                                "kode" => $piutangLama->kode,
+                                "pelanggan_id" => $piutangLama->pelanggan_id,
                                 "debit" => $validated["jumlah"],
                                 "kredit" => 0,
-                                "saldo" => $validated["jumlah"],
+                                "saldo" => $piutangLama->saldo + $saldoFinal,
                                 "uraian" => $validated["uraian_pendapatan"],
                                 "tanggal" => $validated["tanggal"],
                                 "buku_besar_pendapatan_id" =>
@@ -204,6 +191,20 @@ class PendapatanController extends Controller
                                 "user_id" => auth()->id(),
                             ]);
                         }
+                    } else {
+                        // Piutang baru
+                        BukuBesarPiutang::create([
+                            "kode" => Str::uuid(),
+                            "pelanggan_id" => $validated["nama_pelanggan"],
+                            "debit" => $validated["jumlah"],
+                            "kredit" => 0,
+                            "saldo" => $saldoFinal,
+                            "uraian" => $validated["uraian_pendapatan"],
+                            "tanggal" => $validated["tanggal"],
+                            "buku_besar_pendapatan_id" =>
+                                $bukuBesarPendapatan->id,
+                            "user_id" => auth()->id(),
+                        ]);
                     }
 
                     $neracaAwalBefore = NeracaAwal::where(
@@ -232,25 +233,44 @@ class PendapatanController extends Controller
                     break;
 
                 case "kredit":
-                    $saldoTerakhir = BukuBesarPiutang::where(
+                    // Ambil data piutang lama (yang dibayar oleh debitur)
+                    $piutangLama = BukuBesarPiutang::where(
                         "kode",
                         $validated["hutang_aktif"],
                     )
                         ->latest()
                         ->first();
 
+                    if (!$piutangLama) {
+                        throw new \Exception(
+                            "Data piutang tidak ditemukan untuk pelunasan.",
+                        );
+                    }
+
+                    $kreditTambahan = $request->filled("jumlah_kredit")
+                        ? $request->jumlah_kredit
+                        : 0;
+
                     $saldoFinal =
                         $request->jumlah +
+                        $kreditTambahan +
                         $request->biaya_lain -
-                        $request->potongan_pembelian;
+                        ($request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0);
 
+                    dd($saldoFinal);
+
+                    // Catat di Buku Besar Pendapatan (karena ada uang masuk)
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
                         "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
-                        "uraian" => $request->uraian_pendapatan,
-                        "potongan_pembelian" =>
-                            $request->potongan_pembelian ?: 0,
-                        "piutang_dagang" => $request->jumlah ?: 0,
+                        "uraian" =>
+                            "Pelunasan Piutang: " . $request->uraian_pendapatan,
+                        "potongan_pembelian" => $request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0, // Sum potongan
+                        "piutang_dagang" => 0, // tidak menambah piutang
                         "penjualan_tunai" => 0,
                         "lain_lain" => $request->biaya_lain ?: 0,
                         "uang_diterima" => $saldoFinal,
@@ -258,18 +278,28 @@ class PendapatanController extends Controller
                         "user_id" => auth()->id(),
                     ]);
 
+                    // Di sini piutang berkurang (kredit bertambah)
+                    $saldoBaruPiutang = $piutangLama->saldo - $saldoFinal;
+                    if ($saldoBaruPiutang < 0) {
+                        throw new \Exception(
+                            "Nilai pelunasan melebihi saldo piutang.",
+                        );
+                    }
+
                     BukuBesarPiutang::create([
-                        "kode" => $kodeTransaksi,
-                        "pelanggan_id" => $request->nama_pelanggan,
-                        "uraian" => $request->uraian_pendapatan,
+                        "kode" => $piutangLama->kode, // tetap pakai kode piutang lama
+                        "pelanggan_id" => $piutangLama->pelanggan_id,
+                        "uraian" =>
+                            "Pelunasan Piutang: " . $request->uraian_pendapatan,
                         "tanggal" => $request->tanggal,
                         "debit" => 0,
                         "kredit" => $saldoFinal,
-                        "saldo" => $saldoTerakhir->saldo - $saldoFinal,
+                        "saldo" => $saldoBaruPiutang,
                         "buku_besar_pendapatan_id" => $bukuBesarPendapatan->id,
                         "user_id" => auth()->id(),
                     ]);
 
+                    // 🔹 Kas bertambah karena uang masuk
                     $neracaAwalBefore = NeracaAwal::where(
                         "user_id",
                         auth()->id(),
@@ -281,74 +311,91 @@ class PendapatanController extends Controller
                         ->latest()
                         ->first();
 
-                    $saldoBaru =
+                    $saldoBaruKas =
                         ($bukuBesarKasBefore->saldo ?? 0) + $saldoFinal;
 
                     BukuBesarKas::create([
                         "kode" => $kodeTransaksi,
                         "uraian" =>
-                            "Pelunasan Piutang: " . $request->uraian_pendapatan,
+                            "Penerimaan dari Pelunasan Piutang (" .
+                            $request->uraian_pendapatan .
+                            ")",
                         "tanggal" => $request->tanggal,
-                        "debit" => $saldoFinal,
+                        "debit" => $saldoFinal, // kas bertambah
                         "kredit" => 0,
-                        "saldo" => $saldoBaru,
+                        "saldo" => $saldoBaruKas,
                         "neraca_awal_id" => $neracaAwalBefore->id,
                         "user_id" => auth()->id(),
                     ]);
                     break;
             }
 
-            if ($request->filled("barang_terjual")) {
-                // jangan lupa cek saldo lama nya, query baru get by barang_id
-                $detailBarang = Barang::where(
-                    "id",
-                    $request->barang_terjual,
-                )->first();
+            if (
+                $request->filled("barang_terjual") &&
+                is_array($request->barang_terjual)
+            ) {
+                foreach ($request->barang_terjual as $index => $barangId) {
+                    if (!$barangId) {
+                        continue;
+                    } // Skip jika null
 
-                $barangItem = KartuGudang::where(
-                    "barang_id",
-                    $request->barang_terjual,
-                )
-                    ->latest()
-                    ->first();
+                    $detailBarang = Barang::where("id", $barangId)->first();
+                    if (!$detailBarang) {
+                        throw new \Exception(
+                            "Barang dengan ID {$barangId} tidak ditemukan.",
+                        );
+                    }
 
-                // Saldo awal
-                $saldoSatuanAwal = $barangItem->saldo_persatuan;
-                $saldoKemasanAwal = $barangItem->saldo_perkemasan;
-                $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
-                $jumlahDijual = $request->jumlah_barang_dijual;
+                    $barangItem = KartuGudang::where("barang_id", $barangId)
+                        ->latest()
+                        ->first();
 
-                // Hitung total satuan yang tersedia (dalam satuan kecil)
-                $totalSatuanTersedia =
-                    $saldoKemasanAwal * $unitPerKemasan + $saldoSatuanAwal;
+                    if (!$barangItem) {
+                        throw new \Exception(
+                            "Kartu gudang untuk barang ID {$barangId} tidak ditemukan.",
+                        );
+                    }
 
-                // Jika tidak cukup, bisa lempar error
-                if ($totalSatuanTersedia < $jumlahDijual) {
-                    Log::error("Saldo barang tidak mencukupi");
-                    throw new \Exception("Saldo barang tidak mencukupi");
+                    // Saldo awal
+                    $saldoSatuanAwal = $barangItem->saldo_persatuan;
+                    $saldoKemasanAwal = $barangItem->saldo_perkemasan;
+                    $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
+                    $jumlahDijual = $request->jumlah_barang_dijual[$index] ?? 0;
+
+                    // Hitung total satuan yang tersedia (dalam satuan kecil)
+                    $totalSatuanTersedia =
+                        $saldoKemasanAwal * $unitPerKemasan + $saldoSatuanAwal;
+
+                    // Jika tidak cukup, lempar error
+                    if ($totalSatuanTersedia < $jumlahDijual) {
+                        throw new \Exception(
+                            "Saldo barang '{$detailBarang->nama}' tidak mencukupi. Tersedia: {$totalSatuanTersedia}, Dibutuhkan: {$jumlahDijual}",
+                        );
+                    }
+
+                    // Hitung sisa setelah pengeluaran
+                    $sisaSatuan = $totalSatuanTersedia - $jumlahDijual;
+
+                    // Konversi sisa satuan kembali ke kemasan + satuan
+                    $kemasanBaru = floor($sisaSatuan / $unitPerKemasan);
+                    $satuanBaru = $saldoSatuanAwal - $jumlahDijual;
+
+                    // Simpan ke Kartu Gudang
+                    KartuGudang::create([
+                        "barang_id" => $barangId,
+                        "tanggal" => $request->tanggal,
+                        "diterima" => 0,
+                        "dikeluarkan" => $jumlahDijual,
+                        "uraian" =>
+                            $request->uraian_pendapatan .
+                            " - " .
+                            $detailBarang->nama,
+                        "saldo_persatuan" => $satuanBaru,
+                        "saldo_perkemasan" => $kemasanBaru,
+                        "buku_besar_pendatapan_id" => $bukuBesarPendapatan->id,
+                        "user_id" => auth()->id(),
+                    ]);
                 }
-
-                // Hitung sisa setelah pengeluaran
-                $sisaSatuan = $totalSatuanTersedia - $jumlahDijual;
-
-                // Konversi sisa satuan kembali ke kemasan + satuan
-                $kemasanBaru = floor(
-                    $saldoKemasanAwal - $jumlahDijual / $unitPerKemasan,
-                );
-                $satuanBaru = $saldoSatuanAwal - $jumlahDijual;
-
-                // Simpan ke Kartu Gudang
-                $kartuGudang = KartuGudang::create([
-                    "barang_id" => $request->barang_terjual,
-                    "tanggal" => $request->tanggal,
-                    "diterima" => 0,
-                    "dikeluarkan" => $jumlahDijual,
-                    "uraian" => $request->uraian_pendapatan,
-                    "saldo_persatuan" => $satuanBaru,
-                    "saldo_perkemasan" => $kemasanBaru,
-                    "buku_besar_pendatapan_id" => $bukuBesarPendapatan->id,
-                    "user_id" => auth()->id(),
-                ]);
             }
 
             DB::commit();

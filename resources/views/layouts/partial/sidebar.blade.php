@@ -101,7 +101,7 @@
 
                     <ul class="submenu">
                         <li class="submenu-item">
-                            <a href="{{ route('laporan-keuangan.aset-hutang.index') }}" class="submenu-link">Aset Hutang</a>
+                            <a href="{{ route('laporan-keuangan.aset-hutang.index') }}" class="submenu-link">Neraca Awal</a>
                         </li>
                         <li class="submenu-item">
                             <a href="{{route('laporan-keuangan.rugi-laba')}}" class="submenu-link">Rugi Laba</a>
@@ -174,10 +174,10 @@
                             <a href="{{ route('retur.list') }}" class="submenu-link">List Retur</a>
                         </li>
                         <li class="submenu-item">
-                            <a href="{{ route('retur.create') }}" class="submenu-link">Retur Pendapatan/Kredit</a>
+                            <a href="{{ route('retur.create') }}" class="submenu-link">Retur Penjualan/Kredit</a>
                         </li>
                         <li class="submenu-item">
-                            <a href="{{ route('retur.create-pengeluaran') }}" class="submenu-link">Retur Pengeluaran/Debit</a>
+                            <a href="{{ route('retur.create-pengeluaran') }}" class="submenu-link">Retur Pembelian/Kredit</a>
                         </li>
 
                     </ul>

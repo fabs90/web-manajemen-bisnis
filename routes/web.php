@@ -26,9 +26,10 @@ Route::middleware(["web", "auth"])->group(function () {
         "chartData",
     ])->name("dashboard.chartData");
 
-    Route::get("/dashboard/get-started", [PageController::class, "getStarted"])->name(
-        "dashboard.getStarted",
-    );
+    Route::get("/dashboard/get-started", [
+        PageController::class,
+        "getStarted",
+    ])->name("dashboard.getStarted");
 
     // =============================
     // 📘 GROUP: KEUANGAN
@@ -106,6 +107,10 @@ Route::middleware(["web", "auth"])->group(function () {
             AsetHutangController::class,
             "show",
         ])->name("laporan-keuangan.aset-hutang.show");
+        Route::delete("/aset-hutang/{id}", [
+            AsetHutangController::class,
+            "destroy",
+        ])->name("laporan-keuangan.aset-hutang.destroy");
 
         // Rugi Laba
         Route::get("/rugi-laba", [RugiLabaController::class, "index"])->name(

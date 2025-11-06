@@ -1,9 +1,9 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tambah Aset & Hutang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
-@section('section-heading', 'Form Tambah Aset & Hutang')
+@section('page-title', 'Tambah Neraca Awal | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('section-heading', 'Form Tambah Neraca Awal')
 @section('section-row')
     <p>
-        Silakan isi form di bawah untuk menambahkan data aset dan hutang perusahaan <b>{{ $user }}</b>.
+        Silakan isi form di bawah untuk menambahkan data neraca awal perusahaan <b>{{ $user }}</b>.
     </p>
     @if ($errors->any())
         <div class="alert alert-danger">
