@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Input Retur Pengeluaran / Debit')
+@section('page-title', 'Retur Pengeluaran/Debit | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'Retur Penjualan Pengeluaran / Debit')
 @section('section-row')

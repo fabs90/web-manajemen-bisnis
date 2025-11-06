@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Neraca Akhir')
+@section('page-title', 'Neraca Akhir | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'Neraca Akhir')
 @section('section-row')

@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tambah Aset dan Hutang')
+@section('page-title', 'Tambah Aset & Hutang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Form Tambah Aset & Hutang')
 @section('section-row')
     <p>
@@ -16,7 +16,7 @@
         </div>
     @endif
     {{-- Form --}}
-    <form action="{{ route('aset-hutang.store') }}" method="POST">
+    <form action="{{ route('laporan-keuangan.aset-hutang.store') }}" method="POST">
         @csrf
         {{-- Aset --}}
         <legend>Aset Lancar</legend>

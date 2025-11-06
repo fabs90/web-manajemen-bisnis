@@ -26,34 +26,14 @@ Route::middleware(["web", "auth"])->group(function () {
         "chartData",
     ])->name("dashboard.chartData");
 
+    Route::get("/dashboard/get-started", [PageController::class, "getStarted"])->name(
+        "dashboard.getStarted",
+    );
+
     // =============================
     // 📘 GROUP: KEUANGAN
     // =============================
     Route::prefix("keuangan")->group(function () {
-        // Aset & Hutang
-        Route::get("/aset-hutang", [
-            AsetHutangController::class,
-            "index",
-        ])->name("aset-hutang.index");
-        Route::get("/aset-hutang/create", [
-            AsetHutangController::class,
-            "create",
-        ])->name("aset-hutang.create");
-        Route::post("/aset-hutang", [
-            AsetHutangController::class,
-            "store",
-        ])->name("aset-hutang.store");
-        Route::get("/aset-hutang/{id}", [
-            AsetHutangController::class,
-            "show",
-        ])->name("aset-hutang.show");
-
-        // Neraca Awal
-        Route::get("/neraca-awal/{id}", [
-            AsetHutangController::class,
-            "show",
-        ])->name("keuangan.neraca-awal.show");
-
         // Pendapatan
         Route::get("/pendapatan", [PendapatanController::class, "index"])->name(
             "keuangan.pendapatan.list",
@@ -103,22 +83,45 @@ Route::middleware(["web", "auth"])->group(function () {
             PengeluaranController::class,
             "destroy",
         ])->name("keuangan.pengeluaran.destroy");
+    });
+
+    // =============================
+    // 💵 GROUP: LAPORAN-KEUNGAN
+    // =============================
+    Route::prefix("laporan-keuangan")->group(function () {
+        // Aset & Hutang
+        Route::get("/aset-hutang", [
+            AsetHutangController::class,
+            "index",
+        ])->name("laporan-keuangan.aset-hutang.index");
+        Route::get("/aset-hutang/create", [
+            AsetHutangController::class,
+            "create",
+        ])->name("laporan-keuangan.aset-hutang.create");
+        Route::post("/aset-hutang", [
+            AsetHutangController::class,
+            "store",
+        ])->name("laporan-keuangan.aset-hutang.store");
+        Route::get("/aset-hutang/{id}", [
+            AsetHutangController::class,
+            "show",
+        ])->name("laporan-keuangan.aset-hutang.show");
 
         // Rugi Laba
         Route::get("/rugi-laba", [RugiLabaController::class, "index"])->name(
-            "keuangan.pengeluaran.rugi-laba",
+            "laporan-keuangan.rugi-laba",
         );
 
         Route::get("/rugi-laba/pdf-export", [
             RugiLabaController::class,
             "exportToPdf",
-        ])->name("keuangan.pengeluaran.rugi-laba.pdf");
+        ])->name("laporan-keuangan.rugi-laba.pdf");
 
         // Neraca Akhir
         Route::get("/neraca-akhir", [
             NeracaAkhirController::class,
             "index",
-        ])->name("keuangan.pengeluaran.neraca-akhir");
+        ])->name("laporan-keuangan.neraca-akhir");
     });
 
     // =============================

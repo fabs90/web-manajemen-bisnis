@@ -16,6 +16,7 @@ class BukuBesarPendapatan extends Model
         "lain_lain",
         "uang_diterima",
         "bunga_bank",
+        "retur_penjualan",
         "user_id",
     ];
 

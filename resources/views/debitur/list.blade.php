@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'List Debitur dan Kreditur')
+@section('page-title', 'Debitur & Kreditur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'List Debitur dan Kreditur')
 @section('section-row')
 

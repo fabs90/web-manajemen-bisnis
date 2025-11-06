@@ -211,12 +211,12 @@ class PengeluaranController extends Controller
                             $validated["potongan_pembelian"] ?? 0,
                         "jumlah_hutang" =>
                             $validated["jenis_pengeluaran"] == "kredit"
-                                ? $validated["jumlah"]
-                                : 0,
+                            ? $validated["jumlah"]
+                            : 0,
                         "jumlah_pembelian_tunai" =>
                             $validated["jenis_pengeluaran"] == "tunai"
-                                ? $validated["jumlah"]
-                                : 0,
+                            ? $validated["jumlah"]
+                            : 0,
                         "lain_lain" => $validated["biaya_lain"] ?? 0,
                         "bunga_bank" => $validated["bunga_bank"] ?? 0,
                         "jumlah_pengeluaran" => $jumlahUang,
@@ -266,7 +266,6 @@ class PengeluaranController extends Controller
                         }
                     }
 
-                    // tidak usah pakai kas karena hutan bukan pengelauran lgsg
                     $this->tambahBarangKeGudang($validated);
                     break;
             }
@@ -322,25 +321,15 @@ class PengeluaranController extends Controller
         $kemasanMasuk = intdiv($pcsDibeli, $pcsPerKemasan);
         $sisaSatuanMasuk = $pcsDibeli % $pcsPerKemasan;
 
+
         $saldoKemasanSekarang = $barangItem->saldo_perkemasan ?? 0;
         $saldoSatuanSekarang = $barangItem->saldo_persatuan ?? 0;
 
-        $saldoSatuanBaru = $saldoSatuanSekarang + $sisaSatuanMasuk;
+        $saldoSatuanBaru = $saldoSatuanSekarang + $pcsDibeli;
         $konversiKeKemasan = intdiv($saldoSatuanBaru, $pcsPerKemasan);
-        $saldoSatuanBaru = $saldoSatuanBaru % $pcsPerKemasan;
 
         $saldoKemasanBaru =
             $saldoKemasanSekarang + $kemasanMasuk + $konversiKeKemasan;
-
-        // Validasi batas stok maksimum (opsional)
-        if (
-            !empty($detailBarang->jumlah_max) &&
-            $saldoKemasanBaru > $detailBarang->jumlah_max
-        ) {
-            throw new \Exception(
-                "Stok barang '{$detailBarang->nama}' melebihi batas maksimum ({$detailBarang->jumlah_max} kemasan).",
-            );
-        }
 
         // Simpan ke kartu gudang
         KartuGudang::create([

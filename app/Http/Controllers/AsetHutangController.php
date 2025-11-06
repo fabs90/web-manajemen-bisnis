@@ -162,13 +162,13 @@ class AsetHutangController extends Controller
             }
             DB::commit();
             return redirect()
-                ->route("aset-hutang.create")
+                ->route("laporan-keuangan.aset-hutang.create")
                 ->with("success", "Data berhasil disimpan.");
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error("Error saving data: " . $e->getMessage());
             return redirect()
-                ->route("aset-hutang.create")
+                ->route("laporan-keuangan.aset-hutang.create")
                 ->withInput()
                 ->withErrors("Gagal menyimpan: " . $e->getMessage());
         }

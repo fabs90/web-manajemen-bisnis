@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Kartu Gudang')
+@section('page-title', 'Tambah Kartu Gudang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Form Kartu Gudang')
 @section('section-row')
     <p>

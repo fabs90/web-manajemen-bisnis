@@ -26,7 +26,7 @@ class BarangController extends Controller
     {
         $request->validate([
             "kode_barang" =>
-                "nullable|string|max:100|unique:barang,kode_barang",
+                "nullable|string|max:100",
             "nama" => "required|string|max:255",
             "jumlah_max" => "required|integer|min:0",
             "jumlah_min" => "required|integer|min:0",

@@ -1,7 +1,6 @@
 @extends('layouts.partial.layouts')
-
 @section('page-title')
-    Neraca Awal | {{ \Carbon\Carbon::parse($neracaAwal->tanggal ?? $neracaAwal->created_at)->format('d-m-Y') }}
+Neraca Awal | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis
 @endsection
 
 @section('section-heading')

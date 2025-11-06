@@ -1,27 +1,29 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'List Retur Kredit')
+@section('page-title', 'Retur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnisn')
 
-@section('section-heading', 'List Retur Kredit')
+@section('section-heading', 'List Retur Penjualan & Pengeluaran')
 @section('section-row')
 
-<div class="card shadow-sm">
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-info text-white fw-bold">
+        Retur Penjualan (Piutang)
+    </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="returTable">
-                <thead class="table-danger">
+            <table class="table table-bordered table-hover" id="returPenjualanTable">
+                <thead class="table-primary">
                     <tr>
-                        <th width="5%">#</th>
+                        <th>#</th>
                         <th>Tanggal</th>
                         <th>Debitur</th>
                         <th>Kode Piutang</th>
                         <th>Uraian</th>
-                        <th>Retur (Rp)</th>
+                        <th>Nominal (Rp)</th>
                         <th>Penanganan</th>
-                        <th width="12%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($returPenjualan as $index => $retur)
+                    @forelse ($returPenjualan as $retur)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ \Carbon\Carbon::parse($retur->tanggal)->format('d/m/Y') }}</td>
@@ -29,7 +31,7 @@
                             <td><code>{{ $retur->kode }}</code></td>
                             <td>{{ $retur->uraian }}</td>
                             <td class="text-end fw-bold text-danger">
-                                Rp {{ number_format($retur->debit, 0, ',', '.') }}
+                                Rp {{ number_format($retur->debit > 0 ? $retur->debit : $retur->kredit, 0, ',', '.') }}
                             </td>
                             <td>
                                 @if($retur->kredit > 0)
@@ -38,16 +40,55 @@
                                     <span class="badge bg-info">Kurangi Piutang</span>
                                 @endif
                             </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Edit">Edit</button>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada retur penjualan.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white fw-bold">
+        Retur Pengeluaran (Pembelian / Hutang)
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="returPengeluaranTable">
+                <thead class="table-success">
+                    <tr>
+                        <th>#</th>
+                        <th>Tanggal</th>
+                        <th>Kreditur</th>
+                        <th>Kode Hutang</th>
+                        <th>Uraian</th>
+                        <th>Nominal (Rp)</th>
+                        <th>Penanganan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($returPengeluaran as $retur)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ \Carbon\Carbon::parse($retur->tanggal)->format('d/m/Y') }}</td>
+                            <td>{{ $retur->pelanggan->nama ?? '-' }}</td>
+                            <td><code>{{ $retur->kode }}</code></td>
+                            <td>{{ $retur->uraian }}</td>
+                            <td class="text-end fw-bold text-success">
+                                Rp {{ number_format($retur->debit > 0 ? $retur->debit : $retur->kredit, 0, ',', '.') }}
+                            </td>
+                            <td>
+                                @if($retur->uraian && Str::contains(strtolower($retur->uraian), 'tunai'))
+                                    <span class="badge bg-warning text-dark">Tunai Kembali</span>
+                                @else
+                                    <span class="badge bg-info">Kurangi Hutang</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                Tidak ada data retur kredit.
-                            </td>
-                        </tr>
+                        <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada retur pengeluaran.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -60,57 +101,17 @@
 @push('script')
 <script>
     $(document).ready(function() {
-        // Inisialisasi DataTable
-        $('#returTable').DataTable({
-            paging: true,
+        $('#returPenjualanTable, #returPengeluaranTable').DataTable({
             pageLength: 10,
-            lengthChange: false,
-            searching: true,
-            ordering: true,
-            info: true,
-            autoWidth: false,
-            responsive: true,
             language: {
                 search: "Cari:",
-                paginate: {
-                    previous: "Sebelumnya",
-                    next: "Berikutnya"
-                },
-                emptyTable: "Tidak ada data retur untuk ditampilkan",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                paginate: { previous: "Sebelumnya", next: "Berikutnya" },
+                emptyTable: "Tidak ada data retur",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                infoEmpty: "Menampilkan 0 dari 0 data",
             },
-            columnDefs: [
-                { targets: [0, 7], orderable: false }
-            ]
+            columnDefs: [{ targets: 0, orderable: false }]
         });
     });
-
-    // SweetAlert konfirmasi hapus
-    function confirmDelete(id) {
-        Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: "Data retur ini akan dihapus secara permanen!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('deleteForm-' + id).submit();
-            }
-        });
-    }
-
-    // Fungsi Edit (bisa dikembangkan ke modal atau redirect)
-    function editRetur(id) {
-        // Contoh: redirect ke form edit
-        window.location.href = `/keuangan/retur-kredit/${id}/edit`;
-
-        // Atau buka modal (jika pakai modal)
-        // $('#editModal').modal('show');
-    }
 </script>
 @endpush

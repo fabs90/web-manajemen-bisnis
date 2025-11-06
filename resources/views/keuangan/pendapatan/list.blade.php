@@ -1,10 +1,10 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Pendapatan')
+@section('page-title', 'Pendapatan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'Pendapatan ')
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Daftar Piutang Perusahaan</h5>
+        <h5 class="mb-0">Daftar Pendapatan Perusahaan</h5>
         <a href="{{ route('keuangan.pendapatan.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Tambah Data Pendapatan
         </a>

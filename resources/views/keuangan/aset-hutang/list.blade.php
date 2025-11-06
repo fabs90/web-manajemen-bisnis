@@ -1,11 +1,11 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Aset dan Hutang')
+@section('page-title', 'Aset & Hutang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'Aset Hutang ')
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Daftar Aset & Hutang</h5>
-        <a href="{{ route('aset-hutang.create') }}" class="btn btn-primary">
+        <a href="{{ route('laporan-keuangan.aset-hutang.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Tambah Aset & Hutang
         </a>
     </div>
@@ -27,7 +27,7 @@
                     <td>Rp {{ number_format($item->total_debit) }}</td>
                     <td>Rp {{ number_format($item->total_kredit) }}</td>
                     <td>
-                        <a href="{{ route('aset-hutang.show', ['id' => $item->id]) }}" class="btn btn-sm btn-info text-white">
+                        <a href="{{ route('laporan-keuangan.aset-hutang.show', ['id' => $item->id]) }}" class="btn btn-sm btn-info text-white">
                             <i class="bi bi-eye"></i>
                         </a>
 

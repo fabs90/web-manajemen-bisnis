@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tambah Debitur/Kreditur')
+@section('page-title', 'Tambah Debitur/Kreditur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Form Tambah Debitur/Kreditur')
 @section('section-row')
     <p>

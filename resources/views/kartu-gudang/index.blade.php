@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'List Kartu Gudang')
+@section('page-title', 'Kartu Gudang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'List Kartu Gudang')
 @section('section-row')
     @forelse ($barang as $item)

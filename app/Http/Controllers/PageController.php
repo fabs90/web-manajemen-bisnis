@@ -11,6 +11,7 @@ use App\Models\BukuBesarPengeluaran;
 use App\Models\BukuBesarPiutang;
 use App\Models\KartuGudang;
 use App\Models\RugiLaba;
+use App\Services\KeuanganService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -91,11 +92,9 @@ class PageController extends Controller
             })
             ->sum();
 
-        // Laba Bersih (dari rugi_laba terbaru, atau hitung sederhana: total pendapatan - total pengeluaran - biaya operasional)
-        $labaBersih =
-            RugiLaba::where("user_id", $userId)
-                ->latest()
-                ->value("laba_bersih") ?? 0;
+        $keuangan = app(KeuanganService::class);
+        $dataLabaRugi = $keuangan->hitungLabaRugi();
+        $labaBersih = $dataLabaRugi["labaSetelahPajak"] ?? 0;
 
         if ($labaBersih == 0) {
             // Hitung alternatif jika belum ada di rugi_laba
@@ -193,10 +192,12 @@ class PageController extends Controller
         $periode = (int) $request->get("periode", 6); // default 6 bulan
         $endDate = now();
         $startDate =
-            $periode === 1 ? now()->subMonth() : now()->subMonths($periode - 1);
+            $periode === 1
+                ? now()->startOfMonth()
+                : now()->subMonths($periode - 1);
 
         if ($periode === 1) {
-            // === Periode 1 bulan terakhir: tampil per hari ===
+            // === Periode 1 bulan: tampil per hari untuk bulan ini ===
             $pendapatan = BukuBesarPendapatan::selectRaw(
                 "DATE(tanggal) as tgl, SUM(uang_diterima) as total",
             )
@@ -293,6 +294,11 @@ class PageController extends Controller
             "pendapatan" => $dataPendapatan,
             "pengeluaran" => $dataPengeluaran,
         ]);
+    }
+
+    public function getStarted()
+    {
+        return view("get-started");
     }
 
     public function deleteAllData() {}

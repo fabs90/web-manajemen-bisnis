@@ -43,17 +43,16 @@ class KeuanganService
 
         $totalPenjualan = $penjualanKredit + $penjualanTunai + $bungaPenjualan;
 
-        $returPenjualan =
-            BukuBesarPiutang::where("user_id", $userId)
-                ->where($filter)
-                ->where(function ($q) {
-                    $q->where("uraian", "like", "%Retur%")->orWhere(
-                        "uraian",
-                        "like",
-                        "%memo%",
-                    );
-                })
-                ->sum("debit") ?? 0;
+        $returPenjualan = BukuBesarPiutang::where("user_id", $userId)
+            ->where($filter)
+            ->where(function ($q) {
+                $q->where("uraian", "like", "%Retur%")->orWhere(
+                    "uraian",
+                    "like",
+                    "%memo%",
+                );
+            })
+            ->sum("kredit"); // ✅ harus kredit, bukan debit
 
         $potonganPenjualan =
             BukuBesarPendapatan::where("user_id", $userId)
@@ -78,17 +77,16 @@ class KeuanganService
             ->where($filter)
             ->sum("jumlah_pembelian_tunai");
 
-        $returPembelian =
-            BukuBesarHutang::where("user_id", $userId)
-                ->where($filter)
-                ->where(function ($q) {
-                    $q->where("uraian", "like", "%Retur%")->orWhere(
-                        "uraian",
-                        "like",
-                        "%memo%",
-                    );
-                })
-                ->sum("kredit") ?? 0;
+        $returPembelian = BukuBesarHutang::where("user_id", $userId)
+            ->where($filter)
+            ->where(function ($q) {
+                $q->where("uraian", "like", "%Retur%")->orWhere(
+                    "uraian",
+                    "like",
+                    "%memo%",
+                );
+            })
+            ->sum("debit"); // ✅ harus debit, bukan kredit
 
         $potonganPembelian =
             BukuBesarPengeluaran::where("user_id", $userId)
@@ -147,7 +145,7 @@ class KeuanganService
         $labaSebelumPajak =
             $labaOperasional + $pendapatanLain - $biayaAdministrasiBank;
 
-        $pajak = $labaSebelumPajak > 0 ? $labaSebelumPajak * 0.15 : 0;
+        $pajak = $labaSebelumPajak * 0.15;
         $labaSetelahPajak = $labaSebelumPajak - $pajak;
 
         return compact(

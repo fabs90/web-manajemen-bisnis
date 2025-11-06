@@ -1,6 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Rugi/Laba')
+@section('page-title', 'Rugi Laba | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Rugi/Laba')
+
 
 @section('section-row')
 <div class="card shadow-sm">
@@ -12,7 +13,7 @@
             <button type="submit" class="btn btn-light btn-sm">Filter</button>
         </form>
 
-        <a href="{{ route('keuangan.pengeluaran.rugi-laba.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
+        <a href="{{ route('laporan-keuangan.rugi-laba.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
             class="btn btn-danger btn-sm" id="downloadPdfButton">
             <i class="bi bi-file-earmark-pdf me-1"></i> Download to PDF
             <span id="loadingSpinner" class="d-none">

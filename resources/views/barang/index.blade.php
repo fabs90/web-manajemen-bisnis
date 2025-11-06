@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'List Barang')
+@section('page-title', 'List Barang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'List Barang')
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">

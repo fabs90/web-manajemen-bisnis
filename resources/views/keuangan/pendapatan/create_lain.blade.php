@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Input Pendapatan Lain-Lain')
+@section('page-title', 'Tambah Pendapatan Lain-Lain | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'Pendapatan Lain-Lain')
 @section('section-row')
