@@ -36,23 +36,23 @@
                         <strong>Barang</strong>, <strong>Debitur-Kreditur</strong>, <strong>Pendapatan</strong>,
                         <strong>Pengeluaran</strong>, dan <strong>Neraca</strong>.
                     </li>
-                    <li>Tambahkan terlebih dahulu <a href="http://127.0.0.1:8000/barang/create"><strong>Data Barang</strong></a> dan <a href="http://127.0.0.1:8000/debitur-kreditur/create"><strong>Kreditur-Debitur</strong></a></li>
-                    <li>Isi <a href="http://127.0.0.1:8000/laporan-keuangan/aset-hutang/create"><strong> Hutang/Neraca Awal</strong></a> pada menu <strong>Aset
+                    <li>Tambahkan terlebih dahulu <a href="{{route('barang.create')}}"><strong>Data Barang</strong></a> dan <a href="{{route('debitur-kreditur.create')}}"><strong>Kreditur-Debitur</strong></a></li>
+                    <li>Isi <a href="{{route('laporan-keuangan.aset-hutang.create')}}"><strong> Hutang/Neraca Awal</strong></a> pada menu <strong>Aset
                             Hutang</strong>.
                     </li>
                     <li>
                         Masukan data pendapatan penjualan melalui menu
-                        <a href="http://127.0.0.1:8000/keuangan/pendapatan/create"><strong>Pendapatan</strong></a> yang terdapat
+                        <a href="{{route('keuangan.pendapatan.create')}}"><strong>Pendapatan</strong></a> yang terdapat
                         didalam menu <strong>Transaksi Bisnis</strong>.
                     </li>
                     <li>
                         Masukan data pengeluaran pembelian melalui menu
-                        <a href="http://127.0.0.1:8000/keuangan/pengeluaran/create"><strong>Pengeluaran</strong></a> yang
+                        <a href="{{route('keuangan.pengeluaran.create')}}"><strong>Pengeluaran</strong></a> yang
                         terdapat
                         didalam menu <strong>Transaksi Bisnis</strong>.
                     </li>
                     <li>
-                        Untuk melihat hasil <a href="http://127.0.0.1:8000/laporan-keuangan/rugi-laba"><strong>Rugi Laba</strong></a> dan <a href="http://127.0.0.1:8000/laporan-keuangan/neraca-akhir"><strong>Neraca Akhir</strong></a> dapat diakses melalui menu
+                        Untuk melihat hasil <a href="{{route('laporan-keuangan.rugi-laba')}}"><strong>Rugi Laba</strong></a> dan <a href="{{route('laporan-keuangan.neraca-akhir')}}"><strong>Neraca Akhir</strong></a> dapat diakses melalui menu
                         <strong>Transaksi
                             Bisnis</strong>.
                     </li>
