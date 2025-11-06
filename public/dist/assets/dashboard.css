@@ -1,0 +1,102 @@
+.kas-card {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.4s ease;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 123, 255, 0.9),
+        rgba(0, 86, 179, 0.8)
+    );
+}
+.kas-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.kas-card::before {
+    content: "";
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    width: 160%;
+    height: 160%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff22'%3E%3Cpath d='M19 7h-3V6c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v1H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 6h4v1h-4V6zm9 13H5V9h14v10z'/%3E%3C/svg%3E")
+        no-repeat center;
+    background-size: 70%;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.piutang-card {
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.4s ease;
+    background: linear-gradient(
+        135deg,
+        rgba(40, 167, 69, 0.9),
+        rgba(30, 120, 50, 0.8)
+    );
+}
+
+.piutang-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.hutang-card {
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.4s ease;
+    background: linear-gradient(
+        135deg,
+        rgba(220, 53, 69, 0.9),
+        rgba(170, 30, 45, 0.8)
+    );
+}
+
+.hutang-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.persediaan-card {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.4s ease;
+    background: linear-gradient(
+        135deg,
+        rgba(23, 162, 184, 0.9),
+        rgba(15, 120, 140, 0.8)
+    );
+}
+
+.persediaan-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Pastikan teks selalu di depan */
+.laba-bersih-card > .card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.laba-card {
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.4s ease;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 193, 7, 0.9),
+        rgba(255, 152, 0, 0.8)
+    );
+}
+
+.laba-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
