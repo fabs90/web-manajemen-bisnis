@@ -43,7 +43,7 @@
             <legend>Piutang Dagang <span class="text-danger">*</span></legend>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" id="tidak_ada_piutang" name="tidak_ada_piutang"
-                    value="1">
+                    value="0">
                 <label class="form-check-label" for="tidak_ada_piutang">
                     Tidak ada piutang sama sekali
                 </label>
@@ -103,7 +103,7 @@
             <legend>Hutang Dagang <span class="text-danger">*</span></legend>
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" id="tidak_ada_hutang" name="tidak_ada_hutang"
-                    value="1">
+                    value="0">
                 <label class="form-check-label" for="tidak_ada_hutang">
                     Tidak ada hutang sama sekali
                 </label>
@@ -288,10 +288,16 @@
                 const wrapper = document.getElementById('piutang-wrapper');
                 const newItem = wrapper.firstElementChild.cloneNode(true);
 
-                newItem.querySelectorAll('input').forEach(input => {
-                    input.value = '';
-                    input.name = input.name.replace(/\[\d+\]/, `[${piutangIndex}]`);
+                // Reset semua input & select
+                newItem.querySelectorAll('input, select').forEach(el => {
+                    el.value = '';
+                    el.name = el.name.replace(/\[\d+\]/, `[${piutangIndex}]`);
+                    el.disabled = false;
                 });
+
+                // Hapus pesan error lama
+                newItem.querySelectorAll('.invalid-feedback').forEach(e => e.remove());
+                newItem.querySelectorAll('.is-invalid').forEach(e => e.classList.remove('is-invalid'));
 
                 wrapper.appendChild(newItem);
                 initRupiahFields();
@@ -305,18 +311,18 @@
                     if (items.length > 1) e.target.closest('.piutang-item').remove();
                 }
             });
-            // Tambah hutang baru
+
             // Tambah hutang baru
             let hutangIndex = 1;
             document.getElementById('add-hutang').addEventListener('click', function() {
                 const wrapper = document.getElementById('hutang-wrapper');
                 const newItem = wrapper.firstElementChild.cloneNode(true);
 
-                // Reset input & perbarui name
+                // Reset input & select dan update nama
                 newItem.querySelectorAll('input, select').forEach(el => {
                     el.value = '';
                     el.name = el.name.replace(/\[\d+\]/, `[${hutangIndex}]`);
-                    el.disabled = false; // pastikan tidak ada yang disable
+                    el.disabled = false;
                 });
 
                 // Hapus pesan error lama
@@ -327,7 +333,6 @@
                 initRupiahFields();
                 hutangIndex++;
             });
-
 
             // Hapus hutang item
             document.addEventListener('click', function(e) {

@@ -20,30 +20,69 @@ Neraca Awal | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis
     <tr>
         <td>
             <b>Kas / Bank</b><br>
-            @forelse ($bukuBesarKas as $kas)
-                {{ $kas->uraian }} : Rp {{ number_format($kas->saldo, 0, ',', '.') }}<br>
-            @empty
-                <i>Tidak ada data kas</i>
-            @endforelse
+
+            {{-- Kas Masuk (Debit) --}}
+            <div class="mb-2">
+                <strong>Kas Masuk:</strong><br>
+                @php $totalDebit = 0; @endphp
+                @forelse ($bukuBesarKas->where('debit', '>', 0) as $kasMasuk)
+                    {{ $kasMasuk->uraian }} :
+                    <span class="text-success">
+                        Rp {{ number_format($kasMasuk->debit, 0, ',', '.') }}
+                    </span><br>
+                    @php $totalDebit += $kasMasuk->debit; @endphp
+                @empty
+                    <i>Tidak ada kas masuk</i><br>
+                @endforelse
+                <hr style="width:50%; border: 0.5px solid #555; margin:5px 0;">
+                <b>Total Kas Masuk:</b> Rp {{ number_format($totalDebit, 0, ',', '.') }}
+            </div>
+
+            {{-- Kas Keluar (Kredit) --}}
+            <div>
+                <strong>Kas Keluar:</strong><br>
+                @php $totalKredit = 0; @endphp
+                @forelse ($bukuBesarKas->where('kredit', '>', 0) as $kasKeluar)
+                    {{ $kasKeluar->uraian }} :
+                    <span class="text-danger">
+                        Rp {{ number_format($kasKeluar->kredit, 0, ',', '.') }}
+                    </span><br>
+                    @php $totalKredit += $kasKeluar->kredit; @endphp
+                @empty
+                    <i>Tidak ada kas keluar</i><br>
+                @endforelse
+                <hr style="width:50%; border: 0.5px solid #555; margin:5px 0;">
+                <b>Total Kas Keluar:</b> Rp {{ number_format($totalKredit, 0, ',', '.') }}
+            </div>
+
+            {{-- Selisih Kas --}}
+            <div class="mt-2">
+                <b>Sisa Kas (Debit - Kredit):</b>
+                Rp {{ number_format($totalDebit - $totalKredit, 0, ',', '.') }}
+            </div>
+
         </td>
         <td>
             <b>Hutang Dagang</b><br>
-            @if ($bukuBesarHutang)
-                {{ $bukuBesarHutang->pelanggan->nama ?? 'Tanpa Nama' }} : Rp {{ number_format($bukuBesarHutang->saldo, 0, ',', '.') }}<br>
-            @else
+            @forelse ($bukuBesarHutang as $hutang)
+                {{ $hutang->pelanggan->nama ?? 'Tanpa Nama' }} :
+                Rp {{ number_format($hutang->saldo, 0, ',', '.') }}<br>
+            @empty
                 <i>Tidak ada hutang</i>
-            @endif
+            @endforelse
+
         </td>
     </tr>
 
     <tr>
         <td>
             <b>Piutang Dagang</b><br>
-            @if ($bukuBesarPiutang)
-                {{ $bukuBesarPiutang->pelanggan->nama ?? 'Tanpa Nama' }} : Rp {{ number_format($bukuBesarPiutang->saldo, 0, ',', '.') }}<br>
-            @else
+            @forelse ($bukuBesarPiutang as $piutang)
+                {{ $piutang->pelanggan->nama ?? 'Tanpa Nama' }} :
+                Rp {{ number_format($piutang->saldo, 0, ',', '.') }}<br>
+            @empty
                 <i>Tidak ada piutang</i>
-            @endif
+            @endforelse
         </td>
         <td></td>
     </tr>

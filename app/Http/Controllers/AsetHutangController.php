@@ -110,7 +110,6 @@ class AsetHutangController extends Controller
                 "user_id" => auth()->id(),
             ]);
 
-            // === Tambahkan buku besar modal (lawannya kas) ===
             \App\Models\BukuBesarModal::create([
                 "user_id" => auth()->id(),
                 "kode" => $kodeTransaksi, // sama dengan kas agar mudah dilacak
@@ -178,37 +177,35 @@ class AsetHutangController extends Controller
     {
         $userId = auth()->id();
 
-        // 🔹 Ambil Neraca Awal beserta relasi barang langsung (eager loading)
+        // 🔹 Ambil Neraca Awal milik user dengan relasi barang
         $neracaAwal = \App\Models\NeracaAwal::with(
             "barang:id,nama,harga_beli_per_kemas",
         )
             ->where("user_id", $userId)
             ->findOrFail($id);
 
-        // 🔹 Ambil seluruh buku besar sekaligus (bisa caching di masa depan kalau perlu)
-        $tanggal = $neracaAwal->created_at->toDateString();
-
+        // 🔹 Ambil data Buku Besar berdasarkan neraca_awal_id
         $bukuBesarKas = \App\Models\BukuBesarKas::where("user_id", $userId)
-            ->whereDate("created_at", $tanggal)
-            ->get(["id", "uraian", "saldo"]);
+            ->where("neraca_awal_id", $id)
+            ->get();
 
         $bukuBesarPiutang = \App\Models\BukuBesarPiutang::where(
             "user_id",
             $userId,
         )
-            ->whereDate("created_at", $tanggal)
-            ->latest()
-            ->first(["id", "pelanggan_id", "uraian", "saldo"]);
+            ->where("neraca_awal_id", $id)
+            ->orderBy("created_at", "asc")
+            ->get(["id", "pelanggan_id", "uraian", "saldo"]);
 
         $bukuBesarHutang = \App\Models\BukuBesarHutang::where(
             "user_id",
             $userId,
         )
-            ->whereDate("created_at", $tanggal)
-            ->latest()
-            ->first(["id", "pelanggan_id", "uraian", "saldo"]);
+            ->where("neraca_awal_id", $id)
+            ->orderBy("created_at", "asc")
+            ->get(["id", "pelanggan_id", "uraian", "saldo"]);
 
-        // 🔹 Ambil kartu gudang langsung berdasarkan relasi barang_id yang sudah dimiliki neraca_awal
+        // 🔹 Ambil kartu gudang untuk barang yang tercatat di neraca ini
         $barangIds = $neracaAwal->barang->pluck("id");
         $kartuGudang = \App\Models\KartuGudang::where("user_id", $userId)
             ->whereIn("barang_id", $barangIds)
