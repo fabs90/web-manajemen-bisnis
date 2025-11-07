@@ -418,7 +418,8 @@ class PendapatanController extends Controller
             DB::rollBack();
 
             Log::error("Gagal menyimpan pendapatan", [
-                "error" => $e->getMessage(),
+                "user_message" => $e->getMessage(),
+                "exception" => get_class($e),
                 "trace" => $e->getTraceAsString(),
                 "user_id" => auth()->id(),
                 "input" => $request->all(),
