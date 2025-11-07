@@ -390,7 +390,7 @@ class PendapatanController extends Controller
                             $detailBarang->nama,
                         "saldo_persatuan" => $satuanBaru,
                         "saldo_perkemasan" => $kemasanBaru,
-                        "buku_besar_pendatapan_id" => $bukuBesarPendapatan->id,
+                        "buku_besar_pendapatan_id" => $bukuBesarPendapatan->id,
                         "user_id" => auth()->id(),
                     ]);
                 }
