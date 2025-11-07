@@ -259,8 +259,6 @@ class PendapatanController extends Controller
                             ? array_sum($request->potongan_pembelian)
                             : 0);
 
-                    dd($saldoFinal);
-
                     // Catat di Buku Besar Pendapatan (karena ada uang masuk)
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
                         "kode" => $kodeTransaksi,
@@ -270,7 +268,7 @@ class PendapatanController extends Controller
                         "potongan_pembelian" => $request->potongan_pembelian
                             ? array_sum($request->potongan_pembelian)
                             : 0, // Sum potongan
-                        "piutang_dagang" => 0, // tidak menambah piutang
+                        "piutang_dagang" => $saldoFinal,
                         "penjualan_tunai" => 0,
                         "lain_lain" => $request->biaya_lain ?: 0,
                         "uang_diterima" => $saldoFinal,
