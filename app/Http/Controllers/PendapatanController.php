@@ -120,6 +120,11 @@ class PendapatanController extends Controller
                         auth()->id(),
                     )->first();
 
+                    if (!$neracaAwalBefore) {
+                        throw new \Exception("Data Neraca Awal belum ditemukan.
+                    Silakan buat Neraca Awal terlebih dahulu sebelum menambahkan pendapatan.");
+                    }
+
                     $bukuBesarKasBefore = BukuBesarKas::where(
                         "user_id",
                         auth()->id(),
@@ -211,6 +216,12 @@ class PendapatanController extends Controller
                         "user_id",
                         auth()->id(),
                     )->first();
+
+                    if (!$neracaAwalBefore) {
+                        throw new \Exception("Data Neraca Awal belum ditemukan.
+                    Silakan buat Neraca Awal terlebih dahulu sebelum menambahkan pendapatan.");
+                    }
+
                     $bukuBesarKasBefore = BukuBesarKas::where(
                         "user_id",
                         auth()->id(),
@@ -302,6 +313,12 @@ class PendapatanController extends Controller
                         "user_id",
                         auth()->id(),
                     )->first();
+
+                    if (!$neracaAwalBefore) {
+                        throw new \Exception("Data Neraca Awal belum ditemukan.
+                    Silakan buat Neraca Awal terlebih dahulu sebelum menambahkan pendapatan.");
+                    }
+
                     $bukuBesarKasBefore = BukuBesarKas::where(
                         "user_id",
                         auth()->id(),
