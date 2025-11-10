@@ -138,7 +138,7 @@
 
                 <div id="jumlah_kredit_container" class="mb-3 d-none">
                     <label for="jumlah_kredit" class="form-label">Jumlah Kredit</label>
-                    <input type="number" class="form-control" name="jumlah_kredit" id="jumlah_kredit" min="1" placeholder="Masukkan jumlah kredit" value=>
+                    <input type="number" class="form-control" name="jumlah_kredit" id="jumlah_kredit" min="1" placeholder="Masukkan jumlah kredit/pelunasan" >
                 </div>
 
 

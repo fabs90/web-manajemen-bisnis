@@ -18,7 +18,7 @@
         <div class="d-flex justify-content-center mb-5">
             <div class="ratio ratio-16x9 shadow-lg rounded-4 overflow-hidden" style="max-width: 900px; width: 100%;">
                 <iframe
-                    src="https://www.youtube.com/embed/bjV45JSWjaU"
+                    src="https://www.youtube.com/embed/-xuUehefw7Y?si=V3p8zkPddC2Ru9XK"
                     title="Panduan Singkat Digitrans"
                     allowfullscreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">

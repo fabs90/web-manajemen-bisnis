@@ -120,7 +120,10 @@ class PendapatanRequest extends FormRequest
             ],
 
             "hutang_aktif" => [
-                Rule::requiredIf(fn() => $jenis === "kredit"),
+                Rule::requiredIf(
+                    fn() => $jenis === "kredit" &&
+                        $this->filled("hutang_aktif"),
+                ),
                 Rule::prohibitedIf(fn() => $jenis !== "kredit"),
                 "nullable",
                 "string",

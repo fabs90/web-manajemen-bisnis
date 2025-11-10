@@ -160,21 +160,6 @@ class PendapatanController extends Controller
                             ? array_sum($request->potongan_pembelian)
                             : 0);
 
-                    $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                        "kode" => $kodeTransaksi,
-                        "tanggal" => $request->tanggal,
-                        "uraian" => $request->uraian_pendapatan,
-                        "potongan_pembelian" => $request->potongan_pembelian
-                            ? array_sum($request->potongan_pembelian)
-                            : 0, // Sum potongan
-                        "piutang_dagang" => $request->jumlah,
-                        "penjualan_tunai" => 0,
-                        "lain_lain" => $request->biaya_lain ?? 0,
-                        "uang_diterima" => $saldoFinal,
-                        "bunga_bank" => $request->bunga_bank ?? 0,
-                        "user_id" => auth()->id(),
-                    ]);
-
                     $piutangAktif = $validated["piutang_aktif"] ?? null;
                     if ($piutangAktif) {
                         // Tambah saldo piutang lama
@@ -183,13 +168,32 @@ class PendapatanController extends Controller
                             $piutangAktif,
                         )->first();
                         if ($piutangLama) {
+                            $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                                "kode" => $kodeTransaksi,
+                                "tanggal" => $request->tanggal,
+                                "uraian" =>
+                                    "Penambahan piutang lama ({$piutangLama->kode}) - {$piutangLama->pelanggan->nama} - " .
+                                    $validated["uraian_pendapatan"],
+                                "potongan_pembelian" => $request->potongan_pembelian
+                                    ? array_sum($request->potongan_pembelian)
+                                    : 0, // Sum potongan
+                                "piutang_dagang" => $request->jumlah,
+                                "penjualan_tunai" => 0,
+                                "lain_lain" => $request->biaya_lain ?? 0,
+                                "uang_diterima" => $saldoFinal,
+                                "bunga_bank" => $request->bunga_bank ?? 0,
+                                "user_id" => auth()->id(),
+                            ]);
+
                             BukuBesarPiutang::create([
                                 "kode" => $piutangLama->kode,
                                 "pelanggan_id" => $piutangLama->pelanggan_id,
                                 "debit" => $validated["jumlah"],
                                 "kredit" => 0,
                                 "saldo" => $piutangLama->saldo + $saldoFinal,
-                                "uraian" => $validated["uraian_pendapatan"],
+                                "uraian" =>
+                                    "Penambahan piutang lama ({$piutangLama->kode}) - {$piutangLama->pelanggan->nama} - " .
+                                    $validated["uraian_pendapatan"],
                                 "tanggal" => $validated["tanggal"],
                                 "buku_besar_pendapatan_id" =>
                                     $bukuBesarPendapatan->id,
@@ -197,6 +201,30 @@ class PendapatanController extends Controller
                             ]);
                         }
                     } else {
+                        $pelanggan = Pelanggan::where(
+                            "id",
+                            $validated["nama_pelanggan"],
+                        )->first();
+
+                        $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                            "kode" => $kodeTransaksi,
+                            "tanggal" => $request->tanggal,
+                            "uraian" =>
+                                "Menambah Piutang Baru: " .
+                                $pelanggan->nama .
+                                " - " .
+                                $validated["uraian_pendapatan"],
+                            "potongan_pembelian" => $request->potongan_pembelian
+                                ? array_sum($request->potongan_pembelian)
+                                : 0, // Sum potongan
+                            "piutang_dagang" => $saldoFinal,
+                            "penjualan_tunai" => 0,
+                            "lain_lain" => $request->biaya_lain ?? 0,
+                            "uang_diterima" => $saldoFinal,
+                            "bunga_bank" => $request->bunga_bank ?? 0,
+                            "user_id" => auth()->id(),
+                        ]);
+
                         // Piutang baru
                         BukuBesarPiutang::create([
                             "kode" => Str::uuid(),
@@ -204,7 +232,11 @@ class PendapatanController extends Controller
                             "debit" => $validated["jumlah"],
                             "kredit" => 0,
                             "saldo" => $saldoFinal,
-                            "uraian" => $validated["uraian_pendapatan"],
+                            "uraian" =>
+                                "Menambah Piutang Baru: " .
+                                $pelanggan->nama .
+                                " - " .
+                                $validated["uraian_pendapatan"],
                             "tanggal" => $validated["tanggal"],
                             "buku_besar_pendapatan_id" =>
                                 $bukuBesarPendapatan->id,
@@ -275,7 +307,10 @@ class PendapatanController extends Controller
                         "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
                         "uraian" =>
-                            "Pelunasan Piutang: " . $request->uraian_pendapatan,
+                            "Pelunasan Piutang: " .
+                            $piutangLama->pelanggan->nama .
+                            " - " .
+                            $request->uraian_pendapatan,
                         "potongan_pembelian" => $request->potongan_pembelian
                             ? array_sum($request->potongan_pembelian)
                             : 0, // Sum potongan

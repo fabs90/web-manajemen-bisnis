@@ -143,15 +143,15 @@ Route::middleware(["web", "auth"])->group(function () {
             "retur.store",
         );
 
-        Route::get("/create/pengeluaran", [
+        Route::get("/create/pembelian", [
             ReturController::class,
-            "create_pengeluaran",
-        ])->name("retur.create-pengeluaran");
+            "create_retur_pembelian",
+        ])->name("retur.create-pembelian");
 
-        Route::post("/pengeluaran", [
+        Route::post("/pembelian", [
             ReturController::class,
-            "store_pengeluaran",
-        ])->name("retur.store-pengeluaran");
+            "store_retur_pembelian",
+        ])->name("retur.store-pembelian");
     });
 
     // =============================
@@ -216,7 +216,7 @@ Route::middleware(["web", "auth"])->group(function () {
     });
 
     // =============================
-    // 👤 GROUP: PROFILE (Bawaan Breeze)
+    // 👤 GROUP: PROFILE
     // =============================
     Route::prefix("profile")->group(function () {
         Route::get("/", [ProfileController::class, "edit"])->name(

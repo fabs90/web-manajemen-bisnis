@@ -107,8 +107,8 @@ class ReturController extends Controller
                 "lain_lain" => 0,
                 "uang_diterima" =>
                     $request->retur_penanganan === "tunai_kembali"
-                    ? -$returJumlah
-                    : 0,
+                        ? -$returJumlah
+                        : 0,
                 "bunga_bank" => 0,
                 "jumlah_retur_penjualan" => $returJumlah,
                 "jenis_retur" => $request->retur_penanganan,
@@ -134,7 +134,9 @@ class ReturController extends Controller
                 $kasLama = BukuBesarKas::latest()->first();
 
                 if (!$kasLama || $kasLama->saldo < $returJumlah) {
-                    throw new \Exception("Saldo kas tidak mencukupi untuk pengembalian tunai retur.");
+                    throw new \Exception(
+                        "Saldo kas tidak mencukupi untuk pengembalian tunai retur.",
+                    );
                 }
 
                 $saldoKasBaru = $kasLama->saldo - $returJumlah;
@@ -161,7 +163,7 @@ class ReturController extends Controller
         }
     }
 
-    public function create_pengeluaran()
+    public function create_retur_pembelian()
     {
         $kreditur = Pelanggan::where("user_id", auth()->id())
             ->where("jenis", "kreditur")
@@ -181,12 +183,12 @@ class ReturController extends Controller
             ->latest()
             ->get();
         return view(
-            "retur-kredit.create-pengeluaran",
+            "retur-kredit.create-pembelian",
             compact("kreditur", "listHutang"),
         );
     }
 
-    public function store_pengeluaran(Request $request)
+    public function store_retur_pembelian(Request $request)
     {
         $request->validate([
             "tanggal" => "required|date",
@@ -239,8 +241,8 @@ class ReturController extends Controller
                 "lain_lain" => 0,
                 "uang_diterima" =>
                     $request->retur_penanganan === "tunai_kembali"
-                    ? $returJumlah // uang masuk ke kas
-                    : 0,
+                        ? $returJumlah // uang masuk ke kas
+                        : 0,
                 "bunga_bank" => 0,
                 "retur_pembelian" => $returJumlah,
                 "user_id" => $userId,

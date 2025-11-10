@@ -19,6 +19,8 @@
                     <th>Uraian</th>
                     <th>Piutang Dagang</th>
                     <th>Penjualan Tunai</th>
+                    <th>Potongan Pembelian</th>
+                    <th>Biaya Lain</th>
                     <th>Uang Diterima</th>
                     <th>Aksi</th>
                 </tr>
@@ -31,6 +33,8 @@
                         <td>{{ $data->uraian }}</td>
                         <td>Rp {{ number_format($data->piutang_dagang ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->penjualan_tunai ?? 0, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->uang_diterima ?? 0, 0, ',', '.') }}</td>
                         <td>
                             <form id="deleteForm-{{ $data->id }}"

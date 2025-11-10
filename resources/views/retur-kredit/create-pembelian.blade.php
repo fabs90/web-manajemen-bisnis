@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Retur Pengeluaran/Debit | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Retur Pembelian | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Retur Penjualan Pengeluaran / Debit')
+@section('section-heading', 'Retur Pembelian')
 @section('section-row')
 
 <div class="card shadow-sm">
@@ -17,7 +17,7 @@
             </div>
         @endif
 
-        <form action="{{ route('retur.store-pengeluaran') }}" method="POST">
+        <form action="{{ route('retur.store-pembelian') }}" method="POST">
             @csrf
 
             {{-- Tanggal Retur --}}
@@ -50,7 +50,7 @@
 
             {{-- Jumlah Retur --}}
             <div class="mb-3">
-                <label class="form-label">Jumlah Retur <span class="text-danger">*</span></label>
+                <label class="form-label">Jumlah Retur Pembelian<span class="text-danger">*</span></label>
                 <input type="text" name="retur_jumlah" id="retur_jumlah"
                        class="form-control rupiah" value="{{ old('retur_jumlah') }}" placeholder="0" required>
             </div>

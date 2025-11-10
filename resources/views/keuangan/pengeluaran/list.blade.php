@@ -10,7 +10,6 @@
     </a>
 </div>
 
-{{-- ===================== TABEL SEMUA DATA (dengan tombol hapus) ===================== --}}
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover align-middle" id="allDatasTable">
         <thead class="table-light">
@@ -18,9 +17,9 @@
                 <th>#</th>
                 <th>Tanggal</th>
                 <th>Uraian</th>
-                <th>Pot. Pembelian</th>
                 <th>Hutang Dagang</th>
                 <th>Pembelian Tunai</th>
+                <th>Pot. Pembelian</th>
                 <th>Lainnya</th>
                 <th>Jumlah Pengeluaran</th>
                 <th>Aksi</th>
@@ -32,9 +31,9 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
                     <td>{{ $data->uraian }}</td>
-                    <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($data->jumlah_hutang ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($data->jumlah_pembelian_tunai ?? 0, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
                     <td>
                         Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}
                     </td>

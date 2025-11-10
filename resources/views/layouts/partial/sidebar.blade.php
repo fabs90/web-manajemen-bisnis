@@ -174,10 +174,10 @@
                             <a href="{{ route('retur.list') }}" class="submenu-link">List Retur</a>
                         </li>
                         <li class="submenu-item">
-                            <a href="{{ route('retur.create') }}" class="submenu-link">Retur Penjualan/Kredit</a>
+                            <a href="{{ route('retur.create') }}" class="submenu-link">Retur Penjualan</a>
                         </li>
                         <li class="submenu-item">
-                            <a href="{{ route('retur.create-pengeluaran') }}" class="submenu-link">Retur Pembelian/Kredit</a>
+                            <a href="{{ route('retur.create-pembelian') }}" class="submenu-link">Retur Pembelian</a>
                         </li>
 
                     </ul>
