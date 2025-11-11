@@ -30,7 +30,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Persediaan Barang Dagangan</td>
+                    <td>Persediaan Barang Dagangan Awal</td>
                     <td class="text-end">
                         Rp {{ number_format($neracaAwal->total_persediaan ?? 0, 0, ',', '.') }}
                     </td>

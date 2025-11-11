@@ -233,10 +233,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 <select name="barang_terjual[{index}]" class="form-control barang-select" required>
                     <option value="" disabled selected>-- Pilih Barang --</option>
                     @foreach ($barang as $item)
-                        <option value="{{ $item->id }}" data-harga="{{ $item->harga_jual_per_unit }}">
-                            {{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
-                        </option>
-                    @endforeach
+                                        <option value="{{ $item->id }}" data-harga="{{ $item->harga_jual_per_unit }}">
+                                            {{ $item->nama }}
+                                            - Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
+                                            - Saldo: {{ $item->getSaldoAkhir() }}
+                                        </option>
+                                    @endforeach
                 </select>
             </div>
             <div class="col-md-2">

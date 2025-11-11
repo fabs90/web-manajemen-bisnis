@@ -16,7 +16,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view("auth.login");
     }
 
     /**
@@ -28,7 +28,42 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = Auth::user();
+
+        switch ($user->role) {
+            case "superadmin":
+                return redirect()->intended(
+                    route("superadmin.dashboard", absolute: false),
+                );
+            case "ukm":
+            case "nelayan":
+            case "koperasi":
+                // if ($user->is_verified) {
+                //     return redirect()->intended(
+                //         route("dashboard", absolute: false),
+                //     );
+                // } else {
+                //     Auth::guard("web")->logout();
+                //     $request->session()->invalidate();
+                //     $request->session()->regenerateToken();
+
+                //     return redirect()
+                //         ->route("login")
+                //         ->withErrors([
+                //             "email" =>
+                //                 "Akun Anda (" .
+                //                 ucfirst($user->role) .
+                //                 ") belum diverifikasi. Silakan tunggu.",
+                //         ]);
+                // }
+                return redirect()->intended(
+                    route("dashboard", absolute: false),
+                );
+            default:
+                return redirect()->intended(
+                    route("dashboard", absolute: false),
+                );
+        }
     }
 
     /**
@@ -36,12 +71,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::guard("web")->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect("/");
     }
 }

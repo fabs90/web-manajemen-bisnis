@@ -12,7 +12,7 @@
                 <tr><td colspan="2"><b>Aktiva Lancar</b></td></tr>
                 <tr><td>Kas</td><td class="text-end">Rp {{ number_format($saldoKas, 0, ',', '.') }}</td></tr>
                 <tr><td>Piutang</td><td class="text-end">Rp {{ number_format($saldoPiutang, 0, ',', '.') }}</td></tr>
-                <tr><td>Persediaan Barang</td><td class="text-end">Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}</td></tr>
+                <tr><td>Persediaan Barang Dagang Akhir</td><td class="text-end">Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}</td></tr>
 
                 <tr><td colspan="2"><b>Aktiva Tetap</b></td></tr>
                 <tr><td>Tanah</td><td class="text-end">Rp {{ number_format($tanah, 0, ',', '.') }}</td></tr>

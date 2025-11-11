@@ -30,6 +30,7 @@ class PengeluaranController extends Controller
             ->with("pelanggan:id,nama")
             ->get()
             ->groupBy("pelanggan_id");
+
         return view(
             "keuangan.pengeluaran.list",
             compact(

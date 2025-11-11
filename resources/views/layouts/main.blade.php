@@ -186,8 +186,90 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
 
+    <div class="mb-4">
+        <h5 class="mt-5 mb-3">Semua Data Piutang Perusahaan</h5>
+        <div class="table-responsive">
+            <table class="table table-sm hutang-table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Uraian</th>
+                        <th>Debit</th>
+                        <th>Kredit</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @forelse ($listPiutang as $pelangganId => $items)
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="6">
+                            {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
+                        </td>
+                    </tr>
 
+                    @foreach ($items as $item)
+                        <tr>
+                            <td>{{ $item->tanggal }}</td>
+                            <td>{{ $item->uraian }}</td>
+                            <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <em>Tidak ada data hutang.</em>
+                        </td>
+                    </tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <h5 class="mt-5 mb-3">Semua Data Hutang Perusahaan</h5>
+        <div class="table-responsive">
+            <table class="table table-sm hutang-table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Uraian</th>
+                        <th>Debit</th>
+                        <th>Kredit</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @forelse ($listHutang as $pelangganId => $items)
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="6">
+                            {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
+                        </td>
+                    </tr>
+
+                    @foreach ($items as $item)
+                        <tr>
+                            <td>{{ $item->tanggal }}</td>
+                            <td>{{ $item->uraian }}</td>
+                            <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <em>Tidak ada data hutang.</em>
+                        </td>
+                    </tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 @endsection
 @push('script')

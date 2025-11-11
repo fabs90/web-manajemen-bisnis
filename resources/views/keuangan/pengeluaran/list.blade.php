@@ -58,7 +58,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3" class="text-center"><b>Total Pengeluaran</b></td>
+                <td colspan="7" class="text-center"><b>Total Pengeluaran</b></td>
                 <td><b>Rp {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</b></td>
             </tr>
         </tfoot>

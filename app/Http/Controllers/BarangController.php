@@ -6,7 +6,7 @@ use App\Models\Barang;
 use App\Models\BukuBesarPendapatan;
 use App\Models\KartuGudang;
 use Illuminate\Http\Request;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 class BarangController extends Controller
 {
@@ -25,8 +25,7 @@ class BarangController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            "kode_barang" =>
-                "nullable|string|max:100",
+            "kode_barang" => "required|string|max:100",
             "nama" => "required|string|max:255",
             "jumlah_max" => "required|integer|min:0",
             "jumlah_min" => "required|integer|min:0",
@@ -127,9 +126,6 @@ class BarangController extends Controller
 
         // hapus kartu gudang nya juga
         KartuGudang::where("barang_id", $barang->id)->delete();
-
-
-
 
         $barang->delete();
 

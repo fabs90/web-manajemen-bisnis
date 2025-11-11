@@ -166,6 +166,34 @@ class PageController extends Controller
             ->limit(5)
             ->get();
 
+        $listPiutang = BukuBesarPiutang::where("user_id", auth()->id())
+            ->where("saldo", ">", 0)
+            ->whereIn("id", function ($query) {
+                $query
+                    ->select(DB::raw("MAX(id)"))
+                    ->from("buku_besar_piutang")
+                    ->where("user_id", auth()->id())
+                    ->groupBy("pelanggan_id");
+            })
+            ->with("pelanggan")
+            ->latest()
+            ->get()
+            ->groupBy("pelanggan_id");
+
+        $listHutang = BukuBesarHutang::where("user_id", auth()->id())
+            ->where("saldo", ">", 0)
+            ->whereIn("id", function ($query) {
+                $query
+                    ->select(DB::raw("MAX(id)"))
+                    ->from("buku_besar_hutang")
+                    ->where("user_id", auth()->id())
+                    ->groupBy("pelanggan_id");
+            })
+            ->with("pelanggan")
+            ->latest()
+            ->get()
+            ->groupBy("pelanggan_id");
+
         return view(
             "layouts.main",
             compact(
@@ -182,6 +210,8 @@ class PageController extends Controller
                 "pengeluaranPerBulan",
                 "transaksiTerbaru",
                 "detailKas",
+                "listPiutang",
+                "listHutang",
             ),
         );
     }
@@ -302,4 +332,9 @@ class PageController extends Controller
     }
 
     public function deleteAllData() {}
+
+    public function dashboard_superadmin()
+    {
+        return view("superadmin.dashboard.superadmin");
+    }
 }

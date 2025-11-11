@@ -18,7 +18,8 @@
         <div class="d-flex justify-content-center mb-5">
             <div class="ratio ratio-16x9 shadow-lg rounded-4 overflow-hidden" style="max-width: 900px; width: 100%;">
                 <iframe
-                    src="https://www.youtube.com/embed/-xuUehefw7Y?si=V3p8zkPddC2Ru9XK"
+                    id="video-player"
+                    src="https://www.youtube.com/embed/-xuUehefw7Y?enablejsapi=1&rel=0&version=3"
                     title="Panduan Singkat Digitrans"
                     allowfullscreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
@@ -78,4 +79,23 @@
 @endsection
 
 @push('script')
+<script>
+    const player = new YT.Player('video-player', {
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+
+    function onPlayerReady(event) {
+        event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            // Handle video end event
+            event.target.stopVideo();
+        }
+    }
+</script>
 @endpush

@@ -31,4 +31,12 @@ class Barang extends Model
     {
         return $this->hasMany(KartuGudang::class);
     }
+
+    public function getSaldoAkhir()
+    {
+        $latestKartu = $this->kartuGudang()
+            ->orderBy("created_at", "desc")
+            ->first();
+        return $latestKartu ? $latestKartu->saldo_persatuan : 0;
+    }
 }

@@ -48,14 +48,29 @@ class NeracaAkhirController extends Controller
         );
 
         // === PERSEDIAAN BARANG ===
-        $persediaan = KartuGudang::with("barang")
-            ->where("user_id", $userId)
-            ->select("barang_id", DB::raw("MAX(id) as id"))
-            ->groupBy("barang_id")
-            ->pluck("id");
+        // Old Ways..
+        // $persediaan = KartuGudang::with("barang")
+        //     ->where("user_id", $userId)
+        //     ->select("barang_id", DB::raw("MAX(id) as id"))
+        //     ->groupBy("barang_id")
+        //     ->pluck("id");
 
-        $nilaiPersediaan = KartuGudang::whereIn("id", $persediaan)
-            ->with("barang")
+        // $nilaiPersediaan = KartuGudang::whereIn("id", $persediaan)
+        //     ->with("barang")
+        //     ->get()
+        //     ->sum(
+        //         fn($i) => ($i->saldo_persatuan ?? 0) *
+        //             ($i->barang->harga_beli_per_unit ?? 0),
+        //     );
+        $nilaiPersediaan = KartuGudang::where("user_id", $userId)
+            ->whereIn("id", function ($query) use ($userId) {
+                $query
+                    ->select(DB::raw("MAX(id)"))
+                    ->from("kartu_gudang")
+                    ->where("user_id", $userId)
+                    ->groupBy("barang_id");
+            })
+            ->with("barang:id,harga_beli_per_unit")
             ->get()
             ->sum(
                 fn($i) => ($i->saldo_persatuan ?? 0) *

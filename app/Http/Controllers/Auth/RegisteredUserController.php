@@ -40,12 +40,15 @@ class RegisteredUserController extends Controller
                 "unique:" . User::class,
             ],
             "password" => ["required", "confirmed", Rules\Password::defaults()],
+            // "role" => ["required", "in:ukm,nelayan,koperasi,superadmin"],
         ]);
 
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
             "password" => Hash::make($request->password),
+            // "role" => $request->role ?? "ukm",
+            "is_verified" => false,
         ]);
 
         event(new Registered($user));

@@ -28,7 +28,7 @@
                     aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <h6 class="fw-bold mb-3">Selamat datang! 👋</h6>
+                <h6 class="fw-bold mb-3">Selamat datang {{ Auth::user()->name ?? 'Pengguna Digitrans' }}👋</h6>
                 <p>Berikut langkah singkat untuk memulai penggunaan sistem ini:</p>
 
                 <ol class="mb-4">

@@ -231,4 +231,13 @@ Route::middleware(["web", "auth"])->group(function () {
     });
 });
 
+Route::middleware(["web", "auth"])
+    ->prefix("superadmin")
+    ->group(function () {
+        Route::get("/dashboard", [
+            PageController::class,
+            "dashboard_superadmin",
+        ])->name("superadmin.dashboard");
+    });
+
 require __DIR__ . "/auth.php";
