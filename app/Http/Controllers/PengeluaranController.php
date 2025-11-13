@@ -99,21 +99,21 @@ class PengeluaranController extends Controller
                     $saldoKasBaru =
                         ($bukuBesarKasBefore->saldo ?? 0) - $jumlahUang;
 
-                    $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
-                        "user_id" => auth()->id(),
-                        "tanggal" => $validated["tanggal"],
-                        "uraian" => $validated["uraian_pengeluaran"],
-                        "potongan_pembelian" =>
-                            $validated["potongan_pembelian"] ?? 0,
-                        "jumlah_hutang" => 0,
-                        "jumlah_pembelian_tunai" => $validated["jumlah"] ?? 0,
-                        "lain_lain" => $jumlahUang,
-                        "bunga_bank" => $validated["bunga_bank"] ?? 0,
-                        "jumlah_pengeluaran" => $jumlahUang,
-                    ]);
-
                     if ($validated["jenis_pengeluaran"] == "tunai") {
                         // Pengeluaran tunai → kas berkurang
+                        $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
+                            "user_id" => auth()->id(),
+                            "tanggal" => $validated["tanggal"],
+                            "uraian" => $validated["uraian_pengeluaran"],
+                            "potongan_pembelian" =>
+                                $validated["potongan_pembelian"] ?? 0,
+                            "jumlah_hutang" => 0,
+                            "jumlah_pembelian_tunai" => 0,
+                            "lain_lain" => $jumlahUang,
+                            "bunga_bank" => $validated["bunga_bank"] ?? 0,
+                            "jumlah_pengeluaran" => $jumlahUang,
+                        ]);
+
                         BukuBesarKas::create([
                             "kode" => Str::uuid(),
                             "tanggal" => $validated["tanggal"],
@@ -126,6 +126,19 @@ class PengeluaranController extends Controller
                         ]);
                     } else {
                         // Pengeluaran kredit → hutang bertambah
+                        $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
+                            "user_id" => auth()->id(),
+                            "tanggal" => $validated["tanggal"],
+                            "uraian" => $validated["uraian_pengeluaran"],
+                            "potongan_pembelian" =>
+                                $validated["potongan_pembelian"] ?? 0,
+                            "jumlah_hutang" => 0,
+                            "jumlah_pembelian_tunai" => 0,
+                            "lain_lain" => $jumlahUang,
+                            "bunga_bank" => $validated["bunga_bank"] ?? 0,
+                            "jumlah_pengeluaran" => $jumlahUang,
+                        ]);
+
                         BukuBesarHutang::create([
                             "kode" => Str::uuid(),
                             "pelanggan_id" => $validated["nama_kreditur"],
@@ -169,7 +182,6 @@ class PengeluaranController extends Controller
                         $validated["hutang_id"],
                     );
 
-                    // Kurangi saldo hutang
                     BukuBesarHutang::create([
                         "kode" => $dataHutangBefore->kode,
                         "pelanggan_id" => $dataHutangBefore->pelanggan_id,
@@ -328,20 +340,12 @@ class PengeluaranController extends Controller
                 ->latest()
                 ->first();
 
-            $pcsPerKemasan = (int) $detailBarang->jumlah_unit_per_kemasan;
+            $pcsPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
+            $saldoSatuanBaru = $barangItem->saldo_persatuan + $jumlahDibeli;
 
-            // Hitung konversi
-            $kemasanMasuk = intdiv($jumlahDibeli, $pcsPerKemasan);
-            $sisaSatuanMasuk = $jumlahDibeli % $pcsPerKemasan;
-
-            $saldoKemasanSekarang = $barangItem->saldo_perkemasan ?? 0;
-            $saldoSatuanSekarang = $barangItem->saldo_persatuan ?? 0;
-
-            $saldoSatuanBaru = $saldoSatuanSekarang + $jumlahDibeli;
-            $konversiKeKemasan = intdiv($saldoSatuanBaru, $pcsPerKemasan);
-
-            $saldoKemasanBaru =
-                $saldoKemasanSekarang + $kemasanMasuk + $konversiKeKemasan;
+            $saldoPerKemasanBaru =
+                $barangItem->saldo_perkemasan +
+                round($jumlahDibeli / $pcsPerKemasan, 0);
 
             // Simpan ke kartu gudang
             KartuGudang::create([
@@ -351,7 +355,7 @@ class PengeluaranController extends Controller
                 "dikeluarkan" => 0,
                 "uraian" => $validated["uraian_pengeluaran"],
                 "saldo_persatuan" => $saldoSatuanBaru,
-                "saldo_perkemasan" => $saldoKemasanBaru,
+                "saldo_perkemasan" => $saldoPerKemasanBaru,
                 "user_id" => auth()->id(),
             ]);
         }

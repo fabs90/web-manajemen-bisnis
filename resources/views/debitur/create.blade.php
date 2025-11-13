@@ -8,15 +8,23 @@
     <div class="border rounded p-3 ">
         <form action="{{ route('debitur-kreditur.store') }}" method="post">
             @csrf
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+                           @if ($errors->any())
+                               <div class="alert alert-danger border-0 rounded-3 shadow-sm animate__animated animate__fadeIn mb-4">
+                                   <div class="d-flex align-items-start">
+                                       <div class="me-2">
+                                           <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                                       </div>
+                                       <div>
+                                           <h6 class="fw-bold mb-2">Terjadi Kesalahan:</h6>
+                                           <ul class="mb-0 ps-3">
+                                               @foreach ($errors->all() as $error)
+                                                   <li>{{ $error }}</li>
+                                               @endforeach
+                                           </ul>
+                                       </div>
+                                   </div>
+                               </div>
+                           @endif
             <div class="mb-3">
                 <label for="nama" class="form-label">Nama Debitur/Kreditur<span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="nama" name="nama" placeholder="Nama" required
@@ -56,6 +64,25 @@
                 icon: 'success',
                 title: 'Sukses!',
                 text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 1800,
+                toast: true,
+                position: 'top-end',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            });
+        @endif
+
+
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '{{ session('error') }}',
                 showConfirmButton: false,
                 timer: 1800,
                 toast: true,

@@ -90,7 +90,8 @@
 
     input[type="email"],
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+   select {
         width: 100%;
         padding: 12px 14px;
         border-radius: 10px;
@@ -103,7 +104,8 @@
         background: #fff;
     }
 
-    input:focus {
+    input:focus,
+    select:focus{
         border-color: #2563eb;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
@@ -235,6 +237,17 @@
                     <input id="email" type="email" name="email" placeholder="contoh@email.com"
                         value="{{ old('email') }}" required autofocus>
                 </div>
+
+                <div class="form-group">
+                    <label for="role">Pilih Jenis Akun</label>
+                    <select id="role" name="role" required>
+                        <option value="" disabled selected>Pilih...</option>
+                        <option value="ukm" {{ old('role') == 'ukm' ? 'selected' : '' }}>UKM</option>
+                        <option value="nelayan" {{ old('role') == 'nelayan' ? 'selected' : '' }}>Nelayan</option>
+                        <option value="koperasi" {{ old('role') == 'koperasi' ? 'selected' : '' }}>Koperasi</option>
+                    </select>
+                </div>
+
 
                 <div class="form-group password-group">
                     <label for="password">Kata Sandi</label>

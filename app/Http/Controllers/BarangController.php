@@ -177,6 +177,7 @@ class BarangController extends Controller
                 $saldoPersatuanSebelumnya +
                 ($request->diterima ?? 0) -
                 ($request->dikeluarkan ?? 0);
+
             $saldoPerKemasanBaru =
                 $saldoPerKemasanSebelumnya +
                 ($request->saldo_perkemasan ??

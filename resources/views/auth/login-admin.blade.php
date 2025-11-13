@@ -208,7 +208,7 @@
     <div class="auth-wrapper">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Masuk ke Akun</h1>
+                <h1>Masuk ke Admin</h1>
                 <p>Selamat datang kembali! Silakan login untuk melanjutkan.</p>
             </div>
 
@@ -245,20 +245,8 @@
                         </span>
                     </div>
                 </div>
-
-
-                <div class="form-options">
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="forgot">Lupa password?</a>
-                    @endif
-                </div>
-
+                <input type="hidden" name="role" value="superadmin">
                 <button type="submit" class="btn-primary">Masuk</button>
-
-                <p class="register-text">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}">Daftar sekarang</a>
-                </p>
             </form>
         </div>
     </div>

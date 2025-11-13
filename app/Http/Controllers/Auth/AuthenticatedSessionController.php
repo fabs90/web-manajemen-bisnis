@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Mail\MailSend;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -38,27 +40,29 @@ class AuthenticatedSessionController extends Controller
             case "ukm":
             case "nelayan":
             case "koperasi":
-                // if ($user->is_verified) {
-                //     return redirect()->intended(
-                //         route("dashboard", absolute: false),
-                //     );
-                // } else {
-                //     Auth::guard("web")->logout();
-                //     $request->session()->invalidate();
-                //     $request->session()->regenerateToken();
+                if ($user->is_verified) {
+                    return redirect()->intended(
+                        route("dashboard", absolute: false),
+                    );
+                } else {
+                    // Auth::guard("web")->logout();
+                    // $request->session()->invalidate();
+                    // $request->session()->regenerateToken();
+                    Mail::to($user->email)->send(
+                        new MailSend($user->otp, $user->name, $user->email),
+                    );
 
-                //     return redirect()
-                //         ->route("login")
-                //         ->withErrors([
-                //             "email" =>
-                //                 "Akun Anda (" .
-                //                 ucfirst($user->role) .
-                //                 ") belum diverifikasi. Silakan tunggu.",
-                //         ]);
-                // }
-                return redirect()->intended(
-                    route("dashboard", absolute: false),
-                );
+                    return redirect()
+                        ->route("account-verification.show")
+                        ->with("verification_email", $user->email)
+                        ->with(
+                            "status",
+                            "Silakan masukkan kode OTP yang telah kami kirim ke email Anda.",
+                        );
+                }
+            // return redirect()->intended(
+            //     route("dashboard", absolute: false),
+            // );
             default:
                 return redirect()->intended(
                     route("dashboard", absolute: false),

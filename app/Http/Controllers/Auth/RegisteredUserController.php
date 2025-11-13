@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\MailSend;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -40,21 +44,29 @@ class RegisteredUserController extends Controller
                 "unique:" . User::class,
             ],
             "password" => ["required", "confirmed", Rules\Password::defaults()],
-            // "role" => ["required", "in:ukm,nelayan,koperasi,superadmin"],
+            "role" => ["required", "in:ukm,nelayan,koperasi,superadmin"],
         ]);
-
+        $otp = random_int(100000, 999999);
+        $expiresAt = Carbon::now("Asia/Makassar")->addMinutes(30);
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
             "password" => Hash::make($request->password),
-            // "role" => $request->role ?? "ukm",
+            "role" => $request->role ?? "ukm",
             "is_verified" => false,
+            "remember_token" => Str::random(60),
+            "otp" => $otp,
+            "otp_expires_at" => $expiresAt,
         ]);
 
         event(new Registered($user));
 
+        Mail::to($user->email)->send(
+            new MailSend($otp, $user->name, $user->email),
+        );
+
         Auth::login($user);
 
-        return redirect(route("dashboard.getStarted", absolute: false));
+        return redirect(route("account-verification.show", absolute: false));
     }
 }

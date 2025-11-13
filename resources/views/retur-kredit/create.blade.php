@@ -17,7 +17,7 @@
             </div>
         @endif
 
-        <form action="{{ route('retur.store') }}" method="POST">
+        <form action="{{ route('retur.store-penjualan') }}" method="POST">
             @csrf
 
             {{-- Tanggal Retur --}}

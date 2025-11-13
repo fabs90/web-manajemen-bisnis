@@ -22,7 +22,6 @@
             </div>
 
             <div class="card-body">
-                {{-- ✅ Bungkus tabel dengan table-responsive agar bisa di-scroll horizontal di mobile --}}
                 <div class="table-responsive">
                     <table class="table table-sm kartu-gudang-table">
                         <thead>
@@ -83,6 +82,7 @@
                     searching: false,
                     paging: false,
                     info: false,
+                    ordering: false,
                     responsive: false,
                     order: [
                         [0, 'desc']

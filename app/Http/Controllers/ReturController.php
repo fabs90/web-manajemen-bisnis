@@ -91,31 +91,56 @@ class ReturController extends Controller
             $saldoTerakhir = BukuBesarPiutang::where("kode", $kodePiutang)
                 ->latest()
                 ->first();
+
             if (!$saldoTerakhir || $saldoTerakhir->saldo < $returJumlah) {
                 throw new \Exception(
                     "Saldo piutang tidak mencukupi untuk retur.",
                 );
             }
 
-            // 1. Buat entri pendapatan (negatif untuk retur)
-            $pendapatan = BukuBesarPendapatan::create([
-                "tanggal" => $request->tanggal,
-                "uraian" => "Retur Penjualan - {$keterangan}",
-                "potongan_pembelian" => 0,
-                "piutang_dagang" => 0,
-                "penjualan_tunai" => 0,
-                "lain_lain" => 0,
-                "uang_diterima" =>
-                    $request->retur_penanganan === "tunai_kembali"
-                        ? -$returJumlah
-                        : 0,
-                "bunga_bank" => 0,
-                "jumlah_retur_penjualan" => $returJumlah,
-                "jenis_retur" => $request->retur_penanganan,
-                "user_id" => auth()->id(),
-            ]);
+            $pendapatanId = null;
 
-            // 2. Catat di buku piutang
+            // Jika penanganan retur = tunai kembali → catat juga di pendapatan dan kas
+            if ($request->retur_penanganan === "tunai_kembali") {
+                // Buat entri pendapatan (negatif untuk retur)
+                $pendapatan = BukuBesarPendapatan::create([
+                    "tanggal" => $request->tanggal,
+                    "uraian" => "Retur Penjualan - {$keterangan}",
+                    "potongan_pembelian" => 0,
+                    "piutang_dagang" => 0,
+                    "penjualan_tunai" => 0,
+                    "lain_lain" => 0,
+                    "uang_diterima" => -$returJumlah,
+                    "bunga_bank" => 0,
+                    "jumlah_retur_penjualan" => $returJumlah,
+                    "jenis_retur" => $request->retur_penanganan,
+                    "user_id" => auth()->id(),
+                ]);
+
+                $pendapatanId = $pendapatan->id;
+
+                // Update kas
+                $kasLama = BukuBesarKas::latest()->first();
+
+                if (!$kasLama || $kasLama->saldo < $returJumlah) {
+                    throw new \Exception(
+                        "Saldo kas tidak mencukupi untuk pengembalian tunai retur.",
+                    );
+                }
+
+                BukuBesarKas::create([
+                    "kode" => Str::uuid(),
+                    "uraian" => "Retur Penjualan (Tunai Kembali) - {$keterangan}",
+                    "tanggal" => $request->tanggal,
+                    "debit" => 0,
+                    "kredit" => $returJumlah,
+                    "saldo" => $kasLama->saldo - $returJumlah,
+                    "neraca_awal_id" => $kasLama->neraca_awal_id,
+                    "user_id" => auth()->id(),
+                ]);
+            }
+
+            // Catat perubahan piutang (berlaku untuk semua jenis retur)
             $saldoBaru = $saldoTerakhir->saldo - $returJumlah;
 
             BukuBesarPiutang::create([
@@ -126,36 +151,13 @@ class ReturController extends Controller
                 "debit" => 0,
                 "kredit" => $returJumlah,
                 "saldo" => $saldoBaru,
-                "buku_besar_pendapatan_id" => $pendapatan->id,
+                "buku_besar_pendapatan_id" => $pendapatanId, // bisa null jika kurangi_piutang
                 "user_id" => auth()->id(),
             ]);
 
-            if ($request->retur_penanganan === "tunai_kembali") {
-                $kasLama = BukuBesarKas::latest()->first();
-
-                if (!$kasLama || $kasLama->saldo < $returJumlah) {
-                    throw new \Exception(
-                        "Saldo kas tidak mencukupi untuk pengembalian tunai retur.",
-                    );
-                }
-
-                $saldoKasBaru = $kasLama->saldo - $returJumlah;
-
-                BukuBesarKas::create([
-                    "kode" => Str::uuid(),
-                    "uraian" => "Retur Penjualan ({$request->retur_penanganan}) - {$keterangan}",
-                    "tanggal" => $request->tanggal,
-                    "debit" => 0,
-                    "kredit" => $returJumlah,
-                    "saldo" => $saldoKasBaru,
-                    "neraca_awal_id" => $kasLama->neraca_awal_id,
-                    "user_id" => auth()->id(),
-                ]);
-            }
-
             DB::commit();
             return redirect()
-                ->route("retur.create")
+                ->route("retur.create-penjualan")
                 ->with("success", "Retur berhasil dicatat.");
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -217,7 +219,7 @@ class ReturController extends Controller
             $saldoTerakhir = BukuBesarHutang::where("kode", $kodeHutang)
                 ->where("pelanggan_id", $pelangganId)
                 ->where("user_id", $userId)
-                ->orderByDesc("id")
+                ->latest("id")
                 ->first();
 
             if (!$saldoTerakhir) {
@@ -231,44 +233,28 @@ class ReturController extends Controller
                 );
             }
 
-            // 1️⃣ Catat di BukuBesarPendapatan (kolom retur_pembelian)
-            $pendapatan = BukuBesarPendapatan::create([
-                "tanggal" => $request->tanggal,
-                "uraian" => "Retur Pembelian - {$keterangan}",
-                "potongan_pembelian" => 0,
-                "piutang_dagang" => 0,
-                "penjualan_tunai" => 0,
-                "lain_lain" => 0,
-                "uang_diterima" =>
-                    $request->retur_penanganan === "tunai_kembali"
-                        ? $returJumlah // uang masuk ke kas
-                        : 0,
-                "bunga_bank" => 0,
-                "retur_pembelian" => $returJumlah,
-                "user_id" => $userId,
-            ]);
+            $pendapatanId = null;
 
-            // 2️⃣ Catat pengurangan hutang
-            $saldoBaru = $saldoTerakhir->saldo - $returJumlah;
-
-            BukuBesarHutang::create([
-                "kode" => $kodeHutang,
-                "pelanggan_id" => $pelangganId,
-                "uraian" => "Retur: {$keterangan}",
-                "tanggal" => $request->tanggal,
-                "debit" => $returJumlah, // ✅ Hutang berkurang = debit
-                "kredit" => 0,
-                "saldo" => $saldoBaru,
-                "buku_besar_pendapatan_id" => $pendapatan->id,
-                "user_id" => $userId,
-            ]);
-
-            // 3️⃣ Jika tunai kembali → kas bertambah
+            // Jika penanganan retur = tunai kembali → buat jurnal pendapatan & kas
             if ($request->retur_penanganan === "tunai_kembali") {
+                $pendapatan = BukuBesarPendapatan::create([
+                    "tanggal" => $request->tanggal,
+                    "uraian" => "Retur Pembelian - {$keterangan}",
+                    "potongan_pembelian" => 0,
+                    "piutang_dagang" => 0,
+                    "penjualan_tunai" => 0,
+                    "lain_lain" => 0,
+                    "uang_diterima" => $returJumlah, // uang masuk ke kas
+                    "bunga_bank" => 0,
+                    "retur_pembelian" => $returJumlah,
+                    "user_id" => $userId,
+                ]);
+
+                $pendapatanId = $pendapatan->id;
+
                 $kasLama = BukuBesarKas::where("user_id", $userId)
                     ->latest("id")
                     ->first();
-
                 $saldoKasLama = $kasLama?->saldo ?? 0;
                 $saldoKasBaru = $saldoKasLama + $returJumlah;
 
@@ -276,22 +262,38 @@ class ReturController extends Controller
                     "kode" => Str::uuid(),
                     "uraian" => "Penerimaan tunai dari retur pembelian: {$keterangan}",
                     "tanggal" => $request->tanggal,
-                    "debit" => $returJumlah, // ✅ Kas bertambah (debit)
+                    "debit" => $returJumlah, // Kas bertambah
                     "kredit" => 0,
                     "saldo" => $saldoKasBaru,
-                    "neraca_awal_id" => $kasLama->neraca_awal_id,
+                    "neraca_awal_id" => $kasLama?->neraca_awal_id,
                     "user_id" => $userId,
                 ]);
             }
 
+            // Catat pengurangan hutang (berlaku untuk semua jenis retur)
+            $saldoBaru = $saldoTerakhir->saldo - $returJumlah;
+
+            BukuBesarHutang::create([
+                "kode" => $kodeHutang,
+                "pelanggan_id" => $pelangganId,
+                "uraian" => "Retur Pembelian - {$keterangan}",
+                "tanggal" => $request->tanggal,
+                "debit" => $returJumlah, // Hutang berkurang
+                "kredit" => 0,
+                "saldo" => $saldoBaru,
+                "buku_besar_pendapatan_id" => $pendapatanId, // bisa null kalau kurangi_hutang
+                "user_id" => $userId,
+            ]);
+
             DB::commit();
 
             return redirect()
-                ->route("retur.create-pengeluaran")
-                ->with("success", "Retur pengeluaran berhasil disimpan.");
-        } catch (\Exception $e) {
+                ->route("retur.create-pembelian")
+                ->with("success", "Retur pembelian berhasil disimpan.");
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error("Gagal simpan retur pengeluaran", [
+
+            Log::error("Gagal simpan retur pembelian", [
                 "error" => $e->getMessage(),
                 "user_id" => auth()->id(),
                 "input" => $request->all(),
@@ -300,7 +302,10 @@ class ReturController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with("error", $e->getMessage() ?: "Gagal menyimpan retur.");
+                ->with(
+                    "error",
+                    $e->getMessage() ?: "Gagal menyimpan retur pembelian.",
+                );
         }
     }
 }

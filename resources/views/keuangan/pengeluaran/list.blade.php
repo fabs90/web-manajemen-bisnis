@@ -20,7 +20,7 @@
                 <th>Hutang Dagang</th>
                 <th>Pembelian Tunai</th>
                 <th>Pot. Pembelian</th>
-                <th>Lainnya</th>
+                <th>Lain-lain</th>
                 <th>Jumlah Pengeluaran</th>
                 <th>Aksi</th>
             </tr>

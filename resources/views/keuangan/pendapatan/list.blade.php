@@ -19,8 +19,8 @@
                     <th>Uraian</th>
                     <th>Piutang Dagang</th>
                     <th>Penjualan Tunai</th>
-                    <th>Potongan Pembelian</th>
-                    <th>Biaya Lain</th>
+                    <th>Potongan Penjualan</th>
+                    <th>Lain-lain</th>
                     <th>Uang Diterima</th>
                     <th>Aksi</th>
                 </tr>

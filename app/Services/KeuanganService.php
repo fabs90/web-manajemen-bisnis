@@ -52,7 +52,7 @@ class KeuanganService
                     "%memo%",
                 );
             })
-            ->sum("kredit"); // ✅ harus kredit, bukan debit
+            ->sum("kredit");
 
         $potonganPenjualan =
             BukuBesarPendapatan::where("user_id", $userId)
@@ -86,7 +86,7 @@ class KeuanganService
                     "%memo%",
                 );
             })
-            ->sum("debit"); // ✅ harus debit, bukan kredit
+            ->sum("debit");
 
         $potonganPembelian =
             BukuBesarPengeluaran::where("user_id", $userId)

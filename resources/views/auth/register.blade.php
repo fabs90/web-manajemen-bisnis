@@ -6,11 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Akun | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis</title>
     <link rel="shortcut icon" href="{{ asset('./dist/assets/static/images/logo_web.png') }}" type="image/x-icon" />
-
-    <!--<link rel="stylesheet" href="{{ asset('css/register.css') }}">-->
 </head>
+
 <style>
-    /* === Base === */
     * {
         box-sizing: border-box;
         margin: 0;
@@ -26,7 +24,6 @@
         height: 100vh;
     }
 
-    /* === Wrapper === */
     .auth-wrapper {
         display: flex;
         justify-content: center;
@@ -35,7 +32,6 @@
         padding: 20px;
     }
 
-    /* === Card === */
     .auth-card {
         width: 420px;
         background: #ffffff;
@@ -45,7 +41,6 @@
         animation: fadeIn 0.7s ease;
     }
 
-    /* === Header === */
     .auth-header {
         text-align: center;
         margin-bottom: 25px;
@@ -62,7 +57,6 @@
         color: #6b7280;
     }
 
-    /* === Alerts === */
     .alert {
         padding: 10px;
         border-radius: 8px;
@@ -82,7 +76,6 @@
         border-left: 4px solid #ef4444;
     }
 
-    /* === Form === */
     .form-group {
         margin-bottom: 18px;
     }
@@ -96,48 +89,26 @@
 
     input[type="email"],
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+    select {
         width: 100%;
         padding: 12px 14px;
         border-radius: 10px;
         border: 1px solid #d1d5db;
         outline: none;
         font-size: 14px;
+        background: #fff;
         transition:
             border 0.2s ease,
             box-shadow 0.2s ease;
-        background: #fff;
     }
 
-    input:focus {
+    input:focus,
+    select:focus {
         border-color: #2563eb;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
 
-    /* === Options === */
-    .form-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .remember {
-        font-size: 13px;
-        color: #4b5563;
-    }
-
-    .forgot {
-        font-size: 13px;
-        text-decoration: none;
-        color: #2563eb;
-    }
-
-    .forgot:hover {
-        text-decoration: underline;
-    }
-
-    /* === Button === */
     .btn-primary {
         width: 100%;
         background: #2563eb;
@@ -161,7 +132,6 @@
         transform: scale(0.97);
     }
 
-    /* === Footer === */
     .register-text {
         text-align: center;
         margin-top: 18px;
@@ -186,7 +156,6 @@
     .password-wrapper input {
         width: 100%;
         padding-right: 40px;
-        /* buat ruang untuk icon mata */
     }
 
     .toggle-password {
@@ -205,7 +174,6 @@
         color: #2563eb;
     }
 
-    /* === Animation === */
     @keyframes fadeIn {
         from {
             opacity: 0;
@@ -252,17 +220,29 @@
                     <label for="email">Alamat Email</label>
                     <input id="email" type="email" name="email" placeholder="contoh@email.com"
                         value="{{ old('email') }}" required>
+                    <small class="form-text text-muted">
+                        ⚠️ Email akan digunakan untuk mengirimkan Kode Verifikasi (OTP).
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Pilih Jenis Akun</label>
+                    <select id="role" name="role" required>
+                        <option value="" disabled selected>Pilih...</option>
+                        <option value="ukm" {{ old('role') == 'ukm' ? 'selected' : '' }}>UKM</option>
+                        <option value="nelayan" {{ old('role') == 'nelayan' ? 'selected' : '' }}>Nelayan</option>
+                        <option value="koperasi" {{ old('role') == 'koperasi' ? 'selected' : '' }}>Koperasi</option>
+                    </select>
                 </div>
 
                 <div class="form-group password-group">
                     <label for="password">Kata Sandi</label>
                     <div class="password-wrapper">
                         <input id="password" type="password" name="password" placeholder="••••••••" required>
-                        <span class="toggle-password" onclick="togglePassword('password', this)">
-                            👁️
-                        </span>
+                        <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
                     </div>
                 </div>
+
                 <div class="form-group password-group">
                     <label for="password_confirmation">Konfirmasi Kata Sandi</label>
                     <div class="password-wrapper">
@@ -271,7 +251,6 @@
                         <span class="toggle-password" onclick="togglePassword('password_confirmation', this)">👁️</span>
                     </div>
                 </div>
-
 
                 <button type="submit" class="btn-primary">Daftar</button>
 
@@ -284,6 +263,7 @@
     </div>
 
 </body>
+
 <script>
     function togglePassword(inputId, icon) {
         const input = document.getElementById(inputId);
@@ -292,6 +272,5 @@
         icon.textContent = isPassword ? "🙈" : "👁️";
     }
 </script>
-<!--<script src="{{ asset('js/register.js') }}"></script>-->
 
 </html>

@@ -116,7 +116,7 @@
             {{-- Jumlah Manual --}}
             <div id="jumlah_manual_container" class="mb-3 d-none">
                 <label for="jumlah_manual" class="form-label">Jumlah Pengeluaran</label>
-                <input type="number" id="jumlah_manual" name="jumlah_manual" class="form-control" min="0" value="0">
+                <input type="text" id="jumlah_manual" name="jumlah_manual" class="form-control" value="0">
             </div>
 
             {{-- Jumlah Pengeluaran Total --}}
@@ -128,15 +128,15 @@
             {{-- Potongan, Biaya Lain, Bunga --}}
             <div class="mb-3">
                 <label for="potongan_pembelian" class="form-label">Potongan</label>
-                <input type="number" name="potongan_pembelian" id="potongan_pembelian" class="form-control" value="0" min="0">
+                <input type="text" name="potongan_pembelian" id="potongan_pembelian" class="form-control" value="0">
             </div>
             <div class="mb-3">
                 <label for="biaya_lain" class="form-label">Biaya Lain</label>
-                <input type="number" name="biaya_lain" id="biaya_lain" class="form-control" value="0" min="0">
+                <input type="text" name="biaya_lain" id="biaya_lain" class="form-control" value="0">
             </div>
             <div class="mb-3">
                 <label for="bunga_bank" class="form-label">Bunga Bank</label>
-                <input type="number" name="bunga_bank" id="bunga_bank" class="form-control" value="0" min="0">
+                <input type="text" name="bunga_bank" id="bunga_bank" class="form-control" value="0">
             </div>
 
             <div class="mt-4 text-end">
@@ -150,6 +150,7 @@
 @push('script')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
     const form = document.getElementById('pengeluaran-form');
     const jenisPengeluaran = document.getElementById('jenis_pengeluaran');
     const krediturSection = document.getElementById('kreditur-section');
@@ -168,6 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const biayaLainInput = document.getElementById('biaya_lain');
     const bungaBankInput = document.getElementById('bunga_bank');
 
+    const hutangAktifSection = document.getElementById('hutang-aktif-section');
+
     let barangIndex = 0;
 
     const barangTemplate = `
@@ -176,7 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <select name="barang_dibeli[{index}]" class="form-control barang-select" required>
                     <option value="" disabled selected>-- Pilih Barang --</option>
                     @foreach($barang as $item)
-                        <option value="{{ $item->id }}" data-harga="{{ $item->harga_jual_per_unit }}">{{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit,0,',','.') }} - Saldo: {{ $item->getSaldoAkhir() }}</option>
+                        <option value="{{ $item->id }}" data-harga="{{ $item->harga_jual_per_unit }}">
+                            {{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit,0,',','.') }} - Saldo: {{ $item->getSaldoAkhir() }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -192,6 +197,18 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     `;
 
+    // ======== Fungsi Utilitas ========
+    function parseRupiah(value) {
+        if (!value) return 0;
+        return parseFloat(value.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+    }
+
+    function formatRupiah(angka) {
+        if (isNaN(angka)) return '0';
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // ======== Fungsi Section ========
     function toggleKrediturSection() {
         if (jenisPengeluaran.value === 'kredit') {
             krediturSection.classList.remove('d-none');
@@ -204,31 +221,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const hutangAktifSection = document.getElementById('hutang-aktif-section');
-
     function toggleKeperluanSection() {
         const selectedKeperluan = document.querySelector('input[name="jenis_keperluan"]:checked')?.value;
 
         barangSection.classList.add('d-none');
-        barangList.innerHTML = '';
+        hutangAktifSection.classList.add('d-none');
         jumlahManualContainer.classList.add('d-none');
+
+        barangList.innerHTML = '';
         jumlahManualInput.value = 0;
-        hutangAktifSection.classList.add('d-none'); // sembunyikan default
 
         if (selectedKeperluan === 'membeli_barang') {
             barangSection.classList.remove('d-none');
             tambahBarang();
-        } else if (selectedKeperluan === 'membayar_hutang') {
+        }
+        else if (selectedKeperluan === 'membayar_hutang') {
+            hutangAktifSection.classList.remove('d-none');
             jumlahManualContainer.classList.remove('d-none');
-            hutangAktifSection.classList.remove('d-none'); // tampilkan hutang aktif
-        } else if (selectedKeperluan === 'lain_lain') {
+        }
+        else if (selectedKeperluan === 'lain_lain') {
             jumlahManualContainer.classList.remove('d-none');
         }
 
         hitungTotal();
     }
 
-
+    // ======== Fungsi Barang ========
     function tambahBarang() {
         const html = barangTemplate.replace(/{index}/g, barangIndex);
         barangList.insertAdjacentHTML('beforeend', html);
@@ -249,75 +267,91 @@ document.addEventListener('DOMContentLoaded', function() {
             hitungTotal();
         }
 
-        hitungSubtotal();
-
         select.addEventListener('change', hitungSubtotal);
         jumlahInput.addEventListener('input', hitungSubtotal);
-
         row.querySelector('.hapus-barang').addEventListener('click', () => {
             row.remove();
             hitungTotal();
         });
+
+        hitungSubtotal(); // inisialisasi awal
     }
 
+    // ======== Fungsi Hitung ========
     function hitungTotal() {
         let total = 0;
 
+        // Total dari barang
         document.querySelectorAll('.subtotal-input').forEach(input => {
             total += parseFloat(input.value) || 0;
         });
 
+        // Kalau pakai input manual (bukan membeli barang)
         if (barangSection.classList.contains('d-none')) {
-            total += parseFloat(jumlahManualInput.value) || 0;
+            total += parseRupiah(jumlahManualInput.value);
         }
 
-        total += parseFloat(potonganInput.value) || 0;
-        total += parseFloat(biayaLainInput.value) || 0;
-        total += parseFloat(bungaBankInput.value) || 0;
+        // Hitung tambahan & pengurang
+        total -= parseRupiah(potonganInput.value);
+        total += parseRupiah(biayaLainInput.value);
+        total += parseRupiah(bungaBankInput.value);
 
         jumlahPengeluaran.value = total;
     }
 
-    // Event listeners
+    // ======== Event Listeners ========
     jenisPengeluaran.addEventListener('change', toggleKrediturSection);
     jenisKeperluanRadios.forEach(radio => radio.addEventListener('change', toggleKeperluanSection));
     tambahBarangBtn.addEventListener('click', tambahBarang);
 
-    [jumlahManualInput, potonganInput, biayaLainInput, bungaBankInput].forEach(el => {
-        el.addEventListener('input', hitungTotal);
+    // Format otomatis input rupiah
+    const rupiahInputs = [jumlahManualInput, potonganInput, biayaLainInput, bungaBankInput];
+    rupiahInputs.forEach(input => {
+        input.addEventListener('input', (e) => {
+            let angka = parseRupiah(e.target.value);
+            e.target.value = formatRupiah(angka);
+            hitungTotal();
+        });
     });
 
-    // hitung total sebelum submit untuk memastikan jumlah_pengeluaran terisi
+    // Pastikan data rupiah dikirim ke server sebagai angka murni
     form.addEventListener('submit', function() {
         hitungTotal();
+        rupiahInputs.forEach(input => {
+            input.value = parseRupiah(input.value); // ubah ke angka tanpa titik
+        });
     });
 
+    // ======== Inisialisasi awal ========
     toggleKrediturSection();
     toggleKeperluanSection();
+
+    // ======== Notifikasi SweetAlert ========
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Sukses!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 2500,
+            toast: true,
+            position: 'top-end',
+        });
+    @endif
+
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: "{{ session('error') }}",
+            showConfirmButton: false,
+            timer: 5000,
+            toast: true,
+            position: 'top-end',
+        });
+    @endif
+
 });
-
-@if (session('success'))
-    Swal.fire({
-        icon: 'success',
-        title: 'Sukses!',
-        text: "{{ session('success') }}",
-        showConfirmButton: false,
-        timer: 2500,
-        toast: true,
-        position: 'top-end',
-    });
-@endif
-
-@if (session('error'))
-    Swal.fire({
-        icon: 'error',
-        title: 'Oops!',
-        text: "{{ session('error') }}",
-        showConfirmButton: false,
-        timer: 5000,
-        toast: true,
-        position: 'top-end',
-    });
-@endif
 </script>
+
 @endpush

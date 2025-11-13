@@ -59,7 +59,7 @@
 
                     <ul class="submenu">
                         <li class="submenu-item">
-                            <a href="component-accordion.html" class="submenu-link">Jadwal Perjalanan</a>
+                            <a href="{{route('jadwal-perjalanan.index')}}" class="submenu-link">Jadwal Perjalanan</a>
                         </li>
 
                         <li class="submenu-item">
@@ -174,7 +174,7 @@
                             <a href="{{ route('retur.list') }}" class="submenu-link">List Retur</a>
                         </li>
                         <li class="submenu-item">
-                            <a href="{{ route('retur.create') }}" class="submenu-link">Retur Penjualan</a>
+                            <a href="{{ route('retur.create-penjualan') }}" class="submenu-link">Retur Penjualan</a>
                         </li>
                         <li class="submenu-item">
                             <a href="{{ route('retur.create-pembelian') }}" class="submenu-link">Retur Pembelian</a>

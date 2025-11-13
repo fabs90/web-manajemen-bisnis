@@ -8,15 +8,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
 use App\Http\Controllers\AsetHutangController;
+use App\Http\Controllers\JadwalPerjalananController;
 use App\Http\Controllers\NeracaAkhirController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReturController;
+use App\Http\Middleware\EnsureUserIsVerified;
 
-// Halaman publik (tidak perlu login)
+// Halaman publik
 Route::get("/", [PageController::class, "index"]);
 
-// Halaman Dashboard — hanya bisa diakses setelah login
-Route::middleware(["web", "auth"])->group(function () {
+Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
     Route::get("/dashboard", [PageController::class, "dashboard"])->name(
         "dashboard",
     );
@@ -34,7 +35,7 @@ Route::middleware(["web", "auth"])->group(function () {
     // =============================
     // 📘 GROUP: KEUANGAN
     // =============================
-    Route::prefix("keuangan")->group(function () {
+    Route::prefix("dashboard/keuangan")->group(function () {
         // Pendapatan
         Route::get("/pendapatan", [PendapatanController::class, "index"])->name(
             "keuangan.pendapatan.list",
@@ -89,7 +90,7 @@ Route::middleware(["web", "auth"])->group(function () {
     // =============================
     // 💵 GROUP: LAPORAN-KEUNGAN
     // =============================
-    Route::prefix("laporan-keuangan")->group(function () {
+    Route::prefix("dashboard/laporan-keuangan")->group(function () {
         // Aset & Hutang
         Route::get("/aset-hutang", [
             AsetHutangController::class,
@@ -132,15 +133,15 @@ Route::middleware(["web", "auth"])->group(function () {
     // =============================
     // 🚚 GROUP: Retur
     // =============================
-    Route::prefix("retur")->group(function () {
+    Route::prefix("dashboard/retur")->group(function () {
         Route::get("/", [ReturController::class, "list"])->name("retur.list");
 
-        Route::get("/create/pendapatan", [
+        Route::get("/create/penjualan", [
             ReturController::class,
             "create",
-        ])->name("retur.create");
+        ])->name("retur.create-penjualan");
         Route::post("/", [ReturController::class, "store"])->name(
-            "retur.store",
+            "retur.store-penjualan",
         );
 
         Route::get("/create/pembelian", [
@@ -157,7 +158,7 @@ Route::middleware(["web", "auth"])->group(function () {
     // =============================
     // 💳 GROUP: DEBITUR
     // =============================
-    Route::prefix("debitur-kreditur")->group(function () {
+    Route::prefix("dashboard/debitur-kreditur")->group(function () {
         Route::get("/list", [DebiturController::class, "list"])->name(
             "debitur-kreditur.list",
         );
@@ -172,7 +173,7 @@ Route::middleware(["web", "auth"])->group(function () {
     // =============================
     // 📦 GROUP: BARANG
     // =============================
-    Route::prefix("barang")->group(function () {
+    Route::prefix("dashboard/barang")->group(function () {
         // Barang utama
         Route::get("/list", [BarangController::class, "index"])->name(
             "barang.index",
@@ -228,6 +229,35 @@ Route::middleware(["web", "auth"])->group(function () {
         Route::delete("/", [ProfileController::class, "destroy"])->name(
             "profile.destroy",
         );
+    });
+
+    // =============================
+    // 🛣️ GROUP: Jadwal Perjalanan
+    // =============================
+    Route::prefix("dashboard/jadwal-perjalanan")->group(function () {
+        Route::get("/", [JadwalPerjalananController::class, "index"])->name(
+            "jadwal-perjalanan.index",
+        );
+        Route::get("/create", [
+            JadwalPerjalananController::class,
+            "create",
+        ])->name("jadwal-perjalanan.create");
+        Route::post("/store", [
+            JadwalPerjalananController::class,
+            "store",
+        ])->name("jadwal-perjalanan.store");
+        Route::get("/edit/{id}", [
+            JadwalPerjalananController::class,
+            "edit",
+        ])->name("jadwal-perjalanan.edit");
+        Route::patch("/update/{id}", [
+            JadwalPerjalananController::class,
+            "update",
+        ])->name("jadwal-perjalanan.update");
+        Route::delete("/delete/{id}", [
+            JadwalPerjalananController::class,
+            "delete",
+        ])->name("jadwal-perjalanan.delete");
     });
 });
 
