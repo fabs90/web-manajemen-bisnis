@@ -22,7 +22,7 @@ return new class extends Migration {
                 $table
                     ->decimal("jumlah_retur_pembelian", 15, 2)
                     ->default(0)
-                    ->after("bunga_bank");
+                    ->after("admin_bank");
             }
 
             if (

@@ -10,7 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create("buku_besar_pengeluaran_tunai", function (Blueprint $table, ) {
+        Schema::create("buku_besar_pengeluaran_tunai", function (
+            Blueprint $table,
+        ) {
             $table->id();
             $table->date("tanggal");
             $table->string("uraian");
@@ -18,7 +20,7 @@ return new class extends Migration {
             $table->decimal("jumlah_hutang", 10, 2)->default(0);
             $table->decimal("jumlah_pembelian_tunai", 10, 2)->default(0);
             $table->decimal("lain_lain", 10, 2)->default(0);
-            $table->decimal("bunga_bank", 10, 2)->default(0);
+            $table->decimal("admin_bank", 10, 2)->default(0);
             $table->decimal("jumlah_pengeluaran", 10, 2);
             $table->foreignId("user_id")->constrained()->onDelete("cascade");
             $table->timestamps();

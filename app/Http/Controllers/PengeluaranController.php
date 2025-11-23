@@ -110,7 +110,7 @@ class PengeluaranController extends Controller
                             "jumlah_hutang" => 0,
                             "jumlah_pembelian_tunai" => 0,
                             "lain_lain" => $jumlahUang,
-                            "bunga_bank" => $validated["bunga_bank"] ?? 0,
+                            "admin_bank" => $validated["admin_bank"] ?? 0,
                             "jumlah_pengeluaran" => $jumlahUang,
                         ]);
 
@@ -135,7 +135,7 @@ class PengeluaranController extends Controller
                             "jumlah_hutang" => 0,
                             "jumlah_pembelian_tunai" => 0,
                             "lain_lain" => $jumlahUang,
-                            "bunga_bank" => $validated["bunga_bank"] ?? 0,
+                            "admin_bank" => $validated["admin_bank"] ?? 0,
                             "jumlah_pengeluaran" => $jumlahUang,
                         ]);
 
@@ -174,7 +174,7 @@ class PengeluaranController extends Controller
                         "jumlah_hutang" => $jumlahUang,
                         "jumlah_pembelian_tunai" => 0,
                         "lain_lain" => 0,
-                        "bunga_bank" => $validated["bunga_bank"] ?? 0,
+                        "admin_bank" => $validated["admin_bank"] ?? 0,
                         "jumlah_pengeluaran" => $jumlahUang,
                     ]);
 
@@ -244,7 +244,7 @@ class PengeluaranController extends Controller
                                 ? $validated["jumlah"]
                                 : 0,
                         "lain_lain" => $validated["biaya_lain"] ?? 0,
-                        "bunga_bank" => $validated["bunga_bank"] ?? 0,
+                        "admin_bank" => $validated["admin_bank"] ?? 0,
                         "jumlah_pengeluaran" => $jumlahUang,
                     ]);
 

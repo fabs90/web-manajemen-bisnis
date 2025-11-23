@@ -24,10 +24,41 @@ class NeracaAkhirController extends Controller
         $dataLabaRugi = $keuangan->hitungLabaRugi();
 
         // === KAS ===
-        $kasTerakhir = BukuBesarKas::where("user_id", $userId)
-            ->latest("created_at")
-            ->first();
-        $saldoKas = $kasTerakhir->saldo ?? 0;
+        $kasNeracaAwal = NeracaAwal::where("user_id", $userId)->first();
+        $kasAwal = $kasNeracaAwal->kas_awal ?? 0;
+
+        // === Total Pendapatan ===
+        $totalPendapatan = BukuBesarPendapatan::where("user_id", $userId)->sum(
+            "uang_diterima",
+        );
+
+        // === Total Pengeluaran ===
+        $totalPengeluaran = BukuBesarPengeluaran::where(
+            "user_id",
+            $userId,
+        )->sum("jumlah_pengeluaran");
+
+        // === Pendapatan Bunga ===
+        $pendapatanBunga = BukuBesarPendapatan::where("user_id", $userId)->sum(
+            "bunga_bank",
+        );
+
+        // === Biaya Administrasi Bank ===
+        $biayaAdminBank = BukuBesarPengeluaran::where("user_id", $userId)->sum(
+            "admin_bank",
+        ); // meskipun kolomnya salah nama, ini adalah biaya bank
+
+        $saldoKas =
+            $kasAwal +
+            $totalPendapatan -
+            $totalPengeluaran +
+            $pendapatanBunga -
+            $biayaAdminBank;
+
+        // $kasTerakhir = BukuBesarKas::where("user_id", $userId)
+        //     ->latest("created_at")
+        //     ->first();
+        // $saldoKas = $kasTerakhir->saldo ?? 0;
 
         // === PIUTANG ===
         $totalPiutang = BukuBesarPiutang::where("user_id", $userId)

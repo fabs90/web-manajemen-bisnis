@@ -23,6 +23,9 @@ class User extends Authenticatable
         "password",
         "role",
         "is_verified",
+        "alamat",
+        "nomor_telepon",
+        "logo_perusahaan",
         "otp",
         "otp_expires_at",
     ];
@@ -112,5 +115,15 @@ class User extends Authenticatable
     public function rugiLaba()
     {
         return $this->hasOne(RugiLaba::class);
+    }
+
+    public function agendaSuratMasuk()
+    {
+        return $this->hasMany(AgendaSuratMasuk::class);
+    }
+
+    public function agendaTelpon()
+    {
+        return $this->hasMany(AgendaTelpon::class);
     }
 }

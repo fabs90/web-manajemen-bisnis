@@ -14,8 +14,8 @@ class BukuBesarPengeluaran extends Model
         "jumlah_hutang",
         "jumlah_pembelian_tunai",
         "lain_lain",
-        "bunga_bank",
-        "retur_penjualan",
+        "admin_bank",
+        "jumlah_retur_pembelian",
         "jumlah_pengeluaran",
         "user_id",
     ];

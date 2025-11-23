@@ -59,37 +59,8 @@
 
                     <ul class="submenu">
                         <li class="submenu-item">
-                            <a href="{{route('jadwal-perjalanan.index')}}" class="submenu-link">Jadwal Perjalanan</a>
+                            <a href="{{route('administrasi.surat.index')}}" class="submenu-link">Surat</a>
                         </li>
-
-                        <li class="submenu-item">
-                            <a href="component-alert.html" class="submenu-link">Template Surat</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="component-badge.html" class="submenu-link">Kas Kecil</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="component-breadcrumb.html" class="submenu-link">Kas Telpon</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="component-button.html" class="submenu-link">Janji Temu</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="component-card.html" class="submenu-link">Memo</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="component-carousel.html" class="submenu-link">Surat Keluar</a>
-                        </li>
-
-                        <li class="submenu-item">
-                            <a href="component-collapse.html" class="submenu-link">Surat Masuk</a>
-                        </li>
-
                     </ul>
                 </li>
 
@@ -183,6 +154,15 @@
                     </ul>
                 </li>
 
+
+                <li class="sidebar-title">Profile</li>
+
+                <li class="sidebar-item">
+                    <a href="{{route('profile.edit')}}" class="sidebar-link">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
 
                 <li class="sidebar-title">Logout</li>
 

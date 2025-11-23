@@ -20,6 +20,9 @@ return new class extends Migration {
                 ->enum("role", ["superadmin", "ukm", "nelayan", "koperasi"])
                 ->default("ukm");
             $table->boolean("is_verified")->default(false);
+            $table->text("alamat")->nullable();
+            $table->string("nomor_telepon")->nullable();
+            $table->string("logo_perusahaan")->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

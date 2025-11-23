@@ -5,7 +5,7 @@
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="{{ route('keuangan.pendapatan.create_lain') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Data Pendapatan Lain-Lain
+            <i class="bi bi-plus-circle me-1"></i> Tambahkan Pendapatan Lain-Lain — Misalnya Sewa & Pemasukan Tambahan
         </a>
     </div>
 
@@ -131,14 +131,14 @@
                 </div>
 
                 <div id="jumlah_piutang_container" class="mb-3 d-none">
-                    <label for="jumlah_piutang" class="form-label">Jumlah Piutang Non-barang (Opsional)<span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" name="jumlah_piutang" id="jumlah_piutang" min="1" placeholder="Masukkan jumlah piutang">
+                    <label for="jumlah_piutang" class="form-label rupiah">Jumlah Piutang Non-barang (Opsional)<span class="text-danger">*</span></label>
+                    <input type="text" class="form-control rupiah" name="jumlah_piutang" id="jumlah_piutang" placeholder="Masukkan jumlah piutang">
                     <small class="text-muted">Akan ditambahkan ke total piutang.</small>
                 </div>
 
                 <div id="jumlah_kredit_container" class="mb-3 d-none">
                     <label for="jumlah_kredit" class="form-label">Jumlah Kredit</label>
-                    <input type="number" class="form-control" name="jumlah_kredit" id="jumlah_kredit" min="1" placeholder="Masukkan jumlah kredit/pelunasan" >
+                    <input type="text" class="form-control rupiah" name="jumlah_kredit" id="jumlah_kredit" placeholder="Masukkan jumlah kredit/pelunasan" >
                 </div>
 
 

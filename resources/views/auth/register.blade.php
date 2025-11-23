@@ -174,6 +174,30 @@
         color: #2563eb;
     }
 
+    .btn-loading {
+        background: #1e40af !important;
+        cursor: not-allowed !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 3px solid #ffffff;
+        border-top: 3px solid transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+
     @keyframes fadeIn {
         from {
             opacity: 0;
@@ -252,7 +276,10 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary">Daftar</button>
+                <button type="submit" class="btn-primary" id="btn-submit">
+                    Daftar
+                </button>
+
 
                 <p class="register-text">
                     Sudah punya akun?
@@ -262,8 +289,6 @@
         </div>
     </div>
 
-</body>
-
 <script>
     function togglePassword(inputId, icon) {
         const input = document.getElementById(inputId);
@@ -271,6 +296,27 @@
         input.type = isPassword ? "text" : "password";
         icon.textContent = isPassword ? "🙈" : "👁️";
     }
+
+    // Animasi loading saat submit
+    const form = document.querySelector(".auth-form");
+    const btnSubmit = document.getElementById("btn-submit");
+
+    form.addEventListener("submit", function () {
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add("btn-loading");
+        btnSubmit.innerHTML = `
+            <div class="spinner"></div>
+            Memproses...
+        `;
+    });
+
+    function togglePassword(inputId, icon) {
+        const input = document.getElementById(inputId);
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        icon.textContent = isPassword ? "🙈" : "👁️";
+    }
 </script>
+</body>
 
 </html>

@@ -115,13 +115,13 @@
 
             {{-- Jumlah Manual --}}
             <div id="jumlah_manual_container" class="mb-3 d-none">
-                <label for="jumlah_manual" class="form-label">Jumlah Pengeluaran</label>
+                <label for="jumlah_manual" class="form-label">Isi Jumlah Pengeluaran Disini</label>
                 <input type="text" id="jumlah_manual" name="jumlah_manual" class="form-control" value="0">
             </div>
 
             {{-- Jumlah Pengeluaran Total --}}
             <div class="mb-3">
-                <label for="jumlah_pengeluaran" class="form-label">Jumlah Pengeluaran Total (Otomatis)</label>
+                <label for="jumlah_pengeluaran" class="form-label">Total Pengeluaran (Otomatis)</label>
                 <input type="number" name="jumlah" id="jumlah_pengeluaran" class="form-control" readonly required>
             </div>
 
@@ -135,8 +135,8 @@
                 <input type="text" name="biaya_lain" id="biaya_lain" class="form-control" value="0">
             </div>
             <div class="mb-3">
-                <label for="bunga_bank" class="form-label">Bunga Bank</label>
-                <input type="text" name="bunga_bank" id="bunga_bank" class="form-control" value="0">
+                <label for="admin_bank" class="form-label">Admin Bank</label>
+                <input type="text" name="admin_bank" id="admin_bank" class="form-control" value="0">
             </div>
 
             <div class="mt-4 text-end">
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const potonganInput = document.getElementById('potongan_pembelian');
     const biayaLainInput = document.getElementById('biaya_lain');
-    const bungaBankInput = document.getElementById('bunga_bank');
+    const bungaBankInput = document.getElementById('admin_bank');
 
     const hutangAktifSection = document.getElementById('hutang-aktif-section');
 

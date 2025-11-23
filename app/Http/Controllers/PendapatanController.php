@@ -103,7 +103,8 @@ class PendapatanController extends Controller
                     $bukuBesarPendapatan = BukuBesarPendapatan::create([
                         "kode" => $kodeTransaksi,
                         "tanggal" => $request->tanggal,
-                        "uraian" => $request->uraian_pendapatan,
+                        "uraian" =>
+                            "Pendapatan Tunai: " . $request->uraian_pendapatan,
                         "potongan_pembelian" => $request->potongan_pembelian
                             ? array_sum($request->potongan_pembelian)
                             : 0,
@@ -137,7 +138,8 @@ class PendapatanController extends Controller
 
                     BukuBesarKas::create([
                         "kode" => $kodeTransaksi,
-                        "uraian" => $request->uraian_pendapatan,
+                        "uraian" =>
+                            "Pendapatan Tunai: " . $request->uraian_pendapatan,
                         "tanggal" => $request->tanggal,
                         "debit" => $saldoFinal,
                         "kredit" => 0,

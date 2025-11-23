@@ -21,6 +21,7 @@
                     <th>Nama Barang</th>
                     <th>Jumlah Min (Per-kemasan)</th>
                     <th>Jumlah Max (Per-kemasan)</th>
+                    <th>Jumlah Unit (Per-kemasan)</th>
                     <th>Harga Beli per-Kemasan</th>
                     <th>Harga Beli (Unit)</th>
                     <th>Harga Jual (Unit)</th>
@@ -34,6 +35,7 @@
                         <td><strong>{{ $item->nama }}</strong></td>
                         <td>{{ number_format($item->jumlah_min) }}</td>
                         <td>{{ number_format($item->jumlah_max) }}</td>
+                        <td>{{number_format($item->jumlah_unit_per_kemasan)}}</td>
                         <td>Rp {{ number_format($item->harga_beli_per_kemas, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}</td>

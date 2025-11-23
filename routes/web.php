@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdministrasiSuratController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PendapatanController;
 use App\Http\Controllers\PengeluaranController;
@@ -31,6 +32,21 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
         PageController::class,
         "getStarted",
     ])->name("dashboard.getStarted");
+
+    // =============================
+    // 👨🏻‍🏫 GROUP: Profile
+    // =============================
+    Route::prefix("dashboard/profile")->group(function () {
+        Route::get("/", [ProfileController::class, "index"])->name(
+            "profile.index",
+        );
+        Route::get("/edit", [ProfileController::class, "edit"])->name(
+            "profile.edit",
+        );
+        Route::put("/update", [ProfileController::class, "update"])->name(
+            "profile.update",
+        );
+    });
 
     // =============================
     // 📘 GROUP: KEUANGAN
@@ -88,7 +104,7 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
     });
 
     // =============================
-    // 💵 GROUP: LAPORAN-KEUNGAN
+    // 💵 GROUP: LAPORAN-KEUANGAN
     // =============================
     Route::prefix("dashboard/laporan-keuangan")->group(function () {
         // Aset & Hutang
@@ -232,32 +248,132 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
     });
 
     // =============================
-    // 🛣️ GROUP: Jadwal Perjalanan
+    // 🛣️ GROUP: Administrasi Surat
     // =============================
-    Route::prefix("dashboard/jadwal-perjalanan")->group(function () {
-        Route::get("/", [JadwalPerjalananController::class, "index"])->name(
-            "jadwal-perjalanan.index",
+    Route::prefix("dashboard/administrasi/surat")->group(function () {
+        Route::get("/", [AdministrasiSuratController::class, "index"])->name(
+            "administrasi.surat.index",
         );
-        Route::get("/create", [
-            JadwalPerjalananController::class,
+
+        // Surat Masuk
+        Route::get("/surat-masuk/create", [
+            AdministrasiSuratController::class,
             "create",
-        ])->name("jadwal-perjalanan.create");
-        Route::post("/store", [
-            JadwalPerjalananController::class,
+        ])->name("administrasi.surat-masuk.create");
+
+        Route::post("/surat-masuk", [
+            AdministrasiSuratController::class,
             "store",
-        ])->name("jadwal-perjalanan.store");
-        Route::get("/edit/{id}", [
-            JadwalPerjalananController::class,
-            "edit",
-        ])->name("jadwal-perjalanan.edit");
-        Route::patch("/update/{id}", [
-            JadwalPerjalananController::class,
-            "update",
-        ])->name("jadwal-perjalanan.update");
-        Route::delete("/delete/{id}", [
-            JadwalPerjalananController::class,
-            "delete",
-        ])->name("jadwal-perjalanan.delete");
+        ])->name("administrasi.surat-masuk.store");
+
+        Route::delete("/surat-masuk/{id}", [
+            AdministrasiSuratController::class,
+            "destroyAgendaMasuk",
+        ])->name("administrasi.surat-masuk.destroy");
+
+        Route::get("/surat-masuk/disposisi/{id}", [
+            AdministrasiSuratController::class,
+            "showDisposisi",
+        ])->name("administrasi.surat-masuk.disposisi.create");
+
+        Route::post("/surat-masuk/disposisi/{id}", [
+            AdministrasiSuratController::class,
+            "storeDisposisi",
+        ])->name("administrasi.surat-masuk.disposisi.store");
+
+        // Surat Keluar
+        Route::get("/surat-keluar/", [
+            AdministrasiSuratController::class,
+            "indexSuratKeluar",
+        ])->name("administrasi.surat-keluar.index");
+
+        Route::get("/surat-keluar/create", [
+            AdministrasiSuratController::class,
+            "createSuratKeluar",
+        ])->name("administrasi.surat-keluar.create");
+
+        Route::post("/surat-keluar/", [
+            AdministrasiSuratController::class,
+            "storeSuratKeluar",
+        ])->name("administrasi.surat-keluar.store");
+
+        Route::delete("/surat-keluar/{id}", [
+            AdministrasiSuratController::class,
+            "destroyAgendaSuratKeluar",
+        ])->name("administrasi.surat-keluar.destroy");
+
+        // Surat Kas Kecil
+        Route::get("/kas-kecil/", [
+            AdministrasiSuratController::class,
+            "indexKasKecil",
+        ])->name("administrasi.kas-kecil.index");
+
+        Route::get("/kas-kecil/create", [
+            AdministrasiSuratController::class,
+            "createKasKecil",
+        ])->name("administrasi.kas-kecil.create");
+
+        Route::post("/kas-kecil/", [
+            AdministrasiSuratController::class,
+            "storeKasKecil",
+        ])->name("administrasi.kas-kecil.store");
+
+        Route::delete("/kas-kecil/{kasId}", [
+            AdministrasiSuratController::class,
+            "destroyKasKecil",
+        ])->name("administrasi.kas-kecil.destroy");
+
+        // Surat Agenda Telpon
+        Route::get("/agenda-telpon/", [
+            AdministrasiSuratController::class,
+            "indexAgendaTelpon",
+        ])->name("administrasi.agenda-telpon.index");
+
+        Route::get("/agenda-telpon/create", [
+            AdministrasiSuratController::class,
+            "createAgendaTelpon",
+        ])->name("administrasi.agenda-telpon.create");
+
+        Route::get("/agenda-telpon/{id}", [
+            AdministrasiSuratController::class,
+            "showAgendaTelpon",
+        ])->name("administrasi.agenda-telpon.show");
+
+        Route::post("/agenda-telpon/", [
+            AdministrasiSuratController::class,
+            "storeAgendaTelpon",
+        ])->name("administrasi.agenda-telpon.store");
+
+        Route::delete("/agenda-telpon/{agendaId}", [
+            AdministrasiSuratController::class,
+            "destroyAgendaTelpon",
+        ])->name("administrasi.agenda-telpon.destroy");
+
+        // Agenda Perjalanan
+        Route::get("/agenda-perjalanan/", [
+            AdministrasiSuratController::class,
+            "indexAgendaPerjalanan",
+        ])->name("administrasi.agenda-perjalanan.index");
+
+        Route::get("/agenda-perjalanan/create", [
+            AdministrasiSuratController::class,
+            "createAgendaPerjalanan",
+        ])->name("administrasi.agenda-perjalanan.create");
+
+        Route::get("/agenda-perjalanan/{id}", [
+            AdministrasiSuratController::class,
+            "showAgendaPerjalanan",
+        ])->name("administrasi.agenda-perjalanan.show");
+
+        Route::post("/agenda-perjalanan/", [
+            AdministrasiSuratController::class,
+            "storeAgendaPerjalanan",
+        ])->name("administrasi.agenda-perjalanan.store");
+
+        Route::delete("/agenda-perjalanan/{agendaId}", [
+            AdministrasiSuratController::class,
+            "destroyAgendaPerjalanan",
+        ])->name("administrasi.agenda-perjalanan.destroy");
     });
 });
 

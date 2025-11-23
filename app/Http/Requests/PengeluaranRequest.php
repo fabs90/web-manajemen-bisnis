@@ -16,7 +16,7 @@ class PengeluaranRequest extends FormRequest
         $this->merge([
             "potongan_pembelian" => $this->potongan_pembelian ?? 0,
             "biaya_lain" => $this->biaya_lain ?? 0,
-            "bunga_bank" => $this->bunga_bank ?? 0,
+            "admin_bank" => $this->admin_bank ?? 0,
             "jumlah" => $this->jumlah ?? 0,
         ]);
     }
@@ -51,7 +51,7 @@ class PengeluaranRequest extends FormRequest
 
             "potongan_pembelian" => "nullable|numeric|min:0",
             "biaya_lain" => "nullable|numeric|min:0",
-            "bunga_bank" => "nullable|numeric|min:0",
+            "admin_bank" => "nullable|numeric|min:0",
         ];
     }
 
@@ -94,7 +94,8 @@ class PengeluaranRequest extends FormRequest
             "potongan_pembelian.numeric" =>
                 "Potongan pembelian harus berupa angka.",
             "biaya_lain.numeric" => "Biaya lain harus berupa angka.",
-            "bunga_bank.numeric" => "Bunga bank harus berupa angka.",
+            "admin_bank.numeric" => "Admin bank harus berupa angka.",
+            "admin_bank.min" => "Admin bank tidak boleh kurang dari 0.",
         ];
     }
 }

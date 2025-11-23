@@ -71,6 +71,7 @@ class KeuanganService
         // === PEMBELIAN ===
         $pembelianKredit = BukuBesarHutang::where("user_id", $userId)
             ->where($filter)
+            ->where("uraian", "not like", "%saldo awal%")
             ->sum("kredit");
 
         $pembelianTunai = BukuBesarPengeluaran::where("user_id", $userId)
@@ -100,18 +101,20 @@ class KeuanganService
             $potonganPembelian;
 
         // === PERSEDIAAN AKHIR ===
-        $persediaanAkhir = KartuGudang::with("barang")
-            ->where("user_id", $userId)
-            ->where("tanggal", "<=", $endDate)
-            ->get()
-            ->groupBy("barang_id")
-            ->map(function ($group) {
-                $last = $group->sortByDesc("tanggal")->first();
-                $hargaPerUnit = $last->barang->harga_beli_per_unit ?? 0;
-                $saldoTerakhir = $last->saldo_persatuan ?? 0;
-                return $saldoTerakhir * $hargaPerUnit;
+        $persediaanAkhir = KartuGudang::where("user_id", $userId)
+            ->whereIn("id", function ($query) use ($userId) {
+                $query
+                    ->select(DB::raw("MAX(id)"))
+                    ->from("kartu_gudang")
+                    ->where("user_id", $userId)
+                    ->groupBy("barang_id");
             })
-            ->sum();
+            ->with("barang:id,harga_beli_per_unit")
+            ->get()
+            ->sum(
+                fn($i) => ($i->saldo_persatuan ?? 0) *
+                    ($i->barang->harga_beli_per_unit ?? 0),
+            );
 
         // === HPP & LABA ===
         $barangTersedia = $persediaanAwal + $pembelianBersih;
@@ -119,18 +122,22 @@ class KeuanganService
         $labaKotor = $penjualanBersih - $hpp;
 
         // === BIAYA OPERASIONAL ===
+        // $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
+        //     ->where($filter)
+        //     ->where(function ($q) {
+        //         $q->where("uraian", "like", "%gaji%")
+        //             ->orWhere("uraian", "like", "%biaya%")
+        //             ->orWhere("uraian", "like", "%asuransi%")
+        //             ->orWhere("uraian", "like", "%pajak%")
+        //             ->orWhere("uraian", "like", "%air%")
+        //             ->orWhere("uraian", "like", "%listrik%")
+        //             ->orWhere("uraian", "like", "%operasional%");
+        //     })
+        //     ->sum("jumlah_pengeluaran");
+
         $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
             ->where($filter)
-            ->where(function ($q) {
-                $q->where("uraian", "like", "%gaji%")
-                    ->orWhere("uraian", "like", "%biaya%")
-                    ->orWhere("uraian", "like", "%asuransi%")
-                    ->orWhere("uraian", "like", "%pajak%")
-                    ->orWhere("uraian", "like", "%air%")
-                    ->orWhere("uraian", "like", "%listrik%")
-                    ->orWhere("uraian", "like", "%operasional%");
-            })
-            ->sum("jumlah_pengeluaran");
+            ->sum("lain_lain");
 
         $labaOperasional = $labaKotor - $biayaOperasional;
 
@@ -140,7 +147,7 @@ class KeuanganService
 
         $biayaAdministrasiBank = BukuBesarPengeluaran::where("user_id", $userId)
             ->where($filter)
-            ->sum("bunga_bank");
+            ->sum("admin_bank");
 
         $labaSebelumPajak =
             $labaOperasional + $pendapatanLain - $biayaAdministrasiBank;

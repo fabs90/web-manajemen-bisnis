@@ -132,10 +132,11 @@ class AsetHutangController extends Controller
                             "tanggal" =>
                                 $piutang["jatuh_tempo_piutang"] ?? now(),
                             "uraian" => $piutang["uraian"] ?? "-",
-                            "saldo" => $piutang["jumlah"],
-                            "debit" => $piutang["jumlah"],
+                            "debit" => 0,
                             "kredit" => 0,
+                            "saldo" => $piutang["jumlah"],
                             "neraca_awal_id" => $neracaAwal->id,
+                            // "debit" => $piutang["jumlah"],
                         ]);
                     }
                 }
@@ -151,10 +152,11 @@ class AsetHutangController extends Controller
                             "pelanggan_id" => $hutang["nama"],
                             "tanggal" => $hutang["jatuh_tempo_hutang"] ?? now(),
                             "uraian" => $hutang["uraian"] ?? "-",
-                            "saldo" => $hutang["jumlah"],
                             "debit" => 0,
-                            "kredit" => $hutang["jumlah"],
+                            "kredit" => 0,
+                            "saldo" => $hutang["jumlah"],
                             "neraca_awal_id" => $neracaAwal->id,
+                            // "kredit" => $hutang["jumlah"],
                         ]);
                     }
                 }

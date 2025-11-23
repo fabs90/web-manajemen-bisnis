@@ -22,7 +22,7 @@
             {{-- Uraian Pendapatan --}}
             <div class="mb-3">
                 <label for="uraian_pendapatan" class="form-label">Uraian Pendapatan Lain-Lain<span class="text-danger">*</span></label>
-                <input type="text" name="uraian_pendapatan" id="uraian_pendapatan" class="form-control @error('uraian_pendapatan') is-invalid @enderror" value="{{ old('uraian_pendapatan') }}" placeholder="Contoh: Bunga bank, denda, hadiah" required>
+                <input type="text" name="uraian_pendapatan" id="uraian_pendapatan" class="form-control @error('uraian_pendapatan') is-invalid @enderror" value="{{ old('uraian_pendapatan') }}" placeholder="Contoh: Biaya sewa, denda, hadiah" required>
                 @error('uraian_pendapatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
