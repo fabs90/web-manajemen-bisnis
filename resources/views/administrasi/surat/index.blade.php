@@ -152,4 +152,218 @@
     </a>
 
 </div>
+
+{{-- letakkan ini sebelum @endsection, setelah markup menu-grid --}}
+<style>
+    /* --- Coming Soon badge --- */
+    .coming-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(135deg,#ff6b6b,#ffb86b);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: .4px;
+        transform-origin: center;
+        box-shadow: 0 6px 18px rgba(255,107,107,0.18);
+        display: inline-block;
+        pointer-events: none;
+        animation: pulseBadge 1.8s infinite;
+        z-index: 50;
+    }
+
+    @keyframes pulseBadge {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.07); opacity: 0.92; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* --- Ripple on click --- */
+    .cs-ripple {
+        position: absolute;
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple 700ms ease-out;
+        background: rgba(255, 255, 255, 0.45);
+        pointer-events: none;
+        z-index: 40;
+    }
+
+    @keyframes ripple {
+        to { transform: scale(6); opacity: 0; }
+    }
+
+    /* --- Subtle glow card when hover --- */
+    .menu-card.cs-soon:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        filter: saturate(1.05);
+    }
+
+    /* --- Tiny modal / toast --- */
+    .cs-modal {
+        position: fixed;
+        left: 50%;
+        bottom: 6%;
+        transform: translateX(-50%) translateY(20px);
+        background: linear-gradient(180deg, #ffffff, #fff8f0);
+        border-radius: 12px;
+        padding: 14px 18px;
+        box-shadow: 0 12px 40px rgba(18, 18, 18, 0.12);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        min-width: 260px;
+        max-width: calc(100% - 40px);
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .28s ease, transform .28s cubic-bezier(.2,.9,.3,1);
+        border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .cs-modal.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+    }
+
+    .cs-modal .icon {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        background: linear-gradient(135deg,#ffd6a5,#ffb4a2);
+        color: #602d00;
+        box-shadow: 0 6px 18px rgba(255,160,120,0.16);
+    }
+
+    .cs-modal .text {
+        font-size: 14px;
+        line-height: 1.2;
+        color: #12202a;
+    }
+
+    .cs-modal .cta {
+        margin-left: auto;
+        font-size: 13px;
+        color: #0f62fe;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    /* small-screen tweaks */
+    @media (max-width: 576px) {
+        .coming-badge { top: 8px; right: 8px; font-size: 11px; padding: 5px 8px; }
+        .cs-modal { left: 50%; bottom: 8%; min-width: 200px; padding: 12px; }
+    }
+</style>
+
+<!-- Coming soon modal (insert once in page) -->
+<div id="cs-modal" class="cs-modal" role="status" aria-live="polite" aria-hidden="true" style="display:none;">
+    <div class="icon">✨</div>
+    <div class="text">
+        <div style="font-weight:700">Coming Soon</div>
+        <div style="opacity:.8; font-size:13px; margin-top:4px">Fitur ini sedang dikembangkan. Nantikan pembaruan berikutnya!</div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // Pilih semua menu-card anchor yang href="#" atau yang punya data-coming-soon="true"
+        const anchors = Array.from(document.querySelectorAll('.menu-grid a'))
+            .filter(a => a.getAttribute('href') === '#' || a.dataset.comingSoon === "true");
+
+        if (!anchors.length) return;
+
+        // buat badge dinamis & attach behavior
+        anchors.forEach(a => {
+            // tambahkan class untuk styling hover
+            a.classList.add('cs-soon');
+
+            // wrapper relatif supaya badge & ripple bisa absolute
+            a.style.position = a.style.position || 'relative';
+
+            // buat badge (sekali)
+            const badge = document.createElement('span');
+            badge.className = 'coming-badge';
+            badge.innerText = 'COMING SOON';
+            badge.setAttribute('aria-hidden', 'true');
+            // posisikan sedikit di pojok (kamu bisa adjust)
+            badge.style.top = '10px';
+            badge.style.right = '10px';
+
+            // tambahkan badge ke anchor
+            a.appendChild(badge);
+
+            // click handler: tampilkan ripple + modal, cegah navigasi
+            a.addEventListener('click', function(e){
+                e.preventDefault();
+                showRipple(a, e);
+                showModalOnce();
+            });
+
+            // juga keyboard accessible: Enter/Space
+            a.addEventListener('keydown', function(e){
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    showRipple(a, e);
+                    showModalOnce();
+                }
+            });
+        });
+
+        // Ripple effect helper
+        function showRipple(target, event) {
+            const rect = target.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'cs-ripple';
+
+            const size = Math.max(rect.width, rect.height) * 0.5;
+            ripple.style.width = ripple.style.height = size + 'px';
+
+            // position ripple near click/tap; fallback: center
+            let x = rect.width / 2, y = rect.height / 2;
+            if (event && event.clientX) {
+                x = event.clientX - rect.left;
+                y = event.clientY - rect.top;
+            }
+            ripple.style.left = (x - size/2) + 'px';
+            ripple.style.top = (y - size/2) + 'px';
+
+            target.appendChild(ripple);
+            // cleanup after animation
+            ripple.addEventListener('animationend', () => ripple.remove());
+        }
+
+        // Modal (toast) logic: show only briefly; pressing Info triggers route/help
+        const modal = document.getElementById('cs-modal');
+        let modalTimer = null;
+        function showModalOnce() {
+            if (!modal) return;
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+            void modal.offsetWidth; // reflow for transition
+            modal.classList.add('show');
+
+            // auto hide in 3.2s
+            clearTimeout(modalTimer);
+            modalTimer = setTimeout(hideModal, 3200);
+        }
+        function hideModal() {
+            if (!modal) return;
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            // hide after transition
+            setTimeout(()=> modal.style.display = 'none', 300);
+        }
+
+        // OPTIONAL: apabila kamu ingin menandai manual, tambahkan attribute `data-coming-soon="true"` ke <a>
+        // contoh: <a href="/some" data-coming-soon="true">Feature</a>
+    })();
+</script>
 @endsection
