@@ -4,6 +4,7 @@ use App\Http\Controllers\AdministrasiSuratController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PendapatanController;
 use App\Http\Controllers\PengeluaranController;
+use App\Http\Controllers\Rapat\ManajemenRapatController;
 use App\Http\Controllers\RugiLabaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
@@ -374,6 +375,79 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             AdministrasiSuratController::class,
             "destroyAgendaPerjalanan",
         ])->name("administrasi.agenda-perjalanan.destroy");
+
+        // Janji Temu
+        Route::get("/janji-temu/", [
+            AdministrasiSuratController::class,
+            "indexJanjiTemu",
+        ])->name("administrasi.janji-temu.index");
+
+        Route::get("/janji-temu/create", [
+            AdministrasiSuratController::class,
+            "createJanjiTemu",
+        ])->name("administrasi.janji-temu.create");
+
+        Route::get("/janji-temu/{id}", [
+            AdministrasiSuratController::class,
+            "showJanjiTemu",
+        ])->name("administrasi.janji-temu.show");
+
+        Route::get("/janji-temu/{id}/pdf", [
+            AdministrasiSuratController::class,
+            "pdfJanjiTemu",
+        ])->name("administrasi.janji-temu.pdf");
+
+        Route::post("/janji-temu/", [
+            AdministrasiSuratController::class,
+            "storeJanjiTemu",
+        ])->name("administrasi.janji-temu.store");
+
+        Route::delete("/janji-temu/{agendaId}", [
+            AdministrasiSuratController::class,
+            "destroyJanjiTemu",
+        ])->name("administrasi.janji-temu.destroy");
+
+        // Surat Undangan Rapat
+        Route::get("/surat-undangan-rapat/", [
+            AdministrasiSuratController::class,
+            "indexSuratUndanganRapat",
+        ])->name("administrasi.surat-undangan-rapat.index");
+
+        Route::get("/surat-undangan-rapat/create", [
+            AdministrasiSuratController::class,
+            "createSuratUndanganRapat",
+        ])->name("administrasi.surat-undangan-rapat.create");
+
+        Route::get("/surat-undangan-rapat/{id}/pdf", [
+            AdministrasiSuratController::class,
+            "pdfSuratUndanganRapat",
+        ])->name("administrasi.surat-undangan-rapat.pdf");
+
+        Route::post("/surat-undangan-rapat/", [
+            AdministrasiSuratController::class,
+            "storeSuratUndanganRapat",
+        ])->name("administrasi.surat-undangan-rapat.store");
+
+        Route::delete("/surat-undangan-rapat/{agendaId}", [
+            AdministrasiSuratController::class,
+            "destroySuratUndanganRapat",
+        ])->name("administrasi.surat-undangan-rapat.destroy");
+
+        // Rapat
+        Route::get("/rapat/", [
+            ManajemenRapatController::class,
+            "index",
+        ])->name("administrasi.rapat.index");
+
+        Route::get("/rapat/create", [
+            ManajemenRapatController::class,
+            "create",
+        ])->name("administrasi.rapat.create");
+
+        Route::post("/rapat/", [
+            ManajemenRapatController::class,
+            "store",
+        ])->name("administrasi.rapat.store");
     });
 });
 

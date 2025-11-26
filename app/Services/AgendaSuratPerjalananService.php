@@ -39,7 +39,11 @@ class AgendaSuratPerjalananService
         // masukin ke pengeluaran
         $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
             "tanggal" => $data["tanggal_disetujui"],
-            "uraian" => "Pengeluaran untuk agenda surat perjalanan",
+            "uraian" =>
+                "Pengeluaran untuk agenda surat perjalanan: " .
+                $agendaSuratPerjalanan->id .
+                " - " .
+                $data["nama_pelaksana"],
             "potongan_pembelian" => 0,
             "jumlah_hutang" => 0,
             "jumlah_pembelian_tunai" => 0,
@@ -110,6 +114,26 @@ class AgendaSuratPerjalananService
             "user_id",
             auth()->id(),
         )->findOrFail($agenda->id);
+
+        // cek buku besar pengeluaran
+        $bukuBesarPengeluanOld = BukuBesarPengeluaran::where(
+            "user_id",
+            auth()->id(),
+        )
+            ->where(
+                "uraian",
+                "LIKE",
+                "%Pengeluaran untuk agenda surat perjalanan: " .
+                    $agendaSuratPerjalanan["id"] .
+                    " - " .
+                    $agendaSuratPerjalanan["nama_pelaksana"] .
+                    "%",
+            )
+            ->first();
+        if ($bukuBesarPengeluanOld) {
+            $bukuBesarPengeluanOld->delete();
+        }
+
         return $agendaSuratPerjalanan->delete();
     }
 }

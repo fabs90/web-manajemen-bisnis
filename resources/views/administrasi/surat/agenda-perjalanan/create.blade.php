@@ -4,25 +4,26 @@
 
 @section('section-row')
 <div class="container mt-4">
+    {{-- Alert sukses --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Sukses!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    {{-- Alert error --}}
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Gagal!</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="card shadow">
         <div class="card-header bg-primary text-white fw-bold">
             Form Agenda Perjalanan
         </div>
-        {{-- Alert sukses --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Sukses!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        {{-- Alert error --}}
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Gagal!</strong> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
         <div class="card-body mt-3">
             <form action="{{ route('administrasi.agenda-perjalanan.store') }}" method="POST">
                 @csrf

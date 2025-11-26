@@ -7,6 +7,7 @@ use App\Http\Requests\PermintaanKasKecilRequest;
 use App\Http\Requests\SuratKeluarRequest;
 use App\Http\Requests\SuratMasukRequest;
 use App\Mail\SuratKeluarMail;
+use App\Models\AgendaJanjiTemu;
 use App\Models\AgendaPerjalanan;
 use App\Models\AgendaSuratKeluar;
 use App\Models\AgendaSuratMasuk;
@@ -15,8 +16,11 @@ use App\Models\KasKecil;
 use App\Models\KasKecilDetail;
 use App\Models\KasKecilFormulir;
 use App\Models\SuratKeluarEmailLog;
+use App\Models\SuratUndanganRapat;
+use App\Services\AgendaJanjiTemuService;
 use App\Services\AgendaSuratPerjalananService;
 use App\Services\AgendaTelponService;
+use App\Services\SuratUndanganRapatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +77,24 @@ class AdministrasiSuratController extends Controller
         );
     }
 
+    public function indexJanjiTemu()
+    {
+        $agendaJanjiTemu = AgendaJanjiTemu::where(
+            "user_id",
+            auth()->id(),
+        )->get();
+        return view(
+            "administrasi.surat.janji-temu.index",
+            compact("agendaJanjiTemu"),
+        );
+    }
+
+    public function indexSuratUndanganRapat()
+    {
+        $agendaSuratUndanganRapat = SuratUndanganRapat::where("user_id", auth()->id())->get();
+        return view("administrasi.surat.surat-undangan-rapat.index", compact('agendaSuratUndanganRapat'));
+    }
+
     public function create()
     {
         $agendaSuratMasuk = AgendaSuratMasuk::where(
@@ -105,6 +127,16 @@ class AdministrasiSuratController extends Controller
         return view("administrasi.surat.agenda-perjalanan.create");
     }
 
+    public function createJanjiTemu()
+    {
+        return view("administrasi.surat.janji-temu.create");
+    }
+
+    public function createSuratUndanganRapat()
+    {
+        return view("administrasi.surat.surat-undangan-rapat.create");
+    }
+
     public function showDisposisi($id)
     {
         $surat = AgendaSuratMasuk::where("user_id", auth()->id())
@@ -114,6 +146,28 @@ class AdministrasiSuratController extends Controller
             "administrasi.surat.surat-masuk.create-disposisi",
             compact("surat"),
         );
+    }
+
+    public function showJanjiTemu($id)
+    {
+        $agendaJanjiTemuService = app(AgendaJanjiTemuService::class);
+        $agendaJanjiTemu = $agendaJanjiTemuService->show($id);
+        return view(
+            "administrasi.surat.janji-temu.show",
+            compact("agendaJanjiTemu"),
+        );
+    }
+
+    public function pdfJanjiTemu($id)
+    {
+        $agendaJanjiTemuService = app(AgendaJanjiTemuService::class);
+        return $agendaJanjiTemuService->generatePdf($id);
+    }
+
+    public function pdfSuratUndanganRapat($id)
+    {
+        $suratUndanganRapatService = app(SuratUndanganRapatService::class);
+        return $suratUndanganRapatService->generatePdf($id);
     }
 
     public function store(SuratMasukRequest $request)
@@ -447,7 +501,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda telepon. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -470,13 +524,53 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Perjalanan. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
                 "Terjadi kesalahan saat menyimpan Agenda Perjalanan.",
             );
         }
+    }
+
+    public function storeJanjiTemu(Request $request)
+    {
+        $agendaJanjiTemuService = app(AgendaJanjiTemuService::class);
+        DB::beginTransaction();
+        $data = $request->all();
+        $data["user_id"] = auth()->id();
+        try {
+            $agendaJanjiTemuService->store($data);
+            DB::commit();
+            return redirect()
+                ->route("administrasi.janji-temu.index")
+                ->with("success", "Agenda Janji Temu berhasil disimpan.");
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error(
+                "Gagal menyimpan pada Agenda Janji Temu. Error: " .
+                $e->getMessage(),
+            );
+            return back()->with(
+                "error",
+                "Terjadi kesalahan saat menyimpan Agenda Janji Temu.",
+            );
+        }
+    }
+
+    public function storeSuratUndanganRapat(Request $request)
+    {
+        $agendaService = app(SuratUndanganRapatService::class);
+
+        $surat = $agendaService->store($request->all());
+
+        if (!$surat) {
+            return back()->with('error', 'Terjadi kesalahan saat menyimpan data')->withInput();
+        }
+
+        return redirect()
+            ->route('administrasi.surat-undangan-rapat.index')
+            ->with('success', 'Surat undangan rapat berhasil disimpan.');
     }
 
     public function destroyAgendaMasuk(string $id)
@@ -641,7 +735,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda telepon. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -668,11 +762,65 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda perjalanan. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
                 "Terjadi kesalahan saat menghapus agenda perjalanan.",
+            );
+        }
+    }
+
+    public function destroyJanjiTemu($id)
+    {
+        DB::beginTransaction();
+        try {
+            $agendaJanjiTemuService = app(AgendaJanjiTemuService::class);
+            $agenda = AgendaJanjiTemu::where(
+                "user_id",
+                auth()->id(),
+            )->findOrFail($id);
+            $agendaJanjiTemuService->delete($agenda->id);
+            DB::commit();
+            return redirect()
+                ->back()
+                ->with("success", "Agenda janji temu berhasil dihapus.");
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error(
+                "Gagal menghapus pada Agenda janji temu. Error: " .
+                $e->getMessage(),
+            );
+            return back()->with(
+                "error",
+                "Terjadi kesalahan saat menghapus agenda janji temu.",
+            );
+        }
+    }
+
+    public function destroySuratUndanganRapat($id)
+    {
+        DB::beginTransaction();
+        try {
+            $suratUndanganRapatService = app(suratUndanganRapatService::class);
+            $suratUndanganRapat = SuratUndanganRapat::where(
+                "user_id",
+                auth()->id(),
+            )->findOrFail($id);
+            $suratUndanganRapatService->delete($suratUndanganRapat->id);
+            DB::commit();
+            return redirect()
+                ->back()
+                ->with("success", "Agenda surat undangan rapat berhasil dihapus.");
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error(
+                "Gagal menghapus pada surat undangan rapat. Error: " .
+                $e->getMessage(),
+            );
+            return back()->with(
+                "error",
+                "Terjadi kesalahan saat menghapus surat undangan rapat.",
             );
         }
     }
