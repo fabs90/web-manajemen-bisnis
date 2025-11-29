@@ -38,13 +38,13 @@
                             <th>Keperluan</th>
                             <th>Status Tingkat</th>
                             <th>Status</th>
+                            <th>(Centang Jika Sudah Dilakukan)</th>
                             <th width="110px">Aksi</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @foreach ($agenda as $item)
-                            @if ($item->is_done == false)
+                        @foreach ($agendaBelum as $item)
                                 <tr>
                                     <td>{{ $item->tgl_panggilan }}</td>
                                     <td>{{ $item->nama_penelpon }}</td>
@@ -54,10 +54,42 @@
                                         {{ $item->jadwal_waktu }}
                                     </td>
                                     <td>{{ $item->keperluan }}</td>
-                                    <td>{{ ucfirst($item->tingkat_status) }}</td>
                                     <td>
-                                        <span class="badge bg-warning text-dark">Belum</span>
+                                        @php
+                                            $badge = [
+                                                'urgent' => 'danger',
+                                                'penting' => 'warning',
+                                                'normal' => 'primary',
+                                                'dijadwalkan' => 'secondary',
+                                            ];
+                                            $class = $badge[$item->tingkat_status] ?? 'secondary';
+                                        @endphp
+
+                                        <span class="badge bg-{{ $class }}">
+                                            {{ ucfirst($item->tingkat_status) }}
+                                        </span>
                                     </td>
+                                    <td>
+                                        @if ($item->status == 'terkonfirmasi')
+                                            <span class="badge bg-success">Terkonfirmasi</span>
+                                        @elseif ($item->status == 'reschedule')
+                                            <span class="badge bg-info text-dark">Reschedule</span>
+                                        @elseif ($item->status == 'dibatalkan')
+                                            <span class="badge bg-danger">Dibatalkan</span>
+                                            @elseif ($item->status == 'selesai')
+                                                <span class="badge bg-success">Selesai</span>
+                                        @else
+                                            <span class="badge bg-secondary">Belum Ditentukan</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <form action="{{ route('administrasi.agenda-telpon.update-done', $item->id) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="checkbox" onchange="this.form.submit()" {{ $item->is_done ? 'checked' : '' }}>
+                                        </form>
+                                    </td>
+
                                     <td>
                                         <a href="{{ route('administrasi.agenda-telpon.show', $item->id) }}"
                                             class="btn btn-sm btn-primary">Edit</a>
@@ -70,7 +102,6 @@
                                         </form>
                                     </td>
                                 </tr>
-                            @endif
                         @endforeach
                     </tbody>
 
@@ -95,45 +126,113 @@
                             <th>Keperluan</th>
                             <th>Status Tingkat</th>
                             <th>Status</th>
+                            <th>Check</th>
                             <th width="110px">Aksi</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @foreach ($agenda as $item)
-                            @if ($item->is_done == true)
-                                <tr>
-                                    <td>{{ $item->tgl_panggilan }}</td>
-                                    <td>{{ $item->nama_penelpon }}</td>
-                                    <td>{{ $item->nomor_telpon }}</td>
-                                    <td>
-                                        {{ $item->jadwal_tanggal }}<br>
-                                        {{ $item->jadwal_waktu }}
-                                    </td>
-                                    <td>{{ $item->keperluan }}</td>
-                                    <td>{{ ucfirst($item->tingkat_status) }}</td>
-                                    <td>
-                                        @if ($item->status == 'terkonfirmasi')
-                                            <span class="badge bg-success">Terkonfirmasi</span>
-                                        @elseif($item->status == 'reschedule')
-                                            <span class="badge bg-info text-dark">Reschedule</span>
-                                        @elseif($item->status == 'dibatalkan')
-                                            <span class="badge bg-danger">Dibatalkan</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm btn-info text-white">Detail</a>
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
+                    @foreach ($agendaSelesai as $item)
+                    <tr>
+                        <td>{{ $item->tgl_panggilan }}</td>
+                        <td>{{ $item->nama_penelpon }}</td>
+                        <td>{{ $item->nomor_telpon }}</td>
+                        <td>{{ $item->jadwal_tanggal }}<br>{{ $item->jadwal_waktu }}</td>
+                        <td>{{ $item->keperluan }}</td>
+                        <td>
+                            <span class="badge bg-{{ $badge[$item->tingkat_status] ?? 'secondary' }}">
+                                {{ ucfirst($item->tingkat_status) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">Selesai</span>
+                        </td>
+                        <td class="text-center">
+                            <form action="{{ route('administrasi.agenda-telpon.update-done', $item->id) }}" method="POST">
+                                @csrf @method('PATCH')
+                                <input type="checkbox" onchange="this.form.submit()" {{ $item->is_done ? 'checked' : '' }}>
+                            </form>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-info text-white"
+                                data-bs-toggle="modal" data-bs-target="#detailModal{{ $item->id }}">
+                                Detail
+                            </button>
+                        </td>
+                    </tr>
+                    @endforeach
                     </tbody>
-
                 </table>
+                @foreach ($agendaSelesai as $item)
+                <!-- Modal Detail -->
+                <div class="modal fade" id="detailModal{{ $item->id }}" tabindex="-1"
+                    aria-labelledby="detailModalLabel{{ $item->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
 
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="detailModalLabel{{ $item->id }}">
+                                    Detail Agenda Telpon
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body p-3">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th class="bg-primary">Tanggal Panggilan</th>
+                                        <td>{{ $item->tgl_panggilan }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Waktu Panggilan</th>
+                                        <td>{{ $item->waktu_panggilan }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Nama Penelpon</th>
+                                        <td>{{ $item->nama_penelpon }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Perusahaan</th>
+                                        <td>{{ $item->perusahaan }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">No Telpon</th>
+                                        <td>{{ $item->nomor_telpon }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Jadwal</th>
+                                        <td>{{ $item->jadwal_tanggal }} - {{ $item->jadwal_waktu }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Keperluan</th>
+                                        <td>{{ $item->keperluan }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Tingkat Status</th>
+                                        <td>{{ ucfirst($item->tingkat_status) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Status</th>
+                                        <td>{{ ucfirst($item->status) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-primary">Catatan Khusus</th>
+                                        <td>{{ $item->catatan_khusus ?? '-' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
-
     </div>
-
 @endsection

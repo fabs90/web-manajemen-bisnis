@@ -26,11 +26,11 @@ return new class extends Migration {
             $table->date("tanggal_disiapkan")->nullable();
             $table->string("disetujui_oleh")->nullable();
             $table->date("tanggal_disetujui")->nullable();
-            $table->decimal("transport", 15, 2)->default(0);
-            $table->decimal("akomodasi", 15, 2)->default(0);
-            $table->decimal("konsumsi", 15, 2)->default(0);
-            $table->decimal("lain_lain", 15, 2)->default(0);
-            $table->decimal("total_biaya", 15, 2)->default(0);
+            $table->decimal("transport")->default(0);
+            $table->decimal("akomodasi")->default(0);
+            $table->decimal("konsumsi")->default(0);
+            $table->decimal("lain_lain")->default(0);
+            $table->decimal("total_biaya")->default(0);
             $table->timestamps();
         });
 

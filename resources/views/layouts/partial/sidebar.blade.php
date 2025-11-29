@@ -92,11 +92,16 @@
 
                     <ul class="submenu">
                         <li class="submenu-item">
-                            <a href="{{ route('keuangan.pendapatan.list') }}" class="submenu-link">Pendapatan/Penjualan</a>
+                            <a href="{{route('keuangan.kasir.index')}}" class="submenu-link">Kasir</a>
                         </li>
-
+                        <li class="submenu-item">
+                            <a href="{{ route('keuangan.pendapatan.list') }}" class="submenu-link">Penerimaan/Penjualan</a>
+                        </li>
                         <li class="submenu-item">
                             <a href="{{route('keuangan.pengeluaran.list')}}" class="submenu-link">Pengeluaran/Pembelian</a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="{{route('keuangan.pengeluaran-kas-kecil.index')}}" class="submenu-link">Pengisian Kas Kecil</a>
                         </li>
                     </ul>
                 </li>

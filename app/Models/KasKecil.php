@@ -31,4 +31,9 @@ class KasKecil extends Model
     {
         return $this->hasMany(KasKecilFormulir::class);
     }
+
+    public function kasKecilLog()
+    {
+        return $this->hasMany(PengisianKasKecilLog::class);
+    }
 }

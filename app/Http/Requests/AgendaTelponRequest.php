@@ -23,9 +23,15 @@ class AgendaTelponRequest extends FormRequest
             "jadwal_waktu" => ["nullable"],
             "jadwal_dengan" => ["nullable", "string", "max:255"],
             "keperluan" => ["required", "string"],
-            "tingkat_status" => ["required", "in:urgent,penting,normal,dijadwalkan"],
+            "tingkat_status" => [
+                "required",
+                "in:urgent,penting,normal,dijadwalkan,selesai",
+            ],
             "catatan_khusus" => ["nullable", "string"],
-            "status" => ["required", "in:terkonfirmasi,reschedule,dibatalkan,belum"],
+            "status" => [
+                "required",
+                "in:terkonfirmasi,reschedule,dibatalkan,belum,selesai",
+            ],
             "dicatat_oleh" => ["required", "string", "max:255"],
             "dicatat_tgl" => ["required", "date"],
         ];

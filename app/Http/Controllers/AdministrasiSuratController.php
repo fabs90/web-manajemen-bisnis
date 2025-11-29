@@ -53,10 +53,19 @@ class AdministrasiSuratController extends Controller
 
     public function indexAgendaTelpon()
     {
-        $agenda = AgendaTelpon::where("user_id", auth()->id())->get();
+        $agendaBelum = AgendaTelpon::where("user_id", auth()->id())
+            ->where("is_done", false)
+            ->orderBy("tgl_panggilan", "desc")
+            ->get();
+
+        $agendaSelesai = AgendaTelpon::where("user_id", auth()->id())
+            ->where("is_done", true)
+            ->orderBy("tgl_panggilan", "desc")
+            ->get();
+
         return view(
             "administrasi.surat.agenda-telpon.index",
-            compact("agenda"),
+            compact("agendaBelum", "agendaSelesai"),
         );
     }
 
@@ -91,8 +100,14 @@ class AdministrasiSuratController extends Controller
 
     public function indexSuratUndanganRapat()
     {
-        $agendaSuratUndanganRapat = SuratUndanganRapat::where("user_id", auth()->id())->get();
-        return view("administrasi.surat.surat-undangan-rapat.index", compact('agendaSuratUndanganRapat'));
+        $agendaSuratUndanganRapat = SuratUndanganRapat::where(
+            "user_id",
+            auth()->id(),
+        )->get();
+        return view(
+            "administrasi.surat.surat-undangan-rapat.index",
+            compact("agendaSuratUndanganRapat"),
+        );
     }
 
     public function create()
@@ -158,6 +173,23 @@ class AdministrasiSuratController extends Controller
         );
     }
 
+    public function showAgendaPerjalanan($id)
+    {
+        $agendaPerjalanan = AgendaPerjalanan::with(
+            "agendaPerjalananDetail",
+            "agendaPerjalananAkomodasi",
+            "agendaPerjalananKontak",
+            "agendaPerjalananTransportasi",
+        )
+            ->where("user_id", auth()->id())
+            ->where("id", $id)
+            ->first();
+        return view(
+            "administrasi.surat.agenda-perjalanan.show",
+            compact("agendaPerjalanan"),
+        );
+    }
+
     public function pdfJanjiTemu($id)
     {
         $agendaJanjiTemuService = app(AgendaJanjiTemuService::class);
@@ -168,6 +200,12 @@ class AdministrasiSuratController extends Controller
     {
         $suratUndanganRapatService = app(SuratUndanganRapatService::class);
         return $suratUndanganRapatService->generatePdf($id);
+    }
+
+    public function pdfAgendaPerjalanan($id)
+    {
+        $agendaPerjalananService = app(AgendaSuratPerjalananService::class);
+        return $agendaPerjalananService->generatePdf($id);
     }
 
     public function store(SuratMasukRequest $request)
@@ -501,7 +539,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda telepon. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -524,7 +562,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Perjalanan. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -549,7 +587,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Janji Temu. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -565,12 +603,14 @@ class AdministrasiSuratController extends Controller
         $surat = $agendaService->store($request->all());
 
         if (!$surat) {
-            return back()->with('error', 'Terjadi kesalahan saat menyimpan data')->withInput();
+            return back()
+                ->with("error", "Terjadi kesalahan saat menyimpan data")
+                ->withInput();
         }
 
         return redirect()
-            ->route('administrasi.surat-undangan-rapat.index')
-            ->with('success', 'Surat undangan rapat berhasil disimpan.');
+            ->route("administrasi.surat-undangan-rapat.index")
+            ->with("success", "Surat undangan rapat berhasil disimpan.");
     }
 
     public function destroyAgendaMasuk(string $id)
@@ -619,6 +659,46 @@ class AdministrasiSuratController extends Controller
                 ->route("administrasi.surat.index")
                 ->with("error", "Agenda surat masuk gagal dihapus");
         }
+    }
+
+    public function updateAgendaTelpon($id, Request $request)
+    {
+        $agenda = AgendaTelpon::where("user_id", auth()->id())
+            ->where("id", $id)
+            ->firstOrFail();
+
+        $agenda->tgl_panggilan = $request->tgl_panggilan;
+        $agenda->waktu_panggilan = $request->waktu_panggilan;
+        $agenda->nama_penelpon = $request->nama_penelpon;
+        $agenda->perusahaan = $request->perusahaan;
+        $agenda->nomor_telpon = $request->nomor_telpon;
+        $agenda->jadwal_tanggal = $request->jadwal_tanggal;
+        $agenda->jadwal_waktu = $request->jadwal_waktu;
+        $agenda->jadwal_dengan = $request->jadwal_dengan;
+        $agenda->keperluan = $request->keperluan;
+        $agenda->tingkat_status = $request->tingkat_status;
+        $agenda->catatan_khusus = $request->catatan_khusus;
+        $agenda->status = $request->status;
+        $agenda->dicatat_oleh = $request->dicatat_oleh;
+        $agenda->dicatat_tgl = $request->dicatat_tgl;
+
+        $agenda->save();
+
+        return redirect()
+            ->route("administrasi.agenda-telpon.index")
+            ->with("success", "Agenda Telpon berhasil diperbarui!");
+    }
+
+    public function updateIsDone($id)
+    {
+        $agenda = AgendaTelpon::where("user_id", auth()->id())
+            ->where("id", $id)
+            ->first();
+        // Ubah status is_done ke true
+        $agenda->is_done = !$agenda->is_done;
+        $agenda->save();
+
+        return back()->with("success", "Agenda berhasil ditandai!");
     }
 
     public function destroyAgendaSuratKeluar($id)
@@ -735,7 +815,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda telepon. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -762,7 +842,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda perjalanan. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -789,7 +869,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda janji temu. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -811,12 +891,15 @@ class AdministrasiSuratController extends Controller
             DB::commit();
             return redirect()
                 ->back()
-                ->with("success", "Agenda surat undangan rapat berhasil dihapus.");
+                ->with(
+                    "success",
+                    "Agenda surat undangan rapat berhasil dihapus.",
+                );
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada surat undangan rapat. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",

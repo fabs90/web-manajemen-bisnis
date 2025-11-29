@@ -77,14 +77,15 @@
                         <td>Rp {{ number_format($item->total_biaya, 0, ',', '.') }}</td>
 
                         <td class="text-center">
-                            <a href="{{ route('administrasi.agenda-perjalanan.show', $item->id) }}"
+                            <!-- IN DEVELOPMENT <a href="{{ route('administrasi.agenda-perjalanan.show', $item->id) }}"
                                class="btn btn-info btn-sm">
                                 <i class="bi bi-eye"></i>
+                            </a>-->
+                            <a href="{{route('administrasi.agenda-perjalanan.pdf', ['id' => $item->id])}}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-file-pdf text-white"></i>
                             </a>
-
                             <form action="{{ route('administrasi.agenda-perjalanan.destroy', $item->id) }}"
-                                  method="POST" class="d-inline"
-                                  onsubmit="return confirm('Hapus data ini?')">
+                                  method="POST" class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-danger btn-sm">
@@ -109,6 +110,31 @@
         $('#agenda-perjalanan').DataTable({
             responsive: true,
             pageLength: 10,
+        });
+
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            let form = this;
+
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let btn = $(form).find('.delete-btn');
+                    btn.prop('disabled', true);
+                    btn.find('.delete-text').addClass('d-none');
+                    btn.find('.spinner-border').removeClass('d-none');
+                    form.submit();
+                }
+            });
+
         });
     });
 </script>

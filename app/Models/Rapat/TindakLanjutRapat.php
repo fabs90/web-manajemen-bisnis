@@ -10,7 +10,7 @@ class TindakLanjutRapat extends Model
 
     protected $fillable = [
         'agenda_rapat_id',
-        'tindak_lanjut',
+        'tindakan',
         'pelaksana',
         'target_selesai',
         'status',

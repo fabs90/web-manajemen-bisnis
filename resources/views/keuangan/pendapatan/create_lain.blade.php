@@ -21,14 +21,14 @@
 
             {{-- Uraian Pendapatan --}}
             <div class="mb-3">
-                <label for="uraian_pendapatan" class="form-label">Uraian Pendapatan Lain-Lain<span class="text-danger">*</span></label>
+                <label for="uraian_pendapatan" class="form-label">Uraian Penerimaan Lain-Lain<span class="text-danger">*</span></label>
                 <input type="text" name="uraian_pendapatan" id="uraian_pendapatan" class="form-control @error('uraian_pendapatan') is-invalid @enderror" value="{{ old('uraian_pendapatan') }}" placeholder="Contoh: Biaya sewa, denda, hadiah" required>
                 @error('uraian_pendapatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
             {{-- Jumlah (wajib) --}}
             <div class="mb-3">
-                <label for="jumlah" class="form-label">Jumlah Pendapatan Lain-Lain <span class="text-danger">*</span></label>
+                <label for="jumlah" class="form-label">Jumlah Penerimaan Lain-Lain <span class="text-danger">*</span></label>
                 <input type="text" name="jumlah" id="jumlah" class="form-control rupiah @error('jumlah') is-invalid @enderror" value="{{ old('jumlah') }}" placeholder="Masukkan jumlah" required>
                 @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
@@ -57,7 +57,7 @@
 
             <div class="mt-4 text-end">
                 <a href="{{ route('keuangan.pendapatan.list') }}" class="btn btn-secondary me-2">Kembali</a>
-                <button type="submit" class="btn btn-primary">Simpan Pendapatan</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
             </div>
         </form>
     </div>

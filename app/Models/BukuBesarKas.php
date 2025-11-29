@@ -36,4 +36,9 @@ class BukuBesarKas extends Model
     {
         return $this->belongsTo(NeracaAkhir::class);
     }
+
+    public function KasirTransactionLogs()
+    {
+        return $this->hasMany(KasirTransactionLog::class);
+    }
 }

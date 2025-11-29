@@ -155,6 +155,7 @@
                         </option>
                         <option value="dibatalkan" {{ old('status') == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan
                         </option>
+                          <option value="selesai" {{ old('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                     </select>
                     @error('status')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -181,7 +182,10 @@
                             @enderror
                         </div>
                     </div>
-                    <button class="btn btn-primary mt-4">Simpan</button>
+                    <div class="mt-4 text-end">
+                        <a href="{{ route('administrasi.agenda-telpon.index') }}" class="btn btn-secondary">Kembali</a>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
                 </form>
             </div>
         </div>

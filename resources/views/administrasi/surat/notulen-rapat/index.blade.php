@@ -11,7 +11,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
-
+        {{-- Alert Error --}}
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>Gagal!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <strong>DATA AGENDA RAPAT</strong>
@@ -51,16 +57,16 @@
                                     <td>{{ $item->notulis ?? '-' }}</td>
 
                                     <td class="text-center">
-                                        <a href="#" class="btn btn-info btn-sm">
-                                            <i class="bi bi-eye"></i>
+                                        <a href="{{route('administrasi.rapat.edit', ['rapatId' => $item->id])}}" class="btn btn-info btn-sm">
+                                            <i class="bi bi-pencil text-white"></i>
                                         </a>
 
-                                        <a href="#" class="btn btn-warning btn-sm">
-                                            <i class="bi bi-file-pdf"></i>
+                                        <a href="{{route('administrasi.rapat.generatePdf', ['rapatId' => $item->id])}}" class="btn btn-warning btn-sm">
+                                            <i class="bi bi-file-pdf text-white"></i>
                                         </a>
 
-                                        <form action="#" method="POST" class="d-inline"
-                                            onsubmit="return confirm('Hapus data ini?')">
+                                        <form action="{{ route('administrasi.rapat.destroy', ['rapatId' => $item->id]) }}"
+                                            method="POST" class="d-inline" onsubmit="return confirm('Hapus data ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-danger btn-sm">

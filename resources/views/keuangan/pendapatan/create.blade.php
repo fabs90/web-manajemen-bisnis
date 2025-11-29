@@ -1,11 +1,11 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tambah Pendapatan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Tambah Penerimaan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Pendapatan')
+@section('section-heading', 'Penerimaan')
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="{{ route('keuangan.pendapatan.create_lain') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambahkan Pendapatan Lain-Lain — Misalnya Sewa & Pemasukan Tambahan
+            <i class="bi bi-plus-circle me-1"></i> Tambahkan Penerimaan Lain-Lain — Misalnya Sewa & Pemasukan Tambahan
         </a>
     </div>
 
@@ -27,7 +27,7 @@
 
                 {{-- Uraian Pendapatan --}}
                 <div class="mb-3">
-                    <label for="uraian_pendapatan" class="form-label">Uraian Pendapatan<span
+                    <label for="uraian_pendapatan" class="form-label">Uraian Penerimaan<span
                             class="text-danger">*</span></label>
                     <input type="text" name="uraian_pendapatan" id="uraian_pendapatan"
                         class="form-control @error('uraian_pendapatan') is-invalid @enderror"
@@ -50,7 +50,7 @@
 
                 {{-- Jenis Pendapatan --}}
                 <div class="mb-3">
-                    <label class="form-label">Jenis Pendapatan<span class="text-danger">*</span></label>
+                    <label class="form-label">Jenis Penerimaan<span class="text-danger">*</span></label>
                     <select name="jenis_pendapatan" id="jenis_pendapatan"
                         class="form-select @error('jenis_pendapatan') is-invalid @enderror" required>
                         <option value="" disabled {{ old('jenis_pendapatan') ? '' : 'selected' }}>-- Pilih Jenis --

@@ -149,6 +149,29 @@
             transform: translateY(0);
         }
     }
+
+    .btn-primary.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 3px solid #ffffff;
+        border-top: 3px solid transparent;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
 </style>
 
 <body>
@@ -212,6 +235,15 @@
                     inputs[index - 1].focus();
                 }
             });
+        });
+
+        const formVerify = document.querySelector('form[action*="account-verification.store"]');
+        const btnVerify = document.querySelector('.btn-primary');
+
+        formVerify.addEventListener("submit", function () {
+            btnVerify.classList.add("loading");
+            btnVerify.disabled = true;
+            btnVerify.innerHTML = `<span class="spinner"></span>Memverifikasi...`;
         });
 
         document.addEventListener("paste", function(e) {

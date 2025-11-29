@@ -8,6 +8,9 @@ use App\Models\AgendaPerjalananDetail;
 use App\Models\AgendaPerjalananKontak;
 use App\Models\AgendaPerjalananTransportasi;
 use App\Models\BukuBesarPengeluaran;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AgendaSuratPerjalananService
 {
@@ -115,25 +118,55 @@ class AgendaSuratPerjalananService
             auth()->id(),
         )->findOrFail($agenda->id);
 
-        // cek buku besar pengeluaran
-        $bukuBesarPengeluanOld = BukuBesarPengeluaran::where(
-            "user_id",
-            auth()->id(),
-        )
+        // hapus relasi
+        $agendaSuratPerjalanan->agendaPerjalananDetail()->delete();
+        $agendaSuratPerjalanan->agendaPerjalananAkomodasi()->delete();
+        $agendaSuratPerjalanan->agendaPerjalananKontak()->delete();
+        $agendaSuratPerjalanan->agendaPerjalananTransportasi()->delete();
+
+        // hapus buku besar pengeluaran terkait
+        BukuBesarPengeluaran::where("user_id", auth()->id())
             ->where(
                 "uraian",
                 "LIKE",
                 "%Pengeluaran untuk agenda surat perjalanan: " .
-                    $agendaSuratPerjalanan["id"] .
+                    $agendaSuratPerjalanan->id .
                     " - " .
-                    $agendaSuratPerjalanan["nama_pelaksana"] .
+                    $agendaSuratPerjalanan->nama_pelaksana .
                     "%",
             )
-            ->first();
-        if ($bukuBesarPengeluanOld) {
-            $bukuBesarPengeluanOld->delete();
-        }
+            ->delete();
 
         return $agendaSuratPerjalanan->delete();
+    }
+
+    public function generatePdf($id)
+    {
+        try {
+            $agendaPerjalanan = AgendaPerjalanan::with([
+                "agendaPerjalananDetail",
+                "agendaPerjalananAkomodasi",
+                "agendaPerjalananKontak",
+                "agendaPerjalananTransportasi",
+            ])
+                ->where("user_id", auth()->id())
+                ->findOrFail($id);
+            $userProfile = Auth::user();
+            $pdf = Pdf::loadView(
+                "administrasi.surat.agenda-perjalanan.template-pdf",
+                compact("agendaPerjalanan", "userProfile"),
+            )->setPaper("A4", "portrait");
+
+            $fileName =
+                "Agenda-Surat-Perjalanan-" . $agendaPerjalanan->id . ".pdf";
+
+            return $pdf->download($fileName); // Jika ingin download: ->download($fileName)
+        } catch (\Exception $e) {
+            Log::error(
+                "Gagal membuat PDF Agenda Surat Perjalanan: " .
+                    $e->getMessage(),
+            );
+            throw new \Exception("Gagal membuat PDF: " . $e->getMessage());
+        }
     }
 }

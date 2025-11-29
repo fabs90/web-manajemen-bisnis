@@ -4,9 +4,21 @@
 
 @section('section-row')
     <div class="container mt-4">
-        <form action="{{ route('administrasi.rapat.store') }}" method="POST">
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
+                <strong>Sukses!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        {{-- Alert Error --}}
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>Gagal!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        <form action="{{ route('administrasi.rapat.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
                     FORM AGENDA RAPAT & NOTULEN RAPAT
@@ -80,16 +92,20 @@
                                 <th>Nama</th>
                                 <th>Jabatan</th>
                                 <th>Tanda Tangan</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
+
                         <tbody id="peserta-rapat-body">
                             <tr>
                                 <td>1</td>
                                 <td><input type="text" name="peserta_nama[]" class="form-control"></td>
                                 <td><input type="text" name="peserta_jabatan[]" class="form-control"></td>
-                                <td><input type="text" name="peserta_ttd[]" class="form-control"></td>
+                                <td><input type="file" name="peserta_ttd[]" class="form-control"></td>
+                                <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
                         </tbody>
+
                     </table>
                     <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addPeserta">
                         + Tambah Peserta
@@ -99,9 +115,31 @@
                     <h6 class="fw-bold">Agenda Rapat:</h6>
                     <textarea name="agenda_rapat" rows="3" class="form-control @error('agenda_rapat') is-invalid @enderror"></textarea>
 
+                    <hr>
                     {{-- ================= PEMBAHASAN ================= --}}
                     <h6 class="fw-bold mt-3">Pembahasan:</h6>
-                    <textarea name="pembahasan" rows="4" class="form-control @error('pembahasan') is-invalid @enderror"></textarea>
+                    <table class="table table-bordered text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Agenda</th>
+                                <th>Pembicara</th>
+                                <th>Pembahasan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pembahasan-body">
+                            <tr>
+                                <td><input type="text" name="pembahasan_agenda[]" class="form-control"></td>
+                                <td><input type="text" name="pembahasan_pembicara[]" class="form-control"></td>
+                                <td><textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea></td>
+                                <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addPembahasan">
+                        + Tambah Pembahasan
+                    </button>
 
                     {{-- ================= KEPUTUSAN RAPAT ================= --}}
                     <h6 class="fw-bold mt-3">Keputusan Rapat:</h6>
@@ -117,6 +155,7 @@
                                 <th>Pelaksana</th>
                                 <th>Target Selesai</th>
                                 <th>Status</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tindak-lanjut-body">
@@ -126,6 +165,7 @@
                                 <td><input type="text" name="tindak_pelaksana[]" class="form-control"></td>
                                 <td><input type="date" name="tindak_target[]" class="form-control"></td>
                                 <td><input type="text" name="tindak_status[]" class="form-control"></td>
+                                <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -164,34 +204,64 @@
 
     {{-- ================= SCRIPT DYNAMIC ROW ================= --}}
     <script>
-        document.getElementById('addPeserta').addEventListener('click', function() {
-            const table = document.getElementById('peserta-rapat-body');
-            const rowCount = table.rows.length + 1;
-            const row = `
+    function reindexRows() {
+        document.querySelectorAll("#peserta-rapat-body tr").forEach((row, index) => {
+            row.children[0].innerText = index + 1;
+        });
+
+        document.querySelectorAll("#tindak-lanjut-body tr").forEach((row, index) => {
+            row.children[0].innerText = index + 1;
+        });
+    }
+
+    document.addEventListener("click", function(e) {
+        if (e.target.classList.contains("deleteRow")) {
+            e.target.closest("tr").remove();
+            reindexRows();
+        }
+    });
+
+    document.getElementById('addPeserta').addEventListener('click', function() {
+        const table = document.getElementById('peserta-rapat-body');
+        const rowCount = table.rows.length + 1;
+        const row = `
         <tr>
             <td>${rowCount}</td>
             <td><input type="text" name="peserta_nama[]" class="form-control"></td>
             <td><input type="text" name="peserta_jabatan[]" class="form-control"></td>
-            <td><input type="text" name="peserta_ttd[]" class="form-control"></td>
-        </tr>
-        `;
-            table.insertAdjacentHTML('beforeend', row);
-        });
+            <td><input type="file" name="peserta_ttd[]" class="form-control"></td>
+            <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
+        </tr>`;
+        table.insertAdjacentHTML('beforeend', row);
+    });
 
-        document.getElementById('addTindak').addEventListener('click', function() {
-            const table = document.getElementById('tindak-lanjut-body');
-            const rowCount = table.rows.length + 1;
-            const row = `
+    document.getElementById('addPembahasan').addEventListener('click', function() {
+        const table = document.getElementById('pembahasan-body');
+        const row = `
+        <tr>
+            <td><input type="text" name="pembahasan_agenda[]" class="form-control"></td>
+            <td><input type="text" name="pembahasan_pembicara[]" class="form-control"></td>
+            <td><textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea></td>
+            <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
+        </tr>`;
+        table.insertAdjacentHTML('beforeend', row);
+    });
+
+    document.getElementById('addTindak').addEventListener('click', function() {
+        const table = document.getElementById('tindak-lanjut-body');
+        const rowCount = table.rows.length + 1;
+        const row = `
         <tr>
             <td>${rowCount}</td>
             <td><input type="text" name="tindak_tindakan[]" class="form-control"></td>
             <td><input type="text" name="tindak_pelaksana[]" class="form-control"></td>
             <td><input type="date" name="tindak_target[]" class="form-control"></td>
             <td><input type="text" name="tindak_status[]" class="form-control"></td>
-        </tr>
-        `;
-            table.insertAdjacentHTML('beforeend', row);
-        });
+            <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
+        </tr>`;
+        table.insertAdjacentHTML('beforeend', row);
+    });
+
     </script>
 
 @endsection

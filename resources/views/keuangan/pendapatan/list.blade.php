@@ -1,12 +1,12 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Pendapatan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Penerimaan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Pendapatan ')
+@section('section-heading', 'Penerimaan ')
 @section('section-row')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Daftar Pendapatan Perusahaan</h5>
+        <h5 class="mb-0">Daftar Penerimaan Perusahaan</h5>
         <a href="{{ route('keuangan.pendapatan.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Data Pendapatan
+            <i class="bi bi-plus-circle me-1"></i> Tambah Data Penerimaan
         </a>
     </div>
 
@@ -26,7 +26,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($allDatas as $data)
+                @foreach ($allDatas as $data)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
@@ -49,13 +49,7 @@
                             </form>
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-3">
-                            <em>Belum ada data pendapatan yang tercatat.</em>
-                        </td>
-                    </tr>
-                @endforelse
+                @endforeach
             </tbody>
             <tfoot>
                 <tr>

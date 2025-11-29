@@ -20,6 +20,7 @@
                     <th>No</th>
                     <th>Tanggal</th>
                     <th>No. Referensi</th>
+                    <th>Uraian</th>
                     <th>Nama Pemohon</th>
                     <th>Departemen</th>
                     <th>Penerimaan</th>
@@ -44,6 +45,13 @@
 
                             <td>
                                 {{ $item->nomor_referensi }}
+                            </td>
+                            <td>
+                                @if ($item->kasKecilLog->isEmpty())
+                                    {{$item->kasKecilDetail->pluck('keterangan')->join(', ')}}
+                                @else
+                                    {{ $item->kasKecilLog->pluck('uraian')->join(', ') }}
+                                @endif
                             </td>
                             <td>
                                 {{$item->KasKecilFormulir->pluck('nama_pemohon')->join(', ')}}
@@ -87,7 +95,7 @@
 
 @endsection
 
-@push('scripts')
+@push('script')
 <script>
     $(document).ready(function () {
         $('#kas-kecil-table').DataTable({

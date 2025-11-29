@@ -103,12 +103,12 @@
             BERITA ACARA RAPAT
         </a>
 
-        <a href="#" class="menu-card text-black" style="background:#eeeeee"
+        <a href="{{route('administrasi.rapat.hasil-keputusan.index')}}" class="menu-card text-black" style="background:#eeeeee"
             data-tooltip="Dokumen pemesanan resmi barang atau jasa kepada supplier (Purchase Order).">
-            SURAT PESANAN PEMBELIAN
+            SURAT HASIL KEPUTUSAN RAPAT
         </a>
 
-        <a href="#" class="menu-card text-black" style="background:#c6d9f1"
+        <a href="{{route('administrasi.faktur-penjualan.index')}}" class="menu-card text-black" style="background:#c6d9f1"
             data-tooltip="Dokumen penagihan kepada pelanggan berisi daftar barang/jasa yang dijual.">
             FAKTUR PENJUALAN
         </a>

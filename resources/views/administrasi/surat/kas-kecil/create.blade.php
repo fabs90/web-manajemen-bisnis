@@ -166,7 +166,7 @@
         <div class="row text-center mt-3">
             <!-- PEMOHON -->
             <div class="col-md-4">
-                <label>Pemohon <span class="text-danger">*</span></label>
+                <label>Ttd. Pemohon</label>
 
                 <input type="file" name="ttd_nama_pemohon"
                     class="form-control mt-2 @error('ttd_nama_pemohon') is-invalid @enderror"
@@ -187,7 +187,7 @@
                 @error('nama_atasan_langsung')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
-
+                <label class="mt-2">Ttd. Atasan Langsung</label>
                 <input type="file" name="ttd_nama_atasan_langsung"
                     class="form-control mt-2 @error('ttd_nama_atasan_langsung') is-invalid @enderror"
                     accept="image/*">
@@ -207,7 +207,7 @@
                 @error('nama_bagian_keuangan')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
-
+                <label class="mt-2">Ttd. Nama Bagian Keuangan</label>
                 <input type="file" name="ttd_nama_bagian_keuangan"
                     class="form-control mt-2 @error('ttd_nama_bagian_keuangan') is-invalid @enderror"
                     accept="image/*">
@@ -220,6 +220,7 @@
 
         {{-- Tombol Submit --}}
         <div class="mt-4 text-end">
+             <a href="{{ route('administrasi.kas-kecil.index') }}" class="btn btn-secondary">Kembali</a>
             <button type="submit" class="btn btn-primary">
                 Simpan Permintaan
             </button>

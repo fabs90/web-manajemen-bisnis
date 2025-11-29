@@ -51,6 +51,7 @@ return new class extends Migration {
                     "reschedule",
                     "dibatalkan",
                     "belum",
+                    "selesai",
                 ])
                 ->default("belum");
 

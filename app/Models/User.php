@@ -67,16 +67,6 @@ class User extends Authenticatable
     }
 
     // Relasi ke transaksi
-    public function penerimaanKas()
-    {
-        return $this->hasMany(PenerimaanKas::class);
-    }
-
-    public function pengeluaranKas()
-    {
-        return $this->hasMany(PengeluaranKas::class);
-    }
-
     public function bukuBesarKas()
     {
         return $this->hasMany(BukuBesarKas::class);

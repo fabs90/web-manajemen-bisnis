@@ -26,7 +26,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($allDatas as $data)
+            @foreach ($allDatas as $data)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
@@ -48,13 +48,7 @@
                         </form>
                     </td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-3">
-                        <em>Belum ada data pengeluaran yang tercatat.</em>
-                    </td>
-                </tr>
-            @endforelse
+            @endforeach
         </tbody>
         <tfoot>
             <tr>

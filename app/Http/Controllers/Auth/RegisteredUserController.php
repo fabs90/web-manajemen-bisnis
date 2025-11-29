@@ -57,6 +57,9 @@ class RegisteredUserController extends Controller
             "remember_token" => Str::random(60),
             "otp" => $otp,
             "otp_expires_at" => $expiresAt,
+            "alamat" => null,
+            "nomor_telepon" => null,
+            "logo_perusahaan" => null,
         ]);
 
         event(new Registered($user));
