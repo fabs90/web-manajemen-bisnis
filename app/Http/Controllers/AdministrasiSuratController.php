@@ -21,6 +21,7 @@ use App\Services\AgendaJanjiTemuService;
 use App\Services\AgendaSuratPerjalananService;
 use App\Services\AgendaTelponService;
 use App\Services\SuratUndanganRapatService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,11 @@ use Throwable;
 
 class AdministrasiSuratController extends Controller
 {
+    private function cleanRupiah($value)
+    {
+        return (int) preg_replace("/\D/", "", $value);
+    }
+
     public function index()
     {
         return view("administrasi.surat.index");
@@ -188,6 +194,22 @@ class AdministrasiSuratController extends Controller
             "administrasi.surat.agenda-perjalanan.show",
             compact("agendaPerjalanan"),
         );
+    }
+
+    public function pdfPermintaanKasKecil($id)
+    {
+        $data = KasKecil::with(
+            "kasKecilDetail",
+            "kasKecilFormulir",
+        )->findOrFail($id);
+        $userProfile = Auth::user();
+
+        $pdf = Pdf::loadView("administrasi.surat.kas-kecil.template-pdf", [
+            "data" => $data,
+            "userProfile" => $userProfile,
+        ])->setPaper("a4", "portrait");
+
+        return $pdf->download("permintaan-kas-kecil-" . $data->id . ".pdf");
     }
 
     public function pdfJanjiTemu($id)
@@ -433,7 +455,7 @@ class AdministrasiSuratController extends Controller
             $saldoLama = $kasKecilLama->saldo_akhir ?? 0;
 
             if ($data["jenis"] === "pengeluaran") {
-                $pengeluaran = $data["total"];
+                $pengeluaran = $this->cleanRupiah($data["total"]);
                 $penerimaan = 0;
                 $saldoBaru = $saldoLama - $pengeluaran;
 
@@ -448,7 +470,7 @@ class AdministrasiSuratController extends Controller
                 ]);
             } else {
                 $pengeluaran = 0;
-                $penerimaan = $data["total"];
+                $penerimaan = $this->cleanRupiah($data["total"]);
                 $saldoBaru = $saldoLama + $penerimaan;
 
                 // Simpan kas kecil
@@ -505,7 +527,7 @@ class AdministrasiSuratController extends Controller
                     "kas_kecil_id" => $kasKecil->id,
                     "keterangan" => $ket,
                     "kategori" => $request->kategori[$i] ?? null,
-                    "jumlah" => $request->jumlah[$i] ?? 0,
+                    "jumlah" => $this->cleanRupiah($request->jumlah[$i] ?? 0),
                 ]);
             }
 
@@ -516,7 +538,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error("Kas kecil error: " . $e->getMessage());
-
+            dd($e->getMessage());
             return back()->with(
                 "error",
                 "Terjadi kesalahan saat menyimpan kas kecil.",

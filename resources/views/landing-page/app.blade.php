@@ -36,7 +36,11 @@
             </div>
         </nav>
     </header>
-
+    @if (session('success'))
+    <div id="notification" class="notification">
+        {{ session('success') }}
+    </div>
+    @endif
     <main>
         @yield('content')
     </main>
@@ -77,6 +81,19 @@
                 card.style.transition = 'opacity 0.5s, transform 0.5s';
             });
         });
+
+        document.addEventListener("DOMContentLoaded", function () {
+              const notif = document.getElementById("notification");
+              if (notif) {
+                  notif.classList.add("show");
+
+                  // otomatis hilang setelah 3 detik
+                  setTimeout(() => {
+                      notif.classList.remove("show");
+                      notif.classList.add("hide");
+                  }, 3000);
+              }
+          });
     </script>
 </body>
 

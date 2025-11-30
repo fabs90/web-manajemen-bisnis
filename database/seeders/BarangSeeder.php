@@ -13,7 +13,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-001",
                 "nama" => "Beras Premium 5kg",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 200,
                 "jumlah_min" => 10,
                 "jumlah_unit_per_kemasan" => 1,
@@ -24,7 +24,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-002",
                 "nama" => "Gula Pasir 1kg",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 400,
                 "jumlah_min" => 20,
                 "jumlah_unit_per_kemasan" => 1,
@@ -35,7 +35,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-003",
                 "nama" => "Minyak Goreng 1L",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 500,
                 "jumlah_min" => 25,
                 "jumlah_unit_per_kemasan" => 1,
@@ -46,7 +46,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-004",
                 "nama" => "Kopi Bubuk Sachet (Pack 10 pcs)",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 150,
                 "jumlah_min" => 10,
                 "jumlah_unit_per_kemasan" => 10,
@@ -57,7 +57,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-005",
                 "nama" => "Sabun Cuci Piring 750ml",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 250,
                 "jumlah_min" => 20,
                 "jumlah_unit_per_kemasan" => 1,
@@ -68,7 +68,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-006",
                 "nama" => "Air Mineral Cup (Dus 48 pcs)",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 120,
                 "jumlah_min" => 10,
                 "jumlah_unit_per_kemasan" => 48,
@@ -79,7 +79,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-007",
                 "nama" => "Mie Instan (Dus 40 pcs)",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 300,
                 "jumlah_min" => 30,
                 "jumlah_unit_per_kemasan" => 40,
@@ -90,7 +90,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-008",
                 "nama" => "Rokok Premium (Pack 12 bungkus)",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 60,
                 "jumlah_min" => 5,
                 "jumlah_unit_per_kemasan" => 12,
@@ -101,7 +101,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-009",
                 "nama" => "Laptop Kantor",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 20,
                 "jumlah_min" => 2,
                 "jumlah_unit_per_kemasan" => 1,
@@ -112,7 +112,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-010",
                 "nama" => "Printer LaserJet",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 15,
                 "jumlah_min" => 2,
                 "jumlah_unit_per_kemasan" => 1,
@@ -123,7 +123,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-011",
                 "nama" => "TV LED 50 Inch",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 10,
                 "jumlah_min" => 1,
                 "jumlah_unit_per_kemasan" => 1,
@@ -134,7 +134,7 @@ class BarangSeeder extends Seeder
             [
                 "kode_barang" => "BRG-012",
                 "nama" => "Mesin Cuci 9kg",
-                "user_id" => 2,
+                "user_id" => 1,
                 "jumlah_max" => 8,
                 "jumlah_min" => 1,
                 "jumlah_unit_per_kemasan" => 1,

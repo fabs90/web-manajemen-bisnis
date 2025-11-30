@@ -17,6 +17,7 @@ use App\Http\Controllers\ManajemenKasKecilController;
 use App\Http\Controllers\NeracaAkhirController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReturController;
+use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Middleware\EnsureUserIsVerified;
 
 // Halaman publik
@@ -350,6 +351,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "createKasKecil",
         ])->name("administrasi.kas-kecil.create");
 
+        Route::get("/kas-kecil/{id}/generate", [
+            AdministrasiSuratController::class,
+            "pdfPermintaanKasKecil",
+        ])->name("administrasi.kas-kecil.generatePdf");
+
         Route::post("/kas-kecil/", [
             AdministrasiSuratController::class,
             "storeKasKecil",
@@ -580,6 +586,37 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             AdministrasiFakturController::class,
             "destroy",
         ])->name("administrasi.faktur-penjualan.destroy");
+
+        // Surat Pengiriman Barang (SPB)
+        Route::get("/surat-pengiriman-barang", [
+            SuratPengirimanBarangController::class,
+            "index",
+        ])->name("administrasi.spb.index");
+
+        Route::get("/surat-pengiriman-barang/create}", [
+            SuratPengirimanBarangController::class,
+            "create",
+        ])->name("administrasi.spb.create");
+
+        Route::get("/administrasi/surat-pengiriman-barang/get-detail/{id}", [
+            SuratPengirimanBarangController::class,
+            "getDetail",
+        ])->name("administrasi.spb.getDetail");
+
+        Route::get("/surat-pengiriman-barang/{id}/generate", [
+            SuratPengirimanBarangController::class,
+            "generatePdf",
+        ])->name("administrasi.spb.generatePdf");
+
+        Route::post("/surat-pengiriman-barang", [
+            SuratPengirimanBarangController::class,
+            "store",
+        ])->name("administrasi.spb.store");
+
+        Route::delete("/surat-pengiriman-barang/{id}", [
+            SuratPengirimanBarangController::class,
+            "destroy",
+        ])->name("administrasi.spb.destroy");
     });
 });
 

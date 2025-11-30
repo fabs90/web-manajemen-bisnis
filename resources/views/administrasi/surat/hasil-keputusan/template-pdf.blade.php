@@ -32,9 +32,6 @@
 
 <table class="bordered">
     <tr>
-        <td class="content center" width="25%">
-            <img src="{{ public_path('storage/' . $profileUser->logo_perusahaan) }}" width="100">
-        </td>
         <td class="content center">
             <strong>{{ $profileUser->name ?? 'NAMA PERUSAHAAN' }}</strong><br>
             {{ $profile->alamat ?? 'ALAMAT PERUSAHAAN' }}

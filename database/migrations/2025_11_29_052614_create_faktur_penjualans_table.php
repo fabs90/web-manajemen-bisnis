@@ -20,8 +20,15 @@ return new class extends Migration {
             $table->date("tanggal");
             $table->string("jenis_pengiriman");
             $table->string("nama_bagian_penjualan");
-            $table->foreignId("user_id")->constrained()->cascadeOnDelete();
+            $table
+                ->foreignId("user_id")
+                ->constrained("users")
+                ->cascadeOnDelete();
             $table->timestamps();
+            $table->unique(
+                ["user_id", "kode_faktur"],
+                "unique_kode_faktur_per_user",
+            );
         });
 
         Schema::create("faktur_penjualan_detail", function (Blueprint $table) {

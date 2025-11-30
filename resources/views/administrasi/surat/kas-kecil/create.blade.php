@@ -131,9 +131,7 @@
                         @endforeach
                     </td>
                     <td>
-                        <input type="text" name="jumlah[]"
-                            class="form-control autonumeric @if($errors->has('jumlah.*')) is-invalid @endif">
-
+                        <input type="text" name="jumlah[]" class="form-control rupiah" placeholder="0">
                         @foreach ($errors->get('jumlah.*') as $msg)
                             <small class="text-danger d-block">{{ $msg[0] }}</small>
                         @endforeach
@@ -154,7 +152,14 @@
 
                 <tr>
                     <td colspan="3" class="text-end"><strong>Total</strong></td>
-                    <td><input type="text" name="total" class="form-control autonumeric-total"></td>
+                    <td>
+                        <input type="text"
+                               id="total_rupiah"
+                               name="total"
+                               class="form-control fw-bold text-end"
+                               readonly
+                               value="0">
+                    </td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -232,54 +237,20 @@
 @push('script')
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    RupiahHelper.initAll('.rupiah');
+    RupiahHelper.calculateTotal('.rupiah', '#total_rupiah');
 
-    let body = document.getElementById("body-kebutuhan");
-    let btnTambah = document.getElementById("btnTambah");
-
-    let autoNumericList = [];
-
-    // Inisialisasi AutoNumeric pada semua field jumlah & total
-    function initAutoNumeric() {
-        document.querySelectorAll('.autonumeric').forEach(el => {
-            if (!el.hasAttribute('an-init')) {
-                new AutoNumeric(el, {
-                    digitGroupSeparator: ".",
-                    decimalCharacter: ",",
-                    decimalPlaces: 0,
-                    unformatOnSubmit: true
-                });
-                el.setAttribute('an-init', 'true');
-            }
-        });
-
-        document.querySelectorAll('.autonumeric-total').forEach(el => {
-            if (!el.hasAttribute('an-init')) {
-                new AutoNumeric(el, {
-                    digitGroupSeparator: ".",
-                    decimalCharacter: ",",
-                    decimalPlaces: 0,
-                    unformatOnSubmit: true,
-                    readOnly: true
-                });
-                el.setAttribute('an-init', 'true');
-            }
-        });
-    }
-
-    initAutoNumeric();
+    // Saat tambah baris baru:
+    RupiahHelper.initAll('#body-kebutuhan tr:last-child .rupiah');
+    RupiahHelper.calculateTotal();
 
     // Tambah baris
-    btnTambah.addEventListener("click", function () {
-        const rowCount = body.querySelectorAll("tr").length + 1;
-
+    document.getElementById("btnTambah").addEventListener("click", function () {
+        const rowCount = document.querySelectorAll("#body-kebutuhan tr").length + 1;
         let row = `
         <tr>
             <td class="text-center nomor">${rowCount}</td>
-
-            <td>
-                <input type="text" name="keterangan[]" class="form-control">
-            </td>
-
+            <td><input type="text" name="keterangan[]" class="form-control"></td>
             <td>
                 <select name="kategori[]" class="form-control">
                     <option value="">-- Pilih Kategori --</option>
@@ -290,67 +261,38 @@ document.addEventListener("DOMContentLoaded", function () {
                     <option value="lain">Lain-lain</option>
                 </select>
             </td>
+            <td><input type="text" name="jumlah[]" class="form-control rupiah" placeholder="0"></td>
+            <td class="text-center"><button type="button" class="btn btn-danger btn-sm btn-hapus">X</button></td>
+        </tr>`;
+        document.getElementById("body-kebutuhan").insertAdjacentHTML('beforeend', row);
 
-            <td>
-                <input type="text" name="jumlah[]" class="form-control autonumeric">
-            </td>
-
-            <td class="text-center">
-                <button type="button" class="btn btn-danger btn-sm btn-hapus">X</button>
-            </td>
-        </tr>
-        `;
-
-        body.insertAdjacentHTML('beforeend', row);
-
-        initAutoNumeric();
+        // Inisialisasi ulang hanya baris baru (lebih cepat)
+        RupiahHelper.initAll('#body-kebutuhan tr:last-child .rupiah');
         updateNomor();
-        hitungTotal();
+        RupiahHelper.calculateTotal();
     });
 
-
     // Hapus baris
-    body.addEventListener("click", function (e) {
+    document.getElementById("body-kebutuhan").addEventListener("click", function (e) {
         if (e.target.classList.contains("btn-hapus")) {
             e.target.closest("tr").remove();
             updateNomor();
-            hitungTotal();
+            RupiahHelper.calculateTotal();
+        }
+    });
+
+    // Update total saat ketik
+    document.getElementById("body-kebutuhan").addEventListener("input", function (e) {
+        if (e.target.classList.contains("rupiah")) {
+            RupiahHelper.calculateTotal();
         }
     });
 
     function updateNomor() {
-        let nomorCells = document.querySelectorAll(".nomor");
-        nomorCells.forEach((cell, index) => {
-            cell.innerText = index + 1;
+        document.querySelectorAll(".nomor").forEach((el, i) => {
+            el.textContent = i + 1;
         });
     }
-
-    // Hitung total berdasarkan raw value AutoNumeric
-    function hitungTotal() {
-        let total = 0;
-
-        // disini hitung total berdasarkan raw value AutoNumeric
-        document.querySelectorAll('.autonumeric').forEach(input => {
-            const rawValue = AutoNumeric.getNumber(input) || 0;
-            total += parseFloat(rawValue);
-        });
-
-        let totalField = document.querySelector('.autonumeric-total');
-        if (totalField) {
-            AutoNumeric.getAutoNumericElement(totalField).set(total);
-        }
-    }
-
-    // Recalculate total on input
-    body.addEventListener("input", function (e) {
-        if (e.target.classList.contains("autonumeric")) {
-            hitungTotal();
-        }
-    });
-
-
-
-
 });
 </script>
 @endpush

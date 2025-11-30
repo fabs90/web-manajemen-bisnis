@@ -2,6 +2,7 @@
 
 namespace App\Models\Faktur;
 
+use App\Models\SPB\SuratPengirimanBarang;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,5 +29,10 @@ class FakturPenjualan extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function suratPengirimanBarang()
+    {
+        return $this->hasOne(SuratPengirimanBarang::class);
     }
 }

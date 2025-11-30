@@ -113,14 +113,14 @@
             FAKTUR PENJUALAN
         </a>
 
-        <a href="#" class="menu-card text-black" style="background:#63f28f"
+        <a href="{{route('administrasi.spb.index')}}" class="menu-card text-black" style="background:#63f28f"
             data-tooltip="Dokumen yang menyertai pengiriman barang sebagai bukti barang telah dikirim.">
             SURAT PENGIRIMAN BARANG
         </a>
 
         <a href="#" class="menu-card text-black" style="background:#eeeeee"
             data-tooltip="Dokumen permohonan resmi kepada pihak terkait untuk melakukan suatu kegiatan.">
-            SURAT PERMOHONAN
+            MEMO KREDIT
         </a>
 
         <a href="#" class="menu-card text-black" style="background:#ffb3e6"

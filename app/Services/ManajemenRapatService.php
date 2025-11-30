@@ -106,6 +106,7 @@ class ManajemenRapatService
                 "tanggal_tujuan" => $data["tanggal_tujuan"],
                 "jabatan_penanggung_jawab" => $data["jabatan_penanggung_jawab"],
                 "nama_penanggung_jawab" => $data["nama_penanggung_jawab"],
+                "user_id" => auth()->id(),
             ]);
 
             DB::commit();

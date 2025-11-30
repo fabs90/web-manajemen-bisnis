@@ -122,8 +122,6 @@ class BarangController extends Controller
             ]);
         }
 
-        $barangDate = $barang->created_at->format("Y-m-d");
-
         // hapus kartu gudang nya juga
         KartuGudang::where("barang_id", $barang->id)->delete();
 

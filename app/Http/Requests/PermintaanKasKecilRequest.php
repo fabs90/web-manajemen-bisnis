@@ -28,9 +28,9 @@ class PermintaanKasKecilRequest extends FormRequest
             "kategori.*" => "required|string",
 
             "jumlah" => "required|array|min:1",
-            "jumlah.*" => "required|numeric|min:0",
+            "jumlah.*" => "required|min:0",
 
-            "total" => "required|numeric|min:0",
+            "total" => "required|min:0",
 
             "nama_atasan_langsung" => "required|string|max:100",
             "nama_bagian_keuangan" => "required|string|max:100",
