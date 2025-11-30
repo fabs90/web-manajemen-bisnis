@@ -105,7 +105,7 @@ class NeracaAkhirController extends Controller
             ->get()
             ->sum(
                 fn($i) => ($i->saldo_persatuan ?? 0) *
-                    ($i->barang->harga_beli_per_unit ?? 0),
+                ($i->barang->harga_beli_per_unit ?? 0),
             );
 
         // === AKTIVA TETAP ===
@@ -145,6 +145,7 @@ class NeracaAkhirController extends Controller
                 "pajak",
                 "labaBersih",
                 "modal",
+                "kasAwal"
             ),
         );
     }
