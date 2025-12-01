@@ -551,6 +551,23 @@ class PendapatanController extends Controller
             "bunga_bank" => $request->bunga_bank ?? 0,
             "user_id" => auth()->id(),
         ]);
+        $kodeTransaksi = Str::uuid();
+        $oldSaldoKas = BukuBesarKas::where("user_id", auth()->id())
+            ->latest()
+            ->first();
+        $saldoBaru = $oldSaldoKas->saldo + ($request->jumlah ?? 0);
+
+        BukuBesarKas::create([
+            "kode" => $kodeTransaksi,
+            "uraian" => "Pendapatan Tunai: " . $request->uraian_pendapatan,
+            "tanggal" => $request->tanggal,
+            "debit" => $request->jumlah,
+            "kredit" => 0,
+            "saldo" => $saldoBaru,
+            "neraca_awal_id" => null,
+            "neraca_akhir_id" => null,
+            "user_id" => auth()->id(),
+        ]);
 
         return redirect()
             ->route("keuangan.pendapatan.create_lain")
