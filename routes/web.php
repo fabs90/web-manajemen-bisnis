@@ -7,6 +7,7 @@ use App\Http\Controllers\PendapatanController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\Rapat\ManajemenRapatController;
 use App\Http\Controllers\RugiLabaController;
+use App\Http\Controllers\TutupBukuController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
@@ -182,6 +183,8 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             NeracaAkhirController::class,
             "index",
         ])->name("laporan-keuangan.neraca-akhir");
+        // Route::get('/tutup-buku', [TutupBukuController::class, 'index'])->name('tutup-buku.index');
+        // Route::post('/tutup-buku/proses', [TutupBukuController::class, 'proses'])->name('tutup-buku.proses');
     });
 
     // =============================

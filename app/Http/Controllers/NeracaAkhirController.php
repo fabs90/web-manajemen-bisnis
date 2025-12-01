@@ -55,6 +55,8 @@ class NeracaAkhirController extends Controller
             $pendapatanBunga -
             $biayaAdminBank;
 
+        $totalKas = BukuBesarKas::where("user_id", $userId)->latest()->value("saldo") ?? 0;
+
         // $kasTerakhir = BukuBesarKas::where("user_id", $userId)
         //     ->latest("created_at")
         //     ->first();
@@ -120,7 +122,7 @@ class NeracaAkhirController extends Controller
 
         // === TOTAL ===
         $totalAktiva =
-            $saldoKas +
+            $totalKas +
             $saldoPiutang +
             $nilaiPersediaan +
             $tanah +
@@ -145,7 +147,8 @@ class NeracaAkhirController extends Controller
                 "pajak",
                 "labaBersih",
                 "modal",
-                "kasAwal"
+                "kasAwal",
+                "totalKas"
             ),
         );
     }

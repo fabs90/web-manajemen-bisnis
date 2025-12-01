@@ -14,7 +14,7 @@
                     </tr>
                     <tr>
                         <td>Kas</td>
-                        <td class="text-end">Rp {{ number_format($kasAwal, 0, ',', '.') }}</td>
+                        <td class="text-end">Rp {{ number_format($totalKas, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
                         <td>Piutang</td>
