@@ -103,17 +103,18 @@
             BERITA ACARA RAPAT
         </a>
 
-        <a href="{{route('administrasi.rapat.hasil-keputusan.index')}}" class="menu-card text-black" style="background:#eeeeee"
+        <a href="{{ route('administrasi.rapat.hasil-keputusan.index') }}" class="menu-card text-black"
+            style="background:#eeeeee"
             data-tooltip="Dokumen pemesanan resmi barang atau jasa kepada supplier (Purchase Order).">
             SURAT HASIL KEPUTUSAN RAPAT
         </a>
 
-        <a href="{{route('administrasi.faktur-penjualan.index')}}" class="menu-card text-black" style="background:#c6d9f1"
+        <a href="{{ route('administrasi.faktur-penjualan.index') }}" class="menu-card text-black" style="background:#c6d9f1"
             data-tooltip="Dokumen penagihan kepada pelanggan berisi daftar barang/jasa yang dijual.">
             FAKTUR PENJUALAN
         </a>
 
-        <a href="{{route('administrasi.spb.index')}}" class="menu-card text-black" style="background:#63f28f"
+        <a href="{{ route('administrasi.spb.index') }}" class="menu-card text-black" style="background:#63f28f"
             data-tooltip="Dokumen yang menyertai pengiriman barang sebagai bukti barang telah dikirim.">
             SURAT PENGIRIMAN BARANG
         </a>
@@ -122,12 +123,6 @@
             data-tooltip="Dokumen permohonan resmi kepada pihak terkait untuk melakukan suatu kegiatan.">
             MEMO KREDIT
         </a>
-
-        <a href="#" class="menu-card text-black" style="background:#ffb3e6"
-            data-tooltip="Arsip lengkap agenda rapat dan catatan jalannya rapat (notulen).">
-            AGENDA DAN NOTULEN RAPAT
-        </a>
-
     </div>
 
     {{-- letakkan ini sebelum @endsection, setelah markup menu-grid --}}

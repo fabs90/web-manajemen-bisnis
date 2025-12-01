@@ -420,7 +420,7 @@ class PendapatanController extends Controller
 
                     $saldoPerKemasanBaru =
                         $saldoKemasanAwal -
-                        round($jumlahDijual / $unitPerKemasan, 0);
+                        ceil($jumlahDijual / $unitPerKemasan);
 
                     $satuanBaru = $saldoSatuanAwal - $jumlahDijual;
 

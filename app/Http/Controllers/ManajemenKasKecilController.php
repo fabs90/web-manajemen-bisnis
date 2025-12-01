@@ -21,7 +21,9 @@ class ManajemenKasKecilController extends Controller
             "user_id",
             auth()->id(),
         )->get();
-        return view("keuangan.kas-kecil.index", compact("kasKecilLogs"));
+
+        $saldoAkhir = KasKecil::where("user_id", auth()->id())->latest()->value("saldo_akhir");
+        return view("keuangan.kas-kecil.index", compact("kasKecilLogs", "saldoAkhir"));
     }
 
     public function create()

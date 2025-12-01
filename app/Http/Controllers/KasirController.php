@@ -151,7 +151,7 @@ class KasirController extends Controller
                         "diterima" => 0,
                         "dikeluarkan" => $jumlahDijual,
                         "uraian" =>
-                            "Pendapatan Tunai: " .
+                            "Pendapatan Kasir Tunai: " .
                             $detailBarang->nama .
                             " - " .
                             Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),

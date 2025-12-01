@@ -88,6 +88,11 @@ class RupiahHelper {
         }
         return sum;
     }
+
+    static getCleanValue(input) {
+        if (!input || !input.value) return 0;
+        return this.unformat(input.value);
+    }
 }
 
 window.RupiahHelper = RupiahHelper;

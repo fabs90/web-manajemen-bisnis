@@ -60,7 +60,7 @@ class KeuanganService
                 ->sum("potongan_pembelian") ?? 0;
 
         $penjualanBersih =
-            $totalPenjualan - ($returPenjualan + $potonganPenjualan);
+            $totalPenjualan - $returPenjualan + $potonganPenjualan;
 
         // === PERSEDIAAN AWAL ===
         $persediaanAwal =
@@ -72,11 +72,11 @@ class KeuanganService
         $pembelianKredit = BukuBesarHutang::where("user_id", $userId)
             ->where($filter)
             ->where("uraian", "not like", "%saldo awal%")
-            ->sum("kredit");
+            ->sum("kredit") ?? 0;
 
         $pembelianTunai = BukuBesarPengeluaran::where("user_id", $userId)
             ->where($filter)
-            ->sum("jumlah_pembelian_tunai");
+            ->sum("jumlah_pembelian_tunai") ?? 0;
 
         $returPembelian = BukuBesarHutang::where("user_id", $userId)
             ->where($filter)
@@ -113,27 +113,13 @@ class KeuanganService
             ->get()
             ->sum(
                 fn($i) => ($i->saldo_persatuan ?? 0) *
-                    ($i->barang->harga_beli_per_unit ?? 0),
+                ($i->barang->harga_beli_per_unit ?? 0),
             );
 
         // === HPP & LABA ===
         $barangTersedia = $persediaanAwal + $pembelianBersih;
         $hpp = $barangTersedia - $persediaanAkhir;
         $labaKotor = $penjualanBersih - $hpp;
-
-        // === BIAYA OPERASIONAL ===
-        // $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
-        //     ->where($filter)
-        //     ->where(function ($q) {
-        //         $q->where("uraian", "like", "%gaji%")
-        //             ->orWhere("uraian", "like", "%biaya%")
-        //             ->orWhere("uraian", "like", "%asuransi%")
-        //             ->orWhere("uraian", "like", "%pajak%")
-        //             ->orWhere("uraian", "like", "%air%")
-        //             ->orWhere("uraian", "like", "%listrik%")
-        //             ->orWhere("uraian", "like", "%operasional%");
-        //     })
-        //     ->sum("jumlah_pengeluaran");
 
         $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
             ->where($filter)

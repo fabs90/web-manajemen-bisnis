@@ -20,6 +20,7 @@ use App\Models\SuratUndanganRapat;
 use App\Services\AgendaJanjiTemuService;
 use App\Services\AgendaSuratPerjalananService;
 use App\Services\AgendaTelponService;
+use App\Services\PermintaanKasKecilService;
 use App\Services\SuratUndanganRapatService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -444,105 +445,20 @@ class AdministrasiSuratController extends Controller
         }
     }
 
-    public function storeKasKecil(PermintaanKasKecilRequest $request)
+    public function storeKasKecil(PermintaanKasKecilRequest $request, PermintaanKasKecilService $service)
     {
-        $data = $request->validated();
-        DB::beginTransaction();
         try {
-            $kasKecilLama = KasKecil::where("user_id", auth()->id())
-                ->latest()
-                ->first();
-            $saldoLama = $kasKecilLama->saldo_akhir ?? 0;
-
-            if ($data["jenis"] === "pengeluaran") {
-                $pengeluaran = $this->cleanRupiah($data["total"]);
-                $penerimaan = 0;
-                $saldoBaru = $saldoLama - $pengeluaran;
-
-                // Simpan kas kecil
-                $kasKecil = KasKecil::create([
-                    "user_id" => auth()->id(),
-                    "tanggal" => $data["tanggal"],
-                    "nomor_referensi" => $data["nomor"],
-                    "penerimaan" => $penerimaan,
-                    "pengeluaran" => $pengeluaran,
-                    "saldo_akhir" => $saldoBaru,
-                ]);
-            } else {
-                $pengeluaran = 0;
-                $penerimaan = $this->cleanRupiah($data["total"]);
-                $saldoBaru = $saldoLama + $penerimaan;
-
-                // Simpan kas kecil
-                $kasKecil = KasKecil::create([
-                    "user_id" => auth()->id(),
-                    "tanggal" => $data["tanggal"],
-                    "nomor_referensi" => $data["nomor"],
-                    "penerimaan" => $penerimaan,
-                    "pengeluaran" => $pengeluaran,
-                    "saldo_akhir" => $saldoBaru,
-                ]);
-            }
-
-            if ($request->hasFile("ttd_nama_pemohon")) {
-                $ttd_nama_pemohon = $request
-                    ->file("ttd_nama_pemohon")
-                    ->store("kas_kecil/ttd_nama_pemohon", "public");
-            } else {
-                $ttd_nama_pemohon = null;
-            }
-
-            if ($request->hasFile("ttd_nama_atasan_langsung")) {
-                $ttd_nama_atasan_langsung = $request
-                    ->file("ttd_nama_atasan_langsung")
-                    ->store("kas_kecil/ttd_atasan_langsung", "public");
-            } else {
-                $ttd_nama_atasan_langsung = null;
-            }
-
-            if ($request->hasFile("ttd_nama_bagian_keuangan")) {
-                $ttd_nama_bagian_keuangan = $request
-                    ->file("ttd_nama_bagian_keuangan")
-                    ->store("kas_kecil/ttd_bagian_keuangan", "public");
-            } else {
-                $ttd_nama_bagian_keuangan = null;
-            }
-
-            $kasKecilFormulir = KasKecilFormulir::create([
-                "user_id" => auth()->id(),
-                "kas_kecil_id" => $kasKecil->id,
-                "nama_pemohon" => $data["nama_pemohon"],
-                "departemen" => $data["departemen"],
-                "ttd_nama_pemohon" => $ttd_nama_pemohon,
-                "nama_atasan_langsung" => $data["nama_atasan_langsung"],
-                "ttd_atasan_langsung" => $ttd_nama_atasan_langsung,
-                "nama_bagian_keuangan" => $data["nama_bagian_keuangan"],
-                "ttd_bagian_keuangan" => $ttd_nama_bagian_keuangan,
+            $service->store($request);
+            return back()->with('success', 'Permintaan kas kecil berhasil disimpan.');
+        } catch (\Exception $e) {
+            Log::error('Gagal simpan kas kecil: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'request' => $request->except(['_token', 'ttd_*']),
             ]);
 
-            // simpan kas kecil detail
-            foreach ($request->keterangan as $i => $ket) {
-                KasKecilDetail::create([
-                    "user_id" => Auth::id(),
-                    "kas_kecil_id" => $kasKecil->id,
-                    "keterangan" => $ket,
-                    "kategori" => $request->kategori[$i] ?? null,
-                    "jumlah" => $this->cleanRupiah($request->jumlah[$i] ?? 0),
-                ]);
-            }
-
-            DB::commit();
-            return redirect()
-                ->back()
-                ->with("success", "Permintaan kas kecil berhasil disimpan.");
-        } catch (Throwable $e) {
-            DB::rollBack();
-            Log::error("Kas kecil error: " . $e->getMessage());
-            dd($e->getMessage());
-            return back()->with(
-                "error",
-                "Terjadi kesalahan saat menyimpan kas kecil.",
-            );
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage() ?: 'Terjadi kesalahan saat menyimpan data.');
         }
     }
 
@@ -561,7 +477,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda telepon. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -584,7 +500,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Perjalanan. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -609,7 +525,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Janji Temu. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -837,7 +753,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda telepon. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -864,7 +780,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda perjalanan. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -891,7 +807,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda janji temu. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -921,7 +837,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada surat undangan rapat. Error: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             return back()->with(
                 "error",

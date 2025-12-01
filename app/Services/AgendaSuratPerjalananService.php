@@ -130,10 +130,10 @@ class AgendaSuratPerjalananService
                 "uraian",
                 "LIKE",
                 "%Pengeluaran untuk agenda surat perjalanan: " .
-                    $agendaSuratPerjalanan->id .
-                    " - " .
-                    $agendaSuratPerjalanan->nama_pelaksana .
-                    "%",
+                $agendaSuratPerjalanan->id .
+                " - " .
+                $agendaSuratPerjalanan->nama_pelaksana .
+                "%",
             )
             ->delete();
 
@@ -164,7 +164,7 @@ class AgendaSuratPerjalananService
         } catch (\Exception $e) {
             Log::error(
                 "Gagal membuat PDF Agenda Surat Perjalanan: " .
-                    $e->getMessage(),
+                $e->getMessage(),
             );
             throw new \Exception("Gagal membuat PDF: " . $e->getMessage());
         }
