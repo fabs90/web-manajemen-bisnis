@@ -19,8 +19,7 @@ class AdministrasiFakturService
             // Simpan header faktur
             $faktur = FakturPenjualan::create([
                 "kode_faktur" => $data["kode_faktur"],
-                "nama_pembeli" => $data["nama_pembeli"],
-                "alamat_pembeli" => $data["alamat_pembeli"],
+                "pelanggan_id" => $data["pelanggan_id"],
                 "nomor_pesanan" => $data["nomor_pesanan"] ?? null,
                 "nomor_spb" => $data["nomor_spb"] ?? null,
                 "tanggal" => $data["tanggal"],

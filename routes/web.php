@@ -15,6 +15,7 @@ use App\Http\Controllers\AsetHutangController;
 use App\Http\Controllers\Faktur\AdministrasiFakturController;
 use App\Http\Controllers\JadwalPerjalananController;
 use App\Http\Controllers\ManajemenKasKecilController;
+use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\NeracaAkhirController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReturController;
@@ -620,6 +621,32 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             SuratPengirimanBarangController::class,
             "destroy",
         ])->name("administrasi.spb.destroy");
+
+        // Memo Kredit
+        Route::get("/memo-kredit", [
+            MemoKreditController::class,
+            "index",
+        ])->name("administrasi.memo-kredit.index");
+
+        Route::get("/memo-kredit/create/{fakturId}", [
+            MemoKreditController::class,
+            "create",
+        ])->name("administrasi.memo-kredit.create");
+
+        Route::get("/memo-kredit/{fakturId}/generate", [
+            MemoKreditController::class,
+            "generatePdf",
+        ])->name("administrasi.memo-kredit.generatePdf");
+
+        Route::post("/memo-kredit", [
+            MemoKreditController::class,
+            "store",
+        ])->name("administrasi.memo-kredit.store");
+
+        Route::delete("/memo-kredit/{fakturId}", [
+            MemoKreditController::class,
+            "destroy",
+        ])->name("administrasi.memo-kredit.destroy");
     });
 });
 

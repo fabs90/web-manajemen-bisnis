@@ -62,7 +62,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists("agenda_surat_keluar");
         Schema::dropIfExists("surat_keluar_email_logs");
+        Schema::dropIfExists("agenda_surat_keluar");
     }
 };

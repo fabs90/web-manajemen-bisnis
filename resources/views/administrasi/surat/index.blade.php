@@ -119,7 +119,7 @@
             SURAT PENGIRIMAN BARANG
         </a>
 
-        <a href="#" class="menu-card text-black" style="background:#eeeeee"
+        <a href="{{route('administrasi.memo-kredit.index')}}" class="menu-card text-black" style="background:#eeeeee"
             data-tooltip="Dokumen permohonan resmi kepada pihak terkait untuk melakukan suatu kegiatan.">
             MEMO KREDIT
         </a>

@@ -38,185 +38,37 @@ class RugiLabaController extends Controller
         );
     }
 
-    public function exportToPdf(Request $request)
+    public function exportToPdf(Request $request, KeuanganService $keuangan)
     {
-        // === Ambil parameter tanggal sama seperti di index() ===
         $startDate = $request->input(
             "start_date",
-            now()->startOfYear()->format("Y-m-d"),
+            now()->startOfYear()->toDateString(),
         );
         $endDate = $request->input(
             "end_date",
-            now()->endOfYear()->format("Y-m-d"),
+            now()->endOfYear()->toDateString(),
         );
-
-        // === Jalankan ulang perhitungan laba rugi dari index() ===
-        // Supaya hasil di PDF sama persis dengan di tampilan web
         $userId = Auth::id();
 
-        $filter = function ($query) use ($startDate, $endDate) {
-            return $query->whereBetween("tanggal", [$startDate, $endDate]);
-        };
+        // === Gunakan Service yg sama seperti index() untuk konsistensi ===
+        $data = $keuangan->hitungLabaRugi($startDate, $endDate);
 
-        // === Sama persis seperti di index() ===
-        $penjualanKredit = BukuBesarPiutang::where("user_id", $userId)
-            ->where($filter)
-            ->sum("debit");
+        // === Tambahkan tanggal ke array data ===
+        $data["startDate"] = $startDate;
+        $data["endDate"] = $endDate;
+        $userProfile = Auth::user();
+        // === Generate PDF ===
+        $pdf = Pdf::loadView(
+            "keuangan.rugi-laba.pdf",
+            array_merge($data, [
+                "startDate" => $startDate,
+                "endDate" => $endDate,
+                "userProfile" => $userProfile, // wajib
+            ]),
+        )->setPaper("a4", "portrait");
 
-        $penjualanTunai = BukuBesarPendapatan::where("user_id", $userId)
-            ->where($filter)
-            ->sum("penjualan_tunai");
-
-        $bungaPenjualan =
-            BukuBesarPendapatan::where("user_id", $userId)
-                ->where($filter)
-                ->sum("bunga_bank") ?? 0;
-
-        $totalPenjualan = $penjualanKredit + $penjualanTunai + $bungaPenjualan;
-
-        $returPenjualan =
-            BukuBesarPiutang::where("user_id", $userId)
-                ->where($filter)
-                ->where(function ($q) {
-                    $q->where("uraian", "like", "%retur%")->orWhere(
-                        "uraian",
-                        "like",
-                        "%memo%",
-                    );
-                })
-                ->sum("kredit") ?? 0;
-
-        $potonganPenjualan =
-            BukuBesarPendapatan::where("user_id", $userId)
-                ->where($filter)
-                ->sum("potongan_pembelian") ?? 0;
-
-        $penjualanBersih =
-            $totalPenjualan - ($returPenjualan + $potonganPenjualan);
-
-        $persediaanBarangDaganganAwal =
-            NeracaAwal::where("user_id", $userId)
-                ->where("created_at", "<", $startDate)
-                ->latest("created_at")
-                ->value("total_persediaan") ?? 0;
-
-        $pembelianSecaraKredit = BukuBesarHutang::where("user_id", $userId)
-            ->where($filter)
-            ->sum("kredit");
-
-        $pembelianSecaraTunai = BukuBesarPengeluaran::where("user_id", $userId)
-            ->where($filter)
-            ->sum("jumlah_pembelian_tunai");
-
-        $returPembelian =
-            BukuBesarHutang::where("user_id", $userId)
-                ->where($filter)
-                ->where(function ($q) {
-                    $q->where("uraian", "like", "%retur%")->orWhere(
-                        "uraian",
-                        "like",
-                        "%memo%",
-                    );
-                })
-                ->sum("debit") ?? 0;
-
-        $potonganPembelian =
-            BukuBesarPengeluaran::where("user_id", $userId)
-                ->where($filter)
-                ->sum("potongan_pembelian") ?? 0;
-
-        $pembelianBersih =
-            $pembelianSecaraKredit +
-            $pembelianSecaraTunai -
-            $returPembelian -
-            $potonganPembelian;
-
-        $barangTersediaDijual =
-            $persediaanBarangDaganganAwal + $pembelianBersih;
-
-        $persediaanBarangDagangan = KartuGudang::with("barang")
-            ->where("user_id", $userId)
-            ->where("tanggal", "<=", $endDate)
-            ->get()
-            ->groupBy("barang_id")
-            ->map(function ($group) {
-                $last = $group->sortByDesc("tanggal")->first();
-                return ($last->saldo_persatuan ?? 0) *
-                    ($last->barang->harga_beli_per_unit ?? 0);
-            })
-            ->sum();
-
-        $hpp = $barangTersediaDijual - $persediaanBarangDagangan;
-        $labaKotor = $penjualanBersih - $hpp;
-
-        $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
-            ->where($filter)
-            ->where(function ($q) {
-                $q->where("uraian", "like", "%gaji%")
-                    ->orWhere("uraian", "like", "%biaya%")
-                    ->orWhere("uraian", "like", "%asuransi%")
-                    ->orWhere("uraian", "like", "%pajak%")
-                    ->orWhere("uraian", "like", "%air%")
-                    ->orWhere("uraian", "like", "%listrik%")
-                    ->orWhere("uraian", "like", "%operasional%");
-            })
-            ->sum("lain_lain");
-
-        $labaOperasional = $labaKotor - $biayaOperasional;
-
-        $pendapatanLain = BukuBesarPendapatan::where("user_id", $userId)
-            ->where($filter)
-            ->sum("lain_lain");
-
-        $biayaAdministrasiBank = BukuBesarPengeluaran::where("user_id", $userId)
-            ->where($filter)
-            ->sum("bunga_bank");
-
-        $labaSebelumPajak =
-            $labaOperasional + $pendapatanLain - $biayaAdministrasiBank;
-
-        $pajak = $labaSebelumPajak > 0 ? $labaSebelumPajak * 0.15 : 0;
-        $labaSetelahPajak = $labaSebelumPajak - $pajak;
-
-        // === Masukkan semua variabel ke dalam array $data ===
-        $data = compact(
-            "penjualanKredit",
-            "penjualanTunai",
-            "bungaPenjualan",
-            "totalPenjualan",
-            "returPenjualan",
-            "potonganPenjualan",
-            "penjualanBersih",
-            "persediaanBarangDaganganAwal",
-            "pembelianSecaraKredit",
-            "pembelianSecaraTunai",
-            "returPembelian",
-            "potonganPembelian",
-            "pembelianBersih",
-            "barangTersediaDijual",
-            "persediaanBarangDagangan",
-            "hpp",
-            "labaKotor",
-            "biayaOperasional",
-            "labaOperasional",
-            "pendapatanLain",
-            "biayaAdministrasiBank",
-            "labaSebelumPajak",
-            "pajak",
-            "labaSetelahPajak",
-            "startDate",
-            "endDate",
-        );
-
-        // === Buat PDF dari view laporan yang sama ===
-        $pdf = Pdf::loadView("keuangan.rugi-laba.pdf", $data)->setPaper(
-            "a4",
-            "portrait",
-        );
-
-        // === Download PDF ===
         return $pdf->download(
-            "laporan-rugi-laba-" . now()->format("Y") . ".pdf",
+            "laporan-rugi-laba-" . now()->format("Y-m-d") . ".pdf",
         );
     }
 }

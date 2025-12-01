@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Faktur\FakturPenjualan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,5 +32,10 @@ class Pelanggan extends Model
     public function bukuBesarHutang()
     {
         return $this->hasMany(BukuBesarHutang::class);
+    }
+
+    public function fakturPenjualan()
+    {
+        return $this->hasMany(FakturPenjualan::class);
     }
 }

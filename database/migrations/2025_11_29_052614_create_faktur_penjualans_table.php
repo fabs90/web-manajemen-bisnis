@@ -13,8 +13,10 @@ return new class extends Migration {
         Schema::create("faktur_penjualan", function (Blueprint $table) {
             $table->id();
             $table->string("kode_faktur", 50)->unique();
-            $table->string("nama_pembeli");
-            $table->string("alamat_pembeli");
+            $table
+                ->foreignId("pelanggan_id")
+                ->constrained("pelanggan")
+                ->cascadeOnDelete();
             $table->string("nomor_pesanan")->unique()->nullable();
             $table->string("nomor_spb")->unique()->nullable();
             $table->date("tanggal");

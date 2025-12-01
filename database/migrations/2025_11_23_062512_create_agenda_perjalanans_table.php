@@ -118,10 +118,10 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists("agenda_perjalanan");
         Schema::dropIfExists("agenda_perjalanan_details");
         Schema::dropIfExists("agenda_perjalanan_transportasi");
         Schema::dropIfExists("agenda_perjalanan_akomodasi");
         Schema::dropIfExists("agenda_perjalanan_kontak");
+        Schema::dropIfExists("agenda_perjalanan");
     }
 };

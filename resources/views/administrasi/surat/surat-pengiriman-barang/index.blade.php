@@ -52,7 +52,7 @@
                                     <td class="text-center">{{ $loop->iteration }}</td>
 
                                     <td>{{ $item->kode_faktur }}</td>
-                                    <td>{{ $item->nama_pembeli }}</td>
+                                    <td>{{ $item->pelanggan->nama }}</td>
                                     <td>{{ $item->nomor_pesanan ?? '-' }}</td>
                                     <td>{{ $item->nomor_spb ?? '-' }}</td>
 

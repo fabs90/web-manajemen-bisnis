@@ -52,10 +52,10 @@
 
     <!-- KOP SURAT -->
     <div class="text-center bold uppercase" style="font-size:14px;">
-        {{$userProfile->name ?? 'Nama Perusahaan'}}
+        {{$profileUser->name ?? 'Nama Perusahaan'}}
     </div>
     <div class="text-center" style="margin-bottom:20px;">
-        {{$userProfile->alamat ?? ''}} • {{$userProfile->telepon ?? ''}} • {{$userProfile->email ?? ''}}
+        {{$profileUser->alamat ?? ''}} • {{$profileUser->nomor_telepon ?? ''}} • {{$profileUser->email ?? ''}}
     </div>
     <hr style="border-top:3px double #000; margin:15px 0;">
 
@@ -72,8 +72,8 @@
         </tr>
         <tr>
             <td>Kepada</td>
-            <td>: {{ $data->fakturPenjualan?->nama_pembeli ?? '-' }}<br>
-                &nbsp;&nbsp;&nbsp;{{ $data->fakturPenjualan?->alamat_pembeli ?? '' }}</td>
+            <td>: {{ $data->fakturPenjualan?->pelanggan->nama ?? '-' }}<br>
+                &nbsp;&nbsp;&nbsp;{{ $data->fakturPenjualan?->pelanggan->alamat ?? '' }}</td>
             <td>Nomor Pesanan</td>
             <td>: {{ $data->fakturPenjualan?->nomor_pesanan ?? '-' }}</td>
         </tr>
@@ -104,8 +104,8 @@
             @forelse($data->fakturPenjualan?->fakturPenjualanDetail ?? [] as $index => $detail)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $detail->qty ?? $detail->jumlah }}</td>
-                    <td>{{ $detail->qty ?? $detail->jumlah }}</td>
+                    <td>{{ $detail->qty ?? $detail->jumlah_dipesan }}</td>
+                    <td>{{ $detail->qty ?? $detail->jumlah_dikirim }}</td>
                     <td class="text-left">{{ $detail->nama_barang ?? $detail->produk?->nama ?? '-' }}</td>
                 </tr>
             @empty

@@ -19,20 +19,26 @@
             </div>
 
             <div class="card-body mt-3">
-
                 {{-- DATA PENERIMA --}}
                 <h6 class="fw-bold">Data Penerima</h6>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Nama Pembeli</label>
-                        <input type="text" name="nama_pembeli" class="form-control" required>
+                        <label class="form-label">Pilih Pelanggan</label>
+                        <select name="pelanggan_id" id="pelangganSelect" class="form-select" required>
+                            <option value="#">-- Pilih Pelanggan --</option>
+                            @foreach ($pelanggan as $p)
+                                <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}">
+                                    {{ $p->nama }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Alamat Pembeli</label>
-                        <input type="text" name="alamat_pembeli" class="form-control" required>
+                        <input type="text" name="alamat_pembeli" id="alamatPembeli"
+                               class="form-control" readonly required>
                     </div>
                 </div>
-
                 {{-- DATA SURAT --}}
                 <h6 class="fw-bold mt-4">Informasi Surat</h6>
                 <div class="row mb-3">
@@ -191,6 +197,11 @@ document.addEventListener('click', function (event) {
         event.target.closest('tr').remove();
         resetRowIndex();
     }
+});
+
+document.getElementById('pelangganSelect').addEventListener('change', function () {
+    let alamat = this.options[this.selectedIndex].dataset.alamat ?? "";
+    document.getElementById('alamatPembeli').value = alamat;
 });
 </script>
 @endpush

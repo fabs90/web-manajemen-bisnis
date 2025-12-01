@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Faktur;
 use App\Services\AdministrasiFakturService;
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
+use App\Models\Pelanggan;
 use App\Services\ManajemenRapatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,11 @@ class AdministrasiFakturController extends Controller
 
     public function create()
     {
-        return view("administrasi.surat.faktur-penjualan.create");
+        $pelanggan = Pelanggan::where("user_id", auth()->id())->get();
+        return view(
+            "administrasi.surat.faktur-penjualan.create",
+            compact("pelanggan"),
+        );
     }
 
     public function store(Request $request)
