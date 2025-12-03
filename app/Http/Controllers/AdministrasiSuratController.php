@@ -55,7 +55,13 @@ class AdministrasiSuratController extends Controller
     public function indexKasKecil()
     {
         $kasKecil = KasKecil::where("user_id", auth()->id())->get();
-        return view("administrasi.surat.kas-kecil.index", compact("kasKecil"));
+        $saldoAkhir = KasKecil::where("user_id", auth()->id())
+            ->latest()
+            ->value("saldo_akhir");
+        return view(
+            "administrasi.surat.kas-kecil.index",
+            compact("kasKecil", "saldoAkhir"),
+        );
     }
 
     public function indexAgendaTelpon()
@@ -445,20 +451,29 @@ class AdministrasiSuratController extends Controller
         }
     }
 
-    public function storeKasKecil(PermintaanKasKecilRequest $request, PermintaanKasKecilService $service)
-    {
+    public function storeKasKecil(
+        PermintaanKasKecilRequest $request,
+        PermintaanKasKecilService $service,
+    ) {
         try {
             $service->store($request);
-            return back()->with('success', 'Permintaan kas kecil berhasil disimpan.');
+            return back()->with(
+                "success",
+                "Permintaan kas kecil berhasil disimpan.",
+            );
         } catch (\Exception $e) {
-            Log::error('Gagal simpan kas kecil: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
-                'request' => $request->except(['_token', 'ttd_*']),
+            Log::error("Gagal simpan kas kecil: " . $e->getMessage(), [
+                "user_id" => auth()->id(),
+                "request" => $request->except(["_token", "ttd_*"]),
             ]);
 
             return back()
                 ->withInput()
-                ->with('error', $e->getMessage() ?: 'Terjadi kesalahan saat menyimpan data.');
+                ->with(
+                    "error",
+                    $e->getMessage() ?:
+                    "Terjadi kesalahan saat menyimpan data.",
+                );
         }
     }
 
@@ -477,7 +492,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda telepon. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -500,7 +515,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Perjalanan. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -525,7 +540,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menyimpan pada Agenda Janji Temu. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -753,7 +768,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda telepon. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -780,7 +795,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda perjalanan. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -807,7 +822,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada Agenda janji temu. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",
@@ -837,7 +852,7 @@ class AdministrasiSuratController extends Controller
             DB::rollBack();
             Log::error(
                 "Gagal menghapus pada surat undangan rapat. Error: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             return back()->with(
                 "error",

@@ -276,6 +276,9 @@ class PendapatanController extends Controller
                         ->latest()
                         ->first();
 
+                    $saldoKasBefore = $bukuBesarKasBefore->saldo ?? 0;
+                    $saldoKasNew = $saldoKasBefore + $saldoFinal;
+
                     BukuBesarKas::create([
                         "kode" => $kodeTransaksi,
                         "uraian" =>
@@ -285,9 +288,9 @@ class PendapatanController extends Controller
                             " - " .
                             $validated["uraian_pendapatan"],
                         "tanggal" => $request->tanggal,
-                        "debit" => 0,
+                        "debit" => $saldoFinal,
                         "kredit" => 0,
-                        "saldo" => $bukuBesarKasBefore->saldo ?? 0,
+                        "saldo" => $saldoKasNew,
                         "neraca_awal_id" => $neracaAwalBefore->id,
                         "user_id" => auth()->id(),
                     ]);
@@ -321,24 +324,24 @@ class PendapatanController extends Controller
                             : 0);
 
                     // Catat di Buku Besar Pendapatan (karena ada uang masuk)
-                    $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                        "kode" => $kodeTransaksi,
-                        "tanggal" => $request->tanggal,
-                        "uraian" =>
-                            "Pelunasan Piutang: " .
-                            $piutangLama->pelanggan->nama .
-                            " - " .
-                            $request->uraian_pendapatan,
-                        "potongan_pembelian" => $request->potongan_pembelian
-                            ? array_sum($request->potongan_pembelian)
-                            : 0, // Sum potongan
-                        "piutang_dagang" => $saldoFinal,
-                        "penjualan_tunai" => 0,
-                        "lain_lain" => $request->biaya_lain ?: 0,
-                        "uang_diterima" => $saldoFinal,
-                        "bunga_bank" => $request->bunga_bank ?: 0,
-                        "user_id" => auth()->id(),
-                    ]);
+                    // $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                    //     "kode" => $kodeTransaksi,
+                    //     "tanggal" => $request->tanggal,
+                    //     "uraian" =>
+                    //         "Pelunasan Piutang: " .
+                    //         $piutangLama->pelanggan->nama .
+                    //         " - " .
+                    //         $request->uraian_pendapatan,
+                    //     "potongan_pembelian" => $request->potongan_pembelian
+                    //         ? array_sum($request->potongan_pembelian)
+                    //         : 0, // Sum potongan
+                    //     "piutang_dagang" => $saldoFinal,
+                    //     "penjualan_tunai" => 0,
+                    //     "lain_lain" => $request->biaya_lain ?: 0,
+                    //     "uang_diterima" => $saldoFinal,
+                    //     "bunga_bank" => $request->bunga_bank ?: 0,
+                    //     "user_id" => auth()->id(),
+                    // ]);
 
                     // Di sini piutang berkurang (kredit bertambah)
                     $saldoBaruPiutang = $piutangLama->saldo - $saldoFinal;
@@ -447,6 +450,7 @@ class PendapatanController extends Controller
                         "diterima" => 0,
                         "dikeluarkan" => $jumlahDijual,
                         "uraian" =>
+                            "Barang terjual: " .
                             $request->uraian_pendapatan .
                             " - " .
                             $detailBarang->nama,

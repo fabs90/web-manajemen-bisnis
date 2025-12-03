@@ -29,44 +29,48 @@
 
         <!-- Instruction Section -->
         <div class="mb-5">
-            <h4 class="fw-semibold text-primary text-center mb-4">Langkah-langkah Awal Menggunakan Digitrans</h4>
+            <h4 class="fw-semibold text-primary text-center mb-4">Sebelum Memulai, Lengkapi Profil Anda</h4>
+            <p class="text-secondary text-center mb-4 fs-5">
+                Untuk menyesuaikan pengaturan bisnis dan memaksimalkan fitur Digitrans,
+                silakan lengkapi data perusahaan terlebih dahulu.
+            </p>
+
             <ol class="mb-4 fs-5 text-secondary">
                 <li>
-                    Buka menu di sidebar untuk mengakses fitur utama seperti
-                    <strong>Barang</strong>, <strong>Debitur-Kreditur</strong>, <strong>Pendapatan</strong>,
-                    <strong>Pengeluaran</strong>, dan <strong>Neraca</strong>.
+                    Lengkapi informasi profil bisnis Anda pada menu
+                    <a href="{{ url('/profile') }}"><strong>Profile Bisnis</strong></a>
+                    di bagian sidebar.
                 </li>
                 <li>
-                    Tambahkan terlebih dahulu
+                    Setelah profil lengkap, tambahkan
                     <a href="{{ url('/barang/create') }}"><strong>Data Barang</strong></a> dan
-                    <a href="{{ url('/debitur-kreditur/create') }}"><strong>Kreditur-Debitur</strong></a>.
+                    <a href="{{ url('/debitur-kreditur/create') }}"><strong>Data Debitur/Kreditur</strong></a>.
                 </li>
                 <li>
-                    Isi
-                    <a href="{{ url('/laporan-keuangan/aset-hutang/create') }}"><strong>Hutang/Neraca Awal</strong></a>
-                    pada menu <strong>Aset Hutang</strong>.
+                    Masukkan saldo awal pada menu
+                    <a href="{{ url('/laporan-keuangan/aset-hutang/create') }}"><strong>Aset Hutang</strong></a>.
                 </li>
                 <li>
-                    Masukan data pendapatan penjualan melalui menu
-                    <a href="{{ url('/keuangan/pendapatan/create') }}"><strong>Pendapatan</strong></a> yang terdapat di dalam menu
-                    <strong>Transaksi Bisnis</strong>.
+                    Catat transaksi pendapatan penjualan melalui menu
+                    <a href="{{ url('/keuangan/pendapatan/create') }}"><strong>Pendapatan</strong></a>.
                 </li>
                 <li>
-                    Masukan data pengeluaran pembelian melalui menu
-                    <a href="{{ url('/keuangan/pengeluaran/create') }}"><strong>Pengeluaran</strong></a> yang terdapat di dalam menu
-                    <strong>Transaksi Bisnis</strong>.
+                    Catat transaksi pengeluaran pembelian pada menu
+                    <a href="{{ url('/keuangan/pengeluaran/create') }}"><strong>Pengeluaran</strong></a>.
                 </li>
                 <li>
-                    Untuk melihat hasil
+                    Lihat laporan
                     <a href="{{ url('/laporan-keuangan/rugi-laba') }}"><strong>Rugi Laba</strong></a> dan
-                    <a href="{{ url('/laporan-keuangan/neraca-akhir') }}"><strong>Neraca Akhir</strong></a>,
-                    dapat diakses melalui menu <strong>Transaksi Bisnis</strong>.
-                </li>
-                <li>
-                    Setiap perubahan otomatis tercatat di Buku Besar dan laporan keuangan.
+                    <a href="{{ url('/laporan-keuangan/neraca-akhir') }}"><strong>Neraca Akhir</strong></a>
+                    untuk hasil analisa keuangan Anda.
                 </li>
             </ol>
+
+            <div class="alert alert-info text-center shadow-sm fw-semibold">
+                Pastikan profil terisi lengkap sebelum memulai transaksi 📌
+            </div>
         </div>
+
 
         <!-- CTA Section -->
         <div class="text-center">

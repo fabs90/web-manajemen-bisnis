@@ -22,9 +22,9 @@
     </div>
 @endif
     <div class="d-flex justify-content-between mb-3">
-        <h5 class="mb-0">Data Kas Kecil</h5>
+        <h5>Jumlah Kas Kecil Saat Ini: Rp {{ number_format($saldoAkhir ?? 0, 0, ',', '.') }}</h5>
         <a href="{{route('administrasi.kas-kecil.create')}}" class="btn btn-primary btn-sm">
-            <i class="fas fa-plus"></i> Tambah Kas Kecil
+            <i class="fas fa-plus"></i> Buat Formulir Permintaan Kas Kecil
         </a>
     </div>
 

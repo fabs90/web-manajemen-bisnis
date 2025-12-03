@@ -321,7 +321,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ======== Event Listeners ========
     jenisPengeluaran.addEventListener('change', toggleKrediturSection);
-    jenisKeperluanRadios.forEach(radio => radio.addEventListener('change', toggleKeperluanSection));
+    jenisKeperluanRadios.forEach(radio => radio.addEventListener('change', () => {
+        toggleKeperluanSection();
+        setJenisPengeluaranForKasKecil();
+    }));
+
     tambahBarangBtn.addEventListener('click', tambahBarang);
 
     // Format otomatis input rupiah
@@ -345,6 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======== Inisialisasi awal ========
     toggleKrediturSection();
     toggleKeperluanSection();
+    setJenisPengeluaranForKasKecil();
 
     // ======== Notifikasi SweetAlert ========
     @if (session('success'))
@@ -380,6 +385,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // disable semua button untuk mencegah double submit
         form.querySelectorAll('button').forEach(btn => btn.disabled = true);
     });
+
+    function setJenisPengeluaranForKasKecil() {
+        const selectedKeperluan = document.querySelector('input[name="jenis_keperluan"]:checked')?.value;
+
+        if (selectedKeperluan === 'kas_kecil') {
+            jenisPengeluaran.value = 'tunai';
+            jenisPengeluaran.setAttribute('disabled', true);
+
+            // Tambahkan hidden input supaya nilai tetap terkirim
+            if (!document.getElementById('hidden_jenis_pengeluaran')) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'jenis_pengeluaran';
+                hiddenInput.id = 'hidden_jenis_pengeluaran';
+                hiddenInput.value = 'tunai';
+                form.appendChild(hiddenInput);
+            }
+        } else {
+            jenisPengeluaran.removeAttribute('disabled');
+
+            // Hapus hidden input jika ada
+            const hidden = document.getElementById('hidden_jenis_pengeluaran');
+            if (hidden) hidden.remove();
+        }
+
+        toggleKrediturSection();
+    }
+
 
 
 });

@@ -246,7 +246,8 @@ class ReturController extends Controller
                     "lain_lain" => 0,
                     "uang_diterima" => $returJumlah, // uang masuk ke kas
                     "bunga_bank" => 0,
-                    "retur_pembelian" => $returJumlah,
+                    "jumlah_retur_penjualan" => $returJumlah,
+                    "jenis_retur" => $request->retur_penanganan,
                     "user_id" => $userId,
                 ]);
 
