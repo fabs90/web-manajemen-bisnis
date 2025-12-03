@@ -49,7 +49,7 @@ class KasirController extends Controller
             $bukuBesarPendapatan = BukuBesarPendapatan::create([
                 "tanggal" => now(),
                 "uraian" =>
-                    "Pendapatan Tunai: " .
+                    "Pendapatan Tunai - Kasir: " .
                     Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
                 "potongan_pembelian" => $request->potongan_pembelian
                     ? array_sum($request->potongan_pembelian)
@@ -82,7 +82,7 @@ class KasirController extends Controller
             $bukuBesarKas = BukuBesarKas::create([
                 "kode" => $kodeTransaksi,
                 "uraian" =>
-                    "Pendapatan Tunai: " .
+                    "Pendapatan Tunai - Kasir: " .
                     Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
                 "tanggal" => $bukuBesarPendapatan->tanggal,
                 "debit" => $request->grand_total,
@@ -98,7 +98,7 @@ class KasirController extends Controller
                 "pendapatan_id" => $bukuBesarPendapatan->id,
                 "buku_besar_kas_id" => $bukuBesarKas->id,
                 "uraian" =>
-                    "Pendapatan Tunai: " .
+                    "Pendapatan Tunai - Kasir: " .
                     Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
                 "tanggal_transaksi" => $bukuBesarPendapatan->tanggal,
                 "jumlah" => $request->grand_total,

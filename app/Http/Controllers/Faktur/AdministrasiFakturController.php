@@ -6,6 +6,7 @@ use App\Services\AdministrasiFakturService;
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
 use App\Models\Pelanggan;
+use App\Models\SPB\SuratPengirimanBarang;
 use App\Services\ManajemenRapatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,19 +15,27 @@ class AdministrasiFakturController extends Controller
 {
     public function index()
     {
-        $faktur = FakturPenjualan::where("user_id", auth()->id())->get();
+        $fakturPenjualan = FakturPenjualan::where(
+            "user_id",
+            auth()->id(),
+        )->get();
         return view(
             "administrasi.surat.faktur-penjualan.index",
-            compact("faktur"),
+            compact("fakturPenjualan"),
         );
     }
 
     public function create()
     {
-        $pelanggan = Pelanggan::where("user_id", auth()->id())->get();
+        $dataSpb = SuratPengirimanBarang::with([
+            "pesananPembelian.pelanggan",
+            "suratPengirimanBarangDetail.suratPengirimanBarang",
+        ])
+            ->orderBy("id", "DESC")
+            ->get();
         return view(
             "administrasi.surat.faktur-penjualan.create",
-            compact("pelanggan"),
+            compact("dataSpb"),
         );
     }
 
@@ -44,10 +53,7 @@ class AdministrasiFakturController extends Controller
             );
             return back()
                 ->withInput()
-                ->with(
-                    "error",
-                    "Gagal menambahkan faktur penjualan: " . $th->getMessage(),
-                );
+                ->with("error", "Gagal menambahkan faktur penjualan.");
         }
     }
 
@@ -56,18 +62,6 @@ class AdministrasiFakturController extends Controller
         return view("administrasi.surat.faktur-penjualan.show", [
             "faktur" => FakturPenjualan::findOrFail($id),
         ]);
-    }
-
-    public function edit($id)
-    {
-        return view("administrasi.surat.faktur-penjualan.edit", [
-            "faktur" => FakturPenjualan::findOrFail($id),
-        ]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        // Implement update logic here
     }
 
     public function generatePdf($id)

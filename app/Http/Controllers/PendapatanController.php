@@ -175,7 +175,11 @@ class PendapatanController extends Controller
                                 "kode" => $kodeTransaksi,
                                 "tanggal" => $request->tanggal,
                                 "uraian" =>
-                                    "Penambahan piutang lama ({$piutangLama->kode}) - {$piutangLama->pelanggan->nama} - " .
+                                    "Menambah Piutang Lama: " .
+                                    now()->format("Y-m-d H:i:s") .
+                                    " " .
+                                    $piutangLama->pelanggan->nama .
+                                    " - " .
                                     $validated["uraian_pendapatan"],
                                 "potongan_pembelian" => $request->potongan_pembelian
                                     ? array_sum($request->potongan_pembelian)
@@ -194,7 +198,11 @@ class PendapatanController extends Controller
                                 "kredit" => 0,
                                 "saldo" => $piutangLama->saldo + $saldoFinal,
                                 "uraian" =>
-                                    "Penambahan piutang lama ({$piutangLama->kode}) - {$piutangLama->pelanggan->nama} - " .
+                                    "Menambah Piutang Lama: " .
+                                    now()->format("Y-m-d H:i:s") .
+                                    " " .
+                                    $piutangLama->pelanggan->nama .
+                                    " - " .
                                     $validated["uraian_pendapatan"],
                                 "tanggal" => $validated["tanggal"],
                                 "buku_besar_pendapatan_id" =>
@@ -213,6 +221,8 @@ class PendapatanController extends Controller
                             "tanggal" => $request->tanggal,
                             "uraian" =>
                                 "Menambah Piutang Baru: " .
+                                now()->format("Y-m-d H:i:s") .
+                                " " .
                                 $pelanggan->nama .
                                 " - " .
                                 $validated["uraian_pendapatan"],
@@ -236,6 +246,8 @@ class PendapatanController extends Controller
                             "saldo" => $saldoFinal,
                             "uraian" =>
                                 "Menambah Piutang Baru: " .
+                                now()->format("Y-m-d H:i:s") .
+                                " " .
                                 $pelanggan->nama .
                                 " - " .
                                 $validated["uraian_pendapatan"],
@@ -266,7 +278,11 @@ class PendapatanController extends Controller
                     BukuBesarKas::create([
                         "kode" => $kodeTransaksi,
                         "uraian" =>
-                            "Penjualan Piutang: " . $request->uraian_pendapatan,
+                            "Menambah Piutang: " .
+                            now()->format("Y-m-d H:i:s") .
+                            " " .
+                            " - " .
+                            $validated["uraian_pendapatan"],
                         "tanggal" => $request->tanggal,
                         "debit" => 0,
                         "kredit" => 0,
@@ -304,24 +320,24 @@ class PendapatanController extends Controller
                             : 0);
 
                     // Catat di Buku Besar Pendapatan (karena ada uang masuk)
-                    $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                        "kode" => $kodeTransaksi,
-                        "tanggal" => $request->tanggal,
-                        "uraian" =>
-                            "Pelunasan Piutang: " .
-                            $piutangLama->pelanggan->nama .
-                            " - " .
-                            $request->uraian_pendapatan,
-                        "potongan_pembelian" => $request->potongan_pembelian
-                            ? array_sum($request->potongan_pembelian)
-                            : 0, // Sum potongan
-                        "piutang_dagang" => $saldoFinal,
-                        "penjualan_tunai" => 0,
-                        "lain_lain" => $request->biaya_lain ?: 0,
-                        "uang_diterima" => $saldoFinal,
-                        "bunga_bank" => $request->bunga_bank ?: 0,
-                        "user_id" => auth()->id(),
-                    ]);
+                    // $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                    //     "kode" => $kodeTransaksi,
+                    //     "tanggal" => $request->tanggal,
+                    //     "uraian" =>
+                    //         "Pelunasan Piutang: " .
+                    //         $piutangLama->pelanggan->nama .
+                    //         " - " .
+                    //         $request->uraian_pendapatan,
+                    //     "potongan_pembelian" => $request->potongan_pembelian
+                    //         ? array_sum($request->potongan_pembelian)
+                    //         : 0, // Sum potongan
+                    //     "piutang_dagang" => $saldoFinal,
+                    //     "penjualan_tunai" => 0,
+                    //     "lain_lain" => $request->biaya_lain ?: 0,
+                    //     "uang_diterima" => $saldoFinal,
+                    //     "bunga_bank" => $request->bunga_bank ?: 0,
+                    //     "user_id" => auth()->id(),
+                    // ]);
 
                     // Di sini piutang berkurang (kredit bertambah)
                     $saldoBaruPiutang = $piutangLama->saldo - $saldoFinal;
@@ -340,7 +356,7 @@ class PendapatanController extends Controller
                         "debit" => 0,
                         "kredit" => $saldoFinal,
                         "saldo" => $saldoBaruPiutang,
-                        "buku_besar_pendapatan_id" => $bukuBesarPendapatan->id,
+                        "buku_besar_pendapatan_id" => null,
                         "user_id" => auth()->id(),
                     ]);
 

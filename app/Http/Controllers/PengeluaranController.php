@@ -7,8 +7,10 @@ use App\Models\BukuBesarHutang;
 use App\Models\BukuBesarKas;
 use App\Models\BukuBesarPengeluaran;
 use App\Models\KartuGudang;
+use App\Models\KasKecil;
 use App\Models\NeracaAwal;
 use App\Models\Pelanggan;
+use App\Models\PengisianKasKecilLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -99,12 +101,27 @@ class PengeluaranController extends Controller
                     $saldoKasBaru =
                         ($bukuBesarKasBefore->saldo ?? 0) - $jumlahUang;
 
+                    BukuBesarKas::create([
+                        "kode" => Str::uuid(),
+                        "tanggal" => $validated["tanggal"],
+                        "uraian" =>
+                            "Pengeluaran lain-lain: " .
+                            $validated["uraian_pengeluaran"],
+                        "debit" => 0,
+                        "kredit" => $jumlahUang,
+                        "saldo" => $saldoKasBaru,
+                        "neraca_awal_id" => $neracaAwal->id ?? null,
+                        "user_id" => auth()->id(),
+                    ]);
+
                     if ($validated["jenis_pengeluaran"] == "tunai") {
                         // Pengeluaran tunai → kas berkurang
                         $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
                             "user_id" => auth()->id(),
                             "tanggal" => $validated["tanggal"],
-                            "uraian" => $validated["uraian_pengeluaran"],
+                            "uraian" =>
+                                "Pengeluaran lain-lain: " .
+                                $validated["uraian_pengeluaran"],
                             "potongan_pembelian" =>
                                 $validated["potongan_pembelian"] ?? 0,
                             "jumlah_hutang" => 0,
@@ -112,45 +129,59 @@ class PengeluaranController extends Controller
                             "lain_lain" => $jumlahUang,
                             "admin_bank" => $validated["admin_bank"] ?? 0,
                             "jumlah_pengeluaran" => $jumlahUang,
-                        ]);
-
-                        BukuBesarKas::create([
-                            "kode" => Str::uuid(),
-                            "tanggal" => $validated["tanggal"],
-                            "uraian" => $validated["uraian_pengeluaran"],
-                            "debit" => 0,
-                            "kredit" => $jumlahUang,
-                            "saldo" => $saldoKasBaru,
-                            "neraca_awal_id" => $neracaAwal->id ?? null,
-                            "user_id" => auth()->id(),
                         ]);
                     } else {
                         // Pengeluaran kredit → hutang bertambah
-                        $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
-                            "user_id" => auth()->id(),
-                            "tanggal" => $validated["tanggal"],
-                            "uraian" => $validated["uraian_pengeluaran"],
-                            "potongan_pembelian" =>
-                                $validated["potongan_pembelian"] ?? 0,
-                            "jumlah_hutang" => 0,
-                            "jumlah_pembelian_tunai" => 0,
-                            "lain_lain" => $jumlahUang,
-                            "admin_bank" => $validated["admin_bank"] ?? 0,
-                            "jumlah_pengeluaran" => $jumlahUang,
-                        ]);
+                        // $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
+                        //     "user_id" => auth()->id(),
+                        //     "tanggal" => $validated["tanggal"],
+                        //     "uraian" => $validated["uraian_pengeluaran"],
+                        //     "potongan_pembelian" =>
+                        //         $validated["potongan_pembelian"] ?? 0,
+                        //     "jumlah_hutang" => 0,
+                        //     "jumlah_pembelian_tunai" => 0,
+                        //     "lain_lain" => $jumlahUang,
+                        //     "admin_bank" => $validated["admin_bank"] ?? 0,
+                        //     "jumlah_pengeluaran" => $jumlahUang,
+                        // ]);
+                        $existingHutang = BukuBesarHutang::where(
+                            "pelanggan_id",
+                            $validated["nama_kreditur"],
+                        )
+                            ->latest()
+                            ->first();
 
-                        BukuBesarHutang::create([
-                            "kode" => Str::uuid(),
-                            "pelanggan_id" => $validated["nama_kreditur"],
-                            "uraian" => $validated["uraian_pengeluaran"],
-                            "tanggal" => $validated["tanggal"],
-                            "debit" => 0,
-                            "kredit" => $jumlahUang,
-                            "saldo" => $jumlahUang,
-                            "buku_besar_pengeluaran_id" =>
-                                $bukuBesarPengeluaran->id,
-                            "user_id" => auth()->id(),
-                        ]);
+                        if ($existingHutang) {
+                            $saldoHutangBaru =
+                                $existingHutang->saldo + $validated["jumlah"];
+                            BukuBesarHutang::create([
+                                "kode" => Str::uuid(),
+                                "pelanggan_id" => $validated["nama_kreditur"],
+                                "uraian" =>
+                                    "Hutang lain-lain: " .
+                                    $validated["uraian_pengeluaran"],
+                                "tanggal" => $validated["tanggal"],
+                                "debit" => 0,
+                                "kredit" => $jumlahUang,
+                                "saldo" => $saldoHutangBaru,
+                                "buku_besar_pengeluaran_id" => null,
+                                "user_id" => auth()->id(),
+                            ]);
+                        } else {
+                            BukuBesarHutang::create([
+                                "kode" => Str::uuid(),
+                                "pelanggan_id" => $validated["nama_kreditur"],
+                                "uraian" =>
+                                    "Hutang lain-lain: " .
+                                    $validated["uraian_pengeluaran"],
+                                "tanggal" => $validated["tanggal"],
+                                "debit" => 0,
+                                "kredit" => $jumlahUang,
+                                "saldo" => $jumlahUang,
+                                "buku_besar_pengeluaran_id" => null,
+                                "user_id" => auth()->id(),
+                            ]);
+                        }
                     }
                     break;
 
@@ -168,7 +199,9 @@ class PengeluaranController extends Controller
                     $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
                         "user_id" => auth()->id(),
                         "tanggal" => $validated["tanggal"],
-                        "uraian" => $validated["uraian_pengeluaran"],
+                        "uraian" =>
+                            "Pelunasan hutang: " .
+                            $validated["uraian_pengeluaran"],
                         "potongan_pembelian" =>
                             $validated["potongan_pembelian"] ?? 0,
                         "jumlah_hutang" => $jumlahUang,
@@ -229,26 +262,57 @@ class PengeluaranController extends Controller
                         ($validated["potongan_pembelian"] ?? 0);
                     $saldoKasBaru =
                         ($bukuBesarKasBefore->saldo ?? 0) - $jumlahUang;
-                    $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
+
+                    $latestBukuBesarKas = BukuBesarKas::where(
+                        "user_id",
+                        auth()->id(),
+                    )
+                        ->latest()
+                        ->first();
+
+                    $saldoKasSebelumnya = $latestBukuBesarKas->saldo ?? 0;
+                    $saldoKasBaru = $saldoKasSebelumnya - $jumlahUang;
+
+                    $recordKas = BukuBesarKas::create([
+                        "kode" => Str::uuid(),
+                        "uraian" =>
+                            "Pengeluaran membeli barang - " .
+                            now()->format("d/m/Y") .
+                            " - " .
+                            $validated["uraian_pengeluaran"],
+                        "tanggal" => now(),
+                        "debit" => $jumlahUang,
+                        "kredit" => 0,
+                        "saldo" => $saldoKasBaru,
+                        "neraca_awal_id" => null,
+                        "neraca_akhir_id" => null,
                         "user_id" => auth()->id(),
-                        "tanggal" => $validated["tanggal"],
-                        "uraian" => $validated["uraian_pengeluaran"],
-                        "potongan_pembelian" =>
-                            $validated["potongan_pembelian"] ?? 0,
-                        "jumlah_hutang" =>
-                            $validated["jenis_pengeluaran"] == "kredit"
-                                ? $validated["jumlah"]
-                                : 0,
-                        "jumlah_pembelian_tunai" =>
-                            $validated["jenis_pengeluaran"] == "tunai"
-                                ? $validated["jumlah"]
-                                : 0,
-                        "lain_lain" => $validated["biaya_lain"] ?? 0,
-                        "admin_bank" => $validated["admin_bank"] ?? 0,
-                        "jumlah_pengeluaran" => $jumlahUang,
                     ]);
 
-                    if ($validated["jenis_pengeluaran"] == "kredit") {
+                    if ($validated["jenis_pengeluaran"] == "tunai") {
+                        $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
+                            "user_id" => auth()->id(),
+                            "tanggal" => $validated["tanggal"],
+                            "uraian" =>
+                                "Pengeluaran membeli barang - " .
+                                now()->format("d/m/Y") .
+                                " - " .
+                                $validated["uraian_pengeluaran"],
+                            "potongan_pembelian" =>
+                                $validated["potongan_pembelian"] ?? 0,
+                            "jumlah_hutang" =>
+                                $validated["jenis_pengeluaran"] == "kredit"
+                                    ? $validated["jumlah"]
+                                    : 0,
+                            "jumlah_pembelian_tunai" =>
+                                $validated["jenis_pengeluaran"] == "tunai"
+                                    ? $validated["jumlah"]
+                                    : 0,
+                            "lain_lain" => $validated["biaya_lain"] ?? 0,
+                            "admin_bank" => $validated["admin_bank"] ?? 0,
+                            "jumlah_pengeluaran" => $jumlahUang,
+                        ]);
+                    } else {
                         $existingHutang = BukuBesarHutang::where(
                             "pelanggan_id",
                             $validated["nama_kreditur"],
@@ -264,14 +328,15 @@ class PengeluaranController extends Controller
                                 "kode" => $existingHutang->kode,
                                 "pelanggan_id" => $validated["nama_kreditur"],
                                 "uraian" =>
-                                    "Pembelian barang: " .
+                                    "Hutang membeli barang - " .
+                                    now()->format("d/m/Y") .
+                                    " - " .
                                     $validated["uraian_pengeluaran"],
                                 "tanggal" => $validated["tanggal"],
                                 "debit" => 0,
                                 "kredit" => $validated["jumlah"],
                                 "saldo" => $saldoHutangBaru,
-                                "buku_besar_pengeluaran_id" =>
-                                    $bukuBesarPengeluaran->id,
+                                "buku_besar_pengeluaran_id" => null,
                                 "user_id" => auth()->id(),
                             ]);
                         } else {
@@ -279,20 +344,153 @@ class PengeluaranController extends Controller
                                 "kode" => Str::uuid(),
                                 "pelanggan_id" => $validated["nama_kreditur"],
                                 "uraian" =>
-                                    "Pembelian barang: " .
+                                    "Hutang membeli barang - " .
+                                    now()->format("d/m/Y") .
+                                    " - " .
                                     $validated["uraian_pengeluaran"],
                                 "tanggal" => $validated["tanggal"],
                                 "debit" => 0,
                                 "kredit" => $validated["jumlah"],
                                 "saldo" => $validated["jumlah"],
-                                "buku_besar_pengeluaran_id" =>
-                                    $bukuBesarPengeluaran->id,
+                                "buku_besar_pengeluaran_id" => null,
                                 "user_id" => auth()->id(),
                             ]);
                         }
                     }
-
                     $this->tambahBarangKeGudang($validated);
+                    break;
+                // ==================================
+                // CASE 4: MENGISI KAS KECIL
+                // ==================================
+                case "kas_kecil":
+                    $jumlahUang =
+                        ($validated["jumlah"] ?? 0) +
+                        ($validated["biaya_lain"] ?? 0) -
+                        ($validated["potongan_pembelian"] ?? 0);
+                    $kodeRef = Str::uuid();
+                    $latestSaldoKasKecil = KasKecil::where(
+                        "user_id",
+                        auth()->id(),
+                    )
+                        ->latest()
+                        ->first();
+
+                    if ($latestSaldoKasKecil) {
+                        $kasKecil = KasKecil::create([
+                            "user_id" => auth()->id(),
+                            "tanggal" => now(),
+                            "nomor_referensi" => $kodeRef,
+                            "penerimaan" => $jumlahUang,
+                            "pengeluaran" => 0,
+                            "saldo_akhir" =>
+                                $latestSaldoKasKecil->saldo_akhir + $jumlahUang,
+                        ]);
+                    } else {
+                        $kasKecil = KasKecil::create([
+                            "user_id" => auth()->id(),
+                            "tanggal" => now(),
+                            "nomor_referensi" => $kodeRef,
+                            "penerimaan" => $jumlahUang,
+                            "pengeluaran" => 0,
+                            "saldo_akhir" => $jumlahUang,
+                        ]);
+                    }
+
+                    $latestBukuBesarKas = BukuBesarKas::where(
+                        "user_id",
+                        auth()->id(),
+                    )
+                        ->latest()
+                        ->first();
+
+                    $saldoKasSebelumnya = $latestBukuBesarKas->saldo ?? 0;
+                    $saldoKasBaru = $saldoKasSebelumnya - $jumlahUang;
+
+                    $recordKas = BukuBesarKas::create([
+                        "kode" => Str::uuid(),
+                        "uraian" =>
+                            "Pengeluaran ke kas kecil - " .
+                            now()->format("d/m/Y") .
+                            " - " .
+                            $validated["uraian_pengeluaran"],
+                        "tanggal" => now(),
+                        "debit" => $jumlahUang,
+                        "kredit" => 0,
+                        "saldo" => $saldoKasBaru,
+                        "neraca_awal_id" => null,
+                        "neraca_akhir_id" => null,
+                        "user_id" => auth()->id(),
+                    ]);
+
+                    PengisianKasKecilLog::create([
+                        "buku_besar_kas_id" => $recordKas->id, // aman, tidak null
+                        "kas_kecil_id" => $kasKecil->id,
+                        "uraian" =>
+                            "Pengisian kas kecil: " .
+                            now()->format("d/m/Y") .
+                            " - " .
+                            $validated["uraian_pengeluaran"],
+                        "jumlah" => $jumlahUang,
+                        "tanggal_transaksi" => now(),
+                        "user_id" => auth()->id(),
+                    ]);
+
+                    if ($validated["jenis_pengeluaran"] == "kredit") {
+                        // cek saldo lama
+                        $exisingSaldoHutang = BukuBesarHutang::where(
+                            "user_id",
+                            auth()->id(),
+                        )
+                            ->where("pelanggan_id", $validated["nama_kreditur"])
+                            ->latest()
+                            ->first();
+
+                        $saldoHutangBaru = $exisingSaldoHutang->saldo
+                            ? $exisingSaldoHutang->saldo + $jumlahUang
+                            : $jumlahUang;
+
+                        $bukuBesarHutang = BukuBesarHutang::create([
+                            "pelanggan_id" => $validated["nama_kreditur"],
+                            "kode" => $recordKas->kode,
+                            "uraian" =>
+                                "Pengisian kas kecil secara kredit: " .
+                                now()->format("d/m/Y") .
+                                " - " .
+                                $validated["uraian_pengeluaran"],
+                            "tanggal" => now(),
+                            "debit" => 0,
+                            "kredit" => $jumlahUang,
+                            "saldo" => $saldoHutangBaru,
+                            "buku_besar_pendapatan_id" => null,
+                            "buku_besar_pengeluaran_id" => null,
+                            "neraca_awal_id" => null,
+                            "neraca_akhir_id" => null,
+                            "user_id" => auth()->id(),
+                        ]);
+                    } else {
+                        $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
+                            "user_id" => auth()->id(),
+                            "tanggal" => $validated["tanggal"],
+                            "uraian" =>
+                                "Pengisian kas kecil: " .
+                                now()->format("d/m/Y") .
+                                " - " .
+                                $validated["uraian_pengeluaran"],
+                            "potongan_pembelian" =>
+                                $validated["potongan_pembelian"] ?? 0,
+                            "jumlah_hutang" =>
+                                $validated["jenis_pengeluaran"] == "kredit"
+                                    ? $validated["jumlah"]
+                                    : 0,
+                            "jumlah_pembelian_tunai" =>
+                                $validated["jenis_pengeluaran"] == "tunai"
+                                    ? $validated["jumlah"]
+                                    : 0,
+                            "lain_lain" => $validated["biaya_lain"] ?? 0,
+                            "admin_bank" => $validated["admin_bank"] ?? 0,
+                            "jumlah_pengeluaran" => $jumlahUang,
+                        ]);
+                    }
                     break;
             }
 
@@ -369,5 +567,24 @@ class PengeluaranController extends Controller
         return redirect()
             ->route("keuangan.pengeluaran.list")
             ->with("success", "Data pengeluaran berhasil dihapus.");
+    }
+
+    public function destroyHutang($id)
+    {
+        $hutang = BukuBesarHutang::where("id", $id)
+            ->where("user_id", auth()->id())
+            ->first();
+
+        if (!$hutang) {
+            return redirect()
+                ->route("keuangan.pengeluaran.list")
+                ->with("error", "Data tidak ditemukan atau tidak milik Anda.");
+        }
+
+        $hutang->delete();
+
+        return redirect()
+            ->route("keuangan.pengeluaran.list")
+            ->with("success", "Data hutang berhasil dihapus.");
     }
 }

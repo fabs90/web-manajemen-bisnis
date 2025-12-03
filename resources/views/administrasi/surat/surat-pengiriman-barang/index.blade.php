@@ -1,154 +1,197 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Surat Pengiriman Barang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Surat Pengiriman Barang (SPB) | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
-    <div class="container mt-4">
-        {{-- Alert sukses --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                <strong>Sukses!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
+<div class="container mt-4">
 
-        {{-- Alert Error --}}
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
-                <strong>Gagal!</strong> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <strong>DATA FAKTUR PENJUALAN</strong>
-            </div>
-            <div class="card-body">
-                {{-- Action Buttons --}}
-                <div class="d-flex justify-content-end gap-2 mt-3 mb-2">
-                    <a href="{{ route('administrasi.spb.create') }}" class="btn btn-success">
-                        <i class="bi bi-file-earmark-plus"></i> Tambah Surat Pengiriman Barang (SPB)
-                    </a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped" id="faktur-penjualan-table">
-                        <thead class="table-light text-center">
-                            <tr>
-                                <th width="5%">No</th>
-                                <th>Kode Faktur</th>
-                                <th>Nama Pembeli</th>
-                                <th>Nomor Pesanan</th>
-                                <th>Nomor SPB</th>
-                                <th>Tanggal</th>
-                                <th>Jenis Pengiriman</th>
-                                <th>Bagian Penjualan</th>
-                                <th width="13%">Cek Pengiriman Barang</th>
-                            </tr>
-                        </thead>
+    {{-- Alert Sukses --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            <strong>Sukses!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-                        <tbody>
-                            @foreach ($dataFaktur as $item)
-                                <tr>
-                                    <td class="text-center">{{ $loop->iteration }}</td>
+    {{-- Alert Error --}}
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            <strong>Gagal!</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-                                    <td>{{ $item->kode_faktur }}</td>
-                                    <td>{{ $item->pelanggan->nama }}</td>
-                                    <td>{{ $item->nomor_pesanan ?? '-' }}</td>
-                                    <td>{{ $item->nomor_spb ?? '-' }}</td>
-
-                                    <td class="text-center">
-                                        {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') : '-' }}
-                                    </td>
-
-                                    <td>{{ $item->jenis_pengiriman ?? '-' }}</td>
-                                    <td>{{ $item->nama_bagian_penjualan ?? '-' }}</td>
-
-                                    <td class="text-center">
-                                        {{-- Download PDF --}}
-                                        @if($item->suratPengirimanBarang)
-                                                <a href="{{ route('administrasi.spb.generatePdf', $item->suratPengirimanBarang->id) }}"
-                                                   class="btn btn-warning btn-sm"
-                                                   data-bs-toggle="tooltip"
-                                                   data-bs-placement="top"
-                                                   title="Unduh PDF Surat Pengiriman Barang"
-                                                   target="_blank">
-                                                    <i class="bi bi-file-earmark-pdf"></i>
-                                                </a>
-                                            @else
-                                                {{-- SPB belum dibuat → tombol disabled + tooltip penjelasan --}}
-                                                <button class="btn btn-warning btn-sm" disabled
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-placement="top"
-                                                        title="SPB belum dibuat">
-                                                    <i class="bi bi-file-earmark-pdf"></i>
-                                                </button>
-                                            @endif
-
-                                        {{-- Delete --}}
-                                        <form action="{{ $item->suratPengirimanBarang ? route('administrasi.spb.destroy', $item->suratPengirimanBarang->id) : '#' }}"
-                                              method="POST"
-                                              class="d-inline delete-form"
-                                              {{ $item->suratPengirimanBarang ? '' : 'style=display:none' }}>
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm delete-btn"
-                                                    type="submit"
-                                                    title="Hapus"
-                                                    {{ $item->suratPengirimanBarang ? '' : 'disabled' }}>
-                                                <span class="delete-text"><i class="bi bi-trash"></i></span>
-                                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                            </button>
-                                        </form>
-
-                                    </td>
-
-                                </tr>
-                            @endforeach
-                        </tbody>
-
-                    </table>
-                </div>
-            </div>
-
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <strong>DAFTAR SURAT PENGIRIMAN BARANG (SPB)</strong>
+            <a href="{{ route('administrasi.spb.create') }}" class="btn btn-light btn-sm">
+                <i class="bi bi-plus-circle"></i> Buat SPB Baru
+            </a>
         </div>
 
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" id="spb-table">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th>Nomor SPB</th>
+                            <th>Tanggal SPB</th>
+                            <th>No. Pesanan Pembelian</th>
+                            <th>Supplier / Pelanggan</th>
+                            <th>Keadaan Barang</th>
+                            <th>Penerima</th>
+                            <th width="14%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($suratPengirimanBarang as $spb)
+                            <tr>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td class="fw-bold">{{ $spb->nomor_pengiriman_barang }}</td>
+                                <td class="text-center">
+                                    {{ \Carbon\Carbon::parse($spb->tanggal_pengiriman)->format('d-m-Y') }}
+                                </td>
+                                <td>
+                                    {{ $spb->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}
+                                </td>
+                                <td>
+                                    {{ $spb->pesananPembelian?->pelanggan?->nama ?? '-' }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ $spb->keadaan == 'baik' ? 'success' : 'warning' }}">
+                                        {{ ucfirst($spb->keadaan ?? '-') }}
+                                    </span>
+                                </td>
+                                <td>{{ $spb->nama_penerima ?? '-' }}</td>
+                                <td class="text-center">
+                                    {{-- Tombol Lihat Detail --}}
+                                    @if ($spb->suratPengirimanBarangDetail->count() > 0)
+                                        <button class="btn btn-info btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#detailModal{{ $spb->id }}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
+                                        {{-- Modal Detail SPB --}}
+                                        <div class="modal fade" id="detailModal{{ $spb->id }}" tabindex="-1"
+                                            aria-labelledby="modalSPBLabel{{ $spb->id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title">
+                                                            Detail SPB - {{ $spb->nomor_pengiriman_barang }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+
+                                                    <div class="modal-body">
+
+                                                        <div class="row mb-2">
+                                                            <div class="col-6">
+                                                                <strong>Tgl Kirim:</strong>
+                                                                {{ \Carbon\Carbon::parse($spb->tanggal_terima)->format('d-m-Y') }}
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <strong>Penerima:</strong> {{ $spb->nama_penerima ?? '-' }}
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <strong>Pengirim:</strong> {{ $spb->nama_pengirim ?? '-' }}
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <strong>Keadaan:</strong> {{ ucfirst($spb->keadaan ?? '-') }}
+                                                            </div>
+                                                        </div>
+
+                                                        <hr>
+
+                                                        <table class="table table-bordered table-sm text-center">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th>No</th>
+                                                                    <th>Barang</th>
+                                                                    <th>Jumlah Dikirim</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            @foreach ($spb->suratPengirimanBarangDetail as $detail)
+                                                                <tr>
+                                                                    <td>{{ $loop->iteration }}</td>
+                                                                    <td>{{ $detail->pesananPembelianDetail->nama_barang }}</td>
+                                                                    <td>{{ $detail->jumlah_dikirim }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                            </tbody>
+                                                        </table>
+
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-muted">Tidak ada detail</span>
+                                    @endif
+                                    <a href="{{ route('administrasi.spb.generatePdf', $spb->id) }}"
+                                       class="btn btn-warning btn-sm" target="_blank" title="Download PDF SPB">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
+
+                                    {{-- Hapus --}}
+                                    <form action="{{ route('administrasi.spb.destroy', $spb->id) }}"
+                                          method="POST" class="d-inline delete-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm delete-btn" title="Hapus SPB">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+</div>
 @endsection
 
 @push('script')
-    <script>
-        $(document).ready(function() {
-            $('#faktur-penjualan-table').DataTable({
-                responsive: true,
-                pageLength: 10,
-                language: {
-                    emptyTable: "Belum ada Data Faktur Penjualan📪"
+<script>
+    $(document).ready(function() {
+        $('#spb-table').DataTable({
+            responsive: true,
+            pageLength: 15,
+            language: {
+                emptyTable: "Tidak ada data yang tersedia"
+            }
+        });
+
+        // Konfirmasi hapus dengan SweetAlert2
+        $('.delete-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+
+            Swal.fire({
+                title: 'Yakin ingin menghapus SPB ini?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
                 }
             });
-
-            $('.delete-form').on('submit', function(e) {
-                e.preventDefault();
-                let form = this;
-
-                Swal.fire({
-                    title: 'Yakin ingin menghapus?',
-                    text: "Data yang dihapus tidak dapat dikembalikan!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, hapus',
-                    cancelButtonText: 'Batal',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        let btn = $(form).find('.delete-btn');
-                        btn.prop('disabled', true);
-                        btn.find('.delete-text').addClass('d-none');
-                        btn.find('.spinner-border').removeClass('d-none');
-                        form.submit();
-                    }
-                });
-            });
         });
-    </script>
+    });
+</script>
 @endpush

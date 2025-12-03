@@ -37,7 +37,7 @@ class PengeluaranRequest extends FormRequest
                 "required_if:jenis_pengeluaran,kredit|integer|exists:pelanggan,id",
 
             "jenis_keperluan" =>
-                "required|in:membeli_barang,lain_lain,membayar_hutang",
+                "required|in:membeli_barang,lain_lain,membayar_hutang,kas_kecil",
 
             // ✅ Membeli Barang
             "barang_dibeli.*" =>

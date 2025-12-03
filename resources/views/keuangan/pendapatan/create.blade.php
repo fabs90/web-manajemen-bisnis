@@ -132,13 +132,13 @@
 
                 <div id="jumlah_piutang_container" class="mb-3 d-none">
                     <label for="jumlah_piutang" class="form-label rupiah">Jumlah Piutang Non-barang (Opsional)<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control rupiah" name="jumlah_piutang" id="jumlah_piutang" placeholder="Masukkan jumlah piutang">
+                    <input type="text" class="form-control rupiah" name="jumlah_piutang" id="jumlah_piutang" placeholder="Masukkan jumlah piutang" autocomplete="off">
                     <small class="text-muted">Akan ditambahkan ke total piutang.</small>
                 </div>
 
                 <div id="jumlah_kredit_container" class="mb-3 d-none">
                     <label for="jumlah_kredit" class="form-label">Jumlah Kredit</label>
-                    <input type="text" class="form-control rupiah" name="jumlah_kredit" id="jumlah_kredit" placeholder="Masukkan jumlah kredit/pelunasan" >
+                    <input type="text" class="form-control rupiah" name="jumlah_kredit" id="jumlah_kredit" placeholder="Masukkan jumlah kredit/pelunasan" autocomplete="off">
                 </div>
 
 
@@ -193,6 +193,9 @@
                 </div>
 
                 <div class="mt-4 text-end">
+                    <a href="{{ route('keuangan.pendapatan.list') }}" class="btn btn-secondary">
+                     Kembali
+                    </a>
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>

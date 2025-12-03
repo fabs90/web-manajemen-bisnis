@@ -1,120 +1,110 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Faktur Penjualan - {{ $faktur->id }}</title>
+    <meta charset="utf-8" />
     <style>
-        body {
-            font-family: "Times New Roman", serif;
-            font-size: 12px;
-        }
+        body { font-family: sans-serif; font-size: 12px; }
         table { width: 100%; border-collapse: collapse; }
-        .table-border td, .table-border th {
-            border: 1px solid #000;
-            padding: 5px;
+        .table-bordered td, .table-bordered th {
+            border: 1px solid #000; padding: 6px;
         }
+        .no-border td { border: none !important; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .fw-bold { font-weight: bold; }
-        .mt-10 { margin-top: 10px; }
-        .no-border { border: none !important; }
+        .mt-2 { margin-top: 10px; }
+        .mt-4 { margin-top: 25px; }
     </style>
 </head>
 <body>
 
-    {{-- Header / Kop Surat --}}
-    <div style="display: flex; align-items: center; min-height: 50px; margin-bottom: 10px;">
-        <div class="kop" style="flex: 4; text-align: center;">
-            <div class="fw-bold">{{ $profileUser->name }}</div>
-            <div>{{ $profileUser->alamat }}</div>
-            <div>{{ $profileUser->email }}</div>
-            <div>{{ $profileUser->nomor_telepon }}</div>
-        </div>
-    </div>
-
-    {{-- Judul Faktur --}}
-    <table class="table-border">
+    <table class="text-center no-border mb-4">
         <tr>
-            <td colspan="4" class="text-center fw-bold">FAKTUR PENJUALAN</td>
-        </tr>
-        <tr>
-            <td colspan="4" class="text-center">
-                Nomor: ({{ $faktur->kode_faktur ?? '---' }}/F/{{ now()->format('m/Y') }})
+            <td class="fw-bold" style="font-size: 22px; ">
+                {{ strtoupper($profileUser->name ?? 'NAMA PERUSAHAAN') }}
             </td>
         </tr>
         <tr>
-            <td class="fw-bold" width="25%">Kepada</td>
-            <td colspan="3">
-                : {{ $faktur->nama_pembeli }}<br>{{ $faktur->alamat_pembeli }}
+            <td style="font-size: 12pt;">
+                {{ $profileUser->alamat ?? '-' }}
             </td>
         </tr>
         <tr>
-            <td class="fw-bold">Nomor Pesanan</td>
-            <td>: {{ $faktur->nomor_pesanan }}</td>
-            <td class="fw-bold">Nomor SPB</td>
-            <td>: {{ $faktur->nomor_spb }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Tanggal</td>
-            <td colspan="3">
-                : {{ \Carbon\Carbon::parse($faktur->tanggal)->format('d/m/Y') }}
+            <td style="font-size: 11pt; color: #555;">
+                {{ $profileUser->email ?? 'email@perusahaan.com' }} |
+                {{ $profileUser->nomor_telepon ?? '-' }}
             </td>
         </tr>
     </table>
 
-    {{-- Detail Barang --}}
-    <table class="table-border mt-10">
-        <thead>
-            <tr class="text-center fw-bold">
-                <th width="5%">No</th>
-                <th width="15%">JUMLAH DIPESAN</th>
-                <th width="15%">JUMLAH DIKIRIM</th>
-                <th>NAMA BARANG</th>
-                <th width="20%">HARGA/KEMAS</th>
-                <th width="20%">JUMLAH</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php $totalAkhir = 0; @endphp
-            @foreach ($faktur->fakturPenjualanDetail as $i => $detail)
-                @php
-                    $subTotal = $detail->harga * $detail->jumlah_dikirim;
-                    $totalAkhir += $subTotal;
-                @endphp
-                <tr>
-                    <td class="text-center">{{ $i+1 }}</td>
-                    <td class="text-center">{{ $detail->jumlah_dipesan }}</td>
-                    <td class="text-center">{{ $detail->jumlah_dikirim }}</td>
-                    <td>{{ strtoupper($detail->nama_barang) }}</td>
-                    <td class="text-right">Rp. {{ number_format($detail->harga,0,',','.') }}</td>
-                    <td class="text-right">Rp. {{ number_format($subTotal,0,',','.') }}</td>
-                </tr>
-            @endforeach
+    <h4 class="text-center">FAKTUR</h4>
+    <p class="text-center">
+        Nomor: {{ $faktur->kode_faktur }}
+    </p>
+
+    <table class="no-border" style="margin-top: 10px;">
+        <tr>
+            <td width="20%">Kepada</td>
+            <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+            <td width="20%">Nomor Pesanan</td>
+            <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td>Alamat</td>
+            <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
+            <td>Nomor SPB</td>
+            <td>: {{ $faktur->suratPengirimanBarang->nomor_pengiriman_barang }}</td>
+        </tr>
+        <tr>
+            <td></td><td></td>
+            <td>Tanggal</td>
+            <td>: {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d/m/Y') }}</td>
+        </tr>
+    </table>
+
+    <table class="table-bordered mt-2">
+        <tr class="text-center">
+            <th>No</th>
+            <th>JUMLAH YANG DIPESAN</th>
+            <th>JUMLAH YANG DIKIRIM</th>
+            <th>NAMA BARANG</th>
+            <th>HARGA/KEMAS</th>
+            <th>JUMLAH</th>
+        </tr>
+
+        @php $no=1; $grandTotal = 0; @endphp
+
+        @foreach($faktur->fakturPenjualanDetail as $item)
+            @php
+                $qty = $item->suratPengirimanBarangDetail->pesananPembelianDetail->kuantitas ?? 0;
+                $grandTotal += $item->total;
+            @endphp
             <tr>
-                <td colspan="5" class="text-right fw-bold">Total</td>
-                <td class="text-right fw-bold">Rp. {{ number_format($totalAkhir,0,',','.') }}</td>
+                <td class="text-center">{{ $no++ }}</td>
+                <td class="text-center">{{ $qty }} K</td>
+                <td class="text-center">{{ $qty }} K</td>
+                <td>{{ $item->suratPengirimanBarangDetail->PesananPembelianDetail->nama_barang }}</td>
+                <td class="text-right">Rp. {{ number_format($item->harga, 0, ',', '.') }}</td>
+                <td class="text-right">Rp. {{ number_format($item->total, 0, ',', '.') }}</td>
             </tr>
-        </tbody>
+        @endforeach
+
+        <tr>
+            <td colspan="5" class="text-right"><b>Total</b></td>
+            <td class="text-right"><b>Rp. {{ number_format($grandTotal, 0, ',', '.') }}</b></td>
+        </tr>
     </table>
 
-    <div class="mt-10">
-        Barang dikirim via: {{ $faktur->jenis_pengiriman }}
-    </div>
+    <p style="margin-top: 10px;">
+        Barang dikirim via: ({{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }})
+    </p>
 
-    {{-- Tanda Tangan --}}
-    <table class="no-border mt-10">
+    <table class="no-border mt-4">
         <tr>
-            <td width="60%"></td>
-            <td class="fw-bold">Mengetahui,</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>Bagian Penjualan</td>
-        </tr>
-        <tr>
-            <td height="55px"></td>
+            <td width="70%"></td>
             <td class="text-center">
-                ({{ $profileUser->name }})
+                Mengetahui,<br>
+                Bagian Penjualan<br><br><br><br>
+                ({{ $faktur->nama_bagian_penjualan }})
             </td>
         </tr>
     </table>

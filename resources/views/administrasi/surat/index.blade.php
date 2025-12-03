@@ -100,7 +100,7 @@
 
         <a href="{{ route('administrasi.rapat.index') }}" class="menu-card text-black" style="background:#e9f4dd"
             data-tooltip="Dokumen hasil rapat berisi keputusan, ringkasan diskusi, dan tindak lanjut.">
-            BERITA ACARA RAPAT
+            AGENDA DAN NOTULEN RAPAT
         </a>
 
         <a href="{{ route('administrasi.rapat.hasil-keputusan.index') }}" class="menu-card text-black"
@@ -109,9 +109,9 @@
             SURAT HASIL KEPUTUSAN RAPAT
         </a>
 
-        <a href="{{ route('administrasi.faktur-penjualan.index') }}" class="menu-card text-black" style="background:#c6d9f1"
-            data-tooltip="Dokumen penagihan kepada pelanggan berisi daftar barang/jasa yang dijual.">
-            FAKTUR PENJUALAN
+        <a href="{{ route('administrasi.spp.index') }}" class="menu-card text-black" style="background:#63f28f"
+            data-tooltip="Dokumen yang menyertai pengiriman barang sebagai bukti barang telah dikirim.">
+            SURAT PESANAN PEMBELIAN
         </a>
 
         <a href="{{ route('administrasi.spb.index') }}" class="menu-card text-black" style="background:#63f28f"
@@ -119,9 +119,20 @@
             SURAT PENGIRIMAN BARANG
         </a>
 
+        <a href="{{ route('administrasi.faktur-penjualan.index') }}" class="menu-card text-black" style="background:#c6d9f1"
+            data-tooltip="Dokumen penagihan kepada pelanggan berisi daftar barang/jasa yang dijual.">
+            FAKTUR PENJUALAN
+        </a>
+
+
         <a href="{{route('administrasi.memo-kredit.index')}}" class="menu-card text-black" style="background:#eeeeee"
             data-tooltip="Dokumen permohonan resmi kepada pihak terkait untuk melakukan suatu kegiatan.">
             MEMO KREDIT
+        </a>
+
+        <a href="{{route('administrasi.pernyataan-piutang.index')}}" class="menu-card text-black" style="background:#eeeeee"
+            data-tooltip="Dokumen yang menyatakan bahwa pembeli memiliki piutang kepada penjual.">
+                SURAT PERNYATAAN PIUTANG
         </a>
     </div>
 

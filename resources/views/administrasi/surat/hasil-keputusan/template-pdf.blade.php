@@ -8,23 +8,30 @@
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 13px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+            margin: 0;
+            padding: 0;
         }
         .bordered {
+            width: 100%;
             border: 1px solid #000;
+            border-collapse: collapse;
+        }
+        .content {
+            padding: 15px;
         }
         .center {
             text-align: center;
         }
-        .content {
-            padding: 8px;
-            vertical-align: top;
+        .title-block {
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
-        .signature-space {
-            height: 80px;
+        .bold {
+            font-weight: bold;
+        }
+        .signature {
+            margin-top: 50px;
+            text-align: center;
         }
     </style>
 </head>
@@ -33,44 +40,46 @@
 <table class="bordered">
     <tr>
         <td class="content center">
-            <strong>{{ $profileUser->name ?? 'NAMA PERUSAHAAN' }}</strong><br>
-            {{ $profile->alamat ?? 'ALAMAT PERUSAHAAN' }}
+            <span class="bold">{{ $profileUser->name ?? 'NAMA PERUSAHAAN' }}</span><br>
+            {{ $profileUser->alamat ?? 'ALAMAT PERUSAHAAN' }}
         </td>
     </tr>
 
     {{-- Judul --}}
     <tr>
-        <td colspan="2" class="content center">
-            <strong>KEPUTUSAN RAPAT</strong><br>
-            Nomor: {{ $hasil->nomor_surat }}
+        <td class="content center title-block">
+            <span class="bold" style="text-decoration: underline;">KEPUTUSAN RAPAT</span><br>
+            <span class="bold">Nomor: {{ $hasil->nomor_surat }}</span>
         </td>
     </tr>
 
     {{-- Isi Keputusan --}}
     <tr>
-        <td colspan="2" class="content">
-            Pada hari ini, {{ \Carbon\Carbon::parse($hasil->tanggal_tujuan)->isoFormat('dddd, D MMMM Y') }},
-            kami telah membuat beberapa keputusan sebagai berikut:
+        <td class="content" style="text-align: justify;">
+            Pada hari ini,
+            {{ \Carbon\Carbon::parse($hasil->tanggal_tujuan)->locale('id')->isoFormat('dddd, D MMMM Y') }},
+            telah dilaksanakan rapat yang menghasilkan keputusan sebagai berikut:
             <br><br>
 
             {!! nl2br(e($hasil->keputusan_rapat)) !!}
             <br><br>
 
-            Demikianlah keputusan rapat ini telah kami buat untuk dilaksanakan.
+            Demikianlah keputusan rapat ini dibuat untuk dilaksanakan sebagaimana mestinya.
         </td>
     </tr>
 
     {{-- Tanda Tangan --}}
     <tr>
-        <td colspan="2" class="content center">
+        <td class="content center">
+            {{ $hasil->kota_tujuan }},
+            {{ \Carbon\Carbon::parse($hasil->tanggal_tujuan)->format('d-m-Y') }}<br>
+            <span class="bold">{{ $hasil->jabatan_penanggung_jawab }}</span>
 
-            {{ $hasil->kota_tujuan }}, {{ \Carbon\Carbon::parse($hasil->tanggal_tujuan)->format('d-m-Y') }}<br>
-            ({{ $hasil->jabatan_penanggung_jawab }})
-            <br><br><br><br> {{-- Space tanda tangan --}}
-            <strong>{{ $hasil->nama_penanggung_jawab }}</strong>
+            <div class="signature">
+                <span class="bold">{{ $hasil->nama_penanggung_jawab }}</span>
+            </div>
         </td>
     </tr>
-
 </table>
 
 </body>

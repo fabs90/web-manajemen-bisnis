@@ -71,7 +71,12 @@
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="jenis_keperluan" id="lain_lain"
                         value="lain_lain" {{ old('jenis_keperluan') == 'lain_lain' ? 'checked' : '' }} required>
-                    <label class="form-check-label" for="lain_lain">Lain-lain</label>
+                    <label class="form-check-label" for="lain_lain">Lain-lain (Diluar Kas Kecil)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="jenis_keperluan" id="kas_kecil"
+                        value="kas_kecil" {{ old('jenis_keperluan') == 'kas_kecil' ? 'checked' : '' }} required>
+                    <label class="form-check-label" for="kas_kecil">Pengisian Kas Kecil</label>
                 </div>
             </div>
 
@@ -140,9 +145,21 @@
             </div>
 
             <div class="mt-4 text-end">
+            <a href="{{ route('keuangan.pengeluaran.list') }}" class="btn btn-secondary">
+             Kembali
+            </a>
                 <button type="submit" class="btn btn-primary">Simpan Pengeluaran</button>
             </div>
         </form>
+        <div id="loading-overlay"
+            style="position: fixed; top:0; left:0; width:100%; height:100%;
+                   background: rgba(255,255,255,0.7); z-index:9999;
+                   display:none; justify-content:center; align-items:center;">
+            <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection
@@ -240,6 +257,9 @@ document.addEventListener('DOMContentLoaded', function() {
             jumlahManualContainer.classList.remove('d-none');
         }
         else if (selectedKeperluan === 'lain_lain') {
+            jumlahManualContainer.classList.remove('d-none');
+        }
+        else if (selectedKeperluan === 'kas_kecil') {
             jumlahManualContainer.classList.remove('d-none');
         }
 
@@ -351,7 +371,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     @endif
 
+    // ======== Loading Setelah Submit ========
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    form.addEventListener('submit', function(e) {
+        loadingOverlay.style.display = 'flex';
+
+        // disable semua button untuk mencegah double submit
+        form.querySelectorAll('button').forEach(btn => btn.disabled = true);
+    });
+
+
 });
 </script>
-
 @endpush

@@ -3,6 +3,20 @@
 
 @section('section-heading', 'Penerimaan ')
 @section('section-row')
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>Sukses!</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+{{-- Alert error --}}
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Gagal!</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Daftar Penerimaan Perusahaan</h5>
         <a href="{{ route('keuangan.pendapatan.create') }}" class="btn btn-primary">
@@ -108,11 +122,6 @@
             </tbody>
         </table>
     </div>
-
-    {{-- Form masukin data pendapatan nya ada pilihan apakah pendapatan tunai atau piutang (debit/kredit) --}}
-    {{-- Kalo pendapatn nya tunai lgsg ke buku besar pendapatan tunai --}}
-    {{-- Kalo pendapatn nya piutang lgsg ke buku besar piutang perusahaan DAN buku besar pendapatan tunai --}}
-
 @endsection
 @push('script')
     <script>

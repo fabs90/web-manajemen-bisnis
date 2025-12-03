@@ -1,207 +1,196 @@
 @extends('layouts.partial.layouts')
+@section('page-title', 'Buat Faktur Penjualan')
 
-@section('page-title', 'Input Faktur Penjualan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-row')
 <div class="container mt-4">
-    {{-- Alert Error --}}
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <strong>Gagal!</strong> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    <form action="{{route('administrasi.faktur-penjualan.store')}}" method="POST">
-        @csrf
 
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white fw-bold">
-                Input Faktur Penjualan
+{{-- Alert sukses --}}
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show">
+        <strong>Sukses!</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+{{-- Alert Error --}}
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Gagal!</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Buat Faktur Penjualan</h5>
+    </div>
+
+    <div class="card-body py-4">
+        <form action="{{ route('administrasi.faktur-penjualan.store') }}" method="POST">
+            @csrf
+
+            <!-- Pilih SPB -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Pilih Surat Pengiriman Barang (SPB) <span class="text-danger">*</span></label>
+                    <select name="spb_id" id="spb_id"
+                            class="form-select @error('spb_id') is-invalid @enderror" required>
+                        <option value="">-- Pilih Nomor SPB --</option>
+                        @foreach($dataSpb as $spb)
+                            @php
+                                $detailsJson = $spb->suratPengirimanBarangDetail->map(fn($d) => [
+                                    'id' => $d->id,
+                                    'nama_barang' => $d->pesananPembelianDetail->nama_barang,
+                                    'jumlah_dipesan' => $d->pesananPembelianDetail->kuantitas,
+                                    'jumlah_dikirim' => $d->jumlah_dikirim,
+                                    'harga' => $d->pesananPembelianDetail->harga
+                                ])->toJson();
+                            @endphp
+                            <option value="{{ $spb->id }}"
+                                data-pelanggan="{{ $spb->pesananPembelian->pelanggan->nama }}"
+                                data-alamat="{{ $spb->pesananPembelian->pelanggan->alamat ?? '-' }}"
+                                data-nomor="{{ $spb->nomor_pengiriman_barang }}"
+                                  data-nama_pengirim="{{ $spb->nama_pengirim }}"
+                                data-details="{{ $detailsJson }}">
+                                {{ $spb->nomor_pengiriman_barang }} - {{ $spb->pesananPembelian->pelanggan->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('spb_id') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
+
+                <!-- Nomor Faktur -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Kode Faktur <span class="text-danger">*</span></label>
+                    <input type="text" name="kode_faktur"
+                           class="form-control @error('kode_faktur') is-invalid @enderror"
+                           value="{{ old('kode_faktur') }}" required>
+                           @error('kode_faktur') <small class="text-danger">{{ $message }}</small> @enderror
+                </div>
             </div>
 
-            <div class="card-body mt-3">
-                {{-- DATA PENERIMA --}}
-                <h6 class="fw-bold">Data Penerima</h6>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Pilih Pelanggan</label>
-                        <select name="pelanggan_id" id="pelangganSelect" class="form-select" required>
-                            <option value="#">-- Pilih Pelanggan --</option>
-                            @foreach ($pelanggan as $p)
-                                <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}">
-                                    {{ $p->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Alamat Pembeli</label>
-                        <input type="text" name="alamat_pembeli" id="alamatPembeli"
-                               class="form-control" readonly required>
+            <!-- Informasi Pelanggan -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-person-lines-fill me-1"></i> Informasi Pelanggan
+                    </h6>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <div class="small text-muted">Kepada</div>
+                            <div class="fw-semibold" id="kepada">-</div>
+                        </div>
+
+                        <div class="col-md-5 mb-2">
+                            <div class="small text-muted">Alamat</div>
+                            <div class="fw-semibold" id="alamat">-</div>
+                        </div>
+
+                        <div class="col-md-3 mb-2">
+                            <div class="small text-muted">Nomor SPB</div>
+                            <div class="fw-semibold" id="nomor_spb">-</div>
+                        </div>
                     </div>
                 </div>
-                {{-- DATA SURAT --}}
-                <h6 class="fw-bold mt-4">Informasi Surat</h6>
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Kode Faktur</label>
-                        <input type="text" name="kode_faktur" class="form-control" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Nomor Pesanan</label>
-                        <input type="text" name="nomor_pesanan" class="form-control" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Nomor SPB</label>
-                        <input type="text" name="nomor_spb" class="form-control" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Tanggal</label>
-                        <input type="date" name="tanggal" class="form-control" required>
-                    </div>
+            </div>
+
+            <!-- Tanggal Faktur -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Tanggal Faktur <span class="text-danger">*</span></label>
+                    <input type="date" name="tanggal_faktur" class="form-control"
+                           value="{{ old('tanggal_faktur', date('Y-m-d')) }}" required>
                 </div>
 
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Jenis Pengiriman</label>
-                        <input type="text" name="jenis_pengiriman" class="form-control" placeholder="Via apa?" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Nama Bagian Penjualan</label>
-                        <input type="text" name="nama_bagian_penjualan" class="form-control" required>
-                    </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Bagian Penjualan <span class="text-danger">*</span></label>
+                    <input type="text" name="bagian_penjualan" class="form-control"
+                           value="{{ old('bagian_penjualan') }}" required>
                 </div>
 
-                {{-- DETAIL BARANG DINAMIS --}}
-                <h6 class="fw-bold">Detail Barang</h6>
+            </div>
 
-                <table class="table table-bordered align-middle text-center" id="table-detail">
-                    <thead class="table-light">
+            <!-- Tabel Barang -->
+            <h6 class="fw-bold text-primary mb-3">Detail Barang Faktur</h6>
+
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-sm">
+                    <thead class="table-light text-center">
                         <tr>
-                            <th width="5%">No</th>
-                            <th width="15%">Jumlah Dipesan</th>
-                            <th width="15%">Jumlah Dikirim</th>
+                            <th>No</th>
                             <th>Nama Barang</th>
-                            <th width="15%">Harga</th>
-                            <th width="15%">Total</th>
-                            <th width="5%">#</th>
+                            <th>Dipesan</th>
+                            <th>Dikirim</th>
+                            <th>Harga</th>
+                            <th>Total</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-detail">
-                        <tr>
-                            <td class="row-index text-center">1</td>
-                            <td><input type="text" step="0.01" name="detail[0][jumlah_dipesan]" class="form-control jumlah-dipesan" required></td>
-                            <td><input type="text" step="0.01" name="detail[0][jumlah_dikirim]" class="form-control jumlah-dikirim" required></td>
-                            <td><input type="text" name="detail[0][nama_barang]" class="form-control" required></td>
-                            <td><input type="text" name="detail[0][harga]" class="form-control harga" required></td>
-                            <td><input type="text" name="detail[0][total]" class="form-control total" readonly></td>
-                            <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button></td>
-                        </tr>
+                    <tbody id="tabel-faktur">
+                        <tr><td colspan="6" class="text-center text-muted">Pilih SPB terlebih dahulu...</td></tr>
                     </tbody>
                 </table>
-
-                <button type="button" class="btn btn-success btn-sm" id="add-row">
-                    + Tambah Barang
-                </button>
-
             </div>
 
-            <div class="card-footer text-end">
-                <a href="{{ route('administrasi.faktur-penjualan.index') }}" class="btn btn-secondary me-2">
-                    <i class="bi bi-arrow-left"></i> Kembali
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    Simpan Faktur Penjualan
-                </button>
+            <!-- Total -->
+            <div class="text-end mb-4">
+                <h5>Total Faktur: <strong>Rp <span id="grand_total">0</span></strong></h5>
             </div>
 
-        </div>
-    </form>
+            <div class="mt-4 text-end">
+                <a href="{{ route('administrasi.faktur-penjualan.index') }}" class="btn btn-secondary">Kembali</a>
+                <button type="submit" class="btn btn-primary px-5">Simpan Faktur</button>
+            </div>
+        </form>
+    </div>
 </div>
-@endsection
+</div>
 
-@push('script')
 <script>
-let index = 1;
+document.getElementById('spb_id').addEventListener('change', function () {
+    const opt = this.options[this.selectedIndex];
 
-// Konfigurasi AutoNumeric
-const autoNumOptions = {
-    digitGroupSeparator: '.',
-    decimalCharacter: ',',
-    decimalPlaces: 0,
-    unformatOnSubmit: true
-};
+    if (!this.value) {
+        document.getElementById('kepada').textContent = '-';
+        document.getElementById('alamat').textContent = '-';
+        document.getElementById('nomor_spb').textContent = '-';
+        document.getElementById('tabel-faktur').innerHTML =
+            `<tr><td colspan="6" class="text-center text-muted">Pilih SPB terlebih dahulu...</td></tr>`;
+        return;
+    }
 
-// Fungsi aktifkan AutoNumeric pada row
-function initAutoNumeric(row) {
-    new AutoNumeric(row.querySelector('.jumlah-dipesan'), autoNumOptions);
-    new AutoNumeric(row.querySelector('.jumlah-dikirim'), autoNumOptions);
-    new AutoNumeric(row.querySelector('.harga'), autoNumOptions);
-    new AutoNumeric(row.querySelector('.total'), autoNumOptions);
-}
+    document.getElementById('kepada').textContent = opt.dataset.pelanggan;
+    document.getElementById('alamat').textContent = opt.dataset.alamat;
+    document.getElementById('nomor_spb').textContent = opt.dataset.nomor;
+    document.querySelector('input[name="bagian_penjualan"]').value = opt.dataset.nama_pengirim || '';
 
-// Reset nomor urut dan update index name setelah hapus row
-function resetRowIndex() {
-    let rows = document.querySelectorAll("#tbody-detail tr");
-    rows.forEach((row, i) => {
-        row.querySelector(".row-index").textContent = i + 1;
+    const details = JSON.parse(opt.dataset.details || '[]');
+    let rows = '';
+    let grandTotal = 0;
 
-        row.querySelectorAll("input").forEach(input => {
-            let name = input.getAttribute("name");
-            let field = name.substring(name.indexOf("][") + 2, name.lastIndexOf("]"));
-            input.setAttribute("name", `detail[${i}][${field}]`);
-        });
+    details.forEach((item, i) => {
+        const total = item.harga * item.jumlah_dikirim;
+        grandTotal += total;
+
+        rows += `
+            <tr>
+                <td class="text-center">${i+1}</td>
+                <td>${item.nama_barang}</td>
+                <td class="text-center">${item.jumlah_dipesan}</td>
+                <td class="text-center">${item.jumlah_dikirim}</td>
+                <td class="text-end">Rp ${item.harga.toLocaleString()}</td>
+                <td class="text-end">Rp ${total.toLocaleString()}</td>
+
+                <input type="hidden" name="items[${i}][spb_detail_id]" value="${item.id}">
+                <input type="hidden" name="items[${i}][harga]" value="${item.harga}">
+                <input type="hidden" name="items[${i}][total]" value="${total}">
+            </tr>
+        `;
     });
 
-    index = rows.length ? rows.length : 1;
-}
-
-// Inisialisasi row pertama
-initAutoNumeric(document.querySelector('#tbody-detail tr'));
-
-// Tambah row
-document.getElementById('add-row').addEventListener('click', function () {
-    let tbody = document.getElementById('tbody-detail');
-    let row = document.createElement('tr');
-
-    row.innerHTML = `
-        <td class="row-index text-center">${index + 1}</td>
-        <td><input type="text" name="detail[${index}][jumlah_dipesan]" class="form-control jumlah-dipesan" required></td>
-        <td><input type="text" name="detail[${index}][jumlah_dikirim]" class="form-control jumlah-dikirim" required></td>
-        <td><input type="text" name="detail[${index}][nama_barang]" class="form-control" required></td>
-        <td><input type="text" name="detail[${index}][harga]" class="form-control harga" required></td>
-        <td><input type="text" name="detail[${index}][total]" class="form-control total" readonly required></td>
-        <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button></td>
-    `;
-
-    tbody.appendChild(row);
-    initAutoNumeric(row);
-    index++;
-});
-
-// Hitung total otomatis
-document.addEventListener('input', function (event) {
-    if (event.target.classList.contains('harga') ||
-        event.target.classList.contains('jumlah-dikirim')) {
-
-        let row = event.target.closest('tr');
-        let harga = AutoNumeric.getNumber(row.querySelector('.harga')) || 0;
-        let qty = AutoNumeric.getNumber(row.querySelector('.jumlah-dikirim')) || 0;
-
-        AutoNumeric.set(row.querySelector('.total'), harga * qty);
-    }
-});
-
-// Hapus row + reset index
-document.addEventListener('click', function (event) {
-    if (event.target.classList.contains('remove-row')) {
-        event.target.closest('tr').remove();
-        resetRowIndex();
-    }
-});
-
-document.getElementById('pelangganSelect').addEventListener('change', function () {
-    let alamat = this.options[this.selectedIndex].dataset.alamat ?? "";
-    document.getElementById('alamatPembeli').value = alamat;
+    document.getElementById('tabel-faktur').innerHTML = rows;
+    document.getElementById('grand_total').textContent = grandTotal.toLocaleString();
 });
 </script>
-@endpush
+
+@endsection

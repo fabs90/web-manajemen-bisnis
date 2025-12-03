@@ -100,9 +100,9 @@
                         <li class="submenu-item">
                             <a href="{{route('keuangan.pengeluaran.list')}}" class="submenu-link">Pengeluaran/Pembelian</a>
                         </li>
-                        <li class="submenu-item">
+                        <!--<li class="submenu-item">
                             <a href="{{route('keuangan.pengeluaran-kas-kecil.index')}}" class="submenu-link">Pengisian Kas Kecil</a>
-                        </li>
+                        </li>-->
                     </ul>
                 </li>
                 <li class="sidebar-item has-sub {{ Request::is('barang/*') ? 'active' : '' }}">

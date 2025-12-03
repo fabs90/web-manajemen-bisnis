@@ -18,26 +18,19 @@ class AdministrasiFakturService
         try {
             // Simpan header faktur
             $faktur = FakturPenjualan::create([
+                "spb_id" => $data["spb_id"],
                 "kode_faktur" => $data["kode_faktur"],
-                "pelanggan_id" => $data["pelanggan_id"],
-                "nomor_pesanan" => $data["nomor_pesanan"] ?? null,
-                "nomor_spb" => $data["nomor_spb"] ?? null,
-                "tanggal" => $data["tanggal"],
-                "jenis_pengiriman" => $data["jenis_pengiriman"] ?? null,
-                "nama_bagian_penjualan" =>
-                    $data["nama_bagian_penjualan"] ?? null,
-                "user_id" => auth()->id(),
+                "tanggal_faktur" => $data["tanggal_faktur"],
+                "nama_bagian_penjualan" => $data["bagian_penjualan"],
+                "user_id" => auth()->user()->id,
             ]);
             // Simpan detail faktur
-            foreach ($data["detail"] as $row) {
+            foreach ($data["items"] as $row) {
                 FakturPenjualanDetail::create([
                     "faktur_penjualan_id" => $faktur->id,
-                    "jumlah_dipesan" => $row["jumlah_dipesan"] ?? 0,
-                    "jumlah_dikirim" => $row["jumlah_dikirim"] ?? 0,
-                    "nama_barang" => $row["nama_barang"],
-                    "harga" => $row["harga"] ?? 0,
-                    "diskon" => $row["diskon"] ?? 0,
-                    "total" => $row["total"] ?? 0,
+                    "spb_detail_id" => $row["spb_detail_id"],
+                    "harga" => $row["harga"],
+                    "total" => $row["total"],
                 ]);
             }
             DB::commit();
@@ -51,19 +44,26 @@ class AdministrasiFakturService
     public function generatePdf($id)
     {
         try {
-            $faktur = FakturPenjualan::with(["fakturPenjualanDetail"])
+            $faktur = FakturPenjualan::with([
+                "fakturPenjualanDetail.suratPengirimanBarangDetail",
+                "suratPengirimanBarang",
+                "suratPengirimanBarang.pesananPembelian.pelanggan",
+            ])
                 ->where("user_id", auth()->id())
                 ->findOrFail($id);
+
             $profileUser = Auth::user();
+
             $pdf = Pdf::loadView(
                 "administrasi.surat.faktur-penjualan.template-pdf",
                 compact("faktur", "profileUser"),
-            );
+            )->setPaper("A4", "portrait");
 
-            return $pdf->download("faktur-penjualan-" . $faktur->id . ".pdf");
+            return $pdf->download(
+                "faktur-penjualan-" . $faktur->kode_faktur . ".pdf",
+            );
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Terjadi error saat generate pdf: " . $e->getMessage());
+            Log::error("Error generate PDF faktur: " . $e->getMessage());
             throw $e;
         }
     }
@@ -71,20 +71,31 @@ class AdministrasiFakturService
     public function destroy($id)
     {
         DB::beginTransaction();
+
         try {
-            $faktur = FakturPenjualan::where("user_id", auth()->id())->find(
-                $id,
-            );
-            if (!$faktur) {
-                throw new ModelNotFoundException("Faktur not found");
-            }
-            // delete faktur detai
+            // Ambil faktur berdasarkan ID dan user yang sedang login
+            $faktur = FakturPenjualan::where("user_id", auth()->id())
+                ->with("fakturPenjualanDetail")
+                ->findOrFail($id);
+
+            // Hapus detail faktur
             $faktur->fakturPenjualanDetail()->delete();
+
+            // Hapus header faktur
             $faktur->delete();
+
             DB::commit();
             return true;
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            Log::warning(
+                "Faktur tidak ditemukan saat destroy: ID $id | User: " .
+                    auth()->id(),
+            );
+            return false;
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Gagal menghapus faktur: " . $e->getMessage());
             return false;
         }
     }

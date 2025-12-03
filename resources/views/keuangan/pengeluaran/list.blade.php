@@ -3,6 +3,21 @@
 
 @section('section-heading', 'Pengeluaran')
 @section('section-row')
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>Sukses!</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+{{-- Alert error --}}
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Gagal!</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Semua Pengeluaran Perusahaan</h5>
     <a href="{{ route('keuangan.pengeluaran.create') }}" class="btn btn-primary">
@@ -21,7 +36,7 @@
                 <th>Pembelian Tunai</th>
                 <th>Pot. Pembelian</th>
                 <th>Lain-lain</th>
-                <th>Jumlah Pengeluaran</th>
+                <th>Total Biaya</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -70,6 +85,7 @@
                 <th>Debit</th>
                 <th>Kredit</th>
                 <th>Saldo</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -87,6 +103,20 @@
                     <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                    <td>
+                        <form
+                              action="{{ route('keuangan.hutang.destroy', $item->id) }}"
+                              method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="button" class="btn btn-danger btn-sm delete-btn">
+                                <span class="delete-text"><i class="bi bi-trash"></i></span>
+                                <span class="spinner-border spinner-border-sm d-none"></span>
+                            </button>
+                        </form>
+                    </td>
+
                 </tr>
             @endforeach
         @empty
@@ -101,7 +131,6 @@
 </div>
 
 @endsection
-
 @push('script')
 <script>
     $(document).ready(function() {
@@ -123,24 +152,33 @@
                 search: "Cari:"
             }
         });
-    });
 
-    // SweetAlert konfirmasi hapus
-    function confirmDelete(id) {
-        Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: "Data ini akan dihapus secara permanen!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('deleteForm-' + id).submit();
-            }
+        $('.delete-btn').on('click', function () {
+            let form = $(this).closest('form');
+
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    let btn = form.find('.delete-btn');
+                    btn.prop('disabled', true);
+                    btn.find('.delete-text').addClass('d-none');
+                    btn.find('.spinner-border').removeClass('d-none');
+
+                    form.submit();
+                }
+            });
         });
-    }
+
+
+    });
 </script>
 @endpush

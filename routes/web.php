@@ -17,9 +17,11 @@ use App\Http\Controllers\JadwalPerjalananController;
 use App\Http\Controllers\ManajemenKasKecilController;
 use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\NeracaAkhirController;
+use App\Http\Controllers\PernyataanPiutangController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReturController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
+use App\Http\Controllers\SPP\SuratPesananPembelianController;
 use App\Http\Middleware\EnsureUserIsVerified;
 
 // Halaman publik
@@ -108,6 +110,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             PengeluaranController::class,
             "destroy",
         ])->name("keuangan.pengeluaran.destroy");
+
+        Route::delete("/pengeluaran/hutang/{id}", [
+            PengeluaranController::class,
+            "destroyHutang",
+        ])->name("keuangan.hutang.destroy");
 
         // Kas Kecil
         Route::get("/pengeluaran-kas-kecil", [
@@ -555,6 +562,32 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "destroyHasilKeputusan",
         ])->name("administrasi.rapat.hasil-keputusan.destroy");
 
+        // Surat Pesanan Pembelian (SPP/PO)
+        Route::get("/surat-pesanan-pembelian", [
+            SuratPesananPembelianController::class,
+            "index",
+        ])->name("administrasi.spp.index");
+
+        Route::get("/surat-pesanan-pembelian/create", [
+            SuratPesananPembelianController::class,
+            "create",
+        ])->name("administrasi.spp.create");
+
+        Route::post("/surat-pesanan-pembelian", [
+            SuratPesananPembelianController::class,
+            "store",
+        ])->name("administrasi.spp.store");
+
+        Route::get("/surat-pesanan-pembelian/{sppId}/generate-pdf", [
+            SuratPesananPembelianController::class,
+            "generatePdf",
+        ])->name("administrasi.spp.generatePdf");
+
+        Route::delete("/surat-pesanan-pembelian/{sppId}", [
+            SuratPesananPembelianController::class,
+            "destroy",
+        ])->name("administrasi.spp.destroy");
+
         // Faktur Penjualan
         Route::get("/faktur-penjualan", [
             AdministrasiFakturController::class,
@@ -597,15 +630,10 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "index",
         ])->name("administrasi.spb.index");
 
-        Route::get("/surat-pengiriman-barang/create}", [
+        Route::get("/surat-pengiriman-barang/create", [
             SuratPengirimanBarangController::class,
             "create",
         ])->name("administrasi.spb.create");
-
-        Route::get("/administrasi/surat-pengiriman-barang/get-detail/{id}", [
-            SuratPengirimanBarangController::class,
-            "getDetail",
-        ])->name("administrasi.spb.getDetail");
 
         Route::get("/surat-pengiriman-barang/{id}/generate", [
             SuratPengirimanBarangController::class,
@@ -647,6 +675,17 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             MemoKreditController::class,
             "destroy",
         ])->name("administrasi.memo-kredit.destroy");
+
+        // Pernyataan Piutang
+        Route::get("/pernyataan-piutang", [
+            PernyataanPiutangController::class,
+            "index",
+        ])->name("administrasi.pernyataan-piutang.index");
+
+        Route::get("/pernyataan-piutang/{pelangganId}/generate", [
+            PernyataanPiutangController::class,
+            "generatePdf",
+        ])->name("administrasi.pernyataan-piutang.generatePdf");
     });
 });
 

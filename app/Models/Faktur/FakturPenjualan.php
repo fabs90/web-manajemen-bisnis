@@ -12,34 +12,24 @@ class FakturPenjualan extends Model
 {
     protected $table = "faktur_penjualan";
     protected $fillable = [
+        "spb_id",
         "kode_faktur",
-        "pelanggan_id",
-        "nomor_pesanan",
-        "nomor_spb",
-        "tanggal",
-        "jenis_pengiriman",
+        "tanggal_faktur",
         "nama_bagian_penjualan",
         "user_id",
     ];
-
-    public function fakturPenjualanDetail()
-    {
-        return $this->hasMany(FakturPenjualanDetail::class);
-    }
-
-    public function pelanggan()
-    {
-        return $this->belongsTo(Pelanggan::class, "pelanggan_id");
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
     public function suratPengirimanBarang()
     {
-        return $this->hasOne(SuratPengirimanBarang::class);
+        return $this->belongsTo(SuratPengirimanBarang::class, "spb_id", "id");
+    }
+
+    public function fakturPenjualanDetail()
+    {
+        return $this->hasMany(FakturPenjualanDetail::class);
     }
 
     public function memoKredit()

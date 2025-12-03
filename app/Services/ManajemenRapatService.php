@@ -324,6 +324,14 @@ class ManajemenRapatService
             ->latest()
             ->first();
         $profileUser = Auth::user();
+
+        // Cleaning nomor surat untuk nama file (hilangkan karakter ilegal)
+        $nomorSuratFile = preg_replace(
+            "/[^A-Za-z0-9\-]/",
+            "-",
+            $hasil->nomor_surat,
+        );
+
         $pdf = Pdf::setOptions([
             "isRemoteEnabled" => true,
         ])
@@ -333,8 +341,6 @@ class ManajemenRapatService
             ])
             ->setPaper("A4");
 
-        return $pdf->download(
-            "Keputusan-Rapat-" . $hasil->nomor_surat . ".pdf",
-        );
+        return $pdf->download("Keputusan-Rapat-" . $nomorSuratFile . ".pdf");
     }
 }

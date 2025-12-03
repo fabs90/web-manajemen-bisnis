@@ -19,6 +19,20 @@ class AgendaSuratPerjalananService
      */
     public function store(array $data)
     {
+        $fields = [
+            "transport",
+            "akomodasi",
+            "konsumsi",
+            "lain_lain",
+            "total_biaya",
+        ];
+
+        foreach ($fields as $field) {
+            if (isset($data[$field])) {
+                $data[$field] = $this->cleanRupiah($data[$field]);
+            }
+        }
+
         // agenda surat perjalanan master
         $agendaSuratPerjalanan = AgendaPerjalanan::create([
             "user_id" => auth()->user()->id,
@@ -130,10 +144,10 @@ class AgendaSuratPerjalananService
                 "uraian",
                 "LIKE",
                 "%Pengeluaran untuk agenda surat perjalanan: " .
-                $agendaSuratPerjalanan->id .
-                " - " .
-                $agendaSuratPerjalanan->nama_pelaksana .
-                "%",
+                    $agendaSuratPerjalanan->id .
+                    " - " .
+                    $agendaSuratPerjalanan->nama_pelaksana .
+                    "%",
             )
             ->delete();
 
@@ -164,9 +178,14 @@ class AgendaSuratPerjalananService
         } catch (\Exception $e) {
             Log::error(
                 "Gagal membuat PDF Agenda Surat Perjalanan: " .
-                $e->getMessage(),
+                    $e->getMessage(),
             );
             throw new \Exception("Gagal membuat PDF: " . $e->getMessage());
         }
+    }
+
+    private function cleanRupiah(string|int $value): int
+    {
+        return (int) preg_replace("/\D/", "", $value);
     }
 }

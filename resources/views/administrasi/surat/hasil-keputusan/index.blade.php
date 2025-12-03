@@ -90,20 +90,24 @@
                                     <i class="bi bi-file-pdf"></i>
                                 </a>
 
-                                {{-- Tombol Delete --}}
-                                <button
-                                    type="button"
-                                    class="btn btn-danger btn-sm {{ $hasDetail ? '' : 'disabled' }}"
-                                    title="{{ $hasDetail ? 'Hapus' : 'Tidak dapat dihapus sebelum lengkap' }}"
-                                    @if($hasDetail)
-                                        onclick="event.preventDefault(); $(this).closest('form').submit();"
-                                    @endif
-                                >
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <form action="{{ route('administrasi.rapat.hasil-keputusan.destroy', $item->id) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Yakin ingin menghapus hasil keputusan ini?');"
+                                      style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
 
+                                    {{-- Tombol Delete --}}
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm {{ $hasDetail ? '' : 'disabled' }}"
+                                        title="{{ $hasDetail ? 'Hapus' : 'Tidak dapat dihapus sebelum lengkap' }}"
+                                        {{ $hasDetail ? '' : 'disabled' }}
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </td>
-
                         </tr>
                     @endforeach
                     </tbody>

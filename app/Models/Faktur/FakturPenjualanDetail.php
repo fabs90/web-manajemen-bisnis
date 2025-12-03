@@ -2,6 +2,7 @@
 
 namespace App\Models\Faktur;
 
+use App\Models\SPB\SuratPengirimanBarangDetail;
 use Illuminate\Database\Eloquent\Model;
 
 class FakturPenjualanDetail extends Model
@@ -9,16 +10,21 @@ class FakturPenjualanDetail extends Model
     protected $table = "faktur_penjualan_detail";
     protected $fillable = [
         "faktur_penjualan_id",
-        "jumlah_dipesan",
-        "jumlah_dikirim",
-        "nama_barang",
+        "spb_detail_id",
         "harga",
-        "diskon",
         "total",
     ];
 
     public function fakturPenjualan()
     {
         return $this->belongsTo(FakturPenjualan::class, "faktur_penjualan_id");
+    }
+
+    public function suratPengirimanBarangDetail()
+    {
+        return $this->belongsTo(
+            SuratPengirimanBarangDetail::class,
+            "spb_detail_id",
+        );
     }
 }

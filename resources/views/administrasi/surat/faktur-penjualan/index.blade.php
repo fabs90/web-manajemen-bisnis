@@ -48,20 +48,20 @@
                         </thead>
 
                         <tbody>
-                            @foreach ($faktur as $item)
+                            @foreach ($fakturPenjualan as $item)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
 
                                     <td>{{ $item->kode_faktur }}</td>
-                                    <td>{{ $item->nama_pembeli }}</td>
-                                    <td>{{ $item->nomor_pesanan ?? '-' }}</td>
-                                    <td>{{ $item->nomor_spb ?? '-' }}</td>
+                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
+                                    <td>{{ $item->suratPengirimanBarang->nomor_pengiriman_barang ?? '-' }}</td>
 
                                     <td class="text-center">
-                                        {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') : '-' }}
+                                        {{ $item->tanggal_faktur ? \Carbon\Carbon::parse($item->tanggal_faktur)->format('d-m-Y') : '-' }}
                                     </td>
 
-                                    <td>{{ $item->jenis_pengiriman ?? '-' }}</td>
+                                    <td>{{ $item->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</td>
                                     <td>{{ $item->nama_bagian_penjualan ?? '-' }}</td>
 
                                     <td class="text-center">

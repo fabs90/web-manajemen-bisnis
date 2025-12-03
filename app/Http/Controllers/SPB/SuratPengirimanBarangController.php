@@ -4,6 +4,8 @@ namespace App\Http\Controllers\SPB;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
+use App\Models\SPB\SuratPengirimanBarang;
+use App\Models\SPP\PesananPembelian;
 use App\Services\SuratPengirimanBarangService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,44 +15,35 @@ class SuratPengirimanBarangController extends Controller
 {
     public function index()
     {
-        $dataFaktur = FakturPenjualan::with(
-            "fakturPenjualanDetail",
-            "suratPengirimanBarang",
-        )
-            ->where("user_id", auth()->id())
+        $suratPengirimanBarang = SuratPengirimanBarang::with([
+            "pesananPembelian",
+            "pesananPembelian.pelanggan",
+            "user",
+        ])
+            ->latest()
             ->get();
+
         return view(
             "administrasi.surat.surat-pengiriman-barang.index",
-            compact("dataFaktur"),
+            compact("suratPengirimanBarang"),
         );
     }
 
     public function create()
     {
-        $dataFaktur = FakturPenjualan::with(
-            "fakturPenjualanDetail",
-            "suratPengirimanBarang",
-        )
-            ->whereDoesntHave("suratPengirimanBarang")
+        $dataSpp = PesananPembelian::with([
+            "pelanggan",
+            "pesananPembelianDetail",
+        ])
             ->where("user_id", auth()->id())
+            ->whereDoesntHave("suratPengirimanBarang")
+            ->latest()
             ->get();
 
         return view(
             "administrasi.surat.surat-pengiriman-barang.create",
-            compact("dataFaktur"),
+            compact("dataSpp"),
         );
-    }
-
-    public function getDetail($id)
-    {
-        $faktur = FakturPenjualan::with("fakturPenjualanDetail")
-            ->where("user_id", auth()->id())
-            ->findOrFail($id);
-
-        return response()->json([
-            "faktur" => $faktur,
-            "details" => $faktur->fakturPenjualanDetail,
-        ]);
     }
 
     public function generatePdf($id)
@@ -66,8 +59,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     "error",
-                    "Gagal generate PDF Surat Pengiriman Barang (SPB): " .
-                        $th->getMessage(),
+                    "Gagal generate PDF Surat Pengiriman Barang (SPB)",
                 );
         }
     }
