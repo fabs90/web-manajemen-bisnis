@@ -87,6 +87,7 @@ class PendapatanController extends Controller
     public function store(PendapatanRequest $request)
     {
         $validated = $request->validated();
+        $bukuBesarPendapatan = null;
         try {
             DB::beginTransaction();
             $kodeTransaksi = Str::uuid();
@@ -171,26 +172,26 @@ class PendapatanController extends Controller
                             ->latest()
                             ->first();
                         if ($piutangLama) {
-                            $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                                "kode" => $kodeTransaksi,
-                                "tanggal" => $request->tanggal,
-                                "uraian" =>
-                                    "Menambah Piutang Lama: " .
-                                    now()->format("Y-m-d H:i:s") .
-                                    " " .
-                                    $piutangLama->pelanggan->nama .
-                                    " - " .
-                                    $validated["uraian_pendapatan"],
-                                "potongan_pembelian" => $request->potongan_pembelian
-                                    ? array_sum($request->potongan_pembelian)
-                                    : 0,
-                                "piutang_dagang" => $saldoFinal,
-                                "penjualan_tunai" => 0,
-                                "lain_lain" => $request->biaya_lain ?? 0,
-                                "uang_diterima" => $saldoFinal,
-                                "bunga_bank" => $request->bunga_bank ?? 0,
-                                "user_id" => auth()->id(),
-                            ]);
+                            // $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                            //     "kode" => $kodeTransaksi,
+                            //     "tanggal" => $request->tanggal,
+                            //     "uraian" =>
+                            //         "Menambah Piutang Lama: " .
+                            //         now()->format("Y-m-d H:i:s") .
+                            //         " " .
+                            //         $piutangLama->pelanggan->nama .
+                            //         " - " .
+                            //         $validated["uraian_pendapatan"],
+                            //     "potongan_pembelian" => $request->potongan_pembelian
+                            //         ? array_sum($request->potongan_pembelian)
+                            //         : 0,
+                            //     "piutang_dagang" => $saldoFinal,
+                            //     "penjualan_tunai" => 0,
+                            //     "lain_lain" => $request->biaya_lain ?? 0,
+                            //     "uang_diterima" => $saldoFinal,
+                            //     "bunga_bank" => $request->bunga_bank ?? 0,
+                            //     "user_id" => auth()->id(),
+                            // ]);
                             BukuBesarPiutang::create([
                                 "kode" => $piutangLama->kode,
                                 "pelanggan_id" => $piutangLama->pelanggan_id,
@@ -205,8 +206,7 @@ class PendapatanController extends Controller
                                     " - " .
                                     $validated["uraian_pendapatan"],
                                 "tanggal" => $validated["tanggal"],
-                                "buku_besar_pendapatan_id" =>
-                                    $bukuBesarPendapatan->id,
+                                "buku_besar_pendapatan_id" => null,
                                 "user_id" => auth()->id(),
                             ]);
                         }
@@ -217,30 +217,30 @@ class PendapatanController extends Controller
                         )->first();
 
                         // Buku Besar Pendapatan
-                        $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                            "kode" => $kodeTransaksi,
-                            "tanggal" => $request->tanggal,
-                            "uraian" =>
-                                "Menambah Piutang Baru: " .
-                                now()->format("Y-m-d H:i:s") .
-                                " " .
-                                $pelanggan->nama .
-                                " - " .
-                                $validated["uraian_pendapatan"],
-                            "potongan_pembelian" => $request->potongan_pembelian
-                                ? array_sum($request->potongan_pembelian)
-                                : 0, // Sum potongan
-                            "piutang_dagang" => $saldoFinal,
-                            "penjualan_tunai" => 0,
-                            "lain_lain" => $request->biaya_lain ?? 0,
-                            "uang_diterima" => $saldoFinal,
-                            "bunga_bank" => $request->bunga_bank ?? 0,
-                            "user_id" => auth()->id(),
-                        ]);
+                        // $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                        //     "kode" => $kodeTransaksi,
+                        //     "tanggal" => $request->tanggal,
+                        //     "uraian" =>
+                        //         "Menambah Piutang Baru: " .
+                        //         now()->format("Y-m-d H:i:s") .
+                        //         " " .
+                        //         $pelanggan->nama .
+                        //         " - " .
+                        //         $validated["uraian_pendapatan"],
+                        //     "potongan_pembelian" => $request->potongan_pembelian
+                        //         ? array_sum($request->potongan_pembelian)
+                        //         : 0, // Sum potongan
+                        //     "piutang_dagang" => $saldoFinal,
+                        //     "penjualan_tunai" => 0,
+                        //     "lain_lain" => $request->biaya_lain ?? 0,
+                        //     "uang_diterima" => $saldoFinal,
+                        //     "bunga_bank" => $request->bunga_bank ?? 0,
+                        //     "user_id" => auth()->id(),
+                        // ]);
 
                         // Piutang baru
                         BukuBesarPiutang::create([
-                            "kode" => Str::uuid(),
+                            "kode" => $kodeTransaksi,
                             "pelanggan_id" => $validated["nama_pelanggan"],
                             "debit" => $saldoFinal,
                             "kredit" => 0,
@@ -253,8 +253,7 @@ class PendapatanController extends Controller
                                 " - " .
                                 $validated["uraian_pendapatan"],
                             "tanggal" => $validated["tanggal"],
-                            "buku_besar_pendapatan_id" =>
-                                $bukuBesarPendapatan->id,
+                            "buku_besar_pendapatan_id" => null,
                             "user_id" => auth()->id(),
                         ]);
                     }
@@ -324,24 +323,24 @@ class PendapatanController extends Controller
                             : 0);
 
                     // Catat di Buku Besar Pendapatan (karena ada uang masuk)
-                    // $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                    //     "kode" => $kodeTransaksi,
-                    //     "tanggal" => $request->tanggal,
-                    //     "uraian" =>
-                    //         "Pelunasan Piutang: " .
-                    //         $piutangLama->pelanggan->nama .
-                    //         " - " .
-                    //         $request->uraian_pendapatan,
-                    //     "potongan_pembelian" => $request->potongan_pembelian
-                    //         ? array_sum($request->potongan_pembelian)
-                    //         : 0, // Sum potongan
-                    //     "piutang_dagang" => $saldoFinal,
-                    //     "penjualan_tunai" => 0,
-                    //     "lain_lain" => $request->biaya_lain ?: 0,
-                    //     "uang_diterima" => $saldoFinal,
-                    //     "bunga_bank" => $request->bunga_bank ?: 0,
-                    //     "user_id" => auth()->id(),
-                    // ]);
+                    $bukuBesarPendapatan = BukuBesarPendapatan::create([
+                        "kode" => $kodeTransaksi,
+                        "tanggal" => $request->tanggal,
+                        "uraian" =>
+                            "Pelunasan Piutang: " .
+                            $piutangLama->pelanggan->nama .
+                            " - " .
+                            $request->uraian_pendapatan,
+                        "potongan_pembelian" => $request->potongan_pembelian
+                            ? array_sum($request->potongan_pembelian)
+                            : 0, // Sum potongan
+                        "piutang_dagang" => $saldoFinal,
+                        "penjualan_tunai" => 0,
+                        "lain_lain" => $request->biaya_lain ?: 0,
+                        "uang_diterima" => $saldoFinal,
+                        "bunga_bank" => $request->bunga_bank ?: 0,
+                        "user_id" => auth()->id(),
+                    ]);
 
                     // Di sini piutang berkurang (kredit bertambah)
                     $saldoBaruPiutang = $piutangLama->saldo - $saldoFinal;
@@ -456,7 +455,8 @@ class PendapatanController extends Controller
                             $detailBarang->nama,
                         "saldo_persatuan" => $satuanBaru,
                         "saldo_perkemasan" => $saldoPerKemasanBaru,
-                        "buku_besar_pendapatan_id" => $bukuBesarPendapatan->id,
+                        "buku_besar_pendapatan_id" =>
+                            $bukuBesarPendapatan->id ?? null,
                         "user_id" => auth()->id(),
                     ]);
                 }
@@ -593,5 +593,84 @@ class PendapatanController extends Controller
         return redirect()
             ->route("keuangan.pendapatan.create_lain")
             ->with("success", "Data pendapatan lain berhasil ditambahkan.");
+    }
+
+    public function destroyPiutang($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $userId = auth()->id();
+
+            // Ambil entry piutang terakhir berdasarkan ID
+            $piutangEntry = BukuBesarPiutang::where("id", $id)
+                ->where("user_id", $userId)
+                ->firstOrFail();
+
+            $kode = $piutangEntry->kode;
+            $pelanggan =
+                optional($piutangEntry->pelanggan)->nama ?? "Pelanggan";
+
+            // Ambil semua histori piutang berdasarkan kode transaksi
+            $piutangRecords = BukuBesarPiutang::where("kode", $kode)
+                ->where("user_id", $userId)
+                ->orderBy("id")
+                ->get();
+
+            // Ambil semua transaksi kas yang terkait kode transaksi ini
+            $kasRecords = BukuBesarKas::where("kode", $kode)
+                ->where("user_id", $userId)
+                ->get();
+
+            dd($kode);
+
+            // 🔄 Rollback saldo Kas bila ada penambahan saldo dari pelunasan kredit
+            foreach ($kasRecords as $kas) {
+                $kasSebelumnya = BukuBesarKas::where("user_id", $userId)
+                    ->where("id", "<", $kas->id)
+                    ->latest()
+                    ->first();
+
+                $saldoBaru = ($kasSebelumnya->saldo ?? 0) - $kas->debit;
+
+                BukuBesarKas::create([
+                    "kode" => Str::uuid(),
+                    "uraian" => "Rollback Pelunasan Piutang: {$pelanggan}",
+                    "tanggal" => now()->format("Y-m-d"),
+                    "debit" => 0,
+                    "kredit" => $kas->debit,
+                    "saldo" => $saldoBaru,
+                    "neraca_awal_id" => $kasSebelumnya->neraca_awal_id ?? null,
+                    "user_id" => $userId,
+                ]);
+
+                $kas->delete();
+            }
+
+            // ❌ Hapus seluruh catatan piutang terkait transaksi ini
+            BukuBesarPiutang::where("kode", $kode)
+                ->where("user_id", $userId)
+                ->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route("keuangan.pendapatan.list")
+                ->with(
+                    "success",
+                    "Piutang {$pelanggan} & penyesuaian kas berhasil dihapus.",
+                );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error("Gagal menghapus piutang", [
+                "error" => $e->getMessage(),
+                "trace" => $e->getTraceAsString(),
+                "user_id" => $userId,
+            ]);
+
+            return redirect()
+                ->back()
+                ->with("error", $e->getMessage() ?: "Gagal menghapus piutang.");
+        }
     }
 }

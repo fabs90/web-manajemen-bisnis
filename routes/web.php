@@ -80,6 +80,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "destroy",
         ])->name("keuangan.pendapatan.destroy");
 
+        Route::delete("/pendapatan/piutang/{kode}", [
+            PendapatanController::class,
+            "destroyPiutang",
+        ])->name("keuangan.piutang.destroy");
+
         Route::get("/pendapatan/lain-lain", [
             PendapatanController::class,
             "createLain",

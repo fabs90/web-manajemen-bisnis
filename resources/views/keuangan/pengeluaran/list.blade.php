@@ -54,7 +54,7 @@
                     </td>
                     <td>Rp {{ number_format($data->jumlah_pengeluaran ?? 0, 0, ',', '.') }}</td>
                     <td>
-                        <form id="deleteForm-{{ $data->id }}" action="{{route('keuangan.pengeluaran.destroy', ["id" => $data->id])}}" method="POST" class="d-inline">
+                        <form id="deleteForm-{{ $data->id }}" action="{{route('keuangan.pengeluaran.destroy', ["id" => $data->id])}}" method="POST" class="d-inline delete-btn">
                             @csrf
                             @method('DELETE')
                             <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $data->id }})">

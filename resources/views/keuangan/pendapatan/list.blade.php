@@ -81,7 +81,7 @@
 
     <h5 class="mb-3">Semua Data Piutang</h5>
     <div class="table-responsive">
-        <table class="table table-sm" id="allDatasTable">
+        <table class="table table-sm" id="dataPiutangTable">
             <thead>
                 <tr>
                     <th>Nama Debitur</th>
@@ -90,18 +90,17 @@
                     <th>Debit</th>
                     <th>Kredit</th>
                     <th>Saldo</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($dataPiutang as $pelangganId => $items)
-                    {{-- Header per pelanggan --}}
                     <tr class="table-secondary fw-bold">
-                        <td colspan="6">
+                        <td colspan="7">
                             {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
                         </td>
                     </tr>
 
-                    {{-- Detail transaksi --}}
                     @foreach ($items as $item)
                         <tr>
                             <td></td>
@@ -110,11 +109,22 @@
                             <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
                             <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                             <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                            <td>
+                                <form id="deletePiutang-{{ $item->id }}"
+                                      action="{{route('keuangan.piutang.destroy', $item->id)}}"
+                                      method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-danger delete-btn">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @endforeach
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-3">
+                        <td colspan="7" class="text-center text-muted py-3">
                             <em>Tidak ada data piutang.</em>
                         </td>
                     </tr>
@@ -122,6 +132,7 @@
             </tbody>
         </table>
     </div>
+
 @endsection
 @push('script')
     <script>
@@ -137,24 +148,32 @@
                     search: "Cari:"
                 }
             });
-        });
 
-        // SweetAlert konfirmasi hapus
-        function confirmDelete(id) {
-            Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data ini akan dihapus secara permanen!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('deleteForm-' + id).submit();
-                }
+            $('.delete-btn').on('click', function () {
+                let form = $(this).closest('form');
+
+                Swal.fire({
+                    title: 'Yakin ingin menghapus?',
+                    text: "Data yang dihapus tidak dapat dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, hapus',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        let btn = form.find('.delete-btn');
+                        btn.prop('disabled', true);
+                        btn.find('.delete-text').addClass('d-none');
+                        btn.find('.spinner-border').removeClass('d-none');
+
+                        form.submit();
+                    }
+                });
             });
-        }
+
+        });
     </script>
 @endpush
