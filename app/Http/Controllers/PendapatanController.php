@@ -622,8 +622,6 @@ class PendapatanController extends Controller
                 ->where("user_id", $userId)
                 ->get();
 
-            dd($kode);
-
             // 🔄 Rollback saldo Kas bila ada penambahan saldo dari pelunasan kredit
             foreach ($kasRecords as $kas) {
                 $kasSebelumnya = BukuBesarKas::where("user_id", $userId)
