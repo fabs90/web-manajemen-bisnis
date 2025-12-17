@@ -41,4 +41,9 @@ class BukuBesarKas extends Model
     {
         return $this->hasMany(KasirTransactionLog::class);
     }
+
+    public function pengeluaran()
+    {
+        return $this->hasOne(BukuBesarPengeluaran::class, "buku_besar_kas_id");
+    }
 }

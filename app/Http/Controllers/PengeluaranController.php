@@ -102,7 +102,7 @@ class PengeluaranController extends Controller
                     $saldoKasBaru =
                         ($bukuBesarKasBefore->saldo ?? 0) - $jumlahUang;
 
-                    BukuBesarKas::create([
+                    $kas = BukuBesarKas::create([
                         "kode" => Str::uuid(),
                         "tanggal" => $validated["tanggal"],
                         "uraian" =>
@@ -130,6 +130,7 @@ class PengeluaranController extends Controller
                             "lain_lain" => $jumlahUang,
                             "admin_bank" => $validated["admin_bank"] ?? 0,
                             "jumlah_pengeluaran" => $jumlahUang,
+                            "buku_besar_kas_id" => $kas->id,
                         ]);
                     } else {
                         // Pengeluaran kredit → hutang bertambah
@@ -194,9 +195,25 @@ class PengeluaranController extends Controller
                         ($validated["jumlah"] ?? 0) +
                         ($validated["biaya_lain"] ?? 0) -
                         ($validated["potongan_pembelian"] ?? 0);
+
                     $saldoKasBaru =
                         ($bukuBesarKasBefore->saldo ?? 0) - $jumlahUang;
 
+                    // 1️⃣ BUAT KAS DULU
+                    $kas = BukuBesarKas::create([
+                        "kode" => Str::uuid(),
+                        "tanggal" => $validated["tanggal"],
+                        "uraian" =>
+                            "Pelunasan hutang: " .
+                            $validated["uraian_pengeluaran"],
+                        "debit" => 0,
+                        "kredit" => $jumlahUang,
+                        "saldo" => $saldoKasBaru,
+                        "neraca_awal_id" => $neracaAwal->id ?? null,
+                        "user_id" => auth()->id(),
+                    ]);
+
+                    // 2️⃣ BUAT PENGELUARAN + LINK KE KAS
                     $bukuBesarPengeluaran = BukuBesarPengeluaran::create([
                         "user_id" => auth()->id(),
                         "tanggal" => $validated["tanggal"],
@@ -210,19 +227,21 @@ class PengeluaranController extends Controller
                         "lain_lain" => 0,
                         "admin_bank" => $validated["admin_bank"] ?? 0,
                         "jumlah_pengeluaran" => $jumlahUang,
+                        "buku_besar_kas_id" => $kas->id, // ✅ FIX UTAMA
                     ]);
 
+                    // 3️⃣ AMBIL DATA HUTANG SEBELUMNYA
                     $dataHutangBefore = BukuBesarHutang::findOrFail(
                         $validated["hutang_id"],
                     );
 
-                    // tidak boleh bayar hutang lebih dari saldo hutang
                     if ($jumlahUang > $dataHutangBefore->saldo) {
                         throw new Exception(
                             "Jumlah pembayaran melebihi saldo hutang",
                         );
                     }
 
+                    // 4️⃣ CATAT PELUNASAN HUTANG
                     BukuBesarHutang::create([
                         "kode" => $dataHutangBefore->kode,
                         "pelanggan_id" => $dataHutangBefore->pelanggan_id,
@@ -235,20 +254,6 @@ class PengeluaranController extends Controller
                         "saldo" => $dataHutangBefore->saldo - $jumlahUang,
                         "buku_besar_pengeluaran_id" =>
                             $bukuBesarPengeluaran->id,
-                        "user_id" => auth()->id(),
-                    ]);
-
-                    // Kurangi kas
-                    BukuBesarKas::create([
-                        "kode" => $dataHutangBefore->kode,
-                        "tanggal" => $validated["tanggal"],
-                        "uraian" =>
-                            "Pelunasan hutang: " .
-                            $validated["uraian_pengeluaran"],
-                        "debit" => 0,
-                        "kredit" => $jumlahUang,
-                        "saldo" => $saldoKasBaru,
-                        "neraca_awal_id" => $neracaAwal->id ?? null,
                         "user_id" => auth()->id(),
                     ]);
 
@@ -313,6 +318,7 @@ class PengeluaranController extends Controller
                             "lain_lain" => $validated["biaya_lain"] ?? 0,
                             "admin_bank" => $validated["admin_bank"] ?? 0,
                             "jumlah_pengeluaran" => $jumlahUang,
+                            "buku_besar_kas_id" => $recordKas->id,
                         ]);
                     } else {
                         $existingHutang = BukuBesarHutang::where(
@@ -459,6 +465,7 @@ class PengeluaranController extends Controller
                                 : 0,
                         "admin_bank" => $validated["admin_bank"] ?? 0,
                         "jumlah_pengeluaran" => $jumlahUang,
+                        "buku_besar_kas_id" => $recordKas->id,
                     ]);
 
                     // if ($validated["jenis_pengeluaran"] == "kredit") {
@@ -565,186 +572,229 @@ class PengeluaranController extends Controller
     public function destroy($id)
     {
         DB::beginTransaction();
+
         try {
+            $userId = auth()->id();
+
             $pengeluaran = BukuBesarPengeluaran::where("id", $id)
-                ->where("user_id", auth()->id())
+                ->where("user_id", $userId)
                 ->firstOrFail();
 
-            $jumlah = $pengeluaran->jumlah_pengeluaran;
+            // =====================
+            // REVERSAL KAS
+            // =====================
+            if ($pengeluaran->buku_besar_kas_id) {
+                $kas = BukuBesarKas::findOrFail(
+                    $pengeluaran->buku_besar_kas_id,
+                );
 
-            // Ambil record kas yang dibuat oleh pengeluaran ini
-            $kas = BukuBesarKas::where(
-                "uraian",
-                "LIKE",
-                "%" . $pengeluaran->uraian . "%",
-            )
-                ->where("tanggal", $pengeluaran->tanggal)
-                ->where("user_id", auth()->id())
-                ->latest()
-                ->first();
-
-            if ($kas) {
-                // Mengembalikan saldo kas ke saldo sebelum transaksi
-                BukuBesarKas::create([
+                $reversal = BukuBesarKas::create([
                     "kode" => Str::uuid(),
                     "tanggal" => now(),
-                    "uraian" => "Reversal: " . $pengeluaran->uraian,
-                    "debit" => $kas->kredit, // kas kembali
-                    "kredit" => 0,
-                    "saldo" => $kas->saldo + $kas->kredit,
-                    "neraca_awal_id" => null,
-                    "user_id" => auth()->id(),
+                    "uraian" => "Reversal: " . $kas->uraian,
+                    "debit" => $kas->kredit,
+                    "kredit" => $kas->debit,
+                    "saldo" => 0,
+                    "user_id" => $userId,
                 ]);
 
-                $kas->delete();
+                $this->recalcSaldoKas($userId, $reversal->id);
             }
 
-            // Jika transaksi hutang → kembalikan saldo hutang
-            if ($pengeluaran->jumlah_hutang > 0) {
-                $hutang = BukuBesarHutang::where(
-                    "buku_besar_pengeluaran_id",
-                    $pengeluaran->id,
-                )
-                    ->where("user_id", auth()->id())
-                    ->latest()
-                    ->first();
-
-                if ($hutang) {
-                    // Reversal hutang: tambahkan kembali saldo hutang lama
-                    BukuBesarHutang::create([
-                        "kode" => $hutang->kode,
-                        "pelanggan_id" => $hutang->pelanggan_id,
-                        "tanggal" => now(),
-                        "uraian" => "Reversal: " . $pengeluaran->uraian,
-                        "debit" => 0,
-                        "kredit" =>
-                            $hutang->debit > 0
-                                ? $hutang->debit
-                                : $hutang->kredit,
-                        "saldo" => $hutang->saldo + $jumlah,
-                        "buku_besar_pengeluaran_id" => null,
-                        "user_id" => auth()->id(),
-                    ]);
-
-                    $hutang->delete();
-                }
-            }
-
-            // Jika membeli barang → kembalikan stok
-            if (
-                $pengeluaran->jumlah_pembelian_tunai > 0 ||
-                $pengeluaran->jumlah_hutang > 0
-            ) {
-                $kartuGudangItems = KartuGudang::where(
-                    "uraian",
-                    $pengeluaran->uraian,
-                )
-                    ->where("tanggal", $pengeluaran->tanggal)
-                    ->where("user_id", auth()->id())
-                    ->get();
-
-                foreach ($kartuGudangItems as $item) {
-                    $saldoBaru = $item->saldo_persatuan - $item->diterima;
-
-                    KartuGudang::create([
-                        "barang_id" => $item->barang_id,
-                        "tanggal" => now(),
-                        "uraian" => "Reversal: " . $pengeluaran->uraian,
-                        "diterima" => 0,
-                        "dikeluarkan" => $item->diterima,
-                        "saldo_persatuan" => $saldoBaru,
-                        "saldo_perkemasan" => $item->saldo_perkemasan,
-                        "user_id" => auth()->id(),
-                    ]);
-
-                    $item->delete();
-                }
-            }
-
-            // Jika kas kecil → rollback kas kecil dan log-nya
-            if (str_contains($pengeluaran->uraian, "kas kecil")) {
-                $kasKecilLog = PengisianKasKecilLog::where(
-                    "uraian",
-                    "LIKE",
-                    "%" . $pengeluaran->uraian . "%",
-                )
-                    ->where("user_id", auth()->id())
-                    ->first();
-
-                if ($kasKecilLog) {
-                    $kasKecil = KasKecil::find($kasKecilLog->kas_kecil_id);
-                    if ($kasKecil) {
-                        $kasKecil->saldo_akhir -= $jumlah;
-                        $kasKecil->save();
-                    }
-                    $kasKecilLog->delete();
-                }
-            }
-            // HAPUS PENGELUARAN UTAMA
+            // =====================
+            // SOFT DELETE PENGELUARAN
+            // =====================
             $pengeluaran->delete();
+
             DB::commit();
+
             return redirect()
                 ->route("keuangan.pengeluaran.list")
-                ->with(
-                    "success",
-                    "Pengeluaran berhasil dihapus & saldo telah dipulihkan.",
-                );
-        } catch (\Exception $e) {
+                ->with("success", "Pengeluaran berhasil dibatalkan.");
+        } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error($e->getMessage());
-            return redirect()
-                ->back()
-                ->with("error", "Gagal menghapus: " . $e->getMessage());
+            return back()->with("error", $e->getMessage());
         }
     }
 
     public function destroyHutang($id)
     {
         DB::beginTransaction();
+
         try {
             $hutang = BukuBesarHutang::where("id", $id)
                 ->where("user_id", auth()->id())
                 ->firstOrFail();
 
-            $kode = $hutang->kode;
-
-            // Jika hutang ini terkait dengan pengeluaran → hapus juga pengeluarannya
+            // 1. Jika terkait pengeluaran
             if ($hutang->buku_besar_pengeluaran_id) {
-                BukuBesarPengeluaran::where(
+                $pengeluaran = BukuBesarPengeluaran::where(
                     "id",
                     $hutang->buku_besar_pengeluaran_id,
                 )
                     ->where("user_id", auth()->id())
-                    ->delete();
+                    ->first();
+
+                if ($pengeluaran) {
+                    // 2. Jika pengeluaran ini terhubung ke kas → rollback kas
+                    if ($pengeluaran->buku_besar_kas_id) {
+                        $kas = BukuBesarKas::where(
+                            "id",
+                            $pengeluaran->buku_besar_kas_id,
+                        )
+                            ->where("user_id", auth()->id())
+                            ->first();
+
+                        if ($kas) {
+                            // Ambil saldo sebelum transaksi kas ini
+                            $kasBefore = BukuBesarKas::where(
+                                "user_id",
+                                auth()->id(),
+                            )
+                                ->where("created_at", "<", $kas->created_at)
+                                ->latest()
+                                ->first();
+
+                            // Restore saldo kas
+                            BukuBesarKas::create([
+                                "kode" => Str::uuid(),
+                                "tanggal" => now(),
+                                "uraian" => "Rollback penghapusan hutang",
+                                "debit" => $kas->kredit,
+                                "kredit" => 0,
+                                "saldo" =>
+                                    ($kasBefore->saldo ?? 0) + $kas->kredit,
+                                "neraca_awal_id" => $kas->neraca_awal_id,
+                                "user_id" => auth()->id(),
+                            ]);
+
+                            // Hapus transaksi kas lama
+                            $kas->delete();
+                        }
+                    }
+
+                    // Hapus pengeluaran
+                    $pengeluaran->delete();
+                }
             }
 
-            // Hapus record hutang ini
+            // 3. Hapus hutang
             $hutang->delete();
 
-            // Cek masih ada hutang dengan kode sama?
-            $remaining = BukuBesarHutang::where("kode", $kode)
-                ->where("user_id", auth()->id())
-                ->count();
-
-            // Jika tidak ada lagi → hapus seluruh record hutang yang berkaitan
-            if ($remaining === 0) {
-                BukuBesarHutang::where("kode", $kode)
-                    ->where("user_id", auth()->id())
-                    ->delete();
-            }
-
             DB::commit();
+
             return redirect()
                 ->route("keuangan.pengeluaran.list")
                 ->with(
                     "success",
-                    "Data hutang dan pengeluaran terkait berhasil dihapus.",
+                    "Data hutang berhasil dihapus dan kas dipulihkan.",
                 );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
+
             return redirect()
                 ->route("keuangan.pengeluaran.list")
-                ->with("error", "Gagal menghapus: " . $e->getMessage());
+                ->with("error", "Gagal menghapus hutang: " . $e->getMessage());
+        }
+    }
+
+    public function destroyPelunasanHutang($pengeluaranId)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengeluaran = BukuBesarPengeluaran::where("id", $pengeluaranId)
+                ->where("user_id", auth()->id())
+                ->firstOrFail();
+
+            // 1. Restore kas (WAJIB)
+            if ($pengeluaran->buku_besar_kas_id) {
+                $kas = BukuBesarKas::where(
+                    "id",
+                    $pengeluaran->buku_besar_kas_id,
+                )
+                    ->where("user_id", auth()->id())
+                    ->first();
+
+                if ($kas) {
+                    $kasBefore = BukuBesarKas::where("user_id", auth()->id())
+                        ->where("created_at", "<", $kas->created_at)
+                        ->latest()
+                        ->first();
+
+                    BukuBesarKas::create([
+                        "kode" => Str::uuid(),
+                        "tanggal" => now(),
+                        "uraian" => "Rollback pelunasan hutang",
+                        "debit" => $kas->kredit,
+                        "kredit" => 0,
+                        "saldo" => ($kasBefore->saldo ?? 0) + $kas->kredit,
+                        "neraca_awal_id" => $kas->neraca_awal_id,
+                        "user_id" => auth()->id(),
+                    ]);
+
+                    $kas->delete();
+                }
+            }
+
+            // 2. Hapus hutang yang terkait pelunasan ini
+            BukuBesarHutang::where(
+                "buku_besar_pengeluaran_id",
+                $pengeluaran->id,
+            )
+                ->where("user_id", auth()->id())
+                ->delete();
+
+            // 3. Hapus pengeluaran
+            $pengeluaran->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route("keuangan.pengeluaran.list")
+                ->with("success", "Pelunasan hutang berhasil dihapus.");
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with("error", $e->getMessage());
+        }
+    }
+
+    private function recalcSaldoKas($userId, $startId)
+    {
+        $saldo =
+            BukuBesarKas::where("user_id", $userId)
+                ->where("id", "<", $startId)
+                ->orderByDesc("id")
+                ->value("saldo") ?? 0;
+
+        $records = BukuBesarKas::where("user_id", $userId)
+            ->where("id", ">=", $startId)
+            ->orderBy("id")
+            ->get();
+
+        foreach ($records as $r) {
+            $saldo += $r->debit - $r->kredit;
+            $r->update(["saldo" => $saldo]);
+        }
+    }
+
+    private function recalcSaldoHutang($pelangganId, $startId)
+    {
+        $saldo =
+            BukuBesarHutang::where("pelanggan_id", $pelangganId)
+                ->where("id", "<", $startId)
+                ->orderByDesc("id")
+                ->value("saldo") ?? 0;
+
+        $records = BukuBesarHutang::where("pelanggan_id", $pelangganId)
+            ->where("id", ">=", $startId)
+            ->orderBy("id")
+            ->get();
+
+        foreach ($records as $r) {
+            $saldo += $r->kredit - $r->debit;
+            $r->update(["saldo" => $saldo]);
         }
     }
 }

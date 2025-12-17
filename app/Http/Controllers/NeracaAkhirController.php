@@ -55,7 +55,28 @@ class NeracaAkhirController extends Controller
             $pendapatanBunga -
             $biayaAdminBank;
 
-        $totalKas = BukuBesarKas::where("user_id", $userId)->latest()->value("saldo") ?? 0;
+        // (OLD CODE)
+        $totalKas =
+            BukuBesarKas::where("user_id", $userId)->latest()->value("saldo") ??
+            0;
+        // $kasAwal =
+        //     NeracaAwal::where("user_id", $userId)->value("kas_awal") ?? 0;
+        // $totalPenerimaan = BukuBesarPendapatan::where("user_id", $userId)->sum(
+        //     DB::raw('
+        //           + COALESCE(uang_diterima,0)
+        //           - COALESCE(jumlah_retur_penjualan,0)
+        //         '),
+        // );
+        // $totalPengeluaran = BukuBesarPengeluaran::where(
+        //     "user_id",
+        //     $userId,
+        // )->sum(
+        //     DB::raw('
+        //                COALESCE(jumlah_pengeluaran,0)
+        //               - COALESCE(jumlah_retur_pembelian,0)
+        //             '),
+        // );
+        // $totalKas = $kasAwal + $totalPenerimaan - $totalPengeluaran;
 
         // $kasTerakhir = BukuBesarKas::where("user_id", $userId)
         //     ->latest("created_at")
@@ -107,7 +128,7 @@ class NeracaAkhirController extends Controller
             ->get()
             ->sum(
                 fn($i) => ($i->saldo_persatuan ?? 0) *
-                ($i->barang->harga_beli_per_unit ?? 0),
+                    ($i->barang->harga_beli_per_unit ?? 0),
             );
 
         // === AKTIVA TETAP ===
@@ -148,7 +169,7 @@ class NeracaAkhirController extends Controller
                 "labaBersih",
                 "modal",
                 "kasAwal",
-                "totalKas"
+                "totalKas",
             ),
         );
     }

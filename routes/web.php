@@ -121,6 +121,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "destroyHutang",
         ])->name("keuangan.hutang.destroy");
 
+        Route::delete("/keuangan/pengeluaran/pelunasan-hutang/{pengeluaran}", [
+            PengeluaranController::class,
+            "destroyPelunasanHutang",
+        ])->name("keuangan.pengeluaran.pelunasan-hutang.destroy");
+
         // Kas Kecil
         Route::get("/pengeluaran-kas-kecil", [
             ManajemenKasKecilController::class,

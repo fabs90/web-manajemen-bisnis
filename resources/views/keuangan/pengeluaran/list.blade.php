@@ -54,13 +54,35 @@
                     </td>
                     <td>Rp {{ number_format($data->jumlah_pengeluaran ?? 0, 0, ',', '.') }}</td>
                     <td>
-                        <form id="deleteForm-{{ $data->id }}" action="{{route('keuangan.pengeluaran.destroy', ["id" => $data->id])}}" method="POST" class="d-inline delete-btn">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $data->id }})">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
-                        </form>
+                        @if ($data->hutang->isNotEmpty())
+                            {{-- Pelunasan hutang --}}
+                            <form
+                                action="{{ route('keuangan.pengeluaran.pelunasan-hutang.destroy', $data->id) }}"
+                                method="POST"
+                                class="d-inline delete-btn"
+                            >
+                                @csrf
+                                @method('DELETE')
+
+                                <button type="button" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Hapus Pelunasan
+                                </button>
+                            </form>
+                        @else
+                            {{-- Pengeluaran biasa --}}
+                            <form
+                                action="{{ route('keuangan.pengeluaran.destroy', ['id' => $data->id]) }}"
+                                method="POST"
+                                class="d-inline delete-btn"
+                            >
+                                @csrf
+                                @method('DELETE')
+
+                                <button type="button" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @endforeach
@@ -122,7 +144,7 @@
         @empty
             <tr>
                 <td colspan="6" class="text-center text-muted py-3">
-                    <em>Tidak ada data piutang.</em>
+                    <em>Tidak ada data hutang.</em>
                 </td>
             </tr>
         @endforelse

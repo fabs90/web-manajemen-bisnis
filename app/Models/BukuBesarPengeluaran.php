@@ -18,6 +18,7 @@ class BukuBesarPengeluaran extends Model
         "jumlah_retur_pembelian",
         "jumlah_pengeluaran",
         "user_id",
+        "buku_besar_kas_id",
     ];
 
     public function user()
@@ -37,7 +38,12 @@ class BukuBesarPengeluaran extends Model
     {
         return $this->hasMany(
             BukuBesarHutang::class,
-            "buku_besar_pendapatan_id",
+            "buku_besar_pengeluaran_id",
         );
+    }
+
+    public function kas()
+    {
+        return $this->belongsTo(BukuBesarKas::class, "buku_besar_kas_id");
     }
 }
