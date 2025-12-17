@@ -496,53 +496,137 @@ class PendapatanController extends Controller
     {
         try {
             DB::beginTransaction();
+            $userId = auth()->id();
 
             $pendapatan = BukuBesarPendapatan::where("id", $id)
-                ->where("user_id", auth()->id())
+                ->where("user_id", $userId)
                 ->firstOrFail();
 
-            // Jika ada relasi dengan BukuBesarPiutang, hapus juga (optional)
-            $piutang = BukuBesarPiutang::where("uraian", $pendapatan->uraian)
-                ->where("tanggal", $pendapatan->tanggal)
-                ->where("user_id", auth()->id())
-                ->first();
+            $kode = $pendapatan->kode;
+            $tanggal = $pendapatan->tanggal;
 
-            if ($piutang) {
+            /* =========================
+             | 1. ROLLBACK KAS
+             ========================= */
+            $kasRecords = BukuBesarKas::where("kode", $kode)
+                ->where("user_id", $userId)
+                ->get();
+
+            foreach ($kasRecords as $kas) {
+                $kasSebelumnya = BukuBesarKas::where("user_id", $userId)
+                    ->where("id", "<", $kas->id)
+                    ->latest()
+                    ->first();
+
+                $saldoBaru = ($kasSebelumnya->saldo ?? 0) - $kas->debit;
+
+                BukuBesarKas::create([
+                    "kode" => Str::uuid(),
+                    "uraian" => "Rollback Pendapatan: {$pendapatan->uraian}",
+                    "tanggal" => now()->format("Y-m-d"),
+                    "debit" => 0,
+                    "kredit" => $kas->debit,
+                    "saldo" => $saldoBaru,
+                    "neraca_awal_id" => $kasSebelumnya->neraca_awal_id ?? null,
+                    "user_id" => $userId,
+                ]);
+
+                $kas->delete();
+            }
+
+            /* =========================
+             | 2. ROLLBACK PIUTANG (jika ada)
+             ========================= */
+            $piutangRecords = BukuBesarPiutang::where("kode", $kode)
+                ->where("user_id", $userId)
+                ->get();
+
+            foreach ($piutangRecords as $piutang) {
+                $piutangSebelumnya = BukuBesarPiutang::where("user_id", $userId)
+                    ->where("kode", $kode)
+                    ->where("id", "<", $piutang->id)
+                    ->latest()
+                    ->first();
+
+                if ($piutangSebelumnya) {
+                    BukuBesarPiutang::create([
+                        "kode" => $piutang->kode,
+                        "pelanggan_id" => $piutang->pelanggan_id,
+                        "uraian" => "Rollback Piutang: {$pendapatan->uraian}",
+                        "tanggal" => now()->format("Y-m-d"),
+                        "debit" => $piutang->kredit,
+                        "kredit" => $piutang->debit,
+                        "saldo" => $piutangSebelumnya->saldo,
+                        "user_id" => $userId,
+                    ]);
+                }
+
                 $piutang->delete();
             }
 
-            // Jika ada transaksi stok terkait barang, rollback saldo (optional logic)
-            $kartuGudang = KartuGudang::where("uraian", $pendapatan->uraian)
-                ->where("tanggal", $pendapatan->tanggal)
-                ->where("user_id", auth()->id())
-                ->first();
+            /* =========================
+             | 3. ROLLBACK STOK (Kartu Gudang)
+             ========================= */
+            $stokRecords = KartuGudang::where(
+                "buku_besar_pendapatan_id",
+                $pendapatan->id,
+            )
+                ->where("user_id", $userId)
+                ->get();
 
-            if ($kartuGudang) {
-                $kartuGudang->delete();
+            foreach ($stokRecords as $stok) {
+                $stokSebelumnya = KartuGudang::where(
+                    "barang_id",
+                    $stok->barang_id,
+                )
+                    ->where("user_id", $userId)
+                    ->where("id", "<", $stok->id)
+                    ->latest()
+                    ->first();
+
+                if ($stokSebelumnya) {
+                    KartuGudang::create([
+                        "barang_id" => $stok->barang_id,
+                        "tanggal" => now()->format("Y-m-d"),
+                        "diterima" => $stok->dikeluarkan,
+                        "dikeluarkan" => 0,
+                        "uraian" => "Rollback Penjualan: {$pendapatan->uraian}",
+                        "saldo_persatuan" => $stokSebelumnya->saldo_persatuan,
+                        "saldo_perkemasan" => $stokSebelumnya->saldo_perkemasan,
+                        "user_id" => $userId,
+                    ]);
+                }
+
+                $stok->delete();
             }
 
+            /* =========================
+             | 4. HAPUS PENDAPATAN
+             ========================= */
             $pendapatan->delete();
 
             DB::commit();
 
             return redirect()
                 ->route("keuangan.pendapatan.list")
-                ->with("success", "Data pendapatan berhasil dihapus.");
-        } catch (Exception $e) {
+                ->with(
+                    "success",
+                    "Pendapatan & seluruh rollback berhasil dilakukan.",
+                );
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error("Gagal menghapus pendapatan", [
+            Log::error("Gagal rollback pendapatan", [
                 "error" => $e->getMessage(),
                 "trace" => $e->getTraceAsString(),
                 "user_id" => auth()->id(),
-                "id" => $id,
             ]);
 
             return redirect()
                 ->back()
                 ->with(
                     "error",
-                    "Terjadi kesalahan saat menghapus data pendapatan.",
+                    $e->getMessage() ?: "Gagal rollback pendapatan.",
                 );
         }
     }

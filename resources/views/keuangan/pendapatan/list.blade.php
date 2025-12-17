@@ -53,7 +53,7 @@
                         <td>
                             <form id="deleteForm-{{ $data->id }}"
                                 action="{{ route('keuangan.pendapatan.destroy', $data->id) }}" method="POST"
-                                class="d-inline">
+                                class="d-inline delete-btn">
                                 @csrf
                                 @method('DELETE')
                                 <button type="button" class="btn btn-danger btn-sm"

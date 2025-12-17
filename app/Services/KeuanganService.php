@@ -69,14 +69,16 @@ class KeuanganService
                 ->value("total_persediaan") ?? 0;
 
         // === PEMBELIAN ===
-        $pembelianKredit = BukuBesarHutang::where("user_id", $userId)
-            ->where($filter)
-            ->where("uraian", "not like", "%saldo awal%")
-            ->sum("kredit") ?? 0;
+        $pembelianKredit =
+            BukuBesarHutang::where("user_id", $userId)
+                ->where($filter)
+                ->where("uraian", "not like", "%saldo awal%")
+                ->sum("kredit") ?? 0;
 
-        $pembelianTunai = BukuBesarPengeluaran::where("user_id", $userId)
-            ->where($filter)
-            ->sum("jumlah_pembelian_tunai") ?? 0;
+        $pembelianTunai =
+            BukuBesarPengeluaran::where("user_id", $userId)
+                ->where($filter)
+                ->sum("jumlah_pembelian_tunai") ?? 0;
 
         $returPembelian = BukuBesarHutang::where("user_id", $userId)
             ->where($filter)
@@ -113,7 +115,7 @@ class KeuanganService
             ->get()
             ->sum(
                 fn($i) => ($i->saldo_persatuan ?? 0) *
-                ($i->barang->harga_beli_per_unit ?? 0),
+                    ($i->barang->harga_beli_per_unit ?? 0),
             );
 
         // === HPP & LABA ===
@@ -127,13 +129,15 @@ class KeuanganService
 
         $labaOperasional = $labaKotor - $biayaOperasional;
 
-        $pendapatanLain = BukuBesarPendapatan::where("user_id", $userId)
-            ->where($filter)
-            ->sum("lain_lain");
+        $pendapatanLain =
+            BukuBesarPendapatan::where("user_id", $userId)
+                ->where($filter)
+                ->sum("lain_lain") ?? 0;
 
-        $biayaAdministrasiBank = BukuBesarPengeluaran::where("user_id", $userId)
-            ->where($filter)
-            ->sum("admin_bank");
+        $biayaAdministrasiBank =
+            BukuBesarPengeluaran::where("user_id", $userId)
+                ->where($filter)
+                ->sum("admin_bank") ?? 0;
 
         $labaSebelumPajak =
             $labaOperasional + $pendapatanLain - $biayaAdministrasiBank;
