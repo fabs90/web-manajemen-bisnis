@@ -27,7 +27,7 @@ class DebiturRequest extends FormRequest
             "nama" => "required|string|max:200",
             "kontak" => "nullable|string|max:255",
             "alamat" => "nullable|string|max:255",
-            "email" => "nullable|email|max:255|unique:pelanggan,email",
+            "email" => "nullable|email|max:255",
             "jenis" => "required",
         ];
     }
@@ -50,46 +50,8 @@ class DebiturRequest extends FormRequest
 
             "email.email" => "Format email tidak valid.",
             "email.max" => "Email tidak boleh lebih dari 255 karakter.",
-            "email.unique" =>
-                "Email ini sudah terdaftar sebagai debitur/kreditur lain.",
 
             "jenis.required" => "Jenis debitur/kreditur wajib diisi.",
         ];
-    }
-
-    public function withValidator(Validator $validator)
-    {
-        $validator->after(function ($validator) {
-            $inputNama = $this->normalizeName($this->input("nama"));
-            $threshold = 85; // persen kemiripan minimal
-
-            $pelanggans = Pelanggan::select("nama")->get();
-
-            foreach ($pelanggans as $p) {
-                $existing = $this->normalizeName($p->nama);
-
-                similar_text($inputNama, $existing, $percent);
-
-                if ($percent >= $threshold) {
-                    $validator
-                        ->errors()
-                        ->add(
-                            "nama",
-                            "Nama '{$this->input(
-                                "nama",
-                            )}' terlalu mirip dengan '{$p->nama}' yang sudah terdaftar. Mohon periksa kembali.",
-                        );
-                    break;
-                }
-            }
-        });
-    }
-
-    private function normalizeName(string $name): string
-    {
-        $normalized = mb_strtolower($name, "UTF-8");
-        $normalized = preg_replace("/[^\p{L}\p{N}\s]/u", "", $normalized); // hapus tanda baca
-        $normalized = preg_replace("/\s+/", " ", $normalized); // rapikan spasi
-        return trim($normalized);
     }
 }

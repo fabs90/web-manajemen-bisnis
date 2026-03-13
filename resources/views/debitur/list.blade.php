@@ -34,7 +34,7 @@
                             @endif
                         </td>
                         <td>
-                            <form action="#" method="POST" class="d-inline"
+                            <form action="{{route('debitur-kreditur.destroy', $item->id)}}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                 @csrf
                                 @method('DELETE')

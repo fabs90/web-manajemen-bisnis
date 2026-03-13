@@ -243,6 +243,10 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
         Route::post("/", [DebiturController::class, "store"])->name(
             "debitur-kreditur.store",
         );
+        Route::delete("/{pelanggan}", [
+            DebiturController::class,
+            "destroy",
+        ])->name("debitur-kreditur.destroy");
     });
 
     // =============================
