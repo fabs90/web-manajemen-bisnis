@@ -2,7 +2,18 @@
 @section('page-title', 'Debitur & Kreditur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'List Debitur dan Kreditur')
 @section('section-row')
-
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>Sukses!</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Gagal!</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
     @if ($pelanggan->isEmpty())
         <div class="alert alert-primary">
             Tidak ada data pelanggan.
