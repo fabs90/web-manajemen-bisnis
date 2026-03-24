@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\{
-    BukuBesarKas,
     BukuBesarPiutang,
     BukuBesarHutang,
     BukuBesarPendapatan,
@@ -11,40 +10,82 @@ use App\Models\{
     KartuGudang,
     NeracaAwal,
 };
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Auth, DB};
 
 class KeuanganService
 {
+    private const TAX_RATE = 0.15;
+
     public function hitungLabaRugi($startDate = null, $endDate = null)
     {
         $userId = Auth::id();
-
         $startDate = $startDate ?? now()->startOfYear()->format("Y-m-d");
         $endDate = $endDate ?? now()->endOfYear()->format("Y-m-d");
+        $dateRange = [$startDate, $endDate];
 
-        $filter = function ($query) use ($startDate, $endDate) {
-            return $query->whereBetween("tanggal", [$startDate, $endDate]);
-        };
+        // === GATHER METRICS ===
+        $sales = $this->getSalesMetrics($userId, $dateRange);
+        $purchases = $this->getPurchaseMetrics($userId, $dateRange);
+        $inventory = $this->getInventoryMetrics($userId, $endDate);
+        $operating = $this->getOperatingMetrics($userId, $dateRange);
 
-        // === PENJUALAN ===
+        // === CALCULATE SUMMARY ===
+        $penjualanBersih =
+            $sales["totalPenjualan"] -
+            $sales["returPenjualan"] +
+            $sales["potonganPenjualan"];
+
+        $pembelianBersih =
+            $purchases["pembelianKredit"] +
+            $purchases["pembelianTunai"] -
+            $purchases["returPembelian"] -
+            $purchases["potonganPembelian"];
+
+        $barangTersedia = $inventory["persediaanAwal"] + $pembelianBersih;
+        $hpp = $barangTersedia - $inventory["persediaanAkhir"];
+        $labaKotor = $penjualanBersih - $hpp;
+
+        $labaOperasional = $labaKotor - $operating["biayaOperasional"];
+
+        $labaSebelumPajak =
+            $labaOperasional +
+            $operating["pendapatanLain"] -
+            $operating["biayaAdministrasiBank"];
+
+        $pajak = $labaSebelumPajak * self::TAX_RATE;
+        $labaSetelahPajak = $labaSebelumPajak - $pajak;
+
+        return array_merge($sales, $purchases, $inventory, $operating, [
+            "penjualanBersih" => $penjualanBersih,
+            "pembelianBersih" => $pembelianBersih,
+            "hpp" => $hpp,
+            "labaKotor" => $labaKotor,
+            "labaOperasional" => $labaOperasional,
+            "labaSebelumPajak" => $labaSebelumPajak,
+            "pajak" => $pajak,
+            "labaSetelahPajak" => $labaSetelahPajak,
+        ]);
+    }
+
+    private function getSalesMetrics(int $userId, array $dateRange): array
+    {
         $penjualanKredit = BukuBesarPiutang::where("user_id", $userId)
-            ->where($filter)
+            ->whereBetween("tanggal", $dateRange)
             ->sum("debit");
 
         $penjualanTunai = BukuBesarPendapatan::where("user_id", $userId)
-            ->where($filter)
+            ->whereBetween("tanggal", $dateRange)
             ->sum("penjualan_tunai");
 
         $bungaPenjualan =
             BukuBesarPendapatan::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->sum("bunga_bank") ?? 0;
 
         $totalPenjualan = $penjualanKredit + $penjualanTunai + $bungaPenjualan;
 
         $returPenjualan = BukuBesarPiutang::where("user_id", $userId)
-            ->where($filter)
+            ->whereBetween("tanggal", $dateRange)
             ->where(function ($q) {
                 $q->where("uraian", "like", "%Retur%")->orWhere(
                     "uraian",
@@ -56,32 +97,34 @@ class KeuanganService
 
         $potonganPenjualan =
             BukuBesarPendapatan::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->sum("potongan_pembelian") ?? 0;
 
-        $penjualanBersih =
-            $totalPenjualan - $returPenjualan + $potonganPenjualan;
+        return compact(
+            "penjualanKredit",
+            "penjualanTunai",
+            "bungaPenjualan",
+            "totalPenjualan",
+            "returPenjualan",
+            "potonganPenjualan",
+        );
+    }
 
-        // === PERSEDIAAN AWAL ===
-        $persediaanAwal =
-            NeracaAwal::where("user_id", $userId)
-                ->where("created_at", "<=", $endDate)
-                ->value("total_persediaan") ?? 0;
-
-        // === PEMBELIAN ===
+    private function getPurchaseMetrics(int $userId, array $dateRange): array
+    {
         $pembelianKredit =
             BukuBesarHutang::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->where("uraian", "not like", "%saldo awal%")
                 ->sum("kredit") ?? 0;
 
         $pembelianTunai =
             BukuBesarPengeluaran::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->sum("jumlah_pembelian_tunai") ?? 0;
 
         $returPembelian = BukuBesarHutang::where("user_id", $userId)
-            ->where($filter)
+            ->whereBetween("tanggal", $dateRange)
             ->where(function ($q) {
                 $q->where("uraian", "like", "%Retur%")->orWhere(
                     "uraian",
@@ -93,16 +136,24 @@ class KeuanganService
 
         $potonganPembelian =
             BukuBesarPengeluaran::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->sum("potongan_pembelian") ?? 0;
 
-        $pembelianBersih =
-            $pembelianKredit +
-            $pembelianTunai -
-            $returPembelian -
-            $potonganPembelian;
+        return compact(
+            "pembelianKredit",
+            "pembelianTunai",
+            "returPembelian",
+            "potonganPembelian",
+        );
+    }
 
-        // === PERSEDIAAN AKHIR ===
+    private function getInventoryMetrics(int $userId, string $endDate): array
+    {
+        $persediaanAwal =
+            NeracaAwal::where("user_id", $userId)
+                ->where("created_at", "<=", $endDate)
+                ->value("total_persediaan") ?? 0;
+
         $persediaanAkhir = KartuGudang::where("user_id", $userId)
             ->whereIn("id", function ($query) use ($userId) {
                 $query
@@ -115,60 +166,32 @@ class KeuanganService
             ->get()
             ->sum(
                 fn($i) => ($i->saldo_persatuan ?? 0) *
-                    ($i->barang->harga_beli_per_unit ?? 0),
+                ($i->barang->harga_beli_per_unit ?? 0),
             );
 
-        // === HPP & LABA ===
-        $barangTersedia = $persediaanAwal + $pembelianBersih;
-        $hpp = $barangTersedia - $persediaanAkhir;
-        $labaKotor = $penjualanBersih - $hpp;
+        return compact("persediaanAwal", "persediaanAkhir");
+    }
 
+    private function getOperatingMetrics(int $userId, array $dateRange): array
+    {
         $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
-            ->where($filter)
+            ->whereBetween("tanggal", $dateRange)
             ->sum("lain_lain");
-
-        $labaOperasional = $labaKotor - $biayaOperasional;
 
         $pendapatanLain =
             BukuBesarPendapatan::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->sum("lain_lain") ?? 0;
 
         $biayaAdministrasiBank =
             BukuBesarPengeluaran::where("user_id", $userId)
-                ->where($filter)
+                ->whereBetween("tanggal", $dateRange)
                 ->sum("admin_bank") ?? 0;
 
-        $labaSebelumPajak =
-            $labaOperasional + $pendapatanLain - $biayaAdministrasiBank;
-
-        $pajak = $labaSebelumPajak * 0.15;
-        $labaSetelahPajak = $labaSebelumPajak - $pajak;
-
         return compact(
-            "penjualanKredit",
-            "penjualanTunai",
-            "bungaPenjualan",
-            "totalPenjualan",
-            "returPenjualan",
-            "potonganPenjualan",
-            "penjualanBersih",
-            "persediaanAwal",
-            "pembelianKredit",
-            "pembelianTunai",
-            "returPembelian",
-            "potonganPembelian",
-            "pembelianBersih",
-            "persediaanAkhir",
-            "hpp",
-            "labaKotor",
             "biayaOperasional",
-            "labaOperasional",
             "pendapatanLain",
             "biayaAdministrasiBank",
-            "labaSebelumPajak",
-            "pajak",
-            "labaSetelahPajak",
         );
     }
 }

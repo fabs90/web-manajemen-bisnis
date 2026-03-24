@@ -2,13 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Faktur\FakturPenjualan;
-use App\Models\Faktur\FakturPenjualanDetail;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Auth, DB, Log};
+use App\Models\Faktur\{FakturPenjualan, FakturPenjualanDetail};
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdministrasiFakturService
 {
@@ -73,15 +70,10 @@ class AdministrasiFakturService
         DB::beginTransaction();
 
         try {
-            // Ambil faktur berdasarkan ID dan user yang sedang login
             $faktur = FakturPenjualan::where("user_id", auth()->id())
                 ->with("fakturPenjualanDetail")
                 ->findOrFail($id);
-
-            // Hapus detail faktur
             $faktur->fakturPenjualanDetail()->delete();
-
-            // Hapus header faktur
             $faktur->delete();
 
             DB::commit();
@@ -90,7 +82,7 @@ class AdministrasiFakturService
             DB::rollBack();
             Log::warning(
                 "Faktur tidak ditemukan saat destroy: ID $id | User: " .
-                    auth()->id(),
+                auth()->id(),
             );
             return false;
         } catch (\Exception $e) {

@@ -1,25 +1,11 @@
 <?php
 
-use App\Http\Controllers\AdministrasiSuratController;
-use App\Http\Controllers\KasirController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\PendapatanController;
-use App\Http\Controllers\PengeluaranController;
-use App\Http\Controllers\Rapat\ManajemenRapatController;
-use App\Http\Controllers\RugiLabaController;
-use App\Http\Controllers\TutupBukuController;
+use App\Http\Controllers\SuratKeluar\SuratKeluarController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BarangController;
-use App\Http\Controllers\DebiturController;
-use App\Http\Controllers\AsetHutangController;
+use App\Http\Controllers\{AdministrasiSuratController, AsetHutangController, BarangController, DebiturController, JadwalPerjalananController, KasirController, ManajemenKasKecilController, NeracaAkhirController, PageController, PendapatanController, PengeluaranController, PernyataanPiutangController, ProfileController, ReturController, RugiLabaController, TutupBukuController};
+use App\Http\Controllers\Rapat\ManajemenRapatController;
 use App\Http\Controllers\Faktur\AdministrasiFakturController;
-use App\Http\Controllers\JadwalPerjalananController;
-use App\Http\Controllers\ManajemenKasKecilController;
 use App\Http\Controllers\Memo\MemoKreditController;
-use App\Http\Controllers\NeracaAkhirController;
-use App\Http\Controllers\PernyataanPiutangController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReturController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
 use App\Http\Middleware\EnsureUserIsVerified;
@@ -165,23 +151,23 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
     // =============================
     Route::prefix("dashboard/laporan-keuangan")->group(function () {
         // Aset & Hutang
-        Route::get("/aset-hutang", [
+        Route::get("/neraca-awal", [
             AsetHutangController::class,
             "index",
         ])->name("laporan-keuangan.aset-hutang.index");
-        Route::get("/aset-hutang/create", [
+        Route::get("/neraca-awal/create", [
             AsetHutangController::class,
             "create",
         ])->name("laporan-keuangan.aset-hutang.create");
-        Route::post("/aset-hutang", [
+        Route::post("/neraca-awal", [
             AsetHutangController::class,
             "store",
         ])->name("laporan-keuangan.aset-hutang.store");
-        Route::get("/aset-hutang/{id}", [
+        Route::get("/neraca-awal/{id}", [
             AsetHutangController::class,
             "show",
         ])->name("laporan-keuangan.aset-hutang.show");
-        Route::delete("/aset-hutang/{id}", [
+        Route::delete("/neraca-awal/{id}", [
             AsetHutangController::class,
             "destroy",
         ])->name("laporan-keuangan.aset-hutang.destroy");
@@ -331,7 +317,7 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
 
         Route::delete("/surat-masuk/{id}", [
             AdministrasiSuratController::class,
-            "destroyAgendaMasuk",
+            "destroySuratMasuk",
         ])->name("administrasi.surat-masuk.destroy");
 
         Route::get("/surat-masuk/disposisi/{id}", [
@@ -364,6 +350,8 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             AdministrasiSuratController::class,
             "destroyAgendaSuratKeluar",
         ])->name("administrasi.surat-keluar.destroy");
+
+        Route::post("/surat-keluar/{id}", [SuratKeluarController::class, 'downloadPdf'])->name("administrasi.surat-keluar.downloadPdf");
 
         // Surat Kas Kecil
         Route::get("/kas-kecil/", [

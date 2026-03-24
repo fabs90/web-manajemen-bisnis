@@ -6,6 +6,8 @@ use App\Models\AgendaSuratKeluar;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\File;
+use Barryvdh\DomPDF\Facade\Pdf; // 1. Import Facade PDF
 
 class SuratKeluarMail extends Mailable
 {
@@ -19,8 +21,14 @@ class SuratKeluarMail extends Mailable
         $this->surat = $surat;
         $this->user = $user;
     }
+
     public function build()
     {
+        $pdfContent = Pdf::loadView('emails.surat-keluar-pdf', [
+            'surat' => $this->surat,
+            'user' => $this->user
+        ])->output();
+
         $email = $this->from(
             "no-reply@digitrans.co.id",
             "Digitrans | {$this->user->email}",
@@ -33,12 +41,24 @@ class SuratKeluarMail extends Mailable
                 "surat" => $this->surat,
             ]);
 
-        // Lampiran opsional
-        if ($this->surat->file_lampiran) {
-            $email->attach(
-                storage_path("app/public/" . $this->surat->file_lampiran),
-            );
-        }
+        $namaFileSurat = str_replace('/', '-', $this->surat->nomor_surat) . '.pdf';
+        $email->attachData($pdfContent, $namaFileSurat, [
+            'mime' => 'application/pdf',
+        ]);
+
+        // if ($this->surat->file_lampiran) {
+        //     $pathFile = storage_path("app/public/" . $this->surat->file_lampiran);
+
+        //     if (file_exists($pathFile)) {
+        //         $email->attach(
+        //             $pathFile,
+        //             [
+        //                 'as' => basename($this->surat->file_lampiran),
+        //                 'mime' => File::mimeType($pathFile),
+        //             ]
+        //         );
+        //     }
+        // }
 
         return $email;
     }

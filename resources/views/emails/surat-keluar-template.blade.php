@@ -1,98 +1,82 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="UTF-8">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; font-size: 14px; }
-        .header-table td { vertical-align: top; }
-        .info { margin-bottom: 20px; }
-        .section-title { font-weight: bold; margin-top: 20px; text-decoration: underline; }
-        .ttd-area { margin-top: 40px; }
-        .tembusan { margin-top: 20px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #eee;
+            pt: 10px;
+        }
+
+        .button {
+            background-color: #00468c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 15px;
+        }
     </style>
 </head>
+
 <body>
+    <div class="container">
+        <p>Yth. <strong>{{ $surat->nama_penerima }}</strong>,</p>
 
-    {{-- HEADER SURAT --}}
-    <table width="100%" class="header-table">
-        <tr>
-            <td width="80">
-                @if($user->logo_perusahaan)
-                    <img src="{{ asset('storage/'.$user->logo_perusahaan) }}" width="80">
-                @endif
-            </td>
-            <td>
-                <strong style="font-size: 16px;">{{ $user->name }}</strong><br>
-                {{ $user->alamat }}<br>
-                    Telp: {{ $user->nomor_telepon }}<br>
-                        Email: {{ $user->email }}
-            </td>
-        </tr>
-    </table>
+        <p>Bersama email ini, kami sampaikan dokumen resmi dari <strong>{{ $user->name }}</strong> dengan rincian
+            sebagai berikut:</p>
 
-    <hr>
+        <table style="width: 100%; margin-bottom: 20px;">
+            <tr>
+                <td width="120"><strong>Nomor Surat</strong></td>
+                <td>: {{ $surat->nomor_surat }}</td>
+            </tr>
+            <tr>
+                <td><strong>Perihal</strong></td>
+                <td>: {{ $surat->perihal }}</td>
+            </tr>
+            <tr>
+                <td><strong>Tanggal</strong></td>
+                <td>: {{ \Carbon\Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y') }}</td>
+            </tr>
+        </table>
 
-    {{-- Nomor Surat --}}
-    <div class="info">
-        <p><strong>Nomor Surat:</strong> {{ $surat->nomor_surat }}</p>
-        <p><strong>Lampiran:</strong> {{ $surat->lampiran ?? '-' }}</p>
-        <p><strong>Perihal:</strong> {{ $surat->perihal }}</p>
-        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($surat->tanggal_surat)->format('d F Y') }}</p>
-    </div>
-
-    {{-- TUJUAN --}}
-    <div class="info">
-        <p><strong>Kepada Yth:</strong><br>
-            {{ $surat->nama_penerima }}<br>
-            {{ $surat->jabatan_penerima }}<br>
-            {{ $surat->alamat_penerima }}
+        <p>Detail isi surat dan lampiran pendukung telah kami sertakan dalam format PDF yang terlampir pada email ini.
         </p>
-    </div>
 
-    <p>Dengan hormat,</p>
+        <p>Mohon kiranya Bapak/Ibu dapat menerima dan menindaklanjuti dokumen tersebut. Jika ada pertanyaan lebih
+            lanjut, silakan hubungi kami melalui balas email ini atau telepon ke {{ $user->nomor_telepon }}.</p>
 
-    {{-- PEMBUKA --}}
-    <p>{!! nl2br(e($surat->paragraf_pembuka)) !!}</p>
+        <p>Atas perhatian dan kerja samanya, kami ucapkan terima kasih.</p>
 
-    {{-- ISI --}}
-    <p>{!! nl2br(e($surat->paragraf_isi)) !!}</p>
-
-    {{-- PENUTUP --}}
-    <p>{!! nl2br(e($surat->paragraf_penutup)) !!}</p>
-
-    <p>
-        Demikian surat ini kami sampaikan. Atas kerja sama yang baik disampaikan terima kasih.
-    </p>
-
-    {{-- TTD --}}
-    <div class="ttd-area">
-        <p>Hormat kami,</p>
-
-        @if($surat->ttd)
-            <img src="{{ asset('storage/'.$surat->ttd) }}" width="120"><br>
-        @else
-            <br><br><br>
-        @endif
-
-        <strong>{{ $surat->nama_pengirim }}</strong><br>
-        {{ $surat->jabatan_pengirim }}
-    </div>
-
-    {{-- TEMBUSAN --}}
-    @if($surat->tembusan)
-        <div class="tembusan">
-            <strong>Tembusan:</strong>
-            <p>{!! nl2br(e($surat->tembusan)) !!}</p>
+        <div class="footer">
+            <p>Hormat kami,<br>
+                <strong>{{ $surat->nama_pengirim }}</strong><br>
+                {{ $user->name }}
+            </p>
+            <hr>
+            <p><em>Email ini dikirimkan secara otomatis melalui sistem Digitrans. Mohon tidak membalas langsung jika
+                    tidak diperlukan.</em></p>
         </div>
-    @endif
-
-    {{-- LAMPIRAN FILE --}}
-    @if($surat->file_lampiran)
-        <p>
-            <strong>Lampiran File:</strong><br>
-            <a href="{{ asset('storage/'.$surat->file_lampiran) }}">Klik untuk membuka lampiran</a>
-        </p>
-    @endif
-
+    </div>
 </body>
+
 </html>

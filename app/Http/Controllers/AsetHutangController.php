@@ -2,20 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BukuBesarHutang;
-use App\Models\Barang;
-use App\Models\BukuBesarKas;
-use App\Models\BukuBesarPiutang;
-use App\Models\KartuGudang;
-use App\Models\NeracaAwal;
-use App\Models\NeracaAkhir;
-use App\Models\Pelanggan;
-use App\Models\RugiLaba;
-use App\Http\Requests\AsetHutangRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{DB, Log};
 use Illuminate\Support\Str;
+use App\Http\Requests\AsetHutangRequest;
+use App\Models\{Barang, BukuBesarHutang, BukuBesarKas, BukuBesarModal, BukuBesarPiutang, KartuGudang, NeracaAwal, Pelanggan};
 use Throwable;
 
 class AsetHutangController extends Controller
@@ -97,7 +87,7 @@ class AsetHutangController extends Controller
             }
 
             // Buku besar kas
-            $kodeTransaksi = Str::uuid(); // gunakan satu kode sama untuk kas & modal
+            $kodeTransaksi = Str::uuid();
 
             BukuBesarKas::create([
                 "kode" => $kodeTransaksi,
@@ -110,9 +100,9 @@ class AsetHutangController extends Controller
                 "user_id" => auth()->id(),
             ]);
 
-            \App\Models\BukuBesarModal::create([
+            BukuBesarModal::create([
                 "user_id" => auth()->id(),
-                "kode" => $kodeTransaksi, // sama dengan kas agar mudah dilacak
+                "kode" => $kodeTransaksi,
                 "tanggal" => now(),
                 "uraian" => "Modal awal disetor ke kas",
                 "debit" => 0,
@@ -180,19 +170,19 @@ class AsetHutangController extends Controller
         $userId = auth()->id();
 
         // 🔹 Ambil Neraca Awal milik user dengan relasi barang
-        $neracaAwal = \App\Models\NeracaAwal::with(
+        $neracaAwal = NeracaAwal::with(
             "barang:id,nama,harga_beli_per_kemas",
         )
             ->where("user_id", $userId)
             ->findOrFail($id);
 
         // 🔹 Ambil data Buku Besar berdasarkan neraca_awal_id
-        $bukuBesarKas = \App\Models\BukuBesarKas::where("user_id", $userId)
+        $bukuBesarKas = BukuBesarKas::where("user_id", $userId)
             ->where("neraca_awal_id", $id)
             ->where("kredit", 0)
             ->get();
 
-        $bukuBesarPiutang = \App\Models\BukuBesarPiutang::where(
+        $bukuBesarPiutang = BukuBesarPiutang::where(
             "user_id",
             $userId,
         )
@@ -200,7 +190,7 @@ class AsetHutangController extends Controller
             ->orderBy("created_at", "asc")
             ->get(["id", "pelanggan_id", "uraian", "saldo"]);
 
-        $bukuBesarHutang = \App\Models\BukuBesarHutang::where(
+        $bukuBesarHutang = BukuBesarHutang::where(
             "user_id",
             $userId,
         )
@@ -210,7 +200,7 @@ class AsetHutangController extends Controller
 
         // 🔹 Ambil kartu gudang untuk barang yang tercatat di neraca ini
         $barangIds = $neracaAwal->barang->pluck("id");
-        $kartuGudang = \App\Models\KartuGudang::where("user_id", $userId)
+        $kartuGudang = KartuGudang::where("user_id", $userId)
             ->whereIn("barang_id", $barangIds)
             ->get([
                 "id",

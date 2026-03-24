@@ -108,7 +108,8 @@
                     Tidak ada hutang sama sekali
                 </label>
             </div>
-            <p>Tidak ada nama kreditur? <a href="{{ route('debitur-kreditur.create') }}" target="_blank">Tambah Data Kreditur
+            <p>Tidak ada nama kreditur? <a href="{{ route('debitur-kreditur.create') }}" target="_blank">Tambah Data
+                    Kreditur
                     Disini</a>
             </p>
             <div id="hutang-wrapper">
@@ -240,6 +241,11 @@
 @push('script')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // select2
+            $('#barang_select').select2({
+                placeholder: 'Pilih Barang',
+            });
+
             const options = {
                 digitGroupSeparator: '.',
                 decimalCharacter: ',',
