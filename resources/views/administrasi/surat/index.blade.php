@@ -100,7 +100,7 @@
 
         <a href="{{ route('administrasi.rapat.index') }}" class="menu-card text-black" style="background:#e9f4dd"
             data-tooltip="Dokumen hasil rapat berisi keputusan, ringkasan diskusi, dan tindak lanjut.">
-            AGENDA DAN NOTULEN RAPAT
+            NOTULEN RAPAT
         </a>
 
         <a href="{{ route('administrasi.rapat.hasil-keputusan.index') }}" class="menu-card text-black"

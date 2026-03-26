@@ -20,9 +20,9 @@
         @endif
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <strong>DATA AGENDA RAPAT</strong>
+                <strong>DATA NOTULEN RAPAT</strong>
                 <a href="{{ route('administrasi.rapat.create') }}" class="btn btn-light btn-sm">
-                    <i class="fa fa-plus me-1"></i> Tambah Agenda Rapat
+                    <i class="fa fa-plus me-1"></i> Tambah Notulen Rapat
                 </a>
             </div>
 

@@ -30,7 +30,7 @@
                     <table class="table table-bordered">
                         <thead class="table-light text-center">
                             <tr>
-                                <th colspan="2">AGENDA RAPAT & NOTULEN RAPAT</th>
+                                <th colspan="2">NOTULEN RAPAT</th>
                             </tr>
                         </thead>
 

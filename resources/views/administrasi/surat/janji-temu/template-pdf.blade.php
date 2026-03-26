@@ -52,7 +52,7 @@
     <table>
         <tr>
             <td class="label">Nama Pemohon</td>
-            <td>: {{ $agendaJanjiTemu->nama_pemohon ?? '-' }}</td>
+            <td>: {{ $agendaJanjiTemu->nama_pembuat ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label">Jabatan</td>
@@ -61,6 +61,10 @@
         <tr>
             <td class="label">Perusahaan</td>
             <td>: {{ $agendaJanjiTemu->perusahaan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label">Lokasi</td>
+            <td>: {{ $agendaJanjiTemu->tempat_pertemuan ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label">Keperluan</td>

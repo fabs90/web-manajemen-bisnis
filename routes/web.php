@@ -8,7 +8,7 @@ use App\Http\Controllers\Faktur\AdministrasiFakturController;
 use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
-use App\Http\Middleware\EnsureUserIsVerified;
+use App\Http\Middleware\EnsureUserIsVerified; 
 
 // Halaman publik
 Route::get("/", [PageController::class, "index"]);
