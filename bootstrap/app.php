@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Middleware\EnsureUserIsVerified;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Configuration\{Exceptions, Middleware};
+use App\Http\Middleware\{EnsureProfileComplete, EnsureUserIsVerified};
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append([App\Http\Middleware\PreventBackHistory::class]);
         $middleware->alias([
             "ensureUserIsVerified" => EnsureUserIsVerified::class,
+            "ensureProfileCompleted" => EnsureProfileComplete::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

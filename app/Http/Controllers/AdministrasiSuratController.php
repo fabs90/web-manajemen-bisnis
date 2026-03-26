@@ -146,7 +146,8 @@ class AdministrasiSuratController extends Controller
 
     public function createSuratUndanganRapat()
     {
-        return view("administrasi.surat.surat-undangan-rapat.create");
+        $user = auth()->user();
+        return view("administrasi.surat.surat-undangan-rapat.create", compact('user'));
     }
 
     public function showDisposisi($id)

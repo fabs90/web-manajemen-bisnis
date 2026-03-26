@@ -8,26 +8,11 @@ use App\Http\Controllers\Faktur\AdministrasiFakturController;
 use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
-use App\Http\Middleware\EnsureUserIsVerified;
 
 // Halaman publik
 Route::get("/", [PageController::class, "index"]);
 
 Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
-    Route::get("/dashboard", [PageController::class, "dashboard"])->name(
-        "dashboard",
-    );
-
-    Route::get("/dashboard/chart-data", [
-        PageController::class,
-        "chartData",
-    ])->name("dashboard.chartData");
-
-    Route::get("/dashboard/get-started", [
-        PageController::class,
-        "getStarted",
-    ])->name("dashboard.getStarted");
-
     // =============================
     // 👨🏻‍🏫 GROUP: Profile
     // =============================
@@ -42,6 +27,22 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "profile.update",
         );
     });
+});
+
+Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileCompleted"])->group(function () {
+    Route::get("/dashboard", [PageController::class, "dashboard"])->name(
+        "dashboard",
+    );
+
+    Route::get("/dashboard/chart-data", [
+        PageController::class,
+        "chartData",
+    ])->name("dashboard.chartData");
+
+    Route::get("/dashboard/get-started", [
+        PageController::class,
+        "getStarted",
+    ])->name("dashboard.getStarted");
 
     // =============================
     // 📘 GROUP: KEUANGAN
@@ -279,21 +280,6 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             BarangController::class,
             "deleteKartuGudang",
         ])->name("kartu-gudang.destroy");
-    });
-
-    // =============================
-    // 👤 GROUP: PROFILE
-    // =============================
-    Route::prefix("profile")->group(function () {
-        Route::get("/", [ProfileController::class, "edit"])->name(
-            "profile.edit",
-        );
-        Route::patch("/", [ProfileController::class, "update"])->name(
-            "profile.update",
-        );
-        Route::delete("/", [ProfileController::class, "destroy"])->name(
-            "profile.destroy",
-        );
     });
 
     // =============================
