@@ -69,17 +69,33 @@
 
 <body>
 
-    {{-- KOP SURAT --}}
-    <div class="kop">
-        {{-- Optional Logo --}}
-        {{-- <img src="{{ public_path('logo.png') }}" style="height:60px;"> --}}
-
-        <div class="kop-title">{{ $profileUser->name }}</div>
-        <div class="kop-sub">{{ $profileUser->alamat }}</div>
-        <div class="kop-sub">
-            Email: {{ $profileUser->email }} 
-        </div>
-    </div>
+    <table style="width:100%; margin-bottom:10px; border-collapse:collapse;">
+        <tr>
+            <td style="width:70px; vertical-align:middle;">
+                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
+                    @php
+                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
+                        $logoBase64 = base64_encode(file_get_contents($logoPath));
+                        $logoMime = mime_content_type($logoPath);
+                    @endphp
+                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" alt="Logo" style="height:60px;">
+                @endif
+            </td>
+            <td style="vertical-align:middle; text-align:center;">
+                <div style="font-size:15px; font-weight:bold; text-transform:uppercase;">
+                    {{ $profileUser->name ?? 'Nama Perusahaan' }}
+                </div>
+                <div style="font-size:11px; margin-top:2px;">
+                    {{ $profileUser->alamat ?? 'Alamat Perusahaan' }}
+                </div>
+                <div style="font-size:11px;">
+                    Telp: {{ $profileUser->nomor_telepon ?? '-' }} |
+                    Email: {{ $profileUser->email ?? '-' }}
+                </div>
+            </td>
+            <td style="width:70px;"></td>
+        </tr>
+    </table>
 
     <div class="line"></div>
 
