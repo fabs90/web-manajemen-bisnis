@@ -17,6 +17,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>Oops! Ada kesalahan:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
         <form action="{{ route('administrasi.rapat.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="card shadow-sm">
@@ -35,10 +46,21 @@
                         </thead>
 
                         <tr>
+                            <td>Nomor Surat Rapat</td>
+                            <td>
+                                <input type="text" name="nomor_surat_rapat"
+                                    class="form-control @error('nomor_surat_rapat')
+                                    is-invalid
+                                @enderror"
+                                    required>
+                            </td>
+                        </tr>
+
+                        <tr>
                             <td width="30%">Judul Rapat</td>
                             <td>
                                 <input type="text" name="judul_rapat"
-                                    class="form-control @error('judul_rapat') is-invalid @enderror">
+                                    class="form-control @error('judul_rapat') is-invalid @enderror" required>
                             </td>
                         </tr>
 
@@ -46,7 +68,14 @@
                             <td>Tempat</td>
                             <td>
                                 <input type="text" name="tempat"
-                                    class="form-control @error('tempat') is-invalid @enderror">
+                                    class="form-control @error('tempat') is-invalid @enderror" required>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Nama Kota</td>
+                            <td><input type="text" name="nama_kota"
+                                    class="form-control @error('nama_kota') is-invalid @enderror" required>
                             </td>
                         </tr>
 
@@ -54,7 +83,7 @@
                             <td>Tanggal</td>
                             <td>
                                 <input type="date" name="tanggal"
-                                    class="form-control @error('tanggal') is-invalid @enderror">
+                                    class="form-control @error('tanggal') is-invalid @enderror" required>
                             </td>
                         </tr>
 
@@ -62,23 +91,23 @@
                             <td>Waktu</td>
                             <td>
                                 <input type="time" name="waktu"
-                                    class="form-control @error('waktu') is-invalid @enderror">
+                                    class="form-control @error('waktu') is-invalid @enderror" required>
                             </td>
                         </tr>
 
                         <tr>
-                            <td>Pimpinan Rapat</td>
+                            <td>Nama Pemimpin Rapat</td>
                             <td>
-                                <input type="text" name="pimpinan_rapat"
-                                    class="form-control @error('pimpinan_rapat') is-invalid @enderror">
+                                <input type="text" name="pemimpin_rapat"
+                                    class="form-control @error('pemimpin_rapat') is-invalid @enderror" required>
                             </td>
                         </tr>
 
                         <tr>
-                            <td>Notulis</td>
+                            <td>Nama Notulis</td>
                             <td>
                                 <input type="text" name="notulis"
-                                    class="form-control @error('notulis') is-invalid @enderror">
+                                    class="form-control @error('notulis') is-invalid @enderror" required>
                             </td>
                         </tr>
                     </table>
@@ -131,7 +160,9 @@
                             <tr>
                                 <td><input type="text" name="pembahasan_agenda[]" class="form-control"></td>
                                 <td><input type="text" name="pembahasan_pembicara[]" class="form-control"></td>
-                                <td><textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea></td>
+                                <td>
+                                    <textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea>
+                                </td>
                                 <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
                         </tbody>
@@ -174,21 +205,26 @@
                     </button>
 
                     {{-- ================= RAPAT BERIKUTNYA ================= --}}
-                    <h6 class="fw-bold">Rapat Berikutnya:</h6>
-                    <table class="table table-bordered">
+                    <h6 class="fw-bold">Rapat Berikutnya (Opsional):</h6>
+                    <table class="table table-bordered text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Agenda</th>
+                                <th>Tanggal</th>
+                                <th>Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
                         <tr>
-                            <td width="30%">Tanggal</td>
-                            <td><input type="date" name="tanggal_rapat_berikutnya" class="form-control"></td>
-                        </tr>
-                        <tr>
-                            <td>Agenda</td>
                             <td><input type="text" name="agenda_rapat_berikutnya" class="form-control"></td>
-                        </tr>
-                        <tr>
-                            <td>Nama Kota</td>
-                            <td><input type="text" name="nama_kota" class="form-control"></td>
+                            <td><input type="date" name="tanggal_rapat_berikutnya" class="form-control"></td>
+                            <td><input type="time" name="waktu_rapat_berikutnya" class="form-control"></td>
                         </tr>
                     </table>
+                    <small class="text-muted">Note: Kosongkan jika tidak ada rapat berikutnya.</small>
+
 
                     {{-- ================= BUTTON ================= --}}
                     <div class="text-end mt-3">
@@ -204,27 +240,27 @@
 
     {{-- ================= SCRIPT DYNAMIC ROW ================= --}}
     <script>
-    function reindexRows() {
-        document.querySelectorAll("#peserta-rapat-body tr").forEach((row, index) => {
-            row.children[0].innerText = index + 1;
-        });
+        function reindexRows() {
+            document.querySelectorAll("#peserta-rapat-body tr").forEach((row, index) => {
+                row.children[0].innerText = index + 1;
+            });
 
-        document.querySelectorAll("#tindak-lanjut-body tr").forEach((row, index) => {
-            row.children[0].innerText = index + 1;
-        });
-    }
-
-    document.addEventListener("click", function(e) {
-        if (e.target.classList.contains("deleteRow")) {
-            e.target.closest("tr").remove();
-            reindexRows();
+            document.querySelectorAll("#tindak-lanjut-body tr").forEach((row, index) => {
+                row.children[0].innerText = index + 1;
+            });
         }
-    });
 
-    document.getElementById('addPeserta').addEventListener('click', function() {
-        const table = document.getElementById('peserta-rapat-body');
-        const rowCount = table.rows.length + 1;
-        const row = `
+        document.addEventListener("click", function(e) {
+            if (e.target.classList.contains("deleteRow")) {
+                e.target.closest("tr").remove();
+                reindexRows();
+            }
+        });
+
+        document.getElementById('addPeserta').addEventListener('click', function() {
+            const table = document.getElementById('peserta-rapat-body');
+            const rowCount = table.rows.length + 1;
+            const row = `
         <tr>
             <td>${rowCount}</td>
             <td><input type="text" name="peserta_nama[]" class="form-control"></td>
@@ -232,25 +268,25 @@
             <td><input type="file" name="peserta_ttd[]" class="form-control"></td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
-        table.insertAdjacentHTML('beforeend', row);
-    });
+            table.insertAdjacentHTML('beforeend', row);
+        });
 
-    document.getElementById('addPembahasan').addEventListener('click', function() {
-        const table = document.getElementById('pembahasan-body');
-        const row = `
+        document.getElementById('addPembahasan').addEventListener('click', function() {
+            const table = document.getElementById('pembahasan-body');
+            const row = `
         <tr>
             <td><input type="text" name="pembahasan_agenda[]" class="form-control"></td>
             <td><input type="text" name="pembahasan_pembicara[]" class="form-control"></td>
             <td><textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea></td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
-        table.insertAdjacentHTML('beforeend', row);
-    });
+            table.insertAdjacentHTML('beforeend', row);
+        });
 
-    document.getElementById('addTindak').addEventListener('click', function() {
-        const table = document.getElementById('tindak-lanjut-body');
-        const rowCount = table.rows.length + 1;
-        const row = `
+        document.getElementById('addTindak').addEventListener('click', function() {
+            const table = document.getElementById('tindak-lanjut-body');
+            const rowCount = table.rows.length + 1;
+            const row = `
         <tr>
             <td>${rowCount}</td>
             <td><input type="text" name="tindak_tindakan[]" class="form-control"></td>
@@ -259,9 +295,8 @@
             <td><input type="text" name="tindak_status[]" class="form-control"></td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
-        table.insertAdjacentHTML('beforeend', row);
-    });
-
+            table.insertAdjacentHTML('beforeend', row);
+        });
     </script>
 
 @endsection

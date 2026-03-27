@@ -19,9 +19,4 @@ class RapatDetail extends Model
     {
         return $this->belongsTo(AgendaRapat::class);
     }
-
-    public function keputusanRapat()
-    {
-        return $this->hasMany(KeputusanRapat::class, 'rapat_detail_id');
-    }
 }

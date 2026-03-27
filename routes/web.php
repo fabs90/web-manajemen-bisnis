@@ -490,7 +490,7 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
         ])->name("administrasi.surat-undangan-rapat.destroy");
 
         // Rapat
-        Route::get("/rapat/", [ManajemenRapatController::class, "index"])->name(
+        Route::get("/rapat", [ManajemenRapatController::class, "index"])->name(
             "administrasi.rapat.index",
         );
 
@@ -530,25 +530,10 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
             "indexHasilKeputusan",
         ])->name("administrasi.rapat.hasil-keputusan.index");
 
-        Route::get("/rapat/hasil-keputusan/create", [
-            ManajemenRapatController::class,
-            "createHasilKeputusan",
-        ])->name("administrasi.rapat.hasil-keputusan.create");
-
         Route::get("/rapat/hasil-keputusan/{hasilKeputusanId}/generate", [
             ManajemenRapatController::class,
             "generatePdfHasilKeputusan",
         ])->name("administrasi.rapat.hasil-keputusan.generatePdf");
-
-        Route::post("/rapat/hasil-keputusan", [
-            ManajemenRapatController::class,
-            "storeHasilKeputusan",
-        ])->name("administrasi.rapat.hasil-keputusan.store");
-
-        Route::delete("/rapat/hasil-keputusan/{hasilKeputusanId}", [
-            ManajemenRapatController::class,
-            "destroyHasilKeputusan",
-        ])->name("administrasi.rapat.hasil-keputusan.destroy");
 
         // Surat Pesanan Pembelian (SPP/PO)
         Route::get("/surat-pesanan-pembelian", [

@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->string("nama");
             $table->string("kontak");
             $table->string("alamat")->nullable();
-            $table->string("email")->nullable()->unique();
+            $table->string("email")->nullable();
             $table->enum("jenis", ["debitur", "kreditur"]);
             $table->timestamps();
         });

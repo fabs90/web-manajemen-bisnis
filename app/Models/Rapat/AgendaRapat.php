@@ -11,16 +11,19 @@ class AgendaRapat extends Model
 
     protected $fillable = [
         "user_id",
+        "nomor_surat",
         "judul_rapat",
         "tempat",
         "tanggal",
         "waktu",
-        "pimpinan_rapat",
+        "pemimpin_rapat",
         "keputusan_rapat",
         "nama_kota",
-        "notulis",
+        "nama_notulis",
+        "agenda_rapat",
         "tanggal_rapat_berikutnya",
         "agenda_rapat_berikutnya",
+        "waktu_rapat_berikutnya",
     ];
 
     public function user()
