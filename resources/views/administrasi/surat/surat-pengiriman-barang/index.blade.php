@@ -41,7 +41,6 @@
                                 <th>Supplier/Pemasok</th>
                                 <th>Keadaan Barang</th>
                                 <th>Penerima</th>
-                                <th>Total Pembelian</th>
                                 <th width="14%">Aksi</th>
                             </tr>
                         </thead>
@@ -65,7 +64,6 @@
                                         </span>
                                     </td>
                                     <td>{{ $spb->nama_penerima ?? '-' }}</td>
-                                    <td>-</td>
                                     <td class="text-center">
                                         {{-- Tombol Lihat Detail --}}
                                         @if ($spb->suratPengirimanBarangDetail->count() > 0)
