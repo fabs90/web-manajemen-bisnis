@@ -13,19 +13,23 @@ return new class extends Migration {
         Schema::create("agenda_rapat", function (Blueprint $table) {
             $table->id();
             $table->foreignId("user_id")->constrained()->onDelete("cascade");
+            $table->string("nomor_surat")->nullable();
             $table->string("judul_rapat");
-            $table->string("tempat")->nullable();
             $table->date("tanggal")->nullable();
+            $table->string("tempat")->nullable();
             $table->time("waktu")->nullable();
-            $table->string("pimpinan_rapat")->nullable();
+            $table->string("pemimpin_rapat")->nullable();
+            $table->string("nama_notulis")->nullable();
+            $table->text("agenda_rapat")->nullable();
             $table->text("keputusan_rapat")->nullable();
             $table->string("nama_kota")->nullable();
-            $table->string("notulis")->nullable();
             $table->date("tanggal_rapat_berikutnya")->nullable();
+            $table->time("waktu_rapat_berikutnya")->nullable();
             $table->string("agenda_rapat_berikutnya")->nullable();
             $table->timestamps();
         });
 
+        // Peserta Rapat
         Schema::create("peserta_rapat", function (Blueprint $table) {
             $table->id();
             $table
@@ -34,10 +38,11 @@ return new class extends Migration {
                 ->onDelete("cascade");
             $table->string("nama");
             $table->string("jabatan")->nullable();
-            $table->string("tanda_tangan")->nullable(); // optional untuk file upload
+            $table->string("tanda_tangan")->nullable();
             $table->timestamps();
         });
 
+        // Pembahasan Rapat
         Schema::create("rapat_detail", function (Blueprint $table) {
             $table->id();
             $table
@@ -50,6 +55,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
+        // Tindak Lanjut Rapat
         Schema::create("tindak_lanjut_rapat", function (Blueprint $table) {
             $table->id();
             $table

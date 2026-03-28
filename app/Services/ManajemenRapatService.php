@@ -2,24 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\Rapat;
-use App\Models\Rapat\AgendaRapat;
-use App\Models\Rapat\HasilKeputusanRapat;
-use App\Models\Rapat\PesertaRapat;
-use App\Models\Rapat\RapatDetail;
-use App\Models\Rapat\TindakLanjutRapat;
-use App\Models\RapatPeserta;
-use App\Models\RapatTindakLanjut;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\{Auth, DB, Log, Storage};
+use App\Models\Rapat\{AgendaRapat, HasilKeputusanRapat, PesertaRapat, RapatDetail, TindakLanjutRapat};
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ManajemenRapatService
 {
+    public function __construct(protected FileUploadService $fileUploadService)
+    {
+
+    }
     public function store($data)
     {
         DB::beginTransaction();
@@ -28,18 +22,22 @@ class ManajemenRapatService
             // MASTER TABLE
             $rapat = AgendaRapat::create([
                 "user_id" => auth()->user()->id,
+                "nomor_surat" => $data['nomor_surat_rapat'],
                 "judul_rapat" => $data["judul_rapat"],
                 "tempat" => $data["tempat"],
                 "tanggal" => $data["tanggal"],
                 "waktu" => $data["waktu"],
-                "pimpinan_rapat" => $data["pimpinan_rapat"],
+                "pemimpin_rapat" => $data["pemimpin_rapat"],
                 "keputusan_rapat" => $data["keputusan_rapat"],
                 "nama_kota" => $data["nama_kota"],
-                "notulis" => $data["notulis"],
+                "nama_notulis" => $data["notulis"],
+                "agenda_rapat" => $data['agenda_rapat'],
                 "tanggal_rapat_berikutnya" => $data["tanggal_rapat_berikutnya"],
                 "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"],
+                "waktu_rapat_berikutnya" => $data["waktu_rapat_berikutnya"],
             ]);
 
+            // detail rapat
             if (isset($data["pembahasan_pembicara"])) {
                 foreach ($data["pembahasan_pembicara"] as $i => $pembicara) {
                     RapatDetail::create([
@@ -51,6 +49,7 @@ class ManajemenRapatService
                 }
             }
 
+            // peserta rapat
             if (isset($data["peserta_nama"])) {
                 foreach ($data["peserta_nama"] as $i => $namaPeserta) {
                     // Upload tanda tangan jika ada
@@ -59,10 +58,7 @@ class ManajemenRapatService
                         isset($data["peserta_ttd"][$i]) &&
                         $data["peserta_ttd"][$i] !== null
                     ) {
-                        $ttdPath = $data["peserta_ttd"][$i]->store(
-                            "/rapat/ttd",
-                            "public",
-                        );
+                        $ttdPath = $this->fileUploadService->upload($data['peserta_ttd'][$i], 'rapat/ttd', auth()->user()->email);
                     }
 
                     PesertaRapat::create([
@@ -85,10 +81,9 @@ class ManajemenRapatService
                     ]);
                 }
             }
-
             DB::commit();
             return $rapat;
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -303,7 +298,7 @@ class ManajemenRapatService
             return $pdf->download(
                 "Notulen Rapat - " . $rapat->tanggal . ".pdf",
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Simpan error ke log Laravel
             Log::error("PDF Generation Error: " . $e->getMessage());
 
@@ -319,28 +314,17 @@ class ManajemenRapatService
 
     public function generatePdfHasilKeputusan($rapatId)
     {
-        $hasil = HasilKeputusanRapat::with("agendaRapat")
-            ->where("agenda_rapat_id", $rapatId)
-            ->latest()
-            ->first();
-        $profileUser = Auth::user();
-
-        // Cleaning nomor surat untuk nama file (hilangkan karakter ilegal)
-        $nomorSuratFile = preg_replace(
-            "/[^A-Za-z0-9\-]/",
-            "-",
-            $hasil->nomor_surat,
-        );
-
+        $result = AgendaRapat::where("id", $rapatId)->where("user_id", Auth::id())->latest()->first();
+        $user = Auth::user();
         $pdf = Pdf::setOptions([
             "isRemoteEnabled" => true,
         ])
             ->loadView("administrasi.surat.hasil-keputusan.template-pdf", [
-                "hasil" => $hasil,
-                "profileUser" => $profileUser,
+                "result" => $result,
+                "user" => $user,
             ])
             ->setPaper("A4");
 
-        return $pdf->download("Keputusan-Rapat-" . $nomorSuratFile . ".pdf");
+        return $pdf->stream("Surat Keputusan Rapat-" . $result->nomor_surat . ".pdf");
     }
 }

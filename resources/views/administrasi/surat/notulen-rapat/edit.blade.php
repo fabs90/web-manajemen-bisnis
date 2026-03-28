@@ -163,7 +163,7 @@
 
 {{-- ================= SCRIPT ================= --}}
 <script>
-// SUBMIT UX (AMAN)
+// SUBMIT UX
 document.getElementById("formRapat").addEventListener("submit", function(e){
     if (!confirm("Yakin ingin menyimpan perubahan?")) {
         e.preventDefault();
@@ -183,7 +183,7 @@ document.addEventListener("click", function(e){
     }
 });
 
-// ADD ROWS (TETAP)
+// ADD ROWS
 document.getElementById("addPeserta").onclick = function(){
     document.getElementById("peserta-rapat-body").insertAdjacentHTML('beforeend', `
     <tr>

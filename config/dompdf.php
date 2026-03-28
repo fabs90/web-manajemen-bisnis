@@ -77,7 +77,7 @@ return [
          * direct class use like:
          * $dompdf = new DOMPDF();  $dompdf->load_html($htmldata); $dompdf->render(); $pdfdata = $dompdf->output();
          */
-        "chroot" => realpath(base_path()),
+        "chroot" => realpath(public_path()),
 
         /**
          * Protocol whitelist
@@ -266,7 +266,7 @@ return [
          *
          * @var bool
          */
-        "enable_remote" => false,
+        "enable_remote" => true,
 
         /**
          * List of allowed remote hosts

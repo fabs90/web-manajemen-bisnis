@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Rapat;
 
-use App\Http\Controllers\Controller;
-use App\Models\Rapat\AgendaRapat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{Auth, Log};
+use App\Http\Requests\AgendaRapatRequest;
+use App\Models\Rapat\{AgendaRapat, HasilKeputusanRapat};
+use App\Http\Controllers\Controller;
 use App\Services\ManajemenRapatService;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class ManajemenRapatController extends Controller
 {
@@ -18,29 +18,9 @@ class ManajemenRapatController extends Controller
         return view("administrasi.surat.notulen-rapat.index", compact("agendaRapat"));
     }
 
-    public function indexHasilKeputusan()
-    {
-        $hasilKeputusan = AgendaRapat::with("hasilKeputusanRapat")
-            ->where("user_id", Auth::id())
-            ->get();
-
-        return view("administrasi.surat.hasil-keputusan.index", compact("hasilKeputusan"));
-    }
-
     public function create()
     {
         return view("administrasi.surat.notulen-rapat.create");
-    }
-
-    public function createHasilKeputusan()
-    {
-        $agendaRapat = AgendaRapat::with("hasilKeputusanRapat")
-            ->where("user_id", Auth::id())
-            ->whereDoesntHave("hasilKeputusanRapat")
-            ->latest("tanggal")
-            ->get();
-
-        return view("administrasi.surat.hasil-keputusan.create", compact("agendaRapat"));
     }
 
     public function edit($rapatId)
@@ -57,12 +37,6 @@ class ManajemenRapatController extends Controller
     public function generatePdf($rapatId)
     {
         return app(ManajemenRapatService::class)->generatePdf($rapatId);
-    }
-
-    public function generatePdfHasilKeputusan($rapatId)
-    {
-        return app(ManajemenRapatService::class)
-            ->generatePdfHasilKeputusan($rapatId);
     }
 
     public function update($rapatId, Request $request)
@@ -87,13 +61,13 @@ class ManajemenRapatController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(AgendaRapatRequest $request)
     {
-        $data = $request->all();
-        $data["user_id"] = auth()->id();
+        $validatedData = $request->validated();
+        $validatedData["user_id"] = auth()->user()->id;
 
         try {
-            app(ManajemenRapatService::class)->store($data);
+            app(ManajemenRapatService::class)->store($validatedData);
 
             return redirect()
                 ->route("administrasi.rapat.index")
@@ -102,10 +76,9 @@ class ManajemenRapatController extends Controller
         } catch (\Throwable $th) {
             Log::error("Store rapat error", [
                 'message' => $th->getMessage(),
-                'payload' => $data
+                'payload' => $validatedData
             ]);
 
-            // 🎯 Filter error biar user friendly
             $message = "Gagal menambahkan agenda rapat.";
 
             if (str_contains($th->getMessage(), "Column 'nama' cannot be null")) {
@@ -115,27 +88,6 @@ class ManajemenRapatController extends Controller
             return back()
                 ->withInput()
                 ->with("error", $message);
-        }
-    }
-
-    public function storeHasilKeputusan(Request $request)
-    {
-        try {
-            app(ManajemenRapatService::class)
-                ->storeHasilKeputusan($request->all());
-
-            return redirect()
-                ->route("administrasi.rapat.hasil-keputusan.index")
-                ->with("success", "Hasil keputusan rapat berhasil ditambahkan.");
-
-        } catch (\Throwable $th) {
-            Log::error("Store hasil keputusan error", [
-                'message' => $th->getMessage()
-            ]);
-
-            return back()
-                ->withInput()
-                ->with("error", "Gagal menambahkan hasil keputusan rapat.");
         }
     }
 
@@ -158,23 +110,23 @@ class ManajemenRapatController extends Controller
         }
     }
 
-    public function destroyHasilKeputusan($id)
+    public function indexHasilKeputusan()
     {
-        try {
-            app(ManajemenRapatService::class)
-                ->destroyHasilKeputusan($id);
+        $hasilKeputusan = AgendaRapat::with("hasilKeputusanRapat")
+            ->where("user_id", Auth::id())
+            ->get();
+            
+        return view(
+            "administrasi.surat.hasil-keputusan.index",
+            compact("hasilKeputusan"),
+        );
+    }
 
-            return redirect()
-                ->route("administrasi.rapat.hasil-keputusan.index")
-                ->with("success", "Hasil keputusan rapat berhasil dihapus.");
-
-        } catch (\Throwable $th) {
-            Log::error("Delete hasil keputusan error", [
-                'message' => $th->getMessage(),
-                'id' => $id
-            ]);
-
-            return back()->with("error", "Gagal menghapus hasil keputusan rapat.");
-        }
+    public function generatePdfHasilKeputusan($rapatId)
+    {
+        $generateHasilKeputusanService = app(ManajemenRapatService::class);
+        return $generateHasilKeputusanService->generatePdfHasilKeputusan(
+            $rapatId,
+        );
     }
 }

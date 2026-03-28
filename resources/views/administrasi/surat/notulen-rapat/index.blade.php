@@ -37,8 +37,8 @@
                                 <th>Tempat</th>
                                 <th>Tanggal</th>
                                 <th>Waktu</th>
-                                <th>Pimpinan Rapat</th>
-                                <th>Notulis</th>
+                                <th>Pemimpin Rapat</th>
+                                <th>Nama Notulis</th>
                                 <th width="13%">Aksi</th>
                             </tr>
                         </thead>
@@ -53,15 +53,17 @@
                                         {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') : '-' }}
                                     </td>
                                     <td class="text-center">{{ $item->waktu ?? '-' }}</td>
-                                    <td>{{ $item->pimpinan_rapat }}</td>
-                                    <td>{{ $item->notulis ?? '-' }}</td>
+                                    <td>{{ $item->pemimpin_rapat ?? $item->pimpinan_rapat ?? '-' }}</td>
+                                    <td>{{ $item->nama_notulis ?? $item->notulis ?? '-' }}</td>
 
                                     <td class="text-center">
-                                        <a href="{{route('administrasi.rapat.edit', ['rapatId' => $item->id])}}" class="btn btn-info btn-sm">
+                                        <a href="{{ route('administrasi.rapat.edit', ['rapatId' => $item->id]) }}"
+                                            class="btn btn-info btn-sm">
                                             <i class="bi bi-pencil text-white"></i>
                                         </a>
 
-                                        <a href="{{route('administrasi.rapat.generatePdf', ['rapatId' => $item->id])}}" class="btn btn-warning btn-sm">
+                                        <a href="{{ route('administrasi.rapat.generatePdf', ['rapatId' => $item->id]) }}"
+                                            class="btn btn-warning btn-sm">
                                             <i class="bi bi-file-pdf text-white"></i>
                                         </a>
 

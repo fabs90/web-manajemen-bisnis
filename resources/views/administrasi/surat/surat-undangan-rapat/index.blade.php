@@ -103,7 +103,7 @@
                 responsive: true,
                 pageLength: 10,
                 language: {
-                    emptyTable: "Belum ada data agenda surat undangan rapat 📪"
+                    emptyTable: "Belum ada data agenda surat undangan rapat"
                 }
             });
 

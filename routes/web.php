@@ -10,24 +10,12 @@ use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
 use App\Http\Middleware\EnsureUserIsVerified; 
 
+
+
 // Halaman publik
 Route::get("/", [PageController::class, "index"]);
 
 Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
-    Route::get("/dashboard", [PageController::class, "dashboard"])->name(
-        "dashboard",
-    );
-
-    Route::get("/dashboard/chart-data", [
-        PageController::class,
-        "chartData",
-    ])->name("dashboard.chartData");
-
-    Route::get("/dashboard/get-started", [
-        PageController::class,
-        "getStarted",
-    ])->name("dashboard.getStarted");
-
     // =============================
     // 👨🏻‍🏫 GROUP: Profile
     // =============================
@@ -42,6 +30,22 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "profile.update",
         );
     });
+});
+
+Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileCompleted"])->group(function () {
+    Route::get("/dashboard", [PageController::class, "dashboard"])->name(
+        "dashboard",
+    );
+
+    Route::get("/dashboard/chart-data", [
+        PageController::class,
+        "chartData",
+    ])->name("dashboard.chartData");
+
+    Route::get("/dashboard/get-started", [
+        PageController::class,
+        "getStarted",
+    ])->name("dashboard.getStarted");
 
     // =============================
     // 📘 GROUP: KEUANGAN
@@ -282,21 +286,6 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
     });
 
     // =============================
-    // 👤 GROUP: PROFILE
-    // =============================
-    Route::prefix("profile")->group(function () {
-        Route::get("/", [ProfileController::class, "edit"])->name(
-            "profile.edit",
-        );
-        Route::patch("/", [ProfileController::class, "update"])->name(
-            "profile.update",
-        );
-        Route::delete("/", [ProfileController::class, "destroy"])->name(
-            "profile.destroy",
-        );
-    });
-
-    // =============================
     // 🛣️ GROUP: Administrasi Surat
     // =============================
     Route::prefix("dashboard/administrasi/surat")->group(function () {
@@ -504,7 +493,7 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
         ])->name("administrasi.surat-undangan-rapat.destroy");
 
         // Rapat
-        Route::get("/rapat/", [ManajemenRapatController::class, "index"])->name(
+        Route::get("/rapat", [ManajemenRapatController::class, "index"])->name(
             "administrasi.rapat.index",
         );
 
@@ -544,25 +533,10 @@ Route::middleware(["web", "auth", "ensureUserIsVerified"])->group(function () {
             "indexHasilKeputusan",
         ])->name("administrasi.rapat.hasil-keputusan.index");
 
-        Route::get("/rapat/hasil-keputusan/create", [
-            ManajemenRapatController::class,
-            "createHasilKeputusan",
-        ])->name("administrasi.rapat.hasil-keputusan.create");
-
         Route::get("/rapat/hasil-keputusan/{hasilKeputusanId}/generate", [
             ManajemenRapatController::class,
             "generatePdfHasilKeputusan",
         ])->name("administrasi.rapat.hasil-keputusan.generatePdf");
-
-        Route::post("/rapat/hasil-keputusan", [
-            ManajemenRapatController::class,
-            "storeHasilKeputusan",
-        ])->name("administrasi.rapat.hasil-keputusan.store");
-
-        Route::delete("/rapat/hasil-keputusan/{hasilKeputusanId}", [
-            ManajemenRapatController::class,
-            "destroyHasilKeputusan",
-        ])->name("administrasi.rapat.hasil-keputusan.destroy");
 
         // Surat Pesanan Pembelian (SPP/PO)
         Route::get("/surat-pesanan-pembelian", [
