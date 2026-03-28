@@ -46,7 +46,12 @@
                         <td>c. Perusahaan:</td>
                         <td>
                             <input type="text" name="perusahaan"
-                                class="form-control @error('perusahaan') is-invalid @enderror">
+                                class="form-control mb-2 @error('perusahaan') is-invalid @enderror"
+                                placeholder="Nama Perusahaan">
+
+                            <input type="text" name="jabatan"
+                                class="form-control @error('jabatan') is-invalid @enderror"
+                                placeholder="Jabatan">
                         </td>
                     </tr>
 

@@ -41,7 +41,7 @@
                     <table class="table table-bordered">
                         <thead class="table-light text-center">
                             <tr>
-                                <th colspan="2">AGENDA RAPAT & NOTULEN RAPAT</th>
+                                <th colspan="2">NOTULEN RAPAT</th>
                             </tr>
                         </thead>
 
@@ -98,8 +98,8 @@
                         <tr>
                             <td>Nama Pemimpin Rapat</td>
                             <td>
-                                <input type="text" name="pemimpin_rapat"
-                                    class="form-control @error('pemimpin_rapat') is-invalid @enderror" required>
+                                <input type="text" name="pimpinan_rapat"
+                                    class="form-control @error('pimpinan_rapat') is-invalid @enderror" required>
                             </td>
                         </tr>
 

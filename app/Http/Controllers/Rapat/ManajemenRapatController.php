@@ -13,11 +13,9 @@ class ManajemenRapatController extends Controller
 {
     public function index()
     {
-        $agendaRapat = AgendaRapat::where("user_id", auth()->user()->id)->get();
-        return view(
-            "administrasi.surat.notulen-rapat.index",
-            compact("agendaRapat"),
-        );
+        $agendaRapat = AgendaRapat::where("user_id", auth()->id())->get();
+
+        return view("administrasi.surat.notulen-rapat.index", compact("agendaRapat"));
     }
 
     public function create()
@@ -32,33 +30,34 @@ class ManajemenRapatController extends Controller
             "pesertaRapat",
             "tindakLanjutRapat",
         ])->findOrFail($rapatId);
+
         return view("administrasi.surat.notulen-rapat.edit", compact("rapat"));
     }
 
     public function generatePdf($rapatId)
     {
-        $agendaJanjiTemuService = app(ManajemenRapatService::class);
-        return $agendaJanjiTemuService->generatePdf($rapatId);
+        return app(ManajemenRapatService::class)->generatePdf($rapatId);
     }
 
     public function update($rapatId, Request $request)
     {
-        $validatedData = $request->all();
         try {
-            $manajemenRapatServices = app(ManajemenRapatService::class);
-            $manajemenRapatServices->update($rapatId, $validatedData);
+            app(ManajemenRapatService::class)
+                ->update($rapatId, $request->all());
 
             return redirect()
                 ->route("administrasi.rapat.edit", $rapatId)
                 ->with("success", "Agenda rapat berhasil diperbarui.");
+
         } catch (\Throwable $th) {
-            Log::error("Gagal memperbarui agenda rapat: " . $th->getMessage());
+            Log::error("Update rapat error", [
+                'message' => $th->getMessage(),
+                'id' => $rapatId
+            ]);
+
             return back()
                 ->withInput()
-                ->with(
-                    "error",
-                    "Gagal memperbarui agenda rapat: " . $th->getMessage(),
-                );
+                ->with("error", "Gagal memperbarui agenda rapat.");
         }
     }
 
@@ -68,38 +67,46 @@ class ManajemenRapatController extends Controller
         $validatedData["user_id"] = auth()->user()->id;
 
         try {
-            $manajemenRapatServices = app(ManajemenRapatService::class);
-            $manajemenRapatServices->store($validatedData);
+            app(ManajemenRapatService::class)->store($validatedData);
 
             return redirect()
                 ->route("administrasi.rapat.index")
                 ->with("success", "Agenda rapat berhasil ditambahkan.");
+
         } catch (\Throwable $th) {
-            Log::error("Gagal menambahkan agenda rapat: " . $th->getMessage());
+            Log::error("Store rapat error", [
+                'message' => $th->getMessage(),
+                'payload' => $validatedData
+            ]);
+
+            $message = "Gagal menambahkan agenda rapat.";
+
+            if (str_contains($th->getMessage(), "Column 'nama' cannot be null")) {
+                $message = "Nama peserta rapat wajib diisi.";
+            }
+
             return back()
                 ->withInput()
-                ->with(
-                    "error",
-                    "Gagal menambahkan agenda rapat: " . $th->getMessage(),
-                );
+                ->with("error", $message);
         }
     }
 
     public function destroy($id)
     {
         try {
-            $manajemenRapatServices = app(ManajemenRapatService::class);
-            $manajemenRapatServices->destroy($id);
+            app(ManajemenRapatService::class)->destroy($id);
 
             return redirect()
                 ->route("administrasi.rapat.index")
                 ->with("success", "Agenda rapat berhasil dihapus.");
+
         } catch (\Throwable $th) {
-            Log::error("Gagal menghapus agenda rapat: " . $th->getMessage());
-            return back()->with(
-                "error",
-                "Gagal menghapus agenda rapat: " . $th->getMessage(),
-            );
+            Log::error("Delete rapat error", [
+                'message' => $th->getMessage(),
+                'id' => $id
+            ]);
+
+            return back()->with("error", "Gagal menghapus agenda rapat.");
         }
     }
 
@@ -108,12 +115,12 @@ class ManajemenRapatController extends Controller
         $hasilKeputusan = AgendaRapat::with("hasilKeputusanRapat")
             ->where("user_id", Auth::id())
             ->get();
+            
         return view(
             "administrasi.surat.hasil-keputusan.index",
             compact("hasilKeputusan"),
         );
     }
-
 
     public function generatePdfHasilKeputusan($rapatId)
     {
@@ -122,5 +129,4 @@ class ManajemenRapatController extends Controller
             $rapatId,
         );
     }
-
 }

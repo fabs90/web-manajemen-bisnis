@@ -20,9 +20,9 @@
         @endif
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <strong>DATA AGENDA RAPAT</strong>
+                <strong>DATA NOTULEN RAPAT</strong>
                 <a href="{{ route('administrasi.rapat.create') }}" class="btn btn-light btn-sm">
-                    <i class="fa fa-plus me-1"></i> Tambah Agenda Rapat
+                    <i class="fa fa-plus me-1"></i> Tambah Notulen Rapat
                 </a>
             </div>
 
@@ -53,8 +53,8 @@
                                         {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') : '-' }}
                                     </td>
                                     <td class="text-center">{{ $item->waktu ?? '-' }}</td>
-                                    <td>{{ $item->pemimpin_rapat }}</td>
-                                    <td>{{ $item->nama_notulis ?? '-' }}</td>
+                                    <td>{{ $item->pemimpin_rapat ?? $item->pimpinan_rapat ?? '-' }}</td>
+                                    <td>{{ $item->nama_notulis ?? $item->notulis ?? '-' }}</td>
 
                                     <td class="text-center">
                                         <a href="{{ route('administrasi.rapat.edit', ['rapatId' => $item->id]) }}"
