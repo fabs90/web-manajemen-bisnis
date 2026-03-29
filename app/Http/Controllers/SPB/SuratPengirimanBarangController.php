@@ -28,22 +28,35 @@ class SuratPengirimanBarangController extends Controller
             compact("suratPengirimanBarang"),
         );
     }
+    public function createTransaksiKeluar()
+    {
+        $dataSpp = PesananPembelian::with([
+            "supplier",
+            "pesananPembelianDetail",
+        ])
+            ->where("user_id", auth()->id())
+            ->where('jenis', 'transaksi_keluar')
+            ->whereNotNull("supplier_id")
+            ->whereDoesntHave("suratPengirimanBarang")
+            ->latest()
+            ->get();
 
-    public function create()
+        return view('administrasi.surat.surat-pengiriman-barang.create-transaksi-keluar', compact('dataSpp'));
+    }
+
+    public function createTransaksiMasuk()
     {
         $dataSpp = PesananPembelian::with([
             "pelanggan",
             "pesananPembelianDetail",
         ])
             ->where("user_id", auth()->id())
+            ->where("jenis", "transaksi_masuk")
+            ->whereNotNull("pelanggan_id")
             ->whereDoesntHave("suratPengirimanBarang")
             ->latest()
             ->get();
-
-        return view(
-            "administrasi.surat.surat-pengiriman-barang.create",
-            compact("dataSpp"),
-        );
+        return view('administrasi.surat.surat-pengiriman-barang.create-transaksi-masuk', compact('dataSpp'));
     }
 
     public function generatePdf($id)
@@ -78,14 +91,14 @@ class SuratPengirimanBarangController extends Controller
         } catch (\Throwable $th) {
             Log::error(
                 "Gagal menambahkan Surat Pengiriman Barang (SPB): " .
-                    $th->getMessage(),
+                $th->getMessage(),
             );
             return back()
                 ->withInput()
                 ->with(
                     "error",
                     "Gagal menambahkan Surat Pengiriman Barang (SPB): " .
-                        $th->getMessage(),
+                    $th->getMessage(),
                 );
         }
     }
@@ -104,14 +117,14 @@ class SuratPengirimanBarangController extends Controller
         } catch (\Throwable $th) {
             Log::error(
                 "Gagal menghapus Surat Pengiriman Barang (SPB): " .
-                    $th->getMessage(),
+                $th->getMessage(),
             );
             return back()
                 ->withInput()
                 ->with(
                     "error",
                     "Gagal menghapus Surat Pengiriman Barang (SPB): " .
-                        $th->getMessage(),
+                    $th->getMessage(),
                 );
         }
     }

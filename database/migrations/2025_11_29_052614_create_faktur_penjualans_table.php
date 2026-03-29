@@ -11,8 +11,15 @@ return new class extends Migration {
             $table->id();
             $table
                 ->foreignId("pelanggan_id")
+                ->nullable()
                 ->constrained("pelanggan")
                 ->cascadeOnDelete();
+            $table
+                ->foreignId("supplier_id")
+                ->nullable()
+                ->constrained("pelanggan")
+                ->cascadeOnDelete();
+            $table->enum('jenis', ['transaksi_keluar', 'transaksi_masuk'])->nullable();
             $table->string("nomor_pesanan_pembelian")->unique();
             $table->date("tanggal_pesanan_pembelian");
             $table->date("tanggal_kirim_pesanan_pembelian")->nullable();
@@ -59,9 +66,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create("surat_pengiriman_barang_detail", function (
-            Blueprint $table,
-        ) {
+        Schema::create("surat_pengiriman_barang_detail", function (Blueprint $table, ) {
             $table->id();
             $table
                 ->foreignId("spb_id")
