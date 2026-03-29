@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Data Agenda Rapat | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Input Data Notulen Rapat | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container mt-4">
@@ -32,7 +32,7 @@
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
-                    FORM AGENDA RAPAT & NOTULEN RAPAT
+                    FORM NOTULEN RAPAT
                 </div>
 
                 <div class="card-body">
