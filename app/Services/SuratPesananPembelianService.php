@@ -14,16 +14,33 @@ class SuratPesananPembelianService
     {
         DB::beginTransaction();
         try {
-            $suratPesananPembelian = PesananPembelian::create([
-                "pelanggan_id" => $request->pelanggan_id,
-                "nomor_pesanan_pembelian" => $request->nomor_pesanan_pembelian,
-                "tanggal_pesanan_pembelian" =>
-                    $request->tanggal_pesanan_pembelian,
-                "tanggal_kirim_pesanan_pembelian" =>
-                    $request->tanggal_kirim_pesanan_pembelian,
-                "nama_bagian_pembelian" => $request->nama_bagian_pembelian,
-                "user_id" => auth()->id(),
-            ]);
+            if ($request['jenis'] == 'transaksi_keluar') {
+                $suratPesananPembelian = PesananPembelian::create([
+                    "jenis" => "transaksi_keluar",
+                    "pelanggan_id" => null,
+                    "supplier_id" => $request->supplier_id,
+                    "nomor_pesanan_pembelian" => $request->nomor_pesanan_pembelian,
+                    "tanggal_pesanan_pembelian" =>
+                        $request->tanggal_pesanan_pembelian,
+                    "tanggal_kirim_pesanan_pembelian" =>
+                        $request->tanggal_kirim_pesanan_pembelian,
+                    "nama_bagian_pembelian" => $request->nama_bagian_pembelian,
+                    "user_id" => auth()->id(),
+                ]);
+            } else {
+                $suratPesananPembelian = PesananPembelian::create([
+                    "jenis" => "transaksi_masuk",
+                    "pelanggan_id" => $request->pelanggan_id,
+                    "supplier_id" => null,
+                    "nomor_pesanan_pembelian" => $request->nomor_pesanan_pembelian,
+                    "tanggal_pesanan_pembelian" =>
+                        $request->tanggal_pesanan_pembelian,
+                    "tanggal_kirim_pesanan_pembelian" =>
+                        $request->tanggal_kirim_pesanan_pembelian,
+                    "nama_bagian_pembelian" => $request->nama_bagian_pembelian,
+                    "user_id" => auth()->id(),
+                ]);
+            }
             foreach ($request->detail as $item) {
                 PesananPembelianDetail::create([
                     "spp_id" => $suratPesananPembelian->id,

@@ -20,13 +20,44 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+        <div class="row mb-3">
+            <div class="col-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold">SPB dari Supplier</h5>
+                            <p class="text-muted mb-3">
+                                Catat dan kelola pengiriman barang yang diterima dari supplier ke perusahaan.
+                            </p>
+                        </div>
 
+                        <a href="{{ route('administrasi.spb.createTransaksiKeluar') }}" class="btn btn-primary w-100">
+                            + Buat SPB Supplier
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold">SPB ke Pelanggan</h5>
+                            <p class="text-muted mb-3">
+                                Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('administrasi.spb.createTransaksiMasuk') }}" class="btn btn-success w-100">
+                            + Buat SPB Pelanggan
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <strong>DAFTAR SURAT PENGIRIMAN BARANG (SPB)</strong>
-                <a href="{{ route('administrasi.spb.create') }}" class="btn btn-light btn-sm">
-                    <i class="bi bi-plus-circle"></i> Buat SPB
-                </a>
             </div>
 
             <div class="card-body">
@@ -35,6 +66,7 @@
                         <thead class="table-primary text-center">
                             <tr>
                                 <th width="5%">No</th>
+                                <th>Jenis</th>
                                 <th>Nomor SPB</th>
                                 <th>Tanggal SPB</th>
                                 <th>No. Pesanan Pembelian</th>
@@ -48,6 +80,17 @@
                             @foreach ($suratPengirimanBarang as $spb)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td>
+                                        @if ($spb->pesananPembelian?->jenis == 'transaksi_keluar')
+                                            <span class="badge bg-danger">
+                                                Supplier
+                                            </span>
+                                        @else
+                                            <span class="badge bg-success">
+                                                Pelanggan
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td class="fw-bold">{{ $spb->nomor_pengiriman_barang }}</td>
                                     <td class="text-center">
                                         {{ \Carbon\Carbon::parse($spb->tanggal_pengiriman)->format('d-m-Y') }}
@@ -56,7 +99,11 @@
                                         {{ $spb->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}
                                     </td>
                                     <td>
-                                        {{ $spb->pesananPembelian?->pelanggan?->nama ?? '-' }}
+                                        @if ($spb->pesananPembelian?->jenis == 'transaksi_keluar')
+                                            {{ $spb->pesananPembelian->supplier->nama ?? '-' }}
+                                        @else
+                                            {{ $spb->pesananPembelian->pelanggan->nama ?? '-' }}
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         <span class="badge bg-{{ $spb->keadaan == 'baik' ? 'success' : 'warning' }}">

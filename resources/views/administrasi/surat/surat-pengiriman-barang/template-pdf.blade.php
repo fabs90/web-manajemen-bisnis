@@ -120,8 +120,18 @@
     {{-- Tujuan --}}
     <p class="mb-3">
         Kepada Yth.<br>
-        <strong>{{ $data->pesananPembelian->pelanggan->nama ?? '-' }}</strong><br>
-        {{ $data->pesananPembelian->pelanggan->alamat ?? '-' }}
+        <strong>
+            @if ($data->pesananPembelian->jenis == 'transaksi_keluar')
+                {{ $data->pesananPembelian->supplier->nama ?? '-' }}
+            @else
+                {{ $data->pesananPembelian->pelanggan->nama ?? '-' }}
+            @endif
+        </strong><br>
+        @if ($data->pesananPembelian->jenis == 'transaksi_keluar')
+            {{ $data->pesananPembelian->supplier->alamat ?? '-' }}
+        @else
+            {{ $data->pesananPembelian->pelanggan->alamat ?? '-' }}
+        @endif
     </p>
 
     <p class="mb-4">
