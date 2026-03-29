@@ -1,200 +1,217 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPB - {{ $data->nomor_pengiriman_barang ?? $data->id }}</title>
+    <title>Surat Pengiriman Barang - {{ $data->nomor_pengiriman_barang }}</title>
     <style>
         body {
-            font-family: "DejaVu Sans", "Arial", sans-serif;
-            font-size: 11pt;
-            color: #2d2d2d;
-            margin: 0;
-            padding: 30px 40px;
-            background: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
         }
-        .container { max-width: 800px; margin: 0 auto; }
-        table { width: 100%; border-collapse: collapse; }
-        .no-border { border: none !important; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .fw-bold { font-weight: bold; }
-        .mb-1 { margin-bottom: 4px; }
-        .mb-2 { margin-bottom: 8px; }
-        .mb-3 { margin-bottom: 16px; }
-        .mb-4 { margin-bottom: 24px; }
-        .mt-4 { margin-top: 24px; }
-        .bordered { border: 2px solid #1e3a8a; padding: 20px; border-radius: 8px; }
-        .header-title {
-            font-size: 20pt;
-            color: #1e3a8a;
-            letter-spacing: 2px;
-            margin: 0;
-        }
-        .info-label { font-weight: bold; width: 180px; }
-        .table-main th {
-            background: #1e3a8a;
-            color: white;
-            padding: 12px 8px;
+
+        .fw-bold {
             font-weight: bold;
         }
-        .table-main td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .table-main tbody tr:last-child td { border-bottom: 2px solid #1e3a8a; }
-        .total-row {
-            background: #eef2ff;
-            font-size: 13pt;
-        }
-        .signature-box {
-            margin-top: 50px;
+
+        .text-center {
             text-align: center;
         }
-        .signature-line {
-            border-top: 1px solid #333;
-            width: 220px;
-            margin: 60px auto 8px auto;
-            padding-top: 5px;
+
+        .text-right {
+            text-align: right;
         }
-        .bg-header {
-            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
-            color: white;
-            padding: 12px;
-            border-radius: 6px 6px 0 0;
-            margin: -40px -40px 30px -40px;
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        .table-no-border {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table-no-border td {
+            border: none;
+            padding: 2px 0;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 25px;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .line {
+            border-bottom: 3px solid #000;
+            margin: 10px 0 15px;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
 
-        <!-- Kop Surat -->
-        <table class="text-center no-border mb-4">
-            <tr>
-                <td class="fw-bold" style="font-size: 22px; color: #1e3a8a;">
-                    {{ strtoupper($profileUser->name ?? 'NAMA PERUSAHAAN') }}
-                </td>
-            </tr>
-            <tr>
-                <td style="font-size: 12pt;">
-                    {{ $profileUser->alamat ?? '-' }}
-                </td>
-            </tr>
-            <tr>
-                <td style="font-size: 11pt; color: #555;">
-                    {{ $profileUser->email ?? 'email@perusahaan.com' }} |
-                    {{ $profileUser->nomor_telepon ?? '-' }}
-                </td>
-            </tr>
-        </table>
-
-        <!-- Header Biru -->
-        <div class="bg-header text-center">
-            <h1 class="header-title">SURAT PENGIRIMAN BARANG</h1>
-        </div>
-
-        <!-- Informasi SPB -->
-        @php
-            $nomorFormatted = str_pad($data->id, 3, '0', STR_PAD_LEFT);
-            $bulan = date('m', strtotime($data->created_at ?? now()));
-            $tahun = date('Y', strtotime($data->created_at ?? now()));
-            $tanggalKirim = $data->tanggal_terima ? \Carbon\Carbon::parse($data->tanggal_terima)->format('d/m/Y') : '-';
-        @endphp
-
-        <table class="mb-4 no-border" style="font-size: 11pt;">
-            <tr>
-                <td class="info-label">Nomor SPB</td>
-                <td>: <strong>{{ $nomorFormatted }}/SPB/{{ $profileUser->name }}/{{ $bulan }}/{{ $tahun }}</strong></td>
-            </tr>
-            <tr>
-                <td class="info-label">Tanggal</td>
-                <td>: {{ \Carbon\Carbon::parse($data->created_at ?? now())->format('d F Y') }}</td>
-            </tr>
-            <tr>
-                <td class="info-label">Kepada</td>
-                <td>: {{ $data->pesananPembelian->pelanggan->nama ?? 'Nama Pelanggan' }}</td>
-            </tr>
-            <tr>
-                <td class="info-label">Alamat</td>
-                <td>: {{ $data->pesananPembelian->pelanggan->alamat ?? 'Alamat Pelanggan' }}</td>
-            </tr>
-            <tr>
-                <td class="info-label">J. Melalui</td>
-                <td>: {{ $data->jenis_pengiriman ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="info-label">Barang diterima pada</td>
-                <td>: {{ $tanggalKirim }}</td>
-            </tr>
-            <tr>
-                <td class="info-label">Keadaan</td>
-                <td>: {{ ucfirst($data->keadaan ?? 'baik') }}</td>
-            </tr>
-            <tr>
-                <td class="info-label">Keterangan</td>
-                <td>: {{ $data->keterangan ?? '-' }}</td>
-            </tr>
-        </table>
-
-        <!-- Tabel Barang -->
-        <table class="table-main" cellspacing="0">
-            <thead>
-                <tr>
-                    <th width="5%">No</th>
-                    <th width="20%">Kuantitas</th>
-                    <th width="40%">Nama Barang</th>
-                    <th width="15%">Harga/Kemas</th>
-                    <th width="20%">Rp.</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $total = 0; @endphp
-                @foreach($data->suratPengirimanBarangDetail as $i => $item)
+    {{-- KOP SURAT --}}
+    <table class="table-no-border">
+        <tr>
+            <td width="15%">
+                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
                     @php
-                        $detail = $item->pesananPembelianDetail;
-                        $subtotal = $item->jumlah_dikirim * $detail->harga;
-                        $total += $subtotal;
+                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
+                        $logoBase64 = base64_encode(file_get_contents($logoPath));
+                        $logoMime = mime_content_type($logoPath);
                     @endphp
-                    <tr>
-                        <td class="text-center">{{ $i + 1 }}</td>
-                        <td class="text-center">{{ number_format($item->jumlah_dikirim) }}</td>
-                        <td>{{ $detail->nama_barang }}</td>
-                        <td class="text-right">Rp. {{ number_format($detail->harga, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp. {{ number_format($subtotal, 0, ',', '.') }}</td>
-                    </tr>
-                @endforeach
+                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                @endif
+            </td>
+            <td width="70%" class="text-center">
+                <div style="font-size:16px; font-weight:bold;" class="uppercase">
+                    {{ $profileUser->name ?? 'Nama Perusahaan' }}
+                </div>
+                <div style="font-size:11px;">{{ $profileUser->alamat ?? 'Alamat Perusahaan' }}</div>
+                <div style="font-size:11px;">
+                    Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email: {{ $profileUser->email ?? '-' }}
+                </div>
+            </td>
+            <td width="15%"></td>
+        </tr>
+    </table>
 
-                <!-- Total -->
-                <tr class="total-row fw-bold">
-                    <td colspan="4" class="text-right" style="padding-right: 20px;">Total</td>
-                    <td class="text-right" style="font-size: 14pt; color: #1e3a8a;">
-                        Rp. {{ number_format($total, 0, ',', '.') }}
-                    </td>
+    <div class="line"></div>
+
+    <h3 class="text-center fw-bold uppercase mb-3">SURAT PENGIRIMAN BARANG</h3>
+
+    {{-- Nomor --}}
+    @php
+        $nomorFormatted = str_pad($data->id, 3, '0', STR_PAD_LEFT);
+        $bulan = date('m', strtotime($data->created_at ?? now()));
+        $tahun = date('Y', strtotime($data->created_at ?? now()));
+        $tanggalKirim = $data->tanggal_terima ? \Carbon\Carbon::parse($data->tanggal_terima)->format('d/m/Y') : '-';
+    @endphp
+
+    <table class="table-no-border mb-4">
+        <tr>
+            <td width="60%"></td>
+            <td width="40%">
+                <strong>Nomor:</strong>
+                {{ $nomorFormatted }}/SPB/{{ $profileUser->name }}/{{ $bulan }}/{{ $tahun }}<br>
+                <strong>Tanggal:</strong>
+                {{ \Carbon\Carbon::parse($data->created_at ?? now())->format('d/m/Y') }}
+            </td>
+        </tr>
+    </table>
+
+    {{-- Tujuan --}}
+    <p class="mb-3">
+        Kepada Yth.<br>
+        <strong>{{ $data->pesananPembelian->pelanggan->nama ?? '-' }}</strong><br>
+        {{ $data->pesananPembelian->pelanggan->alamat ?? '-' }}
+    </p>
+
+    <p class="mb-4">
+        Bersama ini kami kirimkan barang dengan rincian sebagai berikut:
+    </p>
+
+    {{-- Info Tambahan --}}
+    <table class="table-no-border mb-3">
+        <tr>
+            <td width="30%">Jenis Pengiriman</td>
+            <td>: {{ $data->jenis_pengiriman ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td>Tanggal Diterima</td>
+            <td>: {{ $tanggalKirim }}</td>
+        </tr>
+        <tr>
+            <td>Keadaan</td>
+            <td>: {{ ucfirst($data->keadaan ?? 'baik') }}</td>
+        </tr>
+        <tr>
+            <td>Keterangan</td>
+            <td>: {{ $data->keterangan ?? '-' }}</td>
+        </tr>
+    </table>
+
+    {{-- Tabel Barang --}}
+    <table class="table">
+        <thead>
+            <tr class="text-center">
+                <th width="5%">No</th>
+                <th width="15%">Kuantitas</th>
+                <th width="40%">Nama Barang</th>
+                <th width="20%">Harga</th>
+                <th width="20%">Jumlah</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $total = 0; @endphp
+
+            @foreach ($data->suratPengirimanBarangDetail as $item)
+                @php
+                    $detail = $item->pesananPembelianDetail;
+                    $subtotal = $item->jumlah_dikirim * $detail->harga;
+                    $total += $subtotal;
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $item->jumlah_dikirim }}</td>
+                    <td>{{ $detail->nama_barang }}</td>
+                    <td class="text-right">Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                 </tr>
-            </tbody>
-        </table>
+            @endforeach
 
-        <!-- Tanda Tangan -->
-        <table width="100%" class="mt-4">
+            {{-- Spacer biar rapih --}}
+            @for ($i = count($data->suratPengirimanBarangDetail) + 1; $i <= 8; $i++)
+                <tr>
+                    <td>&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            @endfor
+
+            {{-- Total --}}
             <tr>
-                <td width="50%" class="text-center">
-                    <div class="signature-box">
-                        <p class="mb-3">Yang Menerima,</p>
-                        <div class="signature-line"></div>
-                        <p><strong>( {{ $data->nama_penerima ?? '_________________' }} )</strong></p>
-                    </div>
-                </td>
-                <td width="50%" class="text-center">
-                    <div class="signature-box">
-                        <p class="mb-3">Bagian Pengirim,</p>
-                        <div class="signature-line"></div>
-                        <p><strong>( {{ $data->nama_pengirim ?? '_________________' }} )</strong></p>
-                    </div>
+                <td colspan="4" class="text-right fw-bold">TOTAL</td>
+                <td class="text-right fw-bold">
+                    Rp {{ number_format($total, 0, ',', '.') }}
                 </td>
             </tr>
-        </table>
+        </tbody>
+    </table>
 
-    </div>
+    {{-- Tanda tangan --}}
+    <table width="100%" class="table-no-border" style="margin-top:50px;">
+        <tr>
+            <td width="50%" class="text-center">
+                Yang Menerima,<br><br><br><br><br>
+                <strong>( {{ $data->nama_penerima ?? '_________' }} )</strong>
+            </td>
+            <td width="50%" class="text-center">
+                Pengirim,<br><br><br><br><br>
+                <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong>
+            </td>
+        </tr>
+    </table>
+
 </body>
+
 </html>

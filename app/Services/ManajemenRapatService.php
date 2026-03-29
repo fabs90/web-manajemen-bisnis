@@ -30,7 +30,7 @@ class ManajemenRapatService
                 "pemimpin_rapat" => $data["pemimpin_rapat"],
                 "keputusan_rapat" => $data["keputusan_rapat"],
                 "nama_kota" => $data["nama_kota"],
-                "nama_notulis" => $data["notulis"],
+                "nama_notulis" => $data["nama_notulis"],
                 "agenda_rapat" => $data['agenda_rapat'],
                 "tanggal_rapat_berikutnya" => $data["tanggal_rapat_berikutnya"],
                 "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"],
@@ -191,10 +191,10 @@ class ManajemenRapatService
                 "tempat" => $data["tempat"],
                 "tanggal" => $data["tanggal"],
                 "waktu" => $data["waktu"],
-                "pimpinan_rapat" => $data["pimpinan_rapat"],
+                "pemimpin_rapat" => $data["pemimpin_rapat"],
                 "keputusan_rapat" => $data["keputusan_rapat"],
                 "nama_kota" => $data["nama_kota"],
-                "notulis" => $data["notulis"],
+                "nama_notulis" => $data["nama_notulis"],
                 "tanggal_rapat_berikutnya" => $data["tanggal_rapat_berikutnya"],
                 "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"],
             ]);
@@ -325,6 +325,6 @@ class ManajemenRapatService
             ])
             ->setPaper("A4");
 
-        return $pdf->stream("Surat Keputusan Rapat-" . $result->nomor_surat . ".pdf");
+        return $pdf->download("Surat Keputusan Rapat-" . $result->nomor_surat . ".pdf");
     }
 }

@@ -116,10 +116,15 @@
                                         {{ number_format($item->pesananPembelianDetail->sum('total'), 0, ',', '.') }}
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('administrasi.spp.generatePdf', $item->id) }}"
-                                            class="btn btn-warning btn-sm" target="_blank">
-                                            <i class="bi bi-file-earmark-pdf text-white"></i>
-                                        </a>
+                                        <form class="generatePdfForm" target="_blank"
+                                            action="{{ route('administrasi.spp.generatePdf', $item->id) }}" method="get">
+                                            <button class="btn btn-warning btn-sm generatePdfBtn" type="submit">
+                                                <span class="btn-text">
+                                                    <i class="bi bi-file-earmark-pdf text-white"></i>
+                                                </span>
+                                                <span class="spinner-border spinner-border-sm d-none"></span>
+                                            </button>
+                                        </form>
                                         <form action="{{ route('administrasi.spp.destroy', $item->id) }}" method="POST"
                                             class="d-inline delete-form">
                                             @csrf
@@ -151,6 +156,18 @@
                 language: {
                     emptyTable: "Belum ada Data Pesanan Pembelian (SPP)📪"
                 }
+            });
+
+            $('.generatePdfForm').on('submit', function() {
+                let $btn = $(this).find('.generatePdfBtn');
+                $btn.prop('disabled', true);
+                $btn.find('.btn-text').addClass('d-none');
+                $btn.find('.spinner-border').removeClass('d-none');
+                setTimeout(() => {
+                    $btn.prop('disabled', false);
+                    $btn.find('.btn-text').removeClass('d-none');
+                    $btn.find('.spinner-border').addClass('d-none');
+                }, 3000); // fallback reset
             });
 
             $('.delete-form').on('submit', function(e) {

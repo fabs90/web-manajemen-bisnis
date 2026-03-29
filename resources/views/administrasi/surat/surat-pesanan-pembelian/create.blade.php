@@ -50,28 +50,28 @@
                     <h6 class="fw-bold mt-4">Informasi SPP</h6>
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label class="form-label">Nomor SPP</label>
+                            <label class="form-label">Nomor SPP<span class="text-danger">*</span></label>
                             <input type="text" name="nomor_pesanan_pembelian" class="form-control" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Tanggal SPP</label>
+                            <label class="form-label">Tanggal SPP<span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_pesanan_pembelian" class="form-control" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Rencana Tanggal Kirim</label>
+                            <label class="form-label">Rencana Tanggal Kirim<span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_kirim_pesanan_pembelian" class="form-control" required>
                         </div>
                     </div>
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label class="form-label">Nama Bagian Pembelian</label>
+                            <label class="form-label">Nama Bagian Pembelian<span class="text-danger">*</span></label>
                             <input type="text" name="nama_bagian_pembelian" class="form-control" required>
                         </div>
                     </div>
 
                     {{-- DETAIL BARANG --}}
-                    <h6 class="fw-bold">Detail Barang</h6>
+                    <h6 class="fw-bold">Detail Barang<span class="text-danger">*</span></h6>
 
                     <table class="table table-bordered align-middle text-center" id="table-detail">
                         <thead class="table-light">

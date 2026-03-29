@@ -141,11 +141,16 @@
                                         @else
                                             <span class="text-muted">Tidak ada detail</span>
                                         @endif
-                                        <a href="{{ route('administrasi.spb.generatePdf', $spb->id) }}"
-                                            class="btn btn-warning btn-sm" target="_blank" title="Download PDF SPB">
-                                            <i class="bi bi-file-earmark-pdf"></i>
-                                        </a>
 
+                                        <form id="generatePdfForm"
+                                            action="{{ route('administrasi.spb.generatePdf', $spb->id) }}" method="get">
+                                            <button class="btn btn-warning btn-sm generatePdfBtn" type="submit">
+                                                <span class="btn-text">
+                                                    <i class="bi bi-file-earmark-pdf text-white"></i>
+                                                </span>
+                                                <span class="spinner-border spinner-border-sm d-none"></span>
+                                            </button>
+                                        </form>
                                         {{-- Hapus --}}
                                         <form action="{{ route('administrasi.spb.destroy', $spb->id) }}" method="POST"
                                             class="d-inline delete-form">
@@ -177,6 +182,18 @@
                     emptyTable: "Tidak ada data yang tersedia"
                 }
             });
+
+            $('#generatePdfForm').on('submit', function(e) {
+                let $btn = $(this).find('.generatePdfBtn');
+                $btn.prop('disabled', true);
+                $btn.find('.btn-text').addClass('d-none');
+                $btn.find('.spinner-border').removeClass('d-none');
+                setTimeout(() => {
+                    $btn.prop('disabled', false);
+                    $btn.find('.btn-text').removeClass('d-none');
+                    $btn.find('.spinner-border').addClass('d-none');
+                }, 3000);
+            })
 
             // Konfirmasi hapus dengan SweetAlert2
             $('.delete-form').on('submit', function(e) {

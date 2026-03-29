@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\SPP\PesananPembelian;
-use App\Models\SPP\PesananPembelianDetail;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Str;
+use App\Models\SPP\{PesananPembelian, PesananPembelianDetail};
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SuratPesananPembelianService
 {
@@ -77,9 +76,8 @@ class SuratPesananPembelianService
             )->setPaper("A4", "portrait");
 
             return $pdf->download(
-                "surat-pesanan-pembelian-" .
-                    $data->nomor_pesanan_pembelian .
-                    ".pdf",
+                Str::slug("surat-pesanan-pembelian-" .
+                    $data->nomor_pesanan_pembelian) . ".pdf",
             );
         } catch (Exception $e) {
             throw $e;

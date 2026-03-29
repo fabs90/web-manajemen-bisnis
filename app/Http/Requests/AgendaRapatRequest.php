@@ -22,7 +22,7 @@ class AgendaRapatRequest extends FormRequest
             'tanggal' => 'required|date',
             'waktu' => 'required|date_format:H:i',
             'pemimpin_rapat' => 'required|string|max:255',
-            'notulis' => 'required|string|max:255',
+            'nama_notulis' => 'required|string|max:255',
 
             // ================= PESERTA =================
             'peserta_nama' => 'required|array|min:1',

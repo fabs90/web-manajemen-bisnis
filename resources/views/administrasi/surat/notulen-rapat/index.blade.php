@@ -53,29 +53,38 @@
                                         {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') : '-' }}
                                     </td>
                                     <td class="text-center">{{ $item->waktu ?? '-' }}</td>
-                                    <td>{{ $item->pemimpin_rapat ?? $item->pimpinan_rapat ?? '-' }}</td>
-                                    <td>{{ $item->nama_notulis ?? $item->notulis ?? '-' }}</td>
+                                    <td>{{ $item->pemimpin_rapat ?? ($item->pemimpin_rapat ?? '-') }}</td>
+                                    <td>{{ $item->nama_notulis ?? ($item->nama_notulis ?? '-') }}</td>
 
-                                    <td class="text-center">
-                                        <a href="{{ route('administrasi.rapat.edit', ['rapatId' => $item->id]) }}"
-                                            class="btn btn-info btn-sm">
-                                            <i class="bi bi-pencil text-white"></i>
-                                        </a>
+                                    <td class="text-center text-nowrap">
+                                        <div class="d-flex justify-content-center gap-1 flex-nowrap">
 
-                                        <a href="{{ route('administrasi.rapat.generatePdf', ['rapatId' => $item->id]) }}"
-                                            class="btn btn-warning btn-sm">
-                                            <i class="bi bi-file-pdf text-white"></i>
-                                        </a>
+                                            <a href="{{ route('administrasi.rapat.edit', ['rapatId' => $item->id]) }}"
+                                                class="btn btn-info btn-sm">
+                                                <i class="bi bi-pencil text-white"></i>
+                                            </a>
 
-                                        <form action="{{ route('administrasi.rapat.destroy', ['rapatId' => $item->id]) }}"
-                                            method="POST" class="d-inline" onsubmit="return confirm('Hapus data ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                            <form
+                                                action="{{ route('administrasi.rapat.generatePdf', ['rapatId' => $item->id]) }}"
+                                                method="GET" target="_blank" class="d-inline formGenerateAgendaRapatPdf">
+                                                <button class="btn btn-warning btn-sm generateAgendaRapatBtn"
+                                                    type="submit">
+                                                    <i class="bi bi-file-pdf text-white"></i>
+                                                </button>
+                                            </form>
 
+                                            <form
+                                                action="{{ route('administrasi.rapat.destroy', ['rapatId' => $item->id]) }}"
+                                                method="POST" class="d-inline formDeleteAgendaRapat"
+                                                onsubmit="return confirm('Hapus data ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-danger btn-sm deleteAgendaRapatBtn">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -100,6 +109,22 @@
                 language: {
                     emptyTable: "Belum ada agenda rapat📪"
                 }
+            });
+
+            $('#formGenerateAgendaRapatPdf').on('submit', function(e) {
+                const $btn = $('#generateAgendaRapatBtn');
+                $btn.prop('disabled', true)
+                    .html(
+                        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
+                    );
+            });
+
+            $('#formDeleteAgendaRapat').on('submit', function(e) {
+                const $btn = $('#deleteAgendaRapatBtn');
+                $btn.prop('disabled', true)
+                    .html(
+                        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+                    );
             });
         });
     </script>

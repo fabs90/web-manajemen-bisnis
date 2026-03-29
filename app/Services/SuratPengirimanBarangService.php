@@ -2,13 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Faktur\FakturPenjualan;
-use App\Models\SPB\SuratPengirimanBarang;
-use App\Models\SPB\SuratPengirimanBarangDetail;
+use Illuminate\Support\Facades\{Auth, DB, Log};
+use App\Models\SPB\{SuratPengirimanBarang, SuratPengirimanBarangDetail};
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SuratPengirimanBarangService
 {
@@ -61,7 +58,6 @@ class SuratPengirimanBarangService
             ])
                 ->where("user_id", auth()->id())
                 ->findOrFail($id);
-
             $profileUser = Auth::user();
 
             $pdf = Pdf::loadView(
@@ -70,12 +66,16 @@ class SuratPengirimanBarangService
             )->setPaper("A4", "portrait");
 
             return $pdf->download(
-                "SPB-" . $data->nomor_pengiriman_barang . ".pdf",
+                Str::slug("Surat Pengiriman Barang-" .
+                    $data->nomor_pengiriman_barang)
+                . ".pdf",
             );
         } catch (\Exception $e) {
             Log::error("Error generate SPB PDF", [
                 "id" => $id,
                 "error" => $e->getMessage(),
+                "line" => $e->getLine(),
+                "file" => $e->getFile(),
             ]);
 
             return redirect()

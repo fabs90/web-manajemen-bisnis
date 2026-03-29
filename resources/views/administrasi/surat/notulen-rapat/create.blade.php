@@ -98,16 +98,16 @@
                         <tr>
                             <td>Nama Pemimpin Rapat</td>
                             <td>
-                                <input type="text" name="pimpinan_rapat"
-                                    class="form-control @error('pimpinan_rapat') is-invalid @enderror" required>
+                                <input type="text" name="pemimpin_rapat"
+                                    class="form-control @error('pemimpin_rapat') is-invalid @enderror" required>
                             </td>
                         </tr>
 
                         <tr>
                             <td>Nama Notulis</td>
                             <td>
-                                <input type="text" name="notulis"
-                                    class="form-control @error('notulis') is-invalid @enderror" required>
+                                <input type="text" name="nama_notulis"
+                                    class="form-control @error('nama_notulis') is-invalid @enderror" required>
                             </td>
                         </tr>
                     </table>
