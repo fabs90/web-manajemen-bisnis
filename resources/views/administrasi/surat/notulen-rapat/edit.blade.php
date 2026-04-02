@@ -59,12 +59,12 @@
                         <tr>
                             <td>Pimpinan Rapat</td>
                             <td><input type="text" name="pemimpin_rapat"
-                                    value="{{ old('pemimpin_rapat', $rapat->pemimpin_rapat) }}" class="form-control"></td>
+                                    value="{{ old('pemimpin_rapat', $rapat->pimpinan_rapat) }}" class="form-control"></td>
                         </tr>
                         <tr>
                             <td>Notulis</td>
                             <td><input type="text" name="nama_notulis"
-                                    value="{{ old('nama_notulis', $rapat->nama_notulis) }}" class="form-control"></td>
+                                    value="{{ old('nama_notulis', $rapat->notulis) }}" class="form-control"></td>
                         </tr>
                     </table>
 

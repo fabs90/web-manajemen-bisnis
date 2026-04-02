@@ -1,110 +1,190 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
+    <title>Faktur Penjualan - {{ $faktur->kode_faktur }}</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; }
-        .table-bordered td, .table-bordered th {
-            border: 1px solid #000; padding: 6px;
+        @page { margin: 0.8cm; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #1a1a1a;
+            margin: 0;
+            padding: 0;
         }
-        .no-border td { border: none !important; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        /* Border Styling */
+        .border-all th, .border-all td {
+            border: 1px solid #333;
+            padding: 8px 6px;
+            word-wrap: break-word;
+            vertical-align: middle;
+        }
+
+        /* Utility Classes */
+        .table-no-border td { border: none !important; padding: 3px 0; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .mt-2 { margin-top: 10px; }
-        .mt-4 { margin-top: 25px; }
+        .fw-bold { font-weight: bold; }
+        .text-uppercase { text-transform: uppercase; }
+
+        /* Design Elements */
+        .line {
+            border-bottom: 2px solid #000;
+            margin: 10px 0 20px;
+        }
+
+        .title-faktur {
+            font-size: 20px;
+            letter-spacing: 6px;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .header-bg {
+            background-color: #f2f2f2;
+        }
+
+        .info-box {
+            margin-bottom: 25px;
+        }
+
+        .footer-signature {
+            margin-top: 60px;
+            page-break-inside: avoid;
+        }
     </style>
 </head>
+
 <body>
 
-    <table class="text-center no-border mb-4">
+    {{-- KOP SURAT --}}
+    <table class="table-no-border" style="margin-bottom: 5px;">
         <tr>
-            <td class="fw-bold" style="font-size: 22px; ">
-                {{ strtoupper($profileUser->name ?? 'NAMA PERUSAHAAN') }}
+            <td width="15%">
+                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
+                    @php
+                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
+                        if(file_exists($logoPath)){
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                            $logoMime = mime_content_type($logoPath);
+                        }
+                    @endphp
+                    @if(isset($logoBase64))
+                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:65px;">
+                    @endif
+                @endif
             </td>
-        </tr>
-        <tr>
-            <td style="font-size: 12pt;">
-                {{ $profileUser->alamat ?? '-' }}
+            <td width="70%" class="text-center" style="vertical-align: middle;">
+                {{-- Nama Perusahaan Capslock & Solid --}}
+                <div style="font-size:20px; font-weight:bold; color: #000; text-transform: uppercase; letter-spacing: 1px;">
+                    {{ $profileUser->name ?? 'NAMA PERUSAHAAN' }}
+                </div>
+                <div style="font-size:10px; color: #333;">{{ $profileUser->alamat ?? 'Alamat Lengkap Perusahaan' }}</div>
+                <div style="font-size:10px; color: #333;">Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email: {{ $profileUser->email ?? '-' }}</div>
             </td>
-        </tr>
-        <tr>
-            <td style="font-size: 11pt; color: #555;">
-                {{ $profileUser->email ?? 'email@perusahaan.com' }} |
-                {{ $profileUser->nomor_telepon ?? '-' }}
-            </td>
+            <td width="15%"></td>
         </tr>
     </table>
 
-    <h4 class="text-center">FAKTUR</h4>
-    <p class="text-center">
-        Nomor: {{ $faktur->kode_faktur }}
-    </p>
+    <div class="line"></div>
 
-    <table class="no-border" style="margin-top: 10px;">
-        <tr>
-            <td width="20%">Kepada</td>
-            <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
-            <td width="20%">Nomor Pesanan</td>
-            <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td>Alamat</td>
-            <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
-            <td>Nomor SPB</td>
-            <td>: {{ $faktur->suratPengirimanBarang->nomor_pengiriman_barang }}</td>
-        </tr>
-        <tr>
-            <td></td><td></td>
-            <td>Tanggal</td>
-            <td>: {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d/m/Y') }}</td>
-        </tr>
-    </table>
+    {{-- JUDUL & NOMOR --}}
+    {{-- <div class="text-center" style="margin-bottom: 25px;">
+        <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
+        <div style="font-size: 12px; color: #000;">Nomor Dokumen: <span class="fw-bold">{{ $faktur->kode_faktur }}</span></div>
+    </div> --}}
+   
+<div class="text-center" style="margin-bottom: 25px;">
+    <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
+    {{-- Format: (Nomor Urut)/F/(Nama Perusahaan)/(Bulan)/(Tahun) --}}
+    <div style="font-size: 12px; color: #000;">
+        Nomor: <span class="fw-bold">{{ $faktur->kode_faktur }}/F/{{ str_replace(' ', '', strtoupper($profileUser->name ?? 'DIGITRANS')) }}/{{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('m/Y') }}</span>
+    </div>
+</div>
 
-    <table class="table-bordered mt-2">
-        <tr class="text-center">
-            <th>No</th>
-            <th>JUMLAH YANG DIPESAN</th>
-            <th>JUMLAH YANG DIKIRIM</th>
-            <th>NAMA BARANG</th>
-            <th>HARGA/KEMAS</th>
-            <th>JUMLAH</th>
-        </tr>
-
-        @php $no=1; $grandTotal = 0; @endphp
-
-        @foreach($faktur->fakturPenjualanDetail as $item)
-            @php
-                $qty = $item->suratPengirimanBarangDetail->pesananPembelianDetail->kuantitas ?? 0;
-                $grandTotal += $item->total;
-            @endphp
+    {{-- INFORMASI KEPADA & REFERENSI --}}
+    <div class="info-box">
+        <table class="table-no-border">
             <tr>
-                <td class="text-center">{{ $no++ }}</td>
-                <td class="text-center">{{ $qty }} K</td>
-                <td class="text-center">{{ $qty }} K</td>
-                <td>{{ $item->suratPengirimanBarangDetail->PesananPembelianDetail->nama_barang }}</td>
-                <td class="text-right">Rp. {{ number_format($item->harga, 0, ',', '.') }}</td>
-                <td class="text-right">Rp. {{ number_format($item->total, 0, ',', '.') }}</td>
+                <td width="12%" class="fw-bold">Kepada</td>
+                <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                <td width="18%" class="fw-bold">Nomor Pesanan</td>
+                <td width="27%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
             </tr>
-        @endforeach
+            <tr>
+                <td class="fw-bold">Alamat</td>
+                <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
+                <td class="fw-bold">Nomor SPB</td>
+                <td>: {{ $faktur->suratPengirimanBarang->nomor_pengiriman_barang }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td class="fw-bold">Tanggal</td>
+                <td>: {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->translatedFormat('d F Y') }}</td>
+            </tr>
+        </table>
+    </div>
 
-        <tr>
-            <td colspan="5" class="text-right"><b>Total</b></td>
-            <td class="text-right"><b>Rp. {{ number_format($grandTotal, 0, ',', '.') }}</b></td>
-        </tr>
+    {{-- TABEL ITEM --}}
+    <table class="border-all">
+        <thead>
+            <tr class="text-center fw-bold header-bg">
+                <th width="5%">NO</th>
+                <th width="12%">PESAN</th>
+                <th width="12%">KIRIM</th>
+                <th>DESKRIPSI BARANG</th>
+                <th width="18%">HARGA (Rp)</th>
+                <th width="18%">TOTAL (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $grandTotal = 0; @endphp
+            @foreach($faktur->fakturPenjualanDetail as $index => $item)
+                @php
+                    $qtyOrder = $item->suratPengirimanBarangDetail->pesananPembelianDetail->kuantitas ?? 0;
+                    $qtyKirim = $item->suratPengirimanBarangDetail->jumlah_dikirim ?? 0;
+                    $grandTotal += $item->total;
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td class="text-center">{{ $qtyOrder }} </td>
+                    <td class="text-center">{{ $qtyKirim }} </td>
+                    <td style="padding-left: 10px;">{{ $item->suratPengirimanBarangDetail->pesananPembelianDetail->nama_barang }}</td>
+                    <td class="text-right">{{ number_format($item->harga, 0, ',', '.') }}</td>
+                    <td class="text-right fw-bold">{{ number_format($item->total, 0, ',', '.') }}</td>
+                </tr>
+            @endforeach
+            <tr class="header-bg">
+                <td colspan="5" class="text-right fw-bold" style="padding-right: 15px;">TOTAL PEMBAYARAN</td>
+                <td class="text-right fw-bold" style="font-size: 12px;">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+            </tr>
+        </tbody>
     </table>
 
-    <p style="margin-top: 10px;">
-        Barang dikirim via: ({{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }})
-    </p>
+    <div style="margin-top: 15px; font-style: italic; color: #333;">
+        Metode Pengiriman: <span class="fw-bold text-uppercase">{{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</span>
+    </div>
 
-    <table class="no-border mt-4">
+    {{-- TANDA TANGAN (Penyesuaian Posisi) --}}
+    <table class="table-no-border footer-signature">
         <tr>
-            <td width="70%"></td>
+            <td width="60%"></td>
             <td class="text-center">
-                Mengetahui,<br>
-                Bagian Penjualan<br><br><br><br>
-                ({{ $faktur->nama_bagian_penjualan }})
+                <div style="margin-bottom: 10px;">Hormat Kami,</div>
+                <div class="fw-bold text-uppercase" style="margin-bottom: 65px;">Bagian Penjualan</div>
+                <div class="fw-bold text-uppercase" style="text-decoration: underline; font-size: 12px;">
+                    {{ $faktur->nama_bagian_penjualan ?? '....................' }}
+                </div>
+                <div style="font-size: 9px; margin-top: 5px;">(Tanda Tangan & Cap Resmi)</div>
             </td>
         </tr>
     </table>

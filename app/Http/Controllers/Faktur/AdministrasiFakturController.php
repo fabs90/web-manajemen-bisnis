@@ -14,30 +14,29 @@ use Illuminate\Support\Facades\Log;
 class AdministrasiFakturController extends Controller
 {
     public function index()
-    {
-        $fakturPenjualan = FakturPenjualan::where(
-            "user_id",
-            auth()->id(),
-        )->get();
-        return view(
-            "administrasi.surat.faktur-penjualan.index",
-            compact("fakturPenjualan"),
-        );
-    }
+{
+    $fakturPenjualan = FakturPenjualan::with([
+            'suratPengirimanBarang.pesananPembelian.pelanggan'
+        ])
+        ->where("user_id", auth()->id())
+        ->latest()
+        ->get();
+
+    return view("administrasi.surat.faktur-penjualan.index", compact("fakturPenjualan"));
+}
 
     public function create()
-    {
-        $dataSpb = SuratPengirimanBarang::with([
+{
+    $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian.pelanggan') // Filter SPB yang punya pelanggan saja
+        ->with([
             "pesananPembelian.pelanggan",
-            "suratPengirimanBarangDetail.suratPengirimanBarang",
+            "suratPengirimanBarangDetail.pesananPembelianDetail", // Sesuaikan relasi detailnya
         ])
-            ->orderBy("id", "DESC")
-            ->get();
-        return view(
-            "administrasi.surat.faktur-penjualan.create",
-            compact("dataSpb"),
-        );
-    }
+        ->orderBy("id", "DESC")
+        ->get();
+
+    return view("administrasi.surat.faktur-penjualan.create", compact("dataSpb"));
+}
 
     public function store(Request $request)
     {
