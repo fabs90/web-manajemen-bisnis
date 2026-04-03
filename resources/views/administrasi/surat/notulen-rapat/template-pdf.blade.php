@@ -3,12 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Notulen Rapat - {{ $agendaJanjiTemu->judul_rapat }}</title>
+    <title>Notulen Rapat - {{ $agendaJanjiTemu->judul_rapat ?? 'Dokumen' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.4;
             color: #000;
             margin: 0;
             padding: 0;
@@ -17,62 +17,29 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: -1px;
             table-layout: fixed;
         }
 
-        th,
-        td {
+        th, td {
             border: 1px solid #000;
             padding: 6px;
             word-wrap: break-word;
             vertical-align: top;
         }
 
-        /* Utility Classes */
         .table-no-border td {
             border: none !important;
             padding: 2px 0;
         }
 
-        .text-center {
-            text-align: center;
-        }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .bg-light { background-color: #f2f2f2; }
 
-        .text-right {
-            text-align: right;
-        }
-
-        .fw-bold {
-            font-weight: bold;
-        }
-
-        .bg-light {
-            background-color: #f2f2f2;
-        }
-
-        /* Header & Layout */
         .line {
             border-bottom: 3px solid #000;
             margin: 10px 0 15px;
-        }
-
-        .section-title {
-            margin-top: 20px;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 13px;
-            text-transform: uppercase;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 3px;
-        }
-
-        .box {
-            border: 1px solid #000;
-            padding: 10px;
-            margin-top: 5px;
-            min-height: 40px;
-            background-color: #fdfdfd;
         }
     </style>
 </head>
@@ -86,10 +53,14 @@
                 @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
                     @php
                         $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
+                        if(file_exists($logoPath)){
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                            $logoMime = mime_content_type($logoPath);
+                        }
                     @endphp
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                    @if(isset($logoBase64))
+                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                    @endif
                 @endif
             </td>
             <td width="70%" class="text-center">
@@ -104,42 +75,46 @@
     </table>
 
     <div class="line"></div>
-    <h3 class="text-center fw-bold" style="margin-bottom: 20px;">NOTULEN RAPAT</h3>
 
-    {{-- INFORMASI RAPAT --}}
-    <table class="table-no-border">
-        <tr>
-            <td width="20%">Judul Rapat</td>
-            <td width="30%">: {{ $agendaJanjiTemu->judul_rapat }}</td>
-            <td width="20%">Tempat</td>
-            <td>: {{ $agendaJanjiTemu->tempat }}</td>
-        </tr>
-        <tr>
-            <td>Tanggal</td>
-            <td>: {{ \Carbon\Carbon::parse($agendaJanjiTemu->tanggal)->translatedFormat('d F Y') }}</td>
-            <td>Pimpinan</td>
-            <td>: {{ $agendaJanjiTemu->pemimpin_rapat }}</td>
-        </tr>
-        <tr>
-            <td>Waktu</td>
-            <td>: {{ $agendaJanjiTemu->waktu }}</td>
-            <td>Notulis</td>
-            <td>: {{ $agendaJanjiTemu->nama_notulis }}</td>
+    {{-- HEADER TABEL --}}
+    <table>
+        <tr class="bg-light">
+            <td class="text-center fw-bold" style="font-size: 13px; padding: 8px;">NOTULEN RAPAT</td>
         </tr>
     </table>
 
-    {{-- PESERTA --}}
-    <div class="section-title">Daftar Hadir Peserta</div>
+    {{-- INFORMASI RAPAT --}}
     <table>
-        <thead>
-            <tr class="text-center fw-bold bg-light">
-                <th width="5%">No</th>
-                <th width="40%">Nama</th>
-                <th width="35%">Jabatan</th>
-                <th width="20%">Tanda Tangan</th>
-            </tr>
-        </thead>
-        <tbody>
+        <tr>
+            <td width="18%" style="border-right: none;">Judul Rapat</td>
+            <td width="32%" style="border-left: none;">: {{ $agendaJanjiTemu->judul_rapat }}</td>
+            <td width="15%" style="border-right: none;">Tempat</td>
+            <td width="35%" style="border-left: none;">: {{ $agendaJanjiTemu->tempat }}</td>
+        </tr>
+        <tr>
+            <td style="border-right: none;">Tanggal</td>
+            <td style="border-left: none;">: {{ \Carbon\Carbon::parse($agendaJanjiTemu->tanggal)->translatedFormat('d F Y') }}</td>
+            <td style="border-right: none;">Pimpinan</td>
+            <td style="border-left: none;">: {{ $agendaJanjiTemu->pemimpin_rapat }}</td>
+        </tr>
+        <tr>
+            <td style="border-right: none;">Waktu</td>
+            <td style="border-left: none;">: {{ $agendaJanjiTemu->waktu }}</td>
+            <td style="border-right: none;">Notulis</td>
+            <td style="border-left: none;">: {{ $agendaJanjiTemu->nama_notulis }}</td>
+        </tr>
+    </table>
+
+    {{-- DAFTAR HADIR PESERTA --}}
+    <table><tr class="bg-light"><td class="fw-bold">Daftar Hadir Peserta:</td></tr></table>
+    <table>
+        <tr class="text-center fw-bold">
+            <td width="8%">No</td>
+            <td>Nama</td>
+            <td width="30%">Jabatan</td>
+            <td width="20%">Tanda Tangan</td>
+        </tr>
+        @if(isset($agendaJanjiTemu->pesertaRapat) && count($agendaJanjiTemu->pesertaRapat) > 0)
             @foreach ($agendaJanjiTemu->pesertaRapat as $i => $peserta)
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
@@ -147,110 +122,98 @@
                     <td>{{ $peserta->jabatan }}</td>
                     <td class="text-center">
                         @if ($peserta->tanda_tangan)
-                            <img src="{{ storage_path('app/public/' . $peserta->tanda_tangan) }}" style="width: 60px;">
-                        @else
-                            -
-                        @endif
+                            <img src="{{ storage_path('app/public/' . $peserta->tanda_tangan) }}" style="height: 25px;">
+                        @else - @endif
                     </td>
                 </tr>
             @endforeach
-        </tbody>
+        @else
+            <tr><td colspan="4" class="text-center">Tidak ada data peserta</td></tr>
+        @endif
+    </table>
+
+    {{-- AGENDA RAPAT --}}
+    <table><tr class="bg-light"><td class="fw-bold">AGENDA RAPAT:</td></tr></table>
+    <table>
+        <tr>
+            <td>
+                @if(isset($agendaJanjiTemu->rapatDetails) && count($agendaJanjiTemu->rapatDetails) > 0)
+                    @foreach ($agendaJanjiTemu->rapatDetails as $i => $detail)
+                        {{ $i + 1 }}. {{ $detail->judul_agenda }}<br>
+                    @endforeach
+                @else - @endif
+            </td>
+        </tr>
     </table>
 
     {{-- PEMBAHASAN --}}
-    @if ($agendaJanjiTemu->rapatDetails && $agendaJanjiTemu->rapatDetails->count())
-        <div class="section-title">Pembahasan Rapat</div>
-        <table>
-            <thead>
-                <tr class="text-center fw-bold bg-light">
-                    <th width="5%">No</th>
-                    <th width="25%">Agenda/Topik</th>
-                    <th width="20%">Pembicara</th>
-                    <th width="50%">Isi Pembahasan</th>
+    <table><tr class="bg-light"><td class="fw-bold">PEMBAHASAN:</td></tr></table>
+    @if(isset($agendaJanjiTemu->rapatDetails) && count($agendaJanjiTemu->rapatDetails) > 0)
+        @foreach ($agendaJanjiTemu->rapatDetails as $i => $detail)
+            <table>
+                <tr>
+                    <td>
+                        <div class="fw-bold">(Agenda {{ $i + 1 }})</div>
+                        <div>Pembicara: {{ $detail->pembicara }}</div>
+                        <div style="margin-top: 5px;">{!! nl2br(e($detail->pembahasan)) !!}</div>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($agendaJanjiTemu->rapatDetails as $i => $detail)
-                    <tr>
-                        <td class="text-center">{{ $i + 1 }}</td>
-                        <td>{{ $detail->judul_agenda }}</td>
-                        <td>{{ $detail->pembicara }}</td>
-                        <td>{!! nl2br(e($detail->pembahasan)) !!}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+            </table>
+        @endforeach
     @endif
 
     {{-- KEPUTUSAN --}}
-    <div class="section-title">Keputusan Rapat</div>
-    <div class="box">
-        {!! nl2br(e($agendaJanjiTemu->keputusan_rapat)) !!}
-    </div>
+    <table><tr class="bg-light"><td class="fw-bold">KEPUTUSAN RAPAT:</td></tr></table>
+    <table>
+        <tr>
+            <td style="min-height: 50px;">{!! nl2br(e($agendaJanjiTemu->keputusan_rapat)) !!}</td>
+        </tr>
+    </table>
 
     {{-- TINDAK LANJUT --}}
-    @if ($agendaJanjiTemu->tindakLanjut && $agendaJanjiTemu->tindakLanjut->count())
-        <div class="section-title">Tindak Lanjut (Action Plan)</div>
-        <table>
-            <thead>
-                <tr class="text-center fw-bold bg-light">
-                    <th width="5%">No</th>
-                    <th>Tindakan</th>
-                    <th width="20%">Pelaksana</th>
-                    <th width="15%">Target</th>
-                    <th width="15%">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($agendaJanjiTemu->tindakLanjut as $i => $tl)
-                    <tr>
-                        <td class="text-center">{{ $i + 1 }}</td>
-                        <td>{{ $tl->tindakan }}</td>
-                        <td>{{ $tl->pelaksana }}</td>
-                        <td class="text-center">{{ \Carbon\Carbon::parse($tl->target_selesai)->format('d-m-Y') }}</td>
-                        <td class="text-center">{{ $tl->status }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-
-    {{-- RAPAT BERIKUTNYA --}}
-    @if ($agendaJanjiTemu->tanggal_rapat_berikutnya || $agendaJanjiTemu->agenda_rapat_berikutnya)
-        <div class="section-title">Rencana Rapat Berikutnya</div>
-        <table class="table-no-border">
+<table><tr class="bg-light"><td class="fw-bold">TINDAK LANJUT (ACTION PLAN):</td></tr></table>
+<table>
+    <tr class="text-center fw-bold">
+        <td width="8%">No</td>
+        <td>Tindakan</td>
+        <td width="20%">Pelaksana</td>
+        <td width="15%">Target</td>
+        <td width="15%">Status</td>
+    </tr>
+    @if(isset($agendaJanjiTemu->tindakLanjutRapat) && count($agendaJanjiTemu->tindakLanjutRapat) > 0)
+        @foreach ($agendaJanjiTemu->tindakLanjutRapat as $i => $tl)
             <tr>
-                <td width="20%">Tanggal</td>
-                <td>:
-                    {{ $agendaJanjiTemu->tanggal_rapat_berikutnya ? \Carbon\Carbon::parse($agendaJanjiTemu->tanggal_rapat_berikutnya)->translatedFormat('d F Y') : '-' }}
+                <td class="text-center">{{ $i + 1 }}</td>
+                <td>{{ $tl->tindakan }}</td>
+                <td>{{ $tl->pelaksana }}</td>
+                <td class="text-center">
+                    {{ $tl->target_selesai ? \Carbon\Carbon::parse($tl->target_selesai)->format('d-m-Y') : '-' }}
                 </td>
+                <td class="text-center">{{ $tl->status }}</td>
             </tr>
-            <tr>
-                <td>Agenda</td>
-                <td>: {{ $agendaJanjiTemu->agenda_rapat_berikutnya ?? '-' }}</td>
-            </tr>
-        </table>
+        @endforeach
+    @else
+        <tr><td colspan="5" class="text-center">Data tindak lanjut tidak ditemukan.</td></tr>
     @endif
+</table>
 
-    {{-- TANDA TANGAN --}}
-    <table class="table-no-border" style="margin-top: 50px; page-break-inside: avoid;">
+    {{-- FOOTER / TTD --}}
+    <table style="margin-top: 20px; page-break-inside: avoid;">
         <tr>
-            <td width="50%">
-                <div>{{ $agendaJanjiTemu->nama_kota ?? 'Jakarta' }},
-                    {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
+            <td width="50%" style="height: 110px;">
+                <div>{{ $agendaJanjiTemu->nama_kota ?? 'Jakarta' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
                 <div class="fw-bold">Notulis,</div>
-                <div style="margin-top: 60px;">( {{ $agendaJanjiTemu->nama_notulis }} )
-                </div>
+                <br><br><br>
+                <div>( {{ $agendaJanjiTemu->nama_notulis }} )</div>
             </td>
-            <td width="50%" class="text-center">
+            <td width="50%">
                 <br>
-                <div class="fw-bold">Pemimpin Rapat,</div>
-                <div style="margin-top: 60px;">(
-                    {{ $agendaJanjiTemu->pemimpin_rapat }} )</div>
+                <div class="fw-bold text-center">Pemimpin Rapat,</div>
+                <br><br><br>
+                <div class="text-center">( {{ $agendaJanjiTemu->pemimpin_rapat }} )</div>
             </td>
         </tr>
     </table>
 
 </body>
-
 </html>
