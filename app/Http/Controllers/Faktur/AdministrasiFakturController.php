@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Faktur;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Services\AdministrasiFakturService;
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
-use App\Models\Pelanggan;
 use App\Models\SPB\SuratPengirimanBarang;
-use App\Services\ManajemenRapatService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class AdministrasiFakturController extends Controller
 {
@@ -29,10 +27,11 @@ class AdministrasiFakturController extends Controller
     {
         $dataSpb = SuratPengirimanBarang::with([
             "pesananPembelian.pelanggan",
-            "suratPengirimanBarangDetail.suratPengirimanBarang",
+            "suratPengirimanBarangDetail",
         ])
             ->orderBy("id", "DESC")
             ->get();
+        dd($dataSpb);
         return view(
             "administrasi.surat.faktur-penjualan.create",
             compact("dataSpb"),

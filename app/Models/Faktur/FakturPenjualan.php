@@ -3,7 +3,6 @@
 namespace App\Models\Faktur;
 
 use App\Models\MemoKredit\MemoKredit;
-use App\Models\Pelanggan;
 use App\Models\SPB\SuratPengirimanBarang;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
