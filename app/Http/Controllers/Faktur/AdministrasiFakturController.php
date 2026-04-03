@@ -13,29 +13,27 @@ class AdministrasiFakturController extends Controller
 {
     public function index()
     {
-        $fakturPenjualan = FakturPenjualan::where(
-            "user_id",
-            auth()->id(),
-        )->get();
-        return view(
-            "administrasi.surat.faktur-penjualan.index",
-            compact("fakturPenjualan"),
-        );
+        $fakturPenjualan = FakturPenjualan::with([
+            'suratPengirimanBarang.pesananPembelian.pelanggan'
+        ])
+            ->where("user_id", auth()->id())
+            ->latest()
+            ->get();
+
+        return view("administrasi.surat.faktur-penjualan.index", compact("fakturPenjualan"));
     }
 
     public function create()
     {
-        $dataSpb = SuratPengirimanBarang::with([
-            "pesananPembelian.pelanggan",
-            "suratPengirimanBarangDetail",
-        ])
+        $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian.pelanggan')
+            ->whereDoesntHave("fakturPenjualan")
+            ->with([
+                "pesananPembelian.pelanggan",
+                "suratPengirimanBarangDetail.pesananPembelianDetail",
+            ])
             ->orderBy("id", "DESC")
             ->get();
-        dd($dataSpb);
-        return view(
-            "administrasi.surat.faktur-penjualan.create",
-            compact("dataSpb"),
-        );
+        return view("administrasi.surat.faktur-penjualan.create", compact("dataSpb"));
     }
 
     public function store(Request $request)
@@ -54,13 +52,6 @@ class AdministrasiFakturController extends Controller
                 ->withInput()
                 ->with("error", "Gagal menambahkan faktur penjualan.");
         }
-    }
-
-    public function show($id)
-    {
-        return view("administrasi.surat.faktur-penjualan.show", [
-            "faktur" => FakturPenjualan::findOrFail($id),
-        ]);
     }
 
     public function generatePdf($id)

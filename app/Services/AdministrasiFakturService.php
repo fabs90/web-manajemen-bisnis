@@ -4,8 +4,9 @@ namespace App\Services;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\{Auth, DB, Log};
-use App\Models\Faktur\{FakturPenjualan, FakturPenjualanDetail};
+use App\Models\Faktur\FakturPenjualan;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class AdministrasiFakturService
 {
@@ -13,23 +14,13 @@ class AdministrasiFakturService
     {
         DB::beginTransaction();
         try {
-            // Simpan header faktur
             $faktur = FakturPenjualan::create([
                 "spb_id" => $data["spb_id"],
                 "kode_faktur" => $data["kode_faktur"],
                 "tanggal_faktur" => $data["tanggal_faktur"],
-                "nama_bagian_penjualan" => $data["bagian_penjualan"],
+                "nama_bagian_penjualan" => $data['bagian_penjualan'],
                 "user_id" => auth()->user()->id,
             ]);
-            // Simpan detail faktur
-            foreach ($data["items"] as $row) {
-                FakturPenjualanDetail::create([
-                    "faktur_penjualan_id" => $faktur->id,
-                    "spb_detail_id" => $row["spb_detail_id"],
-                    "harga" => $row["harga"],
-                    "total" => $row["total"],
-                ]);
-            }
             DB::commit();
             return $faktur;
         } catch (\Exception $e) {
@@ -42,7 +33,6 @@ class AdministrasiFakturService
     {
         try {
             $faktur = FakturPenjualan::with([
-                "fakturPenjualanDetail.suratPengirimanBarangDetail",
                 "suratPengirimanBarang",
                 "suratPengirimanBarang.pesananPembelian.pelanggan",
             ])
@@ -57,7 +47,9 @@ class AdministrasiFakturService
             )->setPaper("A4", "portrait");
 
             return $pdf->download(
-                "faktur-penjualan-" . $faktur->kode_faktur . ".pdf",
+                Str::slug("Faktur Penjualan-" .
+                    $faktur->kode_faktur)
+                . ".pdf",
             );
         } catch (\Exception $e) {
             Log::error("Error generate PDF faktur: " . $e->getMessage());
@@ -68,12 +60,9 @@ class AdministrasiFakturService
     public function destroy($id)
     {
         DB::beginTransaction();
-
         try {
             $faktur = FakturPenjualan::where("user_id", auth()->id())
-                ->with("fakturPenjualanDetail")
                 ->findOrFail($id);
-            $faktur->fakturPenjualanDetail()->delete();
             $faktur->delete();
 
             DB::commit();

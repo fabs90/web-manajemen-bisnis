@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Support\Facades\{Auth, DB, Log};
 use App\Models\SPB\{SuratPengirimanBarang, SuratPengirimanBarangDetail};
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -18,8 +19,9 @@ class SuratPengirimanBarangService
             $spb = SuratPengirimanBarang::create([
                 "spp_id" => $data["spp_id"],
                 "nomor_pengiriman_barang" => $data["nomor_pengiriman_barang"],
+                "tanggal_terima" => $data["tanggal_terima"],
+                "status_pengiriman" => $data["status_pengiriman"],
                 "jenis_pengiriman" => $data["jenis_pengiriman"],
-                "tanggal_terima" => $data["tanggal_diterima"],
                 "keadaan" => $data["keadaan"],
                 "keterangan" => $data["keterangan"],
                 "nama_penerima" => $data["nama_penerima"],
@@ -70,7 +72,7 @@ class SuratPengirimanBarangService
                     $data->nomor_pengiriman_barang)
                 . ".pdf",
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Error generate SPB PDF", [
                 "id" => $id,
                 "error" => $e->getMessage(),
@@ -84,31 +86,46 @@ class SuratPengirimanBarangService
         }
     }
 
+    public function update($id, $data)
+    {
+        DB::beginTransaction();
+        try {
+            $spb = SuratPengirimanBarang::where("id", $id)
+                ->where("user_id", auth()->id())
+                ->firstOrFail();
+            $spb->update($data);
+            DB::commit();
+            return true;
+        } catch (Exception $e) {
+            Log::error("Failed updating SPB: ", [
+                "spb_id" => $id,
+                "error" => $e->getMessage(),
+                "line" => $e->getLine(),
+                "file" => $e->getFile(),
+            ]);
+            throw $e;
+        }
+    }
+
     public function destroy($id)
     {
         DB::beginTransaction();
         try {
-            // Cari SPB milik user yang login saja (keamanan)
             $spb = SuratPengirimanBarang::where("id", $id)
                 ->where("user_id", auth()->id())
                 ->firstOrFail();
-
             $spb->delete();
             DB::commit();
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
-
             Log::error("Gagal menghapus SPB", [
                 "spb_id" => $id,
                 "user_id" => auth()->id(),
                 "error" => $e->getMessage(),
                 "trace" => $e->getTraceAsString(),
             ]);
-
-            throw new \Exception(
-                "Gagal menghapus Surat Pengiriman Barang. Pastikan data tidak sedang digunakan.",
-            );
+            throw $e;
         }
     }
 }

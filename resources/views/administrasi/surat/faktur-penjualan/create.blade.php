@@ -51,7 +51,7 @@
                                             )
                                             ->toJson();
                                     @endphp
-                                    <option value="{{ $spb->id }}" {{-- pakein perkondisian sesuai jenis transaksi --}}
+                                    <option value="{{ $spb->id }}"
                                         data-pelanggan="{{ $spb->pesananPembelian->pelanggan->nama }}"
                                         data-alamat="{{ $spb->pesananPembelian->pelanggan->alamat ?? '-' }}"
                                         data-nomor="{{ $spb->nomor_pengiriman_barang }}"
@@ -172,7 +172,6 @@
             document.getElementById('kepada').textContent = opt.dataset.pelanggan;
             document.getElementById('alamat').textContent = opt.dataset.alamat;
             document.getElementById('nomor_spb').textContent = opt.dataset.nomor;
-            document.querySelector('input[name="bagian_penjualan"]').value = opt.dataset.nama_pengirim || '';
 
             const details = JSON.parse(opt.dataset.details || '[]');
             let rows = '';
@@ -193,6 +192,8 @@
 
                 <input type="hidden" name="items[${i}][spb_detail_id]" value="${item.id}">
                 <input type="hidden" name="items[${i}][harga]" value="${item.harga}">
+                <input type="hidden" name="items[${i}][jumlah_dipesan]" value="${item.jumlah_dipesan}">
+                <input type="hidden" name="items[${i}][jumlah_dikirim]" value="${item.jumlah_dikirim}">
                 <input type="hidden" name="items[${i}][total]" value="${total}">
             </tr>
         `;

@@ -2,20 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\PendapatanRequest;
-use App\Models\Barang;
-use App\Models\BukuBesarHutang;
-use App\Models\BukuBesarKas;
-use App\Models\BukuBesarPendapatan;
-use App\Models\BukuBesarPiutang;
-use App\Models\KartuGudang;
-use App\Models\NeracaAwal;
-use App\Models\Pelanggan;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{DB, Log};
 use Illuminate\Support\Str;
+use App\Http\Requests\PendapatanRequest;
+use App\Models\{Barang, BukuBesarHutang, BukuBesarKas, BukuBesarPendapatan, BukuBesarPiutang, KartuGudang, NeracaAwal, Pelanggan};
+use Exception;
 
 class PendapatanController extends Controller
 {
@@ -200,8 +192,6 @@ class PendapatanController extends Controller
                                 "saldo" => $piutangLama->saldo + $saldoFinal,
                                 "uraian" =>
                                     "Menambah Piutang Lama: " .
-                                    now()->format("Y-m-d H:i:s") .
-                                    " " .
                                     $piutangLama->pelanggan->nama .
                                     " - " .
                                     $validated["uraian_pendapatan"],
@@ -247,8 +237,6 @@ class PendapatanController extends Controller
                             "saldo" => $saldoFinal,
                             "uraian" =>
                                 "Menambah Piutang Baru: " .
-                                now()->format("Y-m-d H:i:s") .
-                                " " .
                                 $pelanggan->nama .
                                 " - " .
                                 $validated["uraian_pendapatan"],

@@ -68,9 +68,9 @@
                                 <th width="5%">No</th>
                                 <th>Jenis</th>
                                 <th>Nomor SPB</th>
-                                <th>Tanggal SPB</th>
-                                <th>No. Pesanan Pembelian</th>
-                                <th>Supplier/Pemasok</th>
+                                <th>Tanggal Dikirim</th>
+                                <th>Status</th>
+                                <th>Pelanggan/Supplier</th>
                                 <th>Keadaan Barang</th>
                                 <th>Penerima</th>
                                 <th width="14%">Aksi</th>
@@ -93,10 +93,23 @@
                                     </td>
                                     <td class="fw-bold">{{ $spb->nomor_pengiriman_barang }}</td>
                                     <td class="text-center">
-                                        {{ \Carbon\Carbon::parse($spb->tanggal_pengiriman)->format('d-m-Y') }}
+                                        {{ \Carbon\Carbon::parse($spb->created_at)->format('d-m-Y') }}
                                     </td>
                                     <td>
-                                        {{ $spb->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}
+                                        @php
+                                            $statusConfig = [
+                                                'diproses' => ['bg-secondary', 'Diproses'],
+                                                'dikirim' => ['bg-primary', 'Dikirim'],
+                                                'diterima' => ['bg-success', 'Diterima'],
+                                                'dibatalkan' => ['bg-danger', 'Dibatalkan'],
+                                                'dikembalikan' => ['bg-warning', 'Dikembalikan'],
+                                            ];
+                                            $config = $statusConfig[$spb->status_pengiriman] ?? [
+                                                'bg-dark',
+                                                '❓ Tidak Diketahui',
+                                            ];
+                                        @endphp
+                                        <span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
                                     </td>
                                     <td>
                                         @if ($spb->pesananPembelian?->jenis == 'transaksi_keluar')
@@ -106,108 +119,131 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-{{ $spb->keadaan == 'baik' ? 'success' : 'warning' }}">
-                                            {{ ucfirst($spb->keadaan ?? '-') }}
-                                        </span>
+                                        @php
+                                            $keadaanConfig = [
+                                                'baik' => ['bg-success', 'Baik'],
+                                                'rusak_ringan' => ['bg-warning', 'Rusak Ringan'],
+                                                'rusak_berat' => ['bg-danger', 'Rusak Berat'],
+                                            ];
+                                            $config = $keadaanConfig[$spb->keadaan] ?? null;
+                                        @endphp
+                                        @if ($config)
+                                            <span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">Belum Diterima</span>
+                                        @endif
                                     </td>
-                                    <td>{{ $spb->nama_penerima ?? '-' }}</td>
+                                    <td>
+                                        @if ($spb->nama_penerima)
+                                            {{ $spb->nama_penerima }}
+                                        @else
+                                            <span class="text-muted fst-italic">Belum Diterima</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
-                                        {{-- Tombol Lihat Detail --}}
-                                        @if ($spb->suratPengirimanBarangDetail->count() > 0)
-                                            <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#detailModal{{ $spb->id }}">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            {{-- Tombol Lihat Detail --}}
+                                            @if ($spb->suratPengirimanBarangDetail->count() > 0)
+                                                <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#detailModal{{ $spb->id }}">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
 
-                                            {{-- Modal Detail SPB --}}
-                                            <div class="modal fade" id="detailModal{{ $spb->id }}" tabindex="-1"
-                                                aria-labelledby="modalSPBLabel{{ $spb->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
+                                                {{-- Modal Detail SPB --}}
+                                                <div class="modal fade" id="detailModal{{ $spb->id }}" tabindex="-1"
+                                                    aria-labelledby="modalSPBLabel{{ $spb->id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
 
-                                                        <div class="modal-header bg-primary text-white">
-                                                            <h5 class="modal-title">
-                                                                Detail SPB - {{ $spb->nomor_pengiriman_barang }}
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal"></button>
-                                                        </div>
-
-                                                        <div class="modal-body">
-
-                                                            <div class="row mb-2">
-                                                                <div class="col-6">
-                                                                    <strong>Tgl Kirim:</strong>
-                                                                    {{ \Carbon\Carbon::parse($spb->tanggal_terima)->format('d-m-Y') }}
-                                                                </div>
-                                                                <div class="col-6">
-                                                                    <strong>Penerima:</strong>
-                                                                    {{ $spb->nama_penerima ?? '-' }}
-                                                                </div>
-                                                                <div class="col-6">
-                                                                    <strong>Pengirim:</strong>
-                                                                    {{ $spb->nama_pengirim ?? '-' }}
-                                                                </div>
-                                                                <div class="col-6">
-                                                                    <strong>Keadaan:</strong>
-                                                                    {{ ucfirst($spb->keadaan ?? '-') }}
-                                                                </div>
+                                                            <div class="modal-header bg-primary text-white">
+                                                                <h5 class="modal-title">
+                                                                    Detail SPB - {{ $spb->nomor_pengiriman_barang }}
+                                                                </h5>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"></button>
                                                             </div>
 
-                                                            <hr>
+                                                            <div class="modal-body">
 
-                                                            <table class="table table-bordered table-sm text-center">
-                                                                <thead class="table-light">
-                                                                    <tr>
-                                                                        <th>No</th>
-                                                                        <th>Barang</th>
-                                                                        <th>Jumlah Dikirim</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    @foreach ($spb->suratPengirimanBarangDetail as $detail)
+                                                                <div class="row mb-2">
+                                                                    <div class="col-6">
+                                                                        <strong>Tgl Kirim:</strong>
+                                                                        {{ \Carbon\Carbon::parse($spb->tanggal_terima)->format('d-m-Y') }}
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <strong>Penerima:</strong>
+                                                                        {{ $spb->nama_penerima ?? '-' }}
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <strong>Pengirim:</strong>
+                                                                        {{ $spb->nama_pengirim ?? '-' }}
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <strong>Keadaan:</strong>
+                                                                        {{ ucfirst($spb->keadaan ?? '-') }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <hr>
+
+                                                                <table class="table table-bordered table-sm text-center">
+                                                                    <thead class="table-light">
                                                                         <tr>
-                                                                            <td>{{ $loop->iteration }}</td>
-                                                                            <td>{{ $detail->pesananPembelianDetail->nama_barang }}
-                                                                            </td>
-                                                                            <td>{{ $detail->jumlah_dikirim }}</td>
+                                                                            <th>No</th>
+                                                                            <th>Barang</th>
+                                                                            <th>Jumlah Dikirim</th>
                                                                         </tr>
-                                                                    @endforeach
-                                                                </tbody>
-                                                            </table>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($spb->suratPengirimanBarangDetail as $detail)
+                                                                            <tr>
+                                                                                <td>{{ $loop->iteration }}</td>
+                                                                                <td>{{ $detail->pesananPembelianDetail->nama_barang }}
+                                                                                </td>
+                                                                                <td>{{ $detail->jumlah_dikirim }}</td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
 
-                                                        </div>
+                                                            </div>
 
-                                                        <div class="modal-footer">
-                                                            <button class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Tutup</button>
+                                                            <div class="modal-footer">
+                                                                <button class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">Tutup</button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        @else
-                                            <span class="text-muted">Tidak ada detail</span>
-                                        @endif
+                                            @else
+                                                <span class="text-muted">Tidak ada detail</span>
+                                            @endif
 
-                                        <form id="generatePdfForm"
-                                            action="{{ route('administrasi.spb.generatePdf', $spb->id) }}" method="get">
-                                            <button class="btn btn-warning btn-sm generatePdfBtn" type="submit">
-                                                <span class="btn-text">
-                                                    <i class="bi bi-file-earmark-pdf text-white"></i>
-                                                </span>
-                                                <span class="spinner-border spinner-border-sm d-none"></span>
-                                            </button>
-                                        </form>
-                                        {{-- Hapus --}}
-                                        <form action="{{ route('administrasi.spb.destroy', $spb->id) }}" method="POST"
-                                            class="d-inline delete-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm delete-btn"
-                                                title="Hapus SPB">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                            <a href="{{ route('administrasi.spb.edit', ['id' => $spb->id]) }}"
+                                                class="btn btn-secondary btn-sm" title="Edit SPB">
+                                                <i class="bi bi-pencil text-white"></i>
+                                            </a>
+                                            <form id="generatePdfForm"
+                                                action="{{ route('administrasi.spb.generatePdf', $spb->id) }}"
+                                                method="get">
+                                                <button class="btn btn-warning btn-sm generatePdfBtn" type="submit">
+                                                    <span class="btn-text">
+                                                        <i class="bi bi-file-earmark-pdf text-white"></i>
+                                                    </span>
+                                                    <span class="spinner-border spinner-border-sm d-none"></span>
+                                                </button>
+                                            </form>
+                                            {{-- Hapus --}}
+                                            <form action="{{ route('administrasi.spb.destroy', $spb->id) }}" method="POST"
+                                                class="d-inline delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm delete-btn"
+                                                    title="Hapus SPB">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

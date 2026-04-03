@@ -124,7 +124,6 @@
             FAKTUR PENJUALAN
         </a>
 
-
         <a href="{{ route('administrasi.memo-kredit.index') }}" class="menu-card text-black" style="background:#eeeeee"
             data-tooltip="Dokumen permohonan resmi kepada pihak terkait untuk melakukan suatu kegiatan, biasanya terkait dengan pengembalian barang.">
             MEMO KREDIT

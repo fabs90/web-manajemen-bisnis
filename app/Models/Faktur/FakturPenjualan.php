@@ -26,11 +26,6 @@ class FakturPenjualan extends Model
         return $this->belongsTo(SuratPengirimanBarang::class, "spb_id", "id");
     }
 
-    public function fakturPenjualanDetail()
-    {
-        return $this->hasMany(FakturPenjualanDetail::class);
-    }
-
     public function memoKredit()
     {
         return $this->hasOne(MemoKredit::class);
