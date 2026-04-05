@@ -2,16 +2,17 @@
 
 namespace App\Models\SPP;
 
-use App\Models\Pelanggan;
-use App\Models\SPB\SuratPengirimanBarang;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\{Pelanggan, User};
+use App\Models\SPB\SuratPengirimanBarang;
 
 class PesananPembelian extends Model
 {
     protected $table = "pesanan_pembelian";
     protected $fillable = [
+        "jenis",
         "pelanggan_id",
+        "supplier_id",
         "nomor_pesanan_pembelian",
         "tanggal_pesanan_pembelian",
         "tanggal_terima",
@@ -21,6 +22,11 @@ class PesananPembelian extends Model
     ];
 
     public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class);
+    }
+
+    public function supplier()
     {
         return $this->belongsTo(Pelanggan::class);
     }

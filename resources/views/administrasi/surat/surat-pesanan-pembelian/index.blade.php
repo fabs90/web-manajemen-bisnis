@@ -19,20 +19,53 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+        <div class="row mb-3">
+            <div class="col-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold">SPP ke Supplier</h5>
+                            <p class="text-muted mb-3">
+                                Buat pesanan pembelian dari perusahaan ke supplier.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('administrasi.spp.createKeluar') }}" class="btn btn-primary w-100">
+                            + Buat SPP Supplier
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold">SPP dari Pelanggan</h5>
+                            <p class="text-muted mb-3">
+                                Catat pesanan pembelian dari pelanggan ke perusahaan.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('administrasi.spp.createMasuk') }}" class="btn btn-success w-100">
+                            + Buat SPP Pelanggan
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between">
                 <strong>Data Surat Pesanan Pembelian</strong>
-                <a href="{{ route('administrasi.spp.create') }}" class="btn btn-light btn-sm">
-                    + Tambah SPP
-                </a>
             </div>
-
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" id="faktur-penjualan-table">
                         <thead class="table-light text-center">
                             <tr>
                                 <th>No</th>
+                                <th>Jenis</th>
                                 <th>Nomor SPP</th>
                                 <th>Supplier/Pemasok</th>
                                 <th>Tanggal Pesan</th>
@@ -48,8 +81,25 @@
                             @foreach ($data as $item)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td>
+                                        @if ($item->jenis == 'transaksi_keluar')
+                                            <span class="badge bg-danger">
+                                                Supplier
+                                            </span>
+                                        @else
+                                            <span class="badge bg-success">
+                                                Pelanggan
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td>{{ $item->nomor_pesanan_pembelian }}</td>
-                                    <td>{{ $item->pelanggan->nama ?? '-' }}</td>
+                                    <td>
+                                        @if ($item->jenis == 'transaksi_keluar')
+                                            {{ $item->supplier->nama ?? '-' }}
+                                        @else
+                                            {{ $item->pelanggan->nama ?? '-' }}
+                                        @endif
+                                    </td>
                                     <td>{{ $item->tanggal_pesanan_pembelian }}</td>
                                     <td>{{ $item->tanggal_kirim_pesanan_pembelian }}</td>
                                     <td>{{ $item->nama_bagian_pembelian }}</td>

@@ -14,6 +14,7 @@ class SuratPengirimanBarang extends Model
         "spp_id",
         "nomor_pengiriman_barang",
         "jenis_pengiriman",
+        "status_pengiriman",
         "tanggal_terima",
         "keadaan",
         "keterangan",

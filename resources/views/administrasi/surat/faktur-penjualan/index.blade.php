@@ -42,7 +42,6 @@
                                 <th>Nomor SPB</th>
                                 <th>Tanggal</th>
                                 <th>Jenis Pengiriman</th>
-                                <th>Bagian Penjualan</th>
                                 <th width="13%">Aksi</th>
                             </tr>
                         </thead>
@@ -51,31 +50,25 @@
                             @foreach ($fakturPenjualan as $item)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
-
                                     <td>{{ $item->kode_faktur }}</td>
                                     <td>{{ $item->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
-                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
+                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}
+                                    </td>
                                     <td>{{ $item->suratPengirimanBarang->nomor_pengiriman_barang ?? '-' }}</td>
-
                                     <td class="text-center">
                                         {{ $item->tanggal_faktur ? \Carbon\Carbon::parse($item->tanggal_faktur)->format('d-m-Y') : '-' }}
                                     </td>
-
                                     <td>{{ $item->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</td>
-                                    <td>{{ $item->nama_bagian_penjualan ?? '-' }}</td>
-
                                     <td class="text-center">
                                         {{-- Download PDF --}}
-                                        <a href="{{route("administrasi.faktur-penjualan.generatePdf", $item->id)}}"
-                                            class="btn btn-warning btn-sm"
-                                            data-bs-toggle="tooltip"
-                                            title="Unduh PDF Faktur"
+                                        <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $item->id) }}"
+                                            class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Unduh PDF Faktur"
                                             target="_blank">
-                                            <i class="bi bi-file-pdf"></i>
+                                            <i class="bi bi-file-pdf text-white"></i>
                                         </a>
 
                                         {{-- Delete --}}
-                                        <form action="{{route('administrasi.faktur-penjualan.destroy', $item->id)}}"
+                                        <form action="{{ route('administrasi.faktur-penjualan.destroy', $item->id) }}"
                                             method="POST" class="d-inline delete-form">
                                             @csrf
                                             @method('DELETE')

@@ -11,8 +11,15 @@ return new class extends Migration {
             $table->id();
             $table
                 ->foreignId("pelanggan_id")
+                ->nullable()
                 ->constrained("pelanggan")
                 ->cascadeOnDelete();
+            $table
+                ->foreignId("supplier_id")
+                ->nullable()
+                ->constrained("pelanggan")
+                ->cascadeOnDelete();
+            $table->enum('jenis', ['transaksi_keluar', 'transaksi_masuk'])->nullable();
             $table->string("nomor_pesanan_pembelian")->unique();
             $table->date("tanggal_pesanan_pembelian");
             $table->date("tanggal_kirim_pesanan_pembelian")->nullable();
@@ -59,9 +66,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create("surat_pengiriman_barang_detail", function (
-            Blueprint $table,
-        ) {
+        Schema::create("surat_pengiriman_barang_detail", function (Blueprint $table, ) {
             $table->id();
             $table
                 ->foreignId("spb_id")
@@ -82,8 +87,7 @@ return new class extends Migration {
                 ->constrained("surat_pengiriman_barang")
                 ->cascadeOnDelete();
             $table->string("kode_faktur")->unique();
-            $table->date("tanggal_faktur");
-            $table->string("nama_bagian_penjualan");
+            $table->date("tanggal_faktur")->nullable();
             $table
                 ->foreignId("user_id")
                 ->constrained("users")
@@ -91,20 +95,20 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create("faktur_penjualan_detail", function (Blueprint $table) {
-            $table->id();
-            $table
-                ->foreignId("faktur_penjualan_id")
-                ->constrained("faktur_penjualan")
-                ->onDelete("cascade");
-            $table
-                ->foreignId("spb_detail_id")
-                ->constrained("surat_pengiriman_barang_detail")
-                ->onDelete("cascade");
-            $table->decimal("harga", 15, 2)->nullable(); // copy dari PO detail
-            $table->decimal("total", 15, 2)->nullable();
-            $table->timestamps();
-        });
+        // Schema::create("faktur_penjualan_detail", function (Blueprint $table) {
+        //     $table->id();
+        //     $table
+        //         ->foreignId("faktur_penjualan_id")
+        //         ->constrained("faktur_penjualan")
+        //         ->onDelete("cascade");
+        //     $table
+        //         ->foreignId("spb_detail_id")
+        //         ->constrained("surat_pengiriman_barang_detail")
+        //         ->onDelete("cascade");
+        //     $table->decimal("harga", 15, 2)->nullable(); // copy dari PO detail
+        //     $table->decimal("total", 15, 2)->nullable();
+        //     $table->timestamps();
+        // });
     }
 
     public function down(): void

@@ -1,112 +1,211 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Memo Kredit - {{ $memo->nomor_memo }}</title>
     <style>
-        body { font-family: "DejaVu Sans", sans-serif; font-size: 12px; color: #000; }
-        table { width: 100%; border-collapse: collapse; }
-        .bordered, .bordered th, .bordered td {
-            border: 1px solid black;
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #000;
             padding: 6px;
         }
-        .text-center { text-align: center; }
-        .mt-1 { margin-top: 5px; }
-        .mt-2 { margin-top: 10px; }
-        .mt-3 { margin-top: 15px; }
-        .bold { font-weight: bold; }
-        .uppercase { text-transform: uppercase; }
-        .w-50 { width: 50%; }
+
+        .table-no-border {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table-no-border td {
+            border: none;
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 25px;
+        }
+
+        .line {
+            border-bottom: 3px solid #000;
+            margin: 10px 0 15px;
+        }
     </style>
 </head>
+
 <body>
 
-    <!-- Kop Surat -->
-    <div class="text-center bold uppercase" style="font-size:16px;">
-        {{ $userProfile->name ?? 'Nama Perusahaan' }}
-    </div>
-    <div class="text-center" style="font-size: 11px;">
-        {{ $userProfile->alamat ?? 'Alamat Perusahaan' }}
-    </div>
-    <hr class="mt-2">
-
-    <h3 class="text-center mt-2 bold">MEMO KREDIT</h3>
-
-    <!-- Informasi Memo Kredit -->
-    <table class="mt-3">
+    {{-- KOP SURAT --}}
+    <table class="table-no-border">
         <tr>
-            <td class="w-50">Nomor Memo</td>
-            <td>: {{ $memo->nomor_memo }}</td>
-        </tr>
-        <tr>
-            <td>Tanggal Memo</td>
-            <td>: {{ \Carbon\Carbon::parse($memo->tanggal)->format('d/m/Y') }}</td>
-        </tr>
-        <tr>
-            <td>Nomor Faktur</td>
-            <td>: {{ $faktur->kode_faktur }}</td>
-        </tr>
-        <tr>
-            <td>Pembeli</td>
-            <td>: {{ $faktur->pelanggan->nama }}</td>
-        </tr>
-        <tr>
-            <td>Alamat</td>
-            <td>: {{ $faktur->pelanggan->alamat }}</td>
+            <td width="15%">
+                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
+                    @php
+                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
+                        $logoBase64 = base64_encode(file_get_contents($logoPath));
+                        $logoMime = mime_content_type($logoPath);
+                    @endphp
+                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                @endif
+            </td>
+            <td width="70%" class="text-center">
+                <div style="font-size:16px; font-weight:bold;" class="uppercase">
+                    {{ $profileUser->name ?? 'Nama Perusahaan' }}
+                </div>
+                <div style="font-size:11px;">
+                    {{ $profileUser->alamat ?? 'Alamat Perusahaan' }}
+                </div>
+                <div style="font-size:11px;">
+                    Telp: {{ $profileUser->nomor_telepon ?? '-' }} |
+                    Email: {{ $profileUser->email ?? '-' }}
+                </div>
+            </td>
+            <td width="15%"></td>
         </tr>
     </table>
 
-    <!-- Data Barang -->
-    <h4 class="mt-3 bold">Rincian Barang Dikembalikan</h4>
+    <div class="line"></div>
 
-    <table class="bordered">
-        <thead class="text-center">
-            <tr>
-                <th>No</th>
-                <th>Nama Barang</th>
-                <th>Kuantitas</th>
-                <th>Harga Satuan</th>
-                <th>Jumlah</th>
+    {{-- Judul --}}
+    <h3 class="text-center fw-bold uppercase mb-3">MEMO KREDIT</h3>
+
+    @php
+        $po = $faktur->suratPengirimanBarang?->pesananPembelian;
+        $isMasuk = $po?->jenis == 'transaksi_masuk';
+        $pihak = $isMasuk ? $po?->pelanggan : $po?->supplier;
+    @endphp
+
+    {{-- Info Header --}}
+    <table class="table-no-border mb-4">
+        <tr>
+            <td width="55%">
+                Kepada Yth.<br>
+                <strong>{{ $pihak?->nama ?? '-' }}</strong><br>
+                {{ $pihak?->alamat ?? '-' }}
+            </td>
+            <td width="45%">
+                <strong>Nomor Memo</strong> :
+                {{ $memo->nomor_memo ?? '-' }}<br>
+
+                <strong>Tanggal Memo</strong> :
+                {{ \Carbon\Carbon::parse($memo->tanggal)->format('d/m/Y') }}<br>
+
+                <strong>Nomor Faktur</strong> :
+                {{ $faktur->kode_faktur ?? '-' }}<br>
+
+                <strong>Tanggal Faktur</strong> :
+                {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d/m/Y') }}<br>
+
+                <strong>No. PO</strong> :
+                {{ $po?->nomor_pesanan_pembelian ?? '-' }}
+            </td>
+        </tr>
+    </table>
+
+    <p class="mb-3">
+        Bersama ini kami sampaikan rincian barang yang dikembalikan sebagai berikut:
+    </p>
+
+    {{-- Tabel Barang --}}
+    <table class="table">
+        <thead>
+            <tr class="text-center">
+                <th width="5%">No</th>
+                <th width="45%">Nama Barang</th>
+                <th width="10%">Qty</th>
+                <th width="20%">Harga Satuan</th>
+                <th width="20%">Jumlah</th>
             </tr>
         </thead>
         <tbody>
-        @foreach($memo->memoKreditDetail as $index => $detail)
+            @foreach ($memo->memoKreditDetail as $detail)
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td>{{ $detail->nama_barang }}</td>
+                    <td class="text-center">{{ $detail->kuantitas }}</td>
+                    <td class="text-right">
+                        Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}
+                    </td>
+                    <td class="text-right">
+                        Rp {{ number_format($detail->jumlah, 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endforeach
+
+            {{-- spacer --}}
+            @for ($i = count($memo->memoKreditDetail) + 1; $i <= 8; $i++)
+                <tr>
+                    <td>&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            @endfor
+
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $detail->nama_barang }}</td>
-                <td class="text-center">{{ $detail->kuantitas }}</td>
-                <td class="text-center">Rp {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
-                <td class="text-center">Rp {{ number_format($detail->jumlah, 0, ',', '.') }}</td>
+                <td colspan="4" class="text-right fw-bold">TOTAL</td>
+                <td class="text-right fw-bold">
+                    Rp {{ number_format($memo->total, 0, ',', '.') }}
+                </td>
             </tr>
-        @endforeach
         </tbody>
-        <tfoot>
-            <tr class="bold">
-                <td colspan="4" class="text-center">TOTAL</td>
-                <td class="text-center">Rp {{ number_format($memo->total, 0, ',', '.') }}</td>
-            </tr>
-        </tfoot>
     </table>
 
-    <!-- Alasan -->
-    <div class="mt-3">
-        <strong>Alasan Pengembalian:</strong><br>
-        {{ $memo->alasan_pengembalian }}
-    </div>
-
-    <!-- Tanda Tangan -->
-    <br><br><br>
-    <table>
-        <tr class="text-center">
-            <td class="w-50">Pembeli</td>
-            <td class="w-50">Disetujui Oleh</td>
+    {{-- Alasan --}}
+    <table class="table-no-border mb-4">
+        <tr>
+            <td width="25%" class="fw-bold">Alasan Pengembalian:</td>
+            <td width="75%"> {{ $memo->alasan_pengembalian ?? '-' }}</td>
         </tr>
-        <tr><td colspan="2"><br><br><br><br></td></tr>
-        <tr class="text-center">
-            <td>{{ $faktur->pelanggan->nama }}</td>
-            <td>{{ $userProfile->name }}</td>
+    </table>
+
+    {{-- Tanda Tangan --}}
+    <table width="100%" class="table-no-border" style="margin-top:60px;">
+        <tr>
+            <td width="50%" class="text-center">
+            </td>
+            <td width="50%" class="text-center">
+                {{ \Carbon\Carbon::parse($memo->tanggal)->format('d/m/Y') }}<br>
+                Bagian Penjualan<br><br><br><br><br>
+                <strong>( {{ $faktur->nama_bagian_penjualan ?? '_________' }} )</strong>
+            </td>
         </tr>
     </table>
 
 </body>
+
 </html>

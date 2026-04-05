@@ -8,7 +8,7 @@ use App\Http\Controllers\Faktur\AdministrasiFakturController;
 use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
-use App\Http\Middleware\EnsureUserIsVerified; 
+use App\Http\Middleware\EnsureUserIsVerified;
 
 
 
@@ -288,7 +288,7 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
     // =============================
     // 🛣️ GROUP: Administrasi Surat
     // =============================
-    Route::prefix("dashboard/administrasi/surat")->group(function () {
+    Route::prefix("dashboard/administrasi")->group(function () {
         Route::get("/", [AdministrasiSuratController::class, "index"])->name(
             "administrasi.surat.index",
         );
@@ -538,16 +538,21 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
             "generatePdfHasilKeputusan",
         ])->name("administrasi.rapat.hasil-keputusan.generatePdf");
 
-        // Surat Pesanan Pembelian (SPP/PO)
+        // Surat Pesanan Pembelian (SPP)
         Route::get("/surat-pesanan-pembelian", [
             SuratPesananPembelianController::class,
             "index",
         ])->name("administrasi.spp.index");
 
-        Route::get("/surat-pesanan-pembelian/create", [
+        Route::get("/surat-pesanan-pembelian/supplier", [
             SuratPesananPembelianController::class,
-            "create",
-        ])->name("administrasi.spp.create");
+            "createKeluar",
+        ])->name("administrasi.spp.createKeluar");
+
+        Route::get("/surat-pesanan-pembelian/pelanggan", [
+            SuratPesananPembelianController::class,
+            "createMasuk",
+        ])->name("administrasi.spp.createMasuk");
 
         Route::post("/surat-pesanan-pembelian", [
             SuratPesananPembelianController::class,
@@ -606,10 +611,20 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
             "index",
         ])->name("administrasi.spb.index");
 
-        Route::get("/surat-pengiriman-barang/create", [
+        Route::get("/surat-pengiriman-barang/supplier", [
             SuratPengirimanBarangController::class,
-            "create",
-        ])->name("administrasi.spb.create");
+            "createTransaksiKeluar",
+        ])->name('administrasi.spb.createTransaksiKeluar');
+
+        Route::get("/surat-pengiriman-barang/pelanggan", [
+            SuratPengirimanBarangController::class,
+            "createTransaksiMasuk",
+        ])->name('administrasi.spb.createTransaksiMasuk');
+
+        Route::get("/surat-pengiriman-barang/{id}/pelanggan", [
+            SuratPengirimanBarangController::class,
+            "editTransaksiMasuk",
+        ])->name("administrasi.spb.edit");
 
         Route::get("/surat-pengiriman-barang/{id}/generate", [
             SuratPengirimanBarangController::class,
@@ -620,6 +635,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
             SuratPengirimanBarangController::class,
             "store",
         ])->name("administrasi.spb.store");
+
+        Route::put("/surat-pengiriman-barang/{id}", [
+            SuratPengirimanBarangController::class,
+            "update",
+        ])->name('administrasi.spb.update');
 
         Route::delete("/surat-pengiriman-barang/{id}", [
             SuratPengirimanBarangController::class,

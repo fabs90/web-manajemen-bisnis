@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Surat Pesanan Pembelian | Digitrans')
+@section('page-title', 'Input Surat Pesanan Pembelian dari Pelanggan | Digitrans')
 @section('section-row')
     <div class="container mt-4">
         {{-- Alert sukses --}}
@@ -21,18 +21,16 @@
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
-                    Input Surat Pesanan Pembelian (SPP)
+                    Input Surat Pesanan Pembelian (SPP) dari Pelanggan
                 </div>
-
                 <div class="card-body mt-3">
-
                     {{-- DATA PELANGGAN --}}
-                    <h6 class="fw-bold">Data Supplier</h6>
+                    <h6 class="fw-bold">Data Pelanggan</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Pilih Supplier</label>
+                            <label class="form-label">Pilih Pelanggan</label>
                             <select name="pelanggan_id" id="pelangganSelect" class="form-select" required>
-                                <option value="#">-- Pilih Supplier --</option>
+                                <option value="#">-- Pilih Pelanggan --</option>
                                 @foreach ($pelanggan as $p)
                                     <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}">
                                         {{ $p->nama }}
@@ -41,7 +39,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Alamat Supplier</label>
+                            <label class="form-label">Alamat Pelanggan</label>
                             <input type="text" id="alamatPelanggan" class="form-control" readonly>
                         </div>
                     </div>
@@ -101,13 +99,13 @@
                     <button type="button" class="btn btn-success btn-sm" id="add-row">
                         + Tambah Barang
                     </button>
-
                 </div>
 
                 <div class="card-footer text-end">
                     <a href="{{ route('administrasi.spp.index') }}" class="btn btn-secondary me-2">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
+                    <input type="hidden" name="jenis" value="transaksi_masuk">
                     <button type="submit" class="btn btn-primary">
                         Simpan SPP
                     </button>
