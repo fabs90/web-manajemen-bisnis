@@ -106,16 +106,16 @@
     <p class="mb-3">
         Kepada Yth.<br>
         <strong>
-            @if ($data->pesananPembelian->jenis == 'transaksi_keluar')
-                {{ $data->pesananPembelian->supplier->nama ?? '-' }}
+            @if ($data->jenis == 'transaksi_keluar')
+                {{ $data->supplier->nama ?? '-' }}
             @else
-                {{ $data->pesananPembelian->pelanggan->nama ?? '-' }}
+                {{ $data->pelanggan->nama ?? '-' }}
             @endif
         </strong><br>
-        @if ($data->pesananPembelian->jenis == 'transaksi_keluar')
-            {{ $data->pesananPembelian->supplier->alamat ?? '-' }}
+        @if ($data->jenis == 'transaksi_keluar')
+            {{ $data->supplier->alamat ?? '-' }}
         @else
-            {{ $data->pesananPembelian->pelanggan->alamat ?? '-' }}
+            {{ $data->pelanggan->alamat ?? '-' }}
         @endif
     </p>
 
