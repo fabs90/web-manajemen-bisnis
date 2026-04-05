@@ -49,24 +49,32 @@
 
 <body>
 
-    {{-- Header / Kop Surat --}}
-    <div style="display: flex; align-items: center; min-height: 100px;">
-        <div style="flex: 1; display: flex; justify-content: center;">
-            <img src="{{ public_path('storage/' . $profileUser->logo_perusahaan) }}" alt="Logo" style="height: 80px;">
-        </div>
-
-        <div class="kop" style="flex: 4; text-align:center;">
-            <div>{{ $profileUser->name }}</div>
-            <div>{{ $profileUser->alamat }}</div>
-            <div>{{ $profileUser->email ?? 'Email...' }}</div>
-            <div>{{ $profileUser->nomor_telepon }}</div>
-        </div>
-    </div>
-
+    {{-- KOP SURAT --}}
+    <table class="table-no-border">
+        <tr>
+            <td width="15%">
+                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
+                    @php
+                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
+                        $logoBase64 = base64_encode(file_get_contents($logoPath));
+                        $logoMime = mime_content_type($logoPath);
+                    @endphp
+                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                @endif
+            </td>
+            <td width="70%" class="text-center">
+                <div style="font-size:16px; font-weight:bold;" class="uppercase">
+                    {{ $profileUser->name ?? 'Nama Perusahaan' }}
+                </div>
+                <div style="font-size:11px;">{{ $profileUser->alamat ?? 'Alamat Perusahaan' }}</div>
+                <div style="font-size:11px;">
+                    Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email: {{ $profileUser->email ?? '-' }}
+                </div>
+            </td>
+            <td width="15%"></td>
+        </tr>
+    </table>
     <div class="line"></div>
-
-
-
     {{-- Nomor surat dan tanggal --}}
     <table class="table-info" width="100%">
         <tr>

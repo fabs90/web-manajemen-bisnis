@@ -23,7 +23,11 @@ class MemoKreditController extends Controller
 
     public function create($fakturId)
     {
-        $faktur = FakturPenjualan::findOrFail($fakturId);
+        $faktur = FakturPenjualan::with(
+            'suratPengirimanBarang',
+            'suratPengirimanBarang.pesananPembelian',
+            'suratPengirimanBarang.pesananPembelian.pesananPembelianDetail'
+        )->findOrFail($fakturId);
         return view("administrasi.surat.memo-kredit.create", compact("faktur"));
     }
 
@@ -36,8 +40,8 @@ class MemoKreditController extends Controller
                 ->with("success", "Memo Kredit berhasil disimpan!");
         }
         return redirect()
-            ->route("administrasi.memo-kredit.index")
-            ->with("error", "Memo Kredit gagal disimpan!");
+            ->route("administrasi.memo-kredit.create", ["fakturId" => $request->faktur_id])
+            ->with("error", "Memo Kredit gagal disimpan!")->withInput();
     }
 
     public function destroy($fakturId, MemoKreditService $services)

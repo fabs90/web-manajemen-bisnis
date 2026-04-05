@@ -4,22 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 
 class PernyataanPiutangController extends Controller
 {
     public function index()
     {
         $dataPiutang = \App\Models\BukuBesarPiutang::where(
-            "user_id",
-            auth()->user()->id,
+            'user_id',
+            auth()->id()
         )
-            ->with("pelanggan")
+            ->with('pelanggan')
+            ->latest()
             ->get()
-            ->groupBy("pelanggan_id");
+            ->unique('pelanggan_id')
+            ->values();
+
         return view(
-            "administrasi.surat.pernyataan-piutang.index",
-            compact("dataPiutang"),
+            'administrasi.surat.pernyataan-piutang.index',
+            compact('dataPiutang')
         );
     }
 
@@ -29,12 +31,12 @@ class PernyataanPiutangController extends Controller
         $pelanggan = Pelanggan::findOrFail($pelangganId);
         $items = \App\Models\BukuBesarPiutang::where("user_id", $user->id)
             ->where("pelanggan_id", $pelangganId)
-            ->get();
-        $totalPiutang = $items->sum("debit") - $items->sum("kredit");
-        if ($totalPiutang < 0) {
+            ->latest()->first();
+
+        $totalPiutang = $items->saldo;
+        if (empty($totalPiutang)) {
             $totalPiutang = 0;
         }
-
         $pdf = Pdf::setOptions([
             "isRemoteEnabled" => true,
         ])

@@ -96,6 +96,10 @@
     <div class="line"></div>
 
     <h3 class="text-center fw-bold uppercase mb-3">SURAT PENGIRIMAN BARANG</h3>
+    <div class="text-center">
+        <strong>Nomor:</strong>
+        {{ $data->nomor_pengiriman_barang ?? '___' }}<br>
+    </div>
 
     {{-- Nomor --}}
     @php
@@ -109,8 +113,12 @@
         <tr>
             <td width="60%"></td>
             <td width="40%">
+                @if ($data->fakturPenjualan && $data->fakturPenjualan->kode_faktur)
+                    <strong>Kode Faktur:</strong>
+                    {{ $data->fakturPenjualan->kode_faktur ?? '___' }}<br>
+                @endif
                 <strong>Nomor:</strong>
-                {{ $nomorFormatted }}/SPB/{{ $profileUser->name }}/{{ $bulan }}/{{ $tahun }}<br>
+                {{ $data->pesananPembelian->nomor_pesanan_pembelian ?? '___' }}<br>
                 <strong>Tanggal:</strong>
                 {{ \Carbon\Carbon::parse($data->created_at ?? now())->format('d/m/Y') }}
             </td>
@@ -145,17 +153,23 @@
             <td>: {{ $data->jenis_pengiriman ?? '-' }}</td>
         </tr>
         <tr>
-            <td>Tanggal Diterima</td>
-            <td>: {{ $tanggalKirim }}</td>
+            <td>Status Pengiriman</td>
+            <td>: {{ $data->status_pengiriman ?? '-' }}</td>
         </tr>
-        <tr>
-            <td>Keadaan</td>
-            <td>: {{ ucfirst($data->keadaan ?? 'baik') }}</td>
-        </tr>
-        <tr>
-            <td>Keterangan</td>
-            <td>: {{ $data->keterangan ?? '-' }}</td>
-        </tr>
+        @if ($data->status_pengiriman == 'diterima')
+            <tr>
+                <td>Tanggal Diterima</td>
+                <td>: {{ $tanggalKirim ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td>Keadaan</td>
+                <td>: {{ ucfirst($data->keadaan ?? 'baik') }}</td>
+            </tr>
+            <tr>
+                <td>Keterangan</td>
+                <td>: {{ $data->keterangan ?? '-' }}</td>
+            </tr>
+        @endif
     </table>
 
     {{-- Tabel Barang --}}

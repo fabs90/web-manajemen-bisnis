@@ -2,41 +2,39 @@
 
 namespace App\Http\Controllers\Faktur;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Services\AdministrasiFakturService;
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
-use App\Models\Pelanggan;
 use App\Models\SPB\SuratPengirimanBarang;
-use App\Services\ManajemenRapatService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class AdministrasiFakturController extends Controller
 {
     public function index()
-{
-    $fakturPenjualan = FakturPenjualan::with([
+    {
+        $fakturPenjualan = FakturPenjualan::with([
             'suratPengirimanBarang.pesananPembelian.pelanggan'
         ])
-        ->where("user_id", auth()->id())
-        ->latest()
-        ->get();
+            ->where("user_id", auth()->id())
+            ->latest()
+            ->get();
 
-    return view("administrasi.surat.faktur-penjualan.index", compact("fakturPenjualan"));
-}
+        return view("administrasi.surat.faktur-penjualan.index", compact("fakturPenjualan"));
+    }
 
     public function create()
-{
-    $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian.pelanggan') // Filter SPB yang punya pelanggan saja
-        ->with([
-            "pesananPembelian.pelanggan",
-            "suratPengirimanBarangDetail.pesananPembelianDetail", // Sesuaikan relasi detailnya
-        ])
-        ->orderBy("id", "DESC")
-        ->get();
-
-    return view("administrasi.surat.faktur-penjualan.create", compact("dataSpb"));
-}
+    {
+        $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian.pelanggan')
+            ->whereDoesntHave("fakturPenjualan")
+            ->with([
+                "pesananPembelian.pelanggan",
+                "suratPengirimanBarangDetail.pesananPembelianDetail",
+            ])
+            ->orderBy("id", "DESC")
+            ->get();
+        return view("administrasi.surat.faktur-penjualan.create", compact("dataSpb"));
+    }
 
     public function store(Request $request)
     {
@@ -54,13 +52,6 @@ class AdministrasiFakturController extends Controller
                 ->withInput()
                 ->with("error", "Gagal menambahkan faktur penjualan.");
         }
-    }
-
-    public function show($id)
-    {
-        return view("administrasi.surat.faktur-penjualan.show", [
-            "faktur" => FakturPenjualan::findOrFail($id),
-        ]);
     }
 
     public function generatePdf($id)

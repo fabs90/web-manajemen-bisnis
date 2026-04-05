@@ -3,14 +3,12 @@
 
 @section('section-row')
     <div class="container mt-4">
-        {{-- Alert sukses --}}
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show">
                 <strong>Sukses!</strong> {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
-        {{-- Alert Error --}}
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show">
                 <strong>Gagal!</strong> {{ session('error') }}

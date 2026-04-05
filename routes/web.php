@@ -621,6 +621,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
             "createTransaksiMasuk",
         ])->name('administrasi.spb.createTransaksiMasuk');
 
+        Route::get("/surat-pengiriman-barang/{id}/pelanggan", [
+            SuratPengirimanBarangController::class,
+            "editTransaksiMasuk",
+        ])->name("administrasi.spb.edit");
+
         Route::get("/surat-pengiriman-barang/{id}/generate", [
             SuratPengirimanBarangController::class,
             "generatePdf",
@@ -630,6 +635,11 @@ Route::middleware(["web", "auth", "ensureUserIsVerified", "ensureProfileComplete
             SuratPengirimanBarangController::class,
             "store",
         ])->name("administrasi.spb.store");
+
+        Route::put("/surat-pengiriman-barang/{id}", [
+            SuratPengirimanBarangController::class,
+            "update",
+        ])->name('administrasi.spb.update');
 
         Route::delete("/surat-pengiriman-barang/{id}", [
             SuratPengirimanBarangController::class,

@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Faktur Penjualan - {{ $faktur->kode_faktur }}</title>
     <style>
-        @page { margin: 0.8cm; }
+        @page {
+            margin: 0.8cm;
+        }
+
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 11px;
@@ -21,7 +25,8 @@
         }
 
         /* Border Styling */
-        .border-all th, .border-all td {
+        .border-all th,
+        .border-all td {
             border: 1px solid #333;
             padding: 8px 6px;
             word-wrap: break-word;
@@ -29,11 +34,26 @@
         }
 
         /* Utility Classes */
-        .table-no-border td { border: none !important; padding: 3px 0; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .fw-bold { font-weight: bold; }
-        .text-uppercase { text-transform: uppercase; }
+        .table-no-border td {
+            border: none !important;
+            padding: 3px 0;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .text-uppercase {
+            text-transform: uppercase;
+        }
 
         /* Design Elements */
         .line {
@@ -72,23 +92,26 @@
                 @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
                     @php
                         $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        if(file_exists($logoPath)){
+                        if (file_exists($logoPath)) {
                             $logoBase64 = base64_encode(file_get_contents($logoPath));
                             $logoMime = mime_content_type($logoPath);
                         }
                     @endphp
-                    @if(isset($logoBase64))
+                    @if (isset($logoBase64))
                         <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:65px;">
                     @endif
                 @endif
             </td>
             <td width="70%" class="text-center" style="vertical-align: middle;">
                 {{-- Nama Perusahaan Capslock & Solid --}}
-                <div style="font-size:20px; font-weight:bold; color: #000; text-transform: uppercase; letter-spacing: 1px;">
+                <div
+                    style="font-size:20px; font-weight:bold; color: #000; text-transform: uppercase; letter-spacing: 1px;">
                     {{ $profileUser->name ?? 'NAMA PERUSAHAAN' }}
                 </div>
-                <div style="font-size:10px; color: #333;">{{ $profileUser->alamat ?? 'Alamat Lengkap Perusahaan' }}</div>
-                <div style="font-size:10px; color: #333;">Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email: {{ $profileUser->email ?? '-' }}</div>
+                <div style="font-size:10px; color: #333;">{{ $profileUser->alamat ?? 'Alamat Lengkap Perusahaan' }}
+                </div>
+                <div style="font-size:10px; color: #333;">Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email:
+                    {{ $profileUser->email ?? '-' }}</div>
             </td>
             <td width="15%"></td>
         </tr>
@@ -101,14 +124,15 @@
         <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
         <div style="font-size: 12px; color: #000;">Nomor Dokumen: <span class="fw-bold">{{ $faktur->kode_faktur }}</span></div>
     </div> --}}
-   
-<div class="text-center" style="margin-bottom: 25px;">
-    <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
-    {{-- Format: (Nomor Urut)/F/(Nama Perusahaan)/(Bulan)/(Tahun) --}}
-    <div style="font-size: 12px; color: #000;">
-        Nomor: <span class="fw-bold">{{ $faktur->kode_faktur }}/F/{{ str_replace(' ', '', strtoupper($profileUser->name ?? 'DIGITRANS')) }}/{{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('m/Y') }}</span>
+
+    <div class="text-center" style="margin-bottom: 25px;">
+        <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
+        {{-- Format: (Nomor Urut)/F/(Nama Perusahaan)/(Bulan)/(Tahun) --}}
+        <div style="font-size: 12px; color: #000;">
+            Nomor: <span
+                class="fw-bold">{{ $faktur->kode_faktur }}/F/{{ str_replace(' ', '', strtoupper($profileUser->name ?? 'DIGITRANS')) }}/{{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('m/Y') }}</span>
+        </div>
     </div>
-</div>
 
     {{-- INFORMASI KEPADA & REFERENSI --}}
     <div class="info-box">
@@ -117,7 +141,8 @@
                 <td width="12%" class="fw-bold">Kepada</td>
                 <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
                 <td width="18%" class="fw-bold">Nomor Pesanan</td>
-                <td width="27%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
+                <td width="27%">:
+                    {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="fw-bold">Alamat</td>
@@ -148,30 +173,34 @@
         </thead>
         <tbody>
             @php $grandTotal = 0; @endphp
-            @foreach($faktur->fakturPenjualanDetail as $index => $item)
+            @foreach ($faktur->suratPengirimanBarang->suratPengirimanBarangDetail as $index => $detail)
                 @php
-                    $qtyOrder = $item->suratPengirimanBarangDetail->pesananPembelianDetail->kuantitas ?? 0;
-                    $qtyKirim = $item->suratPengirimanBarangDetail->jumlah_dikirim ?? 0;
-                    $grandTotal += $item->total;
+                    $qtyOrder = $detail->pesananPembelianDetail->kuantitas ?? 0;
+                    $qtyKirim = $detail->jumlah_dikirim ?? 0;
+                    $harga = $detail->pesananPembelianDetail->harga ?? 0;
+                    $total = $qtyKirim * $harga;
+                    $grandTotal += $total;
                 @endphp
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $qtyOrder }} </td>
-                    <td class="text-center">{{ $qtyKirim }} </td>
-                    <td style="padding-left: 10px;">{{ $item->suratPengirimanBarangDetail->pesananPembelianDetail->nama_barang }}</td>
-                    <td class="text-right">{{ number_format($item->harga, 0, ',', '.') }}</td>
-                    <td class="text-right fw-bold">{{ number_format($item->total, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $qtyOrder }}</td>
+                    <td class="text-center">{{ $qtyKirim }}</td>
+                    <td style="padding-left: 10px;">{{ $detail->pesananPembelianDetail->nama_barang ?? '-' }}</td>
+                    <td class="text-right">{{ number_format($harga, 0, ',', '.') }}</td>
+                    <td class="text-right fw-bold">{{ number_format($total, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
             <tr class="header-bg">
                 <td colspan="5" class="text-right fw-bold" style="padding-right: 15px;">TOTAL PEMBAYARAN</td>
-                <td class="text-right fw-bold" style="font-size: 12px;">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                <td class="text-right fw-bold" style="font-size: 12px;">Rp
+                    {{ number_format($grandTotal, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
 
     <div style="margin-top: 15px; font-style: italic; color: #333;">
-        Metode Pengiriman: <span class="fw-bold text-uppercase">{{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</span>
+        Metode Pengiriman: <span
+            class="fw-bold text-uppercase">{{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</span>
     </div>
 
     {{-- TANDA TANGAN (Penyesuaian Posisi) --}}
@@ -190,4 +219,5 @@
     </table>
 
 </body>
+
 </html>
