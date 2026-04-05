@@ -42,7 +42,7 @@ class SuratPengirimanBarangService
 
             DB::commit();
             return $spb;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollback();
             Log::error("Error creating Surat Pengiriman Barang", [
                 "error" => $e->getMessage(),
