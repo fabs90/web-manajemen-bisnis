@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('agenda_rapat', function (Blueprint $table) {
+        Schema::table("agenda_rapat", function (Blueprint $table) {
             $table->renameColumn("pimpinan_rapat", "pemimpin_rapat");
             $table->renameColumn("notulis", "nama_notulis");
         });
@@ -21,8 +21,9 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('agenda_rapat', function (Blueprint $table) {
-            //
+        Schema::table("agenda_rapat", function (Blueprint $table) {
+            $table->renameColumn("pemimpin_rapat", "pimpinan_rapat");
+            $table->renameColumn("nama_notulis", "notulis");
         });
     }
 };
