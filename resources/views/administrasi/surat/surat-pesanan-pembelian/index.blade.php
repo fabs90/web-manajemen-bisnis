@@ -116,7 +116,7 @@
                                                 <div class="modal-dialog modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header bg-primary text-white">
-                                                            <h5 class="modal-title" id="modalLabel{{ $item->id }}">
+                                                            <h5 class="modal-title text-white" id="modalLabel{{ $item->id }}">
                                                                 Detail Barang - SPP {{ $item->nomor_pesanan_pembelian }}
                                                             </h5>
                                                             <button type="button" class="btn-close"
@@ -135,7 +135,7 @@
                                                                 </thead>
                                                                 <tbody>
                                                                     @foreach ($item->pesananPembelianDetail as $detail)
-                                                                        <tr>
+                                                                        <tr >
                                                                             <td>{{ $detail->nama_barang }}</td>
                                                                             <td>{{ $detail->kuantitas }}</td>
                                                                             <td>Rp

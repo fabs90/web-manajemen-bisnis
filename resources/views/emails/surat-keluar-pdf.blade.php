@@ -3,118 +3,197 @@
 
 <head>
     <meta charset="UTF-8">
+    <title>Surat Keluar - {{ $surat->nomor_surat }}</title>
     <style>
+        @page {
+            margin: 1cm 1.5cm;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            font-size: 14px;
+            line-height: 1.5;
+            font-size: 12px;
+            color: #000;
         }
 
-        .header-table td {
-            vertical-align: top;
+        /* STYLING KOP SURAT (Style Center sesuai SPP) */
+        .kop-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .info {
+        .kop-table td {
+            vertical-align: middle;
+        }
+
+        .logo-cell {
+            text-align: left;
+        }
+
+        .text-cell {
+            text-align: center;
+        }
+
+        .uppercase { text-transform: uppercase; }
+
+        .line {
+            border-top: 4px solid #000; /* Tebal 4px, silakan ganti ke 3px kalau kemanisan */
+            margin-top: 5px;
             margin-bottom: 20px;
         }
 
-        .section-title {
-            font-weight: bold;
-            margin-top: 20px;
-            text-decoration: underline;
+        /* TABEL INFO (Nomor & Tanggal Sejajar) */
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .info-table td {
+            vertical-align: top;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .content {
+            margin-bottom: 20px;
         }
 
         .ttd-area {
             margin-top: 40px;
+            width: 100%;
         }
+        .ttd-table {
+    width: 100%;
+    margin-top: 40px;
+}
+
+.text-center {
+    text-align: center;
+}
 
         .tembusan {
-            margin-top: 20px;
+            margin-top: 30px;
+            font-size: 11px;
         }
     </style>
 </head>
 
 <body>
 
-    {{-- HEADER SURAT --}}
-    <table width="100%" class="header-table">
+    {{-- KOP SURAT CENTERED --}}
+    <table class="kop-table">
         <tr>
-            <td width="80">
-                @if ($user->logo_perusahaan)
-                    <img src="{{ asset('storage/app/public/' . $user->logo_perusahaan) }}" width="80">
+            {{-- Cell Logo --}}
+            <td width="15%" class="logo-cell">
+                @if (isset($user->logo_perusahaan) && $user->logo_perusahaan)
+                    @php
+                        // Pakai path direktori lokal untuk DomPDF
+                        $logoPath = public_path('storage/' . $user->logo_perusahaan);
+                        if(file_exists($logoPath)){
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                            $logoMime = mime_content_type($logoPath);
+                        }
+                    @endphp
+                    @if(isset($logoBase64))
+                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" width="70">
+                    @endif
                 @endif
             </td>
-            <td>
-                <strong style="font-size: 16px;">{{ $user->name }}</strong><br>
-                {{ $user->alamat }}<br>
-                Telp: {{ $user->nomor_telepon }}<br>
-                Email: {{ $user->email }}
+            
+            {{-- Cell Teks Tengah --}}
+            <td width="70%" class="text-cell">
+                <strong style="font-size: 16px;" class="uppercase">{{ $user->name }}</strong><br>
+                <span style="font-size: 11px;">
+                    {{ $user->alamat }}<br>
+                    Telp: {{ $user->nomor_telepon }} | Email: {{ $user->email }}
+                </span>
+            </td>
+            
+            {{-- Cell Penyeimbang --}}
+            <td width="15%"></td>
+        </tr>
+    </table>
+
+    <div class="line"></div>
+
+    {{-- NOMOR SURAT SEJAJAR TANGGAL (ADM-001) --}}
+    <table class="info-table">
+        <tr>
+            <td width="60%">
+                <strong>Nomor:</strong> {{ $surat->nomor_surat }}<br>
+                <strong>Lampiran:</strong> {{ $surat->lampiran ?? '-' }}<br>
+                <strong>Perihal:</strong> {{ $surat->perihal }}
+            </td>
+            <td width="40%" class="text-right">
+                {{ \Carbon\Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y') }}
             </td>
         </tr>
     </table>
 
-    <hr>
-
-    {{-- Nomor Surat --}}
-    <div class="info">
-        <p><strong>Nomor Surat:</strong> {{ $surat->nomor_surat }}</p>
-        <p><strong>Lampiran:</strong> {{ $surat->lampiran ?? '-' }}</p>
-        <p><strong>Perihal:</strong> {{ $surat->perihal }}</p>
-        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($surat->tanggal_surat)->format('d F Y') }}</p>
-    </div>
-
     {{-- TUJUAN --}}
-    <div class="info">
-        <p><strong>Kepada Yth:</strong><br>
-            {{ $surat->nama_penerima }}<br>
-            {{ $surat->jabatan_penerima }}<br>
-            {{ $surat->alamat_penerima }}
-        </p>
+    <div class="content">
+        Kepada Yth:<br>
+        <strong>{{ $surat->nama_penerima }}</strong><br>
+        {{ $surat->jabatan_penerima }}<br>
+        {{ $surat->alamat_penerima }}
     </div>
 
     <p>Dengan hormat,</p>
 
-    {{-- PEMBUKA --}}
-    <p>{!! nl2br(e($surat->paragraf_pembuka)) !!}</p>
-
-    {{-- ISI --}}
-    <p>{!! nl2br(e($surat->paragraf_isi)) !!}</p>
-
-    {{-- PENUTUP --}}
-    <p>{!! nl2br(e($surat->paragraf_penutup)) !!}</p>
+    {{-- ISI SURAT --}}
+    <div class="content">
+        <p style="text-align: justify;">{!! nl2br(e($surat->paragraf_pembuka)) !!}</p>
+        <p style="text-align: justify;">{!! nl2br(e($surat->paragraf_isi)) !!}</p>
+        <p style="text-align: justify;">{!! nl2br(e($surat->paragraf_penutup)) !!}</p>
+    </div>
 
     <p>
-        Demikian surat ini kami sampaikan. Atas kerja sama yang baik disampaikan terima kasih.
+        Demikian surat ini kami sampaikan. Atas perhatian Bapak/Ibu, kami ucapkan terima kasih.
     </p>
 
-    {{-- TTD --}}
-    <div class="ttd-area">
-        <p>Hormat kami,</p>
+    {{-- AREA TANDA TANGAN --}}
+    <table class="ttd-table" border="0">
+        <tr>
+            
+            <td width="75%"></td>
+            
+            
+            <td width="25%" class="text-right">
+                Hormat kami,<br>
+                
+                {{-- Validasi TTD --}}
+                @if ($surat->ttd)
+                    @php
+                        $ttdPath = public_path('storage/' . $surat->ttd);
+                        if(file_exists($ttdPath)){
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
+                        }
+                    @endphp
+                    @if(isset($ttdBase64))
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
+                    @else
+                        <br><br><br><br>
+                    @endif
+                @else
+                    <br><br><br><br>
+                @endif
 
-        @if ($surat->ttd)
-            <img src="{{ asset('storage/' . $surat->ttd) }}" width="120"><br>
-        @else
-            <br><br><br>
-        @endif
-
-        <strong>{{ $surat->nama_pengirim }}</strong><br>
-        {{ $surat->jabatan_pengirim }}
-    </div>
+                <br>
+                <strong><u>{{ $surat->nama_pengirim }}</u></strong><br>
+                {{ $surat->jabatan_pengirim }}
+            </td>
+        </tr>
+    </table>
 
     {{-- TEMBUSAN --}}
     @if ($surat->tembusan)
         <div class="tembusan">
-            <strong>Tembusan:</strong>
-            <p>{!! nl2br(e($surat->tembusan)) !!}</p>
+            <strong><u>Tembusan:</u></strong><br>
+            {!! nl2br(e($surat->tembusan)) !!}
         </div>
-    @endif
-
-    {{-- LAMPIRAN FILE --}}
-    @if ($surat->file_lampiran)
-        <p>
-            <strong>Lampiran File:</strong><br>
-            <a href="{{ asset('storage/' . $surat->file_lampiran) }}">Klik untuk membuka lampiran</a>
-        </p>
     @endif
 
 </body>
