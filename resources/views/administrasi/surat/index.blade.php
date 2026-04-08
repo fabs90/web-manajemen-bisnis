@@ -61,7 +61,7 @@
     </style>
 
     <div class="menu-grid">
-        <a href="{{ route('administrasi.surat-masuk.create') }}" class="menu-card text-black" style="background:#ffff66"
+        <a href="{{ route('administrasi.surat-masuk.index') }}" class="menu-card text-black" style="background:#ffff66"
             data-tooltip="Dokumen yang diterima dari luar perusahaan, seperti surat pemberitahuan, permohonan, maupun penawaran.">
             SURAT MASUK
         </a>

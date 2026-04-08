@@ -6,12 +6,19 @@
 @section('section-row')
 
     <div class="container">
-
-        {{-- ========================= --}}
-        {{-- FORM INPUT SURAT MASUK --}}
-        {{-- ========================= --}}
         <div class="card mb-4">
-            <div class="card-header fw-bold">Tambah Surat Masuk</div>
+            <div class="card-header fw-bold">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Buat Surat Masuk</h5>
+                    </div>
+                    <div>
+                        <a href="{{ route('administrasi.surat-masuk.index') }}" class="btn btn-primary">
+                            Kembali
+                        </a>
+                    </div>
+                </div>
+            </div>
             <div class="card-body">
                 <form action="{{ route('administrasi.surat-masuk.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -57,68 +64,6 @@
                 </form>
             </div>
         </div>
-        <div class="card">
-            <div class="card-header fw-bold">Agenda Surat Masuk</div>
-            <div class="card-body p-0">
-                <table class="table table-agenda table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Nomor Agenda</th>
-                            <th>Tanggal Terima</th>
-                            <th>Nomor Surat</th>
-                            <th>Pengirim</th>
-                            <th>Perihal</th>
-                            <th>Status</th>
-                            <th width="150px">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($agendaSuratMasuk as $s)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $s->nomor_agenda }}</td>
-                                <td>{{ $s->tanggal_terima }}</td>
-                                <td>{{ $s->nomor_surat }}</td>
-                                <td>{{ $s->pengirim }}</td>
-                                <td>{{ $s->perihal }}</td>
-                                <td>
-                                    @if ($s->status_disposisi == 'selesai')
-                                        <span class="badge bg-success">Sudah Didisposisi</span>
-                                    @else
-                                        <span class="badge bg-warning text-dark">Belum Didisposisi</span>
-                                    @endif
-                                </td>
-
-                                <td>
-                                    <a href="{{ route('administrasi.surat-masuk.disposisi.create', $s->id) }}"
-                                        class="btn btn-sm btn-primary mb-1">
-                                        Disposisi
-                                    </a>
-                                    @if ($s->file_surat)
-                                        <a href="{{ asset('storage/' . $s->file_surat) }}" target="_blank"
-                                            class="btn btn-sm btn-secondary mb-1">
-                                            Lihat Surat
-                                        </a>
-                                    @endif
-                                    <form id="delete-form-{{ $s->id }}"
-                                        action="{{ route('administrasi.surat-masuk.destroy', $s->id) }}" method="POST"
-                                        style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" onclick="confirmDelete({{ $s->id }})"
-                                            class="btn btn-sm btn-danger">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
 @endsection
 @push('script')
