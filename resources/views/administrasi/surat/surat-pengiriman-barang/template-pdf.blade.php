@@ -98,7 +98,7 @@
     <h3 class="text-center fw-bold uppercase mb-3">SURAT PENGIRIMAN BARANG</h3>
     <div class="text-center">
         <strong>Nomor:</strong>
-        {{ $data->nomor_pengiriman_barang ?? '___' }}<br>
+        {{ $data->nomor_pengiriman_barang ?? '_' }}<br>
     </div>
 
     {{-- Nomor --}}
