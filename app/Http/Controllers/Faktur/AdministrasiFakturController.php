@@ -73,7 +73,6 @@ class AdministrasiFakturController extends Controller
     public function store(Request $request)
     {
         try {
-            dd($request->all());
             $manajemenRapatServices = app(AdministrasiFakturService::class);
             $manajemenRapatServices->store($request->all());
             return redirect()
