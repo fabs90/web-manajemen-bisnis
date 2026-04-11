@@ -35,7 +35,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($dataPiutang as $item)
+                        @foreach ($dataPiutang as $item)
                             @php
                                 $pelanggan = $item->pelanggan;
                                 $totalPiutang = max($item->saldo ?? 0, 0);
@@ -52,13 +52,7 @@
                                     </a>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center text-muted">
-                                    Tidak ada data piutang
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>

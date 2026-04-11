@@ -4,6 +4,21 @@
 
 @section('section-row')
     <div class="container mt-4">
+        {{-- Alert sukses --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
+                <strong>Sukses!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- Alert Error --}}
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>Gagal!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
         <div class="card p-4 shadow">
             <h5 class="text-center fw-bold mb-4">MEMO KREDIT</h5>
             <form action="{{ route('administrasi.memo-kredit.store') }}" method="POST">
@@ -45,8 +60,8 @@
                             </td>
                             <td>Nomor Memo Kredit<span class="text-danger">*</span></td>
                             <td>
-                                <input type="text" name="nomor_memo" value="{{ old('nomor_memo') }}" class="form-control"
-                                    required>
+                                <input type="text" name="nomor_memo" value="{{ old('nomor_memo') }}"
+                                    class="form-control" required>
                             </td>
                         </tr>
                         <tr>

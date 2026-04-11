@@ -41,7 +41,7 @@
         <tr>
             <td width="80">
                 @if ($user->logo_perusahaan)
-                    <img src="{{ asset('storage/app/public/' . $user->logo_perusahaan) }}" width="80">
+                    <img src="{{ storage_path('app/public/' . $user->logo_perusahaan) }}" width="80">
                 @endif
             </td>
             <td>
@@ -92,7 +92,7 @@
         <p>Hormat kami,</p>
 
         @if ($surat->ttd)
-            <img src="{{ asset('storage/' . $surat->ttd) }}" width="120"><br>
+            <img src="{{ storage_path('app/public/' . $surat->ttd) }}" width="120"><br>
         @else
             <br><br><br>
         @endif

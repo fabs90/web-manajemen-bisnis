@@ -25,20 +25,55 @@ class AdministrasiFakturController extends Controller
 
     public function create()
     {
-        $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian.pelanggan')
-            ->whereDoesntHave("fakturPenjualan")
+        $dataSpb = SuratPengirimanBarang::where(function ($query) {
+            $query->whereHas('pesananPembelian.pelanggan')
+                ->orWhereHas('pesananPembelian.supplier');
+        })
+            ->whereDoesntHave('fakturPenjualan')
             ->with([
-                "pesananPembelian.pelanggan",
-                "suratPengirimanBarangDetail.pesananPembelianDetail",
+                'pesananPembelian.pelanggan',
+                'pesananPembelian.supplier',
+                'suratPengirimanBarangDetail.pesananPembelianDetail',
             ])
-            ->orderBy("id", "DESC")
-            ->get();
-        return view("administrasi.surat.faktur-penjualan.create", compact("dataSpb"));
+            ->orderBy('id', 'DESC')
+            ->get()
+            ->map(function ($spb) {
+                return [
+                    'id' => $spb->id,
+                    'nomor_pengiriman_barang' => $spb->nomor_pengiriman_barang,
+                    'nama_pengirim' => $spb->nama_pengirim,
+                    'pesanan_pembelian' => [
+                        'jenis' => $spb->pesananPembelian->jenis,
+                        'pelanggan' => $spb->pesananPembelian->pelanggan ? [
+                            'nama' => $spb->pesananPembelian->pelanggan->nama,
+                            'alamat' => $spb->pesananPembelian->pelanggan->alamat,
+                        ] : null,
+                        'supplier' => $spb->pesananPembelian->supplier ? [
+                            'nama' => $spb->pesananPembelian->supplier->nama,
+                            'alamat' => $spb->pesananPembelian->supplier->alamat,
+                        ] : null,
+                    ],
+                    'surat_pengiriman_barang_detail' => $spb->suratPengirimanBarangDetail->map(function ($detail) {
+                        return [
+                            'id' => $detail->id,
+                            'jumlah_dikirim' => $detail->jumlah_dikirim,
+                            'pesanan_pembelian_detail' => [
+                                'nama_barang' => $detail->pesananPembelianDetail->nama_barang,
+                                'kuantitas' => $detail->pesananPembelianDetail->kuantitas,
+                                'harga' => $detail->pesananPembelianDetail->harga,
+                            ],
+                        ];
+                    }),
+                ];
+            });
+
+        return view('administrasi.surat.faktur-penjualan.create', compact('dataSpb'));
     }
 
     public function store(Request $request)
     {
         try {
+            dd($request->all());
             $manajemenRapatServices = app(AdministrasiFakturService::class);
             $manajemenRapatServices->store($request->all());
             return redirect()
