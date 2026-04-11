@@ -3,54 +3,96 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Surat Undangan Rapat</title>
+    <title>Surat Undangan Rapat - {{ $agendaJanjiTemu->nomor_surat ?? '-' }}</title>
     <style>
-        body {
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.5;
-            margin: 30px;
+        @page {
+            margin: 1cm 1.5cm;
         }
 
-        .kop {
-            text-align: center;
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .fw-bold {
             font-weight: bold;
-            margin-bottom: 10px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table-no-border {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table-no-border td,
+        .table-no-border th {
+            border: none !important;
+            padding: 2px 0;
+            vertical-align: middle;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 25px;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
         }
 
         .line {
-            border-top: 2px solid #000;
-            margin-top: -5px;
-            margin-bottom: 10px;
+            border-bottom: 3px solid #000;
+            margin: 10px 0 15px;
         }
 
+        /* INFO SURAT */
         .table-info td {
             padding: 2px 0;
+            vertical-align: top;
         }
 
-        .agenda-table,
-        .agenda-table th,
-        .agenda-table td {
-            border: 1px solid #000;
+        /* AGENDA TABLE */
+        .table-agenda {
+            width: 100%;
             border-collapse: collapse;
+            margin: 15px 0;
         }
 
-        .agenda-table th,
-        .agenda-table td {
+        .table-agenda th, .table-agenda td {
+            border: 1px solid #000;
             padding: 6px;
         }
 
-        .footer {
-            margin-top: 40px;
-            text-align: right;
+        .table-agenda th {
+            background-color: #f0f0f0;
         }
+
+        .mb-4 { margin-bottom: 25px; }
     </style>
 </head>
 
 <body>
 
     {{-- KOP SURAT --}}
-    <table class="table-no-border">
+        <table class="table-no-border" style="margin-bottom: 10px;">
         <tr>
             <td width="15%">
                 @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
@@ -63,22 +105,21 @@
                 @endif
             </td>
             <td width="70%" class="text-center">
-                <div style="font-size:16px; font-weight:bold;" class="uppercase">
-                    {{ $profileUser->name ?? 'Nama Perusahaan' }}
-                </div>
+                <div style="font-size:16px; font-weight:bold; text-transform:uppercase;">
+                    {{ $profileUser->name ?? 'Nama Perusahaan' }}</div>
                 <div style="font-size:11px;">{{ $profileUser->alamat ?? 'Alamat Perusahaan' }}</div>
-                <div style="font-size:11px;">
-                    Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email: {{ $profileUser->email ?? '-' }}
-                </div>
+                <div style="font-size:11px;">Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email:
+                    {{ $profileUser->email ?? '-' }}</div>
             </td>
             <td width="15%"></td>
         </tr>
     </table>
+
     <div class="line"></div>
-    {{-- Nomor surat dan tanggal --}}
+    {{-- Nomor, Lampiran, Perihal --}}
     <table class="table-info" width="100%">
         <tr>
-            <td width="18%">Nomor</td>
+            <td width="15%">Nomor</td>
             <td>: {{ $agendaJanjiTemu->nomor_surat ?? '-' }}</td>
         </tr>
         <tr>
@@ -87,29 +128,27 @@
         </tr>
         <tr>
             <td>Perihal</td>
-            <td>: <strong>{{ $agendaJanjiTemu->perihal ?? $agendaJanjiTemu->judul_rapat }}</strong></td>
+            <td>: <strong>{{ strtoupper($agendaJanjiTemu->perihal ?? $agendaJanjiTemu->judul_rapat ?? 'UNDANGAN RAPAT') }}</strong></td>
         </tr>
     </table>
 
     <br>
 
-    {{-- Alamat Tujuan --}}
-    <p>
-        Kepada Yth:<br>
+    {{-- Penerima --}}
+    <div class="mb-4">
+        Kepada Yth.<br>
         <strong>{{ $agendaJanjiTemu->nama_penerima ?? '-' }}</strong><br>
         {{ $agendaJanjiTemu->jabatan_penerima ?? '' }}<br>
-        Di {{ $agendaJanjiTemu->kota_penerima ?? '' }}
-    </p>
+        Di {{ $agendaJanjiTemu->kota_penerima ?? 'Tempat' }}
+    </div>
 
     <p>
-        Dengan hormat,
-        Sehubungan dengan akan diadakannya rapat dengan agenda
-        <strong>{{ $agendaJanjiTemu->judul_rapat ?? '-' }}</strong>,
-        kami mengundang Bapak/Ibu untuk hadir pada:
+        Dengan hormat,<br>
+        Sehubungan dengan akan diadakannya rapat <strong>{{ $agendaJanjiTemu->judul_rapat ?? '-' }}</strong>, kami mengundang Bapak/Ibu untuk hadir pada:
     </p>
 
-    {{-- Informasi rapat --}}
-    <table class="table-info" width="100%">
+    {{-- Detail Waktu --}}
+    <table class="table-info" width="100%" style="margin-left: 20px;">
         <tr>
             <td width="20%">Hari</td>
             <td>: {{ $agendaJanjiTemu->hari ?? '-' }}</td>
@@ -120,11 +159,10 @@
         </tr>
         <tr>
             <td>Waktu</td>
-            <td>:
-                {{ $agendaJanjiTemu->waktu_mulai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_mulai)->format('H:i') : '-' }}
-                -
-                {{ $agendaJanjiTemu->waktu_selesai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_selesai)->format('H:i') : '-' }}
-                WIB
+            <td>: 
+                {{ $agendaJanjiTemu->waktu_mulai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_mulai)->format('H:i') : '-' }} 
+                - 
+                {{ $agendaJanjiTemu->waktu_selesai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_selesai)->format('H:i') : '-' }} WIB
             </td>
         </tr>
         <tr>
@@ -133,40 +171,48 @@
         </tr>
     </table>
 
-    <br>
+    <p style="margin-top: 15px;">Adapun agenda rapat adalah sebagai berikut:</p>
 
-    {{-- Agenda Rapat --}}
-    <p>Adapun agenda rapat sebagai berikut :</p>
-
-    <table class="agenda-table" width="100%">
+    {{-- Tabel Agenda --}}
+    <table class="table-agenda">
         <thead>
             <tr>
-                <th width="5%">No</th>
+                <th width="8%">No</th>
                 <th>Agenda Rapat</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($agendaJanjiTemu->details as $detail)
+            @if(isset($agendaJanjiTemu->details) && count($agendaJanjiTemu->details) > 0)
+                @foreach ($agendaJanjiTemu->details as $detail)
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td>{{ $detail->agenda }}</td>
+                    </tr>
+                @endforeach
+            @else
                 <tr>
-                    <td class="text-center" align="center">{{ $loop->iteration }}</td>
-                    <td>{{ $detail->agenda }}</td>
+                    <td colspan="2" class="text-center"><em>Agenda terlampir dalam judul rapat.</em></td>
                 </tr>
-            @endforeach
+            @endif
         </tbody>
     </table>
 
     <p>
-        Demikian undangan ini kami sampaikan, atas perhatian dan kehadirannya kami ucapkan terima kasih.
+        Demikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.
     </p>
 
-    {{-- Penandatangan --}}
-    <div class="footer">
-        {{ \Carbon\Carbon::now()->setTimezone('Asia/Jakarta')->translatedFormat('d F Y') }}<br>
-        <strong>{{ $agendaJanjiTemu->jabatan_penandatangan }}</strong><br><br><br><br>
-        <strong style="text-decoration: underline;">
-            {{ $agendaJanjiTemu->nama_penandatangan }}
-        </strong>
-    </div>
+    {{-- Footer Tanda Tangan --}}
+    <table width="100%" border="0" style="margin-top: 40px;">
+        <tr>
+            <td width="60%"></td>
+            <td width="40%" class="text-center">
+                {{ \Carbon\Carbon::now()->setTimezone('Asia/Jakarta')->translatedFormat('d F Y') }}<br>
+                <strong>{{ $agendaJanjiTemu->jabatan_penandatangan ?? 'Hormat Kami' }}</strong>
+                <br><br><br><br><br>
+                <strong><u>({{ $agendaJanjiTemu->nama_penandatangan ?? $profileUser->name }})</u></strong>
+            </td>
+        </tr>
+    </table>
 
 </body>
 
