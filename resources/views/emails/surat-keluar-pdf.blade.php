@@ -34,10 +34,13 @@
             text-align: center;
         }
 
-        .uppercase { text-transform: uppercase; }
+        .uppercase {
+            text-transform: uppercase;
+        }
 
         .line {
-            border-top: 4px solid #000; /* Tebal 4px, silakan ganti ke 3px kalau kemanisan */
+            border-top: 4px solid #000;
+            /* Tebal 4px, silakan ganti ke 3px kalau kemanisan */
             margin-top: 5px;
             margin-bottom: 20px;
         }
@@ -64,14 +67,15 @@
             margin-top: 40px;
             width: 100%;
         }
-        .ttd-table {
-    width: 100%;
-    margin-top: 40px;
-}
 
-.text-center {
-    text-align: center;
-}
+        .ttd-table {
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
 
         .tembusan {
             margin-top: 30px;
@@ -91,17 +95,17 @@
                     @php
                         // Pakai path direktori lokal untuk DomPDF
                         $logoPath = public_path('storage/' . $user->logo_perusahaan);
-                        if(file_exists($logoPath)){
+                        if (file_exists($logoPath)) {
                             $logoBase64 = base64_encode(file_get_contents($logoPath));
                             $logoMime = mime_content_type($logoPath);
                         }
                     @endphp
-                    @if(isset($logoBase64))
+                    @if (isset($logoBase64))
                         <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" width="70">
                     @endif
                 @endif
             </td>
-            
+
             {{-- Cell Teks Tengah --}}
             <td width="70%" class="text-cell">
                 <strong style="font-size: 16px;" class="uppercase">{{ $user->name }}</strong><br>
@@ -110,7 +114,7 @@
                     Telp: {{ $user->nomor_telepon }} | Email: {{ $user->email }}
                 </span>
             </td>
-            
+
             {{-- Cell Penyeimbang --}}
             <td width="15%"></td>
         </tr>
@@ -156,23 +160,23 @@
     {{-- AREA TANDA TANGAN --}}
     <table class="ttd-table" border="0">
         <tr>
-            
+
             <td width="75%"></td>
-            
-            
+
+
             <td width="25%" class="text-right">
                 Hormat kami,<br>
-                
+
                 {{-- Validasi TTD --}}
                 @if ($surat->ttd)
                     @php
                         $ttdPath = public_path('storage/' . $surat->ttd);
-                        if(file_exists($ttdPath)){
+                        if (file_exists($ttdPath)) {
                             $ttdBase64 = base64_encode(file_get_contents($ttdPath));
                             $ttdMime = mime_content_type($ttdPath);
                         }
                     @endphp
-                    @if(isset($ttdBase64))
+                    @if (isset($ttdBase64))
                         <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
                     @else
                         <br><br><br><br>
