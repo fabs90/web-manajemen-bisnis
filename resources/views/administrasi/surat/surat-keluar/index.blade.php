@@ -28,9 +28,9 @@
                             <th>No</th>
                             <th>Nomor Surat</th>
                             <th>Tanggal Surat</th>
+                            <th>Email Penerima</th>
                             <th>Nama Penerima</th>
                             <th>Perihal</th>
-                            <th>Tembusan</th>
                             <th width="150px">Aksi</th>
                         </tr>
                     </thead>
@@ -40,18 +40,14 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $surat->nomor_surat }}</td>
                                 <td>{{ \Carbon\Carbon::parse($surat->tanggal_surat)->format('d/m/Y') }}</td>
+                                <td>{{ $surat->emailLogs->first()->email }}</td>
                                 <td>{{ $surat->nama_penerima }}</td>
                                 <td>{{ $surat->perihal }}</td>
-                                <td>{{ $surat->tembusan ?? '-' }}</td>
                                 <td>
-                                    <form
-                                        action="{{ route('administrasi.surat-keluar.downloadPdf', ['id' => $surat->id]) }}"
-                                        method="post" target="_blank">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="bi bi-file-earmark-pdf"></i>
-                                        </button>
-                                    </form>
+                                    <a href="{{ route('administrasi.surat-keluar.downloadPdf', ['id' => $surat->id]) }}"
+                                        target="_blank" class="btn btn-sm btn-success">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
                                     <form action="{{ route('administrasi.surat-keluar.destroy', $surat->id) }}"
                                         method="POST" class="d-inline" id="delete-form-{{ $surat->id }}">
                                         @csrf

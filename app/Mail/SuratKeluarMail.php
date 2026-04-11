@@ -7,9 +7,10 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\File;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Barryvdh\DomPDF\Facade\Pdf; // 1. Import Facade PDF
 
-class SuratKeluarMail extends Mailable
+class SuratKeluarMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

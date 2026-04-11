@@ -322,7 +322,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
         ])->name('administrasi.surat-masuk.disposisi.store');
 
         // Surat Keluar
-        Route::get('/surat-keluar/', [
+        Route::get('/surat-keluar', [
             AdministrasiSuratController::class,
             'indexSuratKeluar',
         ])->name('administrasi.surat-keluar.index');
@@ -332,7 +332,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'createSuratKeluar',
         ])->name('administrasi.surat-keluar.create');
 
-        Route::post('/surat-keluar/', [
+        Route::post('/surat-keluar', [
             AdministrasiSuratController::class,
             'storeSuratKeluar',
         ])->name('administrasi.surat-keluar.store');
@@ -342,7 +342,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'destroyAgendaSuratKeluar',
         ])->name('administrasi.surat-keluar.destroy');
 
-        Route::post('/surat-keluar/{id}', [SuratKeluarController::class, 'downloadPdf'])->name('administrasi.surat-keluar.downloadPdf');
+        Route::get('/surat-keluar/{id}', [SuratKeluarController::class, 'downloadPdf'])->name('administrasi.surat-keluar.downloadPdf');
 
         // Surat Kas Kecil
         Route::get('/kas-kecil/', [
@@ -355,7 +355,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'createKasKecil',
         ])->name('administrasi.kas-kecil.create');
 
-        Route::get('/kas-kecil/{id}/generate', [
+        Route::get('/kas-kecil/{id}', [
             AdministrasiSuratController::class,
             'pdfPermintaanKasKecil',
         ])->name('administrasi.kas-kecil.generatePdf');

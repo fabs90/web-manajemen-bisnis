@@ -91,7 +91,7 @@
     input[type="email"],
     input[type="text"],
     input[type="password"],
-   select {
+    select {
         width: 100%;
         padding: 12px 14px;
         border-radius: 10px;
@@ -105,7 +105,7 @@
     }
 
     input:focus,
-    select:focus{
+    select:focus {
         border-color: #2563eb;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
@@ -137,9 +137,11 @@
         font-weight: 600;
         cursor: pointer;
         font-size: 15px;
-        transition:
-            background 0.25s ease,
-            transform 0.1s ease;
+        transition: background 0.25s ease, transform 0.1s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
     }
 
     .btn-primary:hover {
@@ -148,6 +150,11 @@
 
     .btn-primary:active {
         transform: scale(0.97);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
     }
 
     .register-text {
@@ -191,6 +198,28 @@
 
     .toggle-password:hover {
         color: #2563eb;
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     @keyframes fadeIn {
@@ -265,9 +294,7 @@
                         <a href="{{ route('password.request') }}" class="forgot">Lupa password?</a>
                     @endif
                 </div>
-
-                <button type="submit" class="btn-primary">Masuk</button>
-
+                <button id="btn-submit" type="submit" class="btn-primary">Masuk</button>
                 <p class="register-text">
                     Belum punya akun?
                     <a href="{{ route('register') }}">Daftar sekarang</a>
@@ -276,6 +303,17 @@
         </div>
     </div>
     <script>
+        const form = document.querySelector(".auth-form");
+        const btnSubmit = document.getElementById("btn-submit");
+
+        form.addEventListener("submit", function() {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `
+            <span class="spinner"></span>
+            <span>Memproses...</span>
+        `;
+        });
+
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             const isPassword = input.type === "password";
@@ -283,7 +321,6 @@
             icon.textContent = isPassword ? "🙈" : "👁️";
         }
     </script>
-    <!--<script src="{{ asset('js/login.js') }}"></script>-->
 </body>
 
 </html>
