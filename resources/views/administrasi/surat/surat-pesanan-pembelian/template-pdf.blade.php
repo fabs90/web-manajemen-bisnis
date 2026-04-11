@@ -27,8 +27,21 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            /* Tambahkan border luar tabel */
+            border: 1px solid #000;
         }
 
+        /* Tambahkan border untuk setiap sel header dan data */
+        .table th, 
+        .table td {
+            border: 1px solid #000;
+            padding: 8px; /* Menambah sedikit ruang agar teks tidak menempel ke garis */
+            vertical-align: middle;
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
         .table-no-border {
             width: 100%;
             border-collapse: collapse;
@@ -92,8 +105,8 @@
     {{-- Nomor dan Tanggal Surat --}}
     <table width="100%" class="no-border mb-4">
         <tr>
-            <td width="60%"></td>
-            <td width="40%">
+            <td width="70%"></td>
+            <td width="30%">
                 <strong>Nomor:</strong>
                 ({{ $data->nomor_pesanan_pembelian ?? '___' }})/PP/{{ $profileUser->name ?? 'PERUSAHAAN' }}/{{ date('m/Y') }}
                 <br>
@@ -127,7 +140,7 @@
 
     {{-- Tabel Detail Barang --}}
     <table class="table">
-        <thead style="background-color: #f0f0f0;">
+        <thead>
             <tr class="text-center">
                 <th width="5%">No</th>
                 <th width="15%">Kuantitas</th>
@@ -151,8 +164,8 @@
                 </tr>
             @endforelse
 
-            {{-- Baris kosong agar tetap 8 baris (opsional, sesuai contoh klasik) --}}
-            @for ($i = count($data->pesananPembelianDetail) + 1; $i <= 8; $i++)
+            {{-- Baris kosong tetap memiliki border karena CSS di atas --}}
+            @for ($i = count($data->pesananPembelianDetail) + 1; $i <= 5; $i++)
                 <tr>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
@@ -171,7 +184,6 @@
             </tr>
         </tbody>
     </table>
-
     {{-- Catatan (opsional) --}}
     @if ($data->catatan)
         <p><strong>Catatan:</strong><br>{{ nl2br(e($data->catatan)) }}</p>
@@ -180,8 +192,8 @@
     {{-- Tanda Tangan --}}
     <table width="100%" class="no-border" style="margin-top: 50px;">
         <tr>
-            <td width="50%"></td>
-            <td width="50%" class="text-center">
+            <td width="70%"></td>
+            <td width="30%" class="text-center">
                 Hormat kami,<br><br><br><br><br>
                 <strong><u>({{ $profileUser->name ?? 'Nama Pengguna' }})</u></strong><br>
                 {{ $profileUser->jabatan ?? 'Bagian Pembelian' }}

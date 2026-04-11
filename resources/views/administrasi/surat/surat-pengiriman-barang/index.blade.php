@@ -97,19 +97,16 @@
                                     </td>
                                     <td>
                                         @php
-                                            $statusConfig = [
-                                                'diproses' => ['bg-secondary', 'Diproses'],
-                                                'dikirim' => ['bg-primary', 'Dikirim'],
-                                                'diterima' => ['bg-success', 'Diterima'],
-                                                'dibatalkan' => ['bg-danger', 'Dibatalkan'],
-                                                'dikembalikan' => ['bg-warning', 'Dikembalikan'],
-                                            ];
-                                            $config = $statusConfig[$spb->status_pengiriman] ?? [
-                                                'bg-dark',
-                                                '❓ Tidak Diketahui',
-                                            ];
-                                        @endphp
-                                        <span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
+                                                $statusConfig = [
+                                                    'diproses'     => ['bg-secondary', 'Diproses'],
+                                                    'dikirim'      => ['bg-primary', 'Dikirim'],
+                                                    'diterima'     => ['bg-success', 'Diterima'],
+                                                    'dibatalkan'   => ['bg-danger', 'Dibatalkan'],
+                                                    'dikembalikan' => ['bg-warning', 'Dikembalikan'],
+                                                ];
+                                           $config = $statusConfig[$spb->status_pengiriman] ?? ['bg-dark', 'Tidak Diketahui'];
+@endphp
+<span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
                                     </td>
                                     <td>
                                         @if ($spb->pesananPembelian?->jenis == 'transaksi_keluar')

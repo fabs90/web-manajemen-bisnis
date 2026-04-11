@@ -46,7 +46,9 @@ class AdministrasiSuratController extends Controller
 
     public function indexSuratKeluar()
     {
-        $suratKeluar = AgendaSuratKeluar::where('user_id', auth()->id())->get();
+        $suratKeluar = AgendaSuratKeluar::where('user_id', auth()->id())
+            ->select('id', 'nomor_surat', 'tanggal_surat', 'nama_penerima', 'perihal', 'tembusan')
+            ->get();
 
         return view(
             'administrasi.surat.surat-keluar.index',

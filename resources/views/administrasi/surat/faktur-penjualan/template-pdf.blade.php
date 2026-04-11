@@ -139,14 +139,22 @@
         <table class="table-no-border">
             <tr>
                 <td width="12%" class="fw-bold">Kepada</td>
-                <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                @if ($faktur->suratPengirimanBarang->pesananPembelian->jenis == 'transaksi_masuk')
+                    <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                @else
+                    <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->supplier->nama }}</td>
+                @endif
                 <td width="18%" class="fw-bold">Nomor Pesanan</td>
                 <td width="27%">:
                     {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="fw-bold">Alamat</td>
-                <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
+                @if ($faktur->suratPengirimanBarang->pesananPembelian->jenis == 'transaksi_masuk')
+                    <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
+                @else
+                    <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->supplier->alamat }}</td>
+                @endif
                 <td class="fw-bold">Nomor SPB</td>
                 <td>: {{ $faktur->suratPengirimanBarang->nomor_pengiriman_barang }}</td>
             </tr>

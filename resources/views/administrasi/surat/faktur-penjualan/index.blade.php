@@ -51,7 +51,11 @@
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td>{{ $item->kode_faktur }}</td>
-                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                                    @if ($item->suratPengirimanBarang->pesananPembelian->jenis == 'transaksi_masuk')
+                                        <td>{{ $item->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                                    @else
+                                        <td>{{ $item->suratPengirimanBarang->pesananPembelian->supplier->nama }}</td>
+                                    @endif
                                     <td>{{ $item->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}
                                     </td>
                                     <td>{{ $item->suratPengirimanBarang->nomor_pengiriman_barang ?? '-' }}</td>
