@@ -15,7 +15,6 @@ class MemoKreditService
     public function store($request)
     {
         DB::beginTransaction();
-
         try {
             $total = 0;
 
@@ -23,9 +22,11 @@ class MemoKreditService
                 $total += $this->cleanRupiah($request->total[$index]);
             }
 
+            $nomorMemo = $this->generateNomorMemo();
+
             // Simpan memo utama
             $memo = MemoKredit::create([
-                'nomor_memo' => $request->nomor_memo,
+                'nomor_memo' => $nomorMemo,
                 'tanggal' => $request->tanggal,
                 'faktur_penjualan_id' => $request->faktur_id,
                 'alasan_pengembalian' => $request->alasan_pengembalian,
@@ -173,5 +174,35 @@ class MemoKreditService
     private function cleanRupiah(string|int $value): int
     {
         return (int) preg_replace("/\D/", "", $value);
+    }
+
+    private function generateNomorMemo()
+    {
+        $userId = auth()->id();
+        $now = now();
+        $tahunBulan = $now->format('Ym'); // Hasil: 202405
+
+        // 1. Cari nomor terakhir untuk user ini di bulan & tahun yang sama
+        $lastMemo = MemoKredit::where('user_id', $userId)
+            ->whereYear('tanggal', $now->year)
+            ->whereMonth('tanggal', $now->month)
+            ->latest('id')
+            ->first();
+
+        // 2. Tentukan nomor urut
+        if (!$lastMemo) {
+            $nextNumber = 1;
+        } else {
+            $lastNumber = (int) substr($lastMemo->nomor_memo, -4);
+            $nextNumber = $lastNumber + 1;
+        }
+
+        // 3. Format string (MK / ID User / YYYYMM / 0001)
+        return sprintf(
+            "MK/%s/%s/%s",
+            str_pad($userId, 3, '0', STR_PAD_LEFT),
+            $tahunBulan,
+            str_pad($nextNumber, 4, '0', STR_PAD_LEFT)
+        );
     }
 }
