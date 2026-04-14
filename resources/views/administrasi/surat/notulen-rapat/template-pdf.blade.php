@@ -116,26 +116,17 @@
         </tr>
         @if(isset($agendaJanjiTemu->pesertaRapat) && count($agendaJanjiTemu->pesertaRapat) > 0)
             @foreach ($agendaJanjiTemu->pesertaRapat as $i => $peserta)
-    <tr>
-        <td class="text-center">{{ $i + 1 }}</td>
-        <td>{{ $peserta->nama }}</td>
-        <td>{{ $peserta->jabatan }}</td>
-        <td class="text-center">
-            @if ($peserta->tanda_tangan)
-                @php
-                    $path = storage_path('app/public/' . $peserta->tanda_tangan);
-                @endphp
-                @if(file_exists($path))
-                    @php
-                        $data = base64_encode(file_get_contents($path));
-                        $mime = mime_content_type($path);
-                    @endphp
-                    <img src="data:{{ $mime }};base64,{{ $data }}" style="height: 40px;">
-                @endif
-            @else - @endif
-        </td>
-    </tr>
-@endforeach
+                <tr>
+                    <td class="text-center">{{ $i + 1 }}</td>
+                    <td>{{ $peserta->nama }}</td>
+                    <td>{{ $peserta->jabatan }}</td>
+                    <td class="text-center">
+                        @if ($peserta->tanda_tangan)
+                            <img src="{{ storage_path('app/public/' . $peserta->tanda_tangan) }}" style="height: 25px;">
+                        @else - @endif
+                    </td>
+                </tr>
+            @endforeach
         @else
             <tr><td colspan="4" class="text-center">Tidak ada data peserta</td></tr>
         @endif
@@ -208,37 +199,21 @@
 
     {{-- FOOTER / TTD --}}
     <table style="margin-top: 20px; page-break-inside: avoid;">
-    <tr>
-        <td width="50%" style="height: 110px;">
-            <div>{{ $agendaJanjiTemu->nama_kota ?? 'Jakarta' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
-            <div class="fw-bold">Notulis,</div>
-            <br><br><br>
-            <div class="fw-bold">{{ $agendaJanjiTemu->nama_notulis }}</div>
-        </td>
-        <td width="50%">
-            <br>
-            <div class="fw-bold text-center">Pemimpin Rapat,</div>
-            
-            {{-- Bagian TTD Pemimpin --}}
-            <div class="text-center" style="height: 60px;">
-                @if(isset($agendaJanjiTemu->ttd_pemimpin) && $agendaJanjiTemu->ttd_pemimpin)
-                    @php
-                        $ttdPath = storage_path('app/public/' . $agendaJanjiTemu->ttd_pemimpin);
-                    @endphp
-                    @if(file_exists($ttdPath))
-                        @php
-                            $ttdData = base64_encode(file_get_contents($ttdPath));
-                            $ttdMime = mime_content_type($ttdPath);
-                        @endphp
-                        <img src="data:{{ $ttdMime }};base64,{{ $ttdData }}" style="height: 50px;">
-                    @endif
-                @endif
-            </div>
-            
-            <div class="text-center fw-bold">{{ $agendaJanjiTemu->pemimpin_rapat }}</div>
-        </td>
-    </tr>
-</table>
+        <tr>
+            <td width="50%" style="height: 110px;">
+                <div>{{ $agendaJanjiTemu->nama_kota ?? 'Jakarta' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
+                <div class="fw-bold">Notulis,</div>
+                <br><br><br>
+                <div>( {{ $agendaJanjiTemu->nama_notulis }} )</div>
+            </td>
+            <td width="50%">
+                <br>
+                <div class="fw-bold text-center">Pemimpin Rapat,</div>
+                <br><br><br>
+                <div class="text-center">( {{ $agendaJanjiTemu->pemimpin_rapat }} )</div>
+            </td>
+        </tr>
+    </table>
 
 </body>
 </html>

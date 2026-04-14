@@ -25,60 +25,68 @@
                 @csrf
                 <input type="hidden" name="faktur_id" value="{{ $faktur->id }}">
                 {{-- Bagian Detail Faktur --}}
-                <table class="table table-bordered mb-3 align-middle">
-                    <tbody>
-                        <tr>
-                            <td style="width: 25%">Kepada</td>
-                            <td>
+                <div class="row mb-4">
+                    {{-- Kolom Kiri: Informasi Relasi --}}
+                    <div class="col-md-6 border-end">
+                        <h6 class="text-muted text-uppercase fw-bold small mb-3">Informasi Pelanggan/Supplier</h6>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Kepada:</div>
+                            <div class="col-8 fw-bold">
                                 @php
                                     $po = $faktur->suratPengirimanBarang?->pesananPembelian;
                                 @endphp
                                 @if ($po?->jenis == 'transaksi_masuk')
-                                    {{ $po->pelanggan?->nama ?? '-' }}
+                                    <span class="text-primary">{{ $po->pelanggan?->nama ?? '-' }}</span>
                                     <input type="hidden" name="pelanggan_id" value="{{ $po->pelanggan_id }}">
                                 @elseif ($po?->jenis == 'transaksi_keluar')
-                                    {{ $po->supplier?->nama ?? '-' }}
+                                    <span class="text-primary">{{ $po->supplier?->nama ?? '-' }}</span>
                                     <input type="hidden" name="supplier_id" value="{{ $po->supplier_id }}">
                                 @else
                                     -
                                 @endif
-                            </td>
-                            <td style="width: 25%">Tanggal Memo Kredit<span class="text-danger">*</span></td>
-                            <td>
-                                <input type="date" name="tanggal" class="form-control" value="{{ old('tanggal') }}"
-                                    required>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Alamat</td>
-                            <td>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Alamat:</div>
+                            <div class="col-8 small">
                                 @if ($po?->jenis == 'transaksi_masuk')
                                     {{ $po->pelanggan?->alamat ?? '-' }}
                                 @else
                                     {{ $po->supplier?->alamat ?? '-' }}
                                 @endif
-                            </td>
-                            <td>Nomor Memo Kredit<span class="text-danger">*</span></td>
-                            <td>
-                                <input type="text" name="nomor_memo" value="{{ old('nomor_memo') }}"
-                                    class="form-control" required>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Nomor Faktur</td>
-                            <td>{{ $faktur->kode_faktur ?? '-' }}</td>
-                            <td>Tanggal Faktur</td>
-                            <td>{{ $faktur->tanggal_faktur ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td>Nomor Pesanan</td>
-                            <td>{{ $faktur->suratPengirimanBarang?->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}
-                            </td>
-                            <td>Jenis Pengiriman</td>
-                            <td>{{ $faktur->suratPengirimanBarang?->jenis_pengiriman ?? '-' }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Kolom Kanan: Informasi Dokumen --}}
+                    <div class="col-md-6 ps-md-4">
+                        <h6 class="text-muted text-uppercase fw-bold small mb-3">Detail Dokumen</h6>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">No. Faktur:</div>
+                            <div class="col-7 fw-bold">{{ $faktur->kode_faktur ?? '-' }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Tgl. Faktur:</div>
+                            <div class="col-7">{{ $faktur->tanggal_faktur ?? '-' }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">No. Pesanan:</div>
+                            <div class="col-7">
+                                {{ $faktur->suratPengirimanBarang?->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Tgl. Memo:</div>
+                            <div class="col-7">
+                                <input type="date" name="tanggal"
+                                    class="form-control form-control-sm w-auto d-inline-block" readonly
+                                    value="{{ now()->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4" style="border-top: 2px dashed #dee2e6;">
+
                 <p class="fw-bold">Rekening saudara sudah kami kredit dengan jumlah sebagai berikut:</p>
                 <table class="table table-bordered text-center align-middle" id="table-retur">
                     <thead class="table-light">
