@@ -28,7 +28,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
- <form action="{{ route('administrasi.rapat.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('administrasi.rapat.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
@@ -36,46 +36,79 @@
                 </div>
 
                 <div class="card-body">
+
                     {{-- ================= HEADER AGENDA RAPAT ================= --}}
                     <table class="table table-bordered">
                         <thead class="table-light text-center">
-                            <tr><th colspan="2">NOTULEN RAPAT</th></tr>
+                            <tr>
+                                <th colspan="2">NOTULEN RAPAT</th>
+                            </tr>
                         </thead>
+
                         <tr>
-                            <td width="30%">Nomor Surat Rapat</td>
-                            <td><input type="text" name="nomor_surat_rapat" class="form-control" required></td>
+                            <td>Nomor Surat Rapat</td>
+                            <td>
+                                <input type="text" name="nomor_surat_rapat"
+                                    class="form-control @error('nomor_surat_rapat')
+                                    is-invalid
+                                @enderror"
+                                    required>
+                            </td>
                         </tr>
+
                         <tr>
-                            <td>Judul Rapat</td>
-                            <td><input type="text" name="judul_rapat" class="form-control" required></td>
+                            <td width="30%">Judul Rapat</td>
+                            <td>
+                                <input type="text" name="judul_rapat"
+                                    class="form-control @error('judul_rapat') is-invalid @enderror" required>
+                            </td>
                         </tr>
+
                         <tr>
                             <td>Tempat</td>
-                            <td><input type="text" name="tempat" class="form-control" required></td>
+                            <td>
+                                <input type="text" name="tempat"
+                                    class="form-control @error('tempat') is-invalid @enderror" required>
+                            </td>
                         </tr>
+
                         <tr>
                             <td>Nama Kota</td>
-                            <td><input type="text" name="nama_kota" class="form-control" required></td>
+                            <td><input type="text" name="nama_kota"
+                                    class="form-control @error('nama_kota') is-invalid @enderror" required>
+                            </td>
                         </tr>
+
                         <tr>
                             <td>Tanggal</td>
-                            <td><input type="date" name="tanggal" class="form-control" required></td>
+                            <td>
+                                <input type="date" name="tanggal"
+                                    class="form-control @error('tanggal') is-invalid @enderror" required>
+                            </td>
                         </tr>
+
                         <tr>
                             <td>Waktu</td>
-                            <td><input type="time" name="waktu" class="form-control" required></td>
+                            <td>
+                                <input type="time" name="waktu"
+                                    class="form-control @error('waktu') is-invalid @enderror" required>
+                            </td>
                         </tr>
+
                         <tr>
                             <td>Nama Pemimpin Rapat</td>
-                            <td><input type="text" name="pemimpin_rapat" class="form-control" required></td>
+                            <td>
+                                <input type="text" name="pemimpin_rapat"
+                                    class="form-control @error('pemimpin_rapat') is-invalid @enderror" required>
+                            </td>
                         </tr>
-                        <tr>
-                            <td>Tanda Tangan Pimpinan</td>
-                            <td><input type="file" name="ttd_pemimpin" class="form-control" accept="image/*" required></td>
-                        </tr>
+
                         <tr>
                             <td>Nama Notulis</td>
-                            <td><input type="text" name="nama_notulis" class="form-control" required></td>
+                            <td>
+                                <input type="text" name="nama_notulis"
+                                    class="form-control @error('nama_notulis') is-invalid @enderror" required>
+                            </td>
                         </tr>
                     </table>
 
@@ -91,17 +124,21 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
+
                         <tbody id="peserta-rapat-body">
                             <tr>
                                 <td>1</td>
-                                <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
+                                <td><input type="text" name="peserta_nama[]" class="form-control"></td>
                                 <td><input type="text" name="peserta_jabatan[]" class="form-control"></td>
-                                <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*" required></td>
+                                <td><input type="file" name="peserta_ttd[]" class="form-control"></td>
                                 <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
                         </tbody>
+
                     </table>
-                    <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addPeserta">+ Tambah Peserta</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addPeserta">
+                        + Tambah Peserta
+                    </button>
 
                     {{-- ================= AGENDA RAPAT ================= --}}
                     <h6 class="fw-bold">Agenda Rapat:</h6>
@@ -190,14 +227,15 @@
 
 
                     {{-- ================= BUTTON ================= --}}
-                            <div class="text-end mt-3">
-                                <a href="{{ route('administrasi.rapat.index') }}" class="btn btn-secondary">Batal</a>
-                                <button class="btn btn-success px-3"><i class="fa fa-save me-1"></i> Simpan</button>
-                            </div>
-                        </div>
+                    <div class="text-end mt-3">
+                        <a href="{{ route('administrasi.rapat.index') }}" class="btn btn-secondary">Batal</a>
+                        <button class="btn btn-success px-3">
+                            <i class="fa fa-save me-1"></i> Simpan
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
+        </form>
     </div>
 
     {{-- ================= SCRIPT DYNAMIC ROW ================= --}}
