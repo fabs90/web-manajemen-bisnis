@@ -26,26 +26,32 @@ class MemoKreditService
 
             // Simpan memo utama
             $memo = MemoKredit::create([
-                'nomor_memo' => $nomorMemo,
-                'tanggal' => $request->tanggal,
-                'faktur_penjualan_id' => $request->faktur_id,
-                'alasan_pengembalian' => $request->alasan_pengembalian,
-                'total' => $total,
-                'user_id' => auth()->id(),
+                "nomor_memo" => $nomorMemo,
+                "tanggal" => $request->tanggal,
+                "faktur_penjualan_id" => $request->faktur_id,
+                "alasan_pengembalian" => $request->alasan_pengembalian,
+                "total" => $total,
+                "user_id" => auth()->id(),
             ]);
 
             // Simpan detail memo kredit
             foreach ($request->barang_id as $index => $barangDetailId) {
-                $detailBarang = SuratPengirimanBarangDetail::with('pesananPembelianDetail')
-                    ->where('spp_detail_id', $barangDetailId)
+                $detailBarang = SuratPengirimanBarangDetail::with(
+                    "pesananPembelianDetail",
+                )
+                    ->where("spp_detail_id", $barangDetailId)
                     ->first();
 
                 MemoKreditDetail::create([
-                    'memo_kredit_id' => $memo->id,
-                    'nama_barang' => $detailBarang->pesananPembelianDetail->nama_barang ?? '-',
-                    'kuantitas' => $request->jumlah_dikembalikan[$index],
-                    'harga_satuan' => $this->cleanRupiah($request->harga[$index]),
-                    'jumlah' => $this->cleanRupiah($request->total[$index]),
+                    "memo_kredit_id" => $memo->id,
+                    "nama_barang" =>
+                        $detailBarang->pesananPembelianDetail->nama_barang ??
+                        "-",
+                    "kuantitas" => $request->jumlah_dikembalikan[$index],
+                    "harga_satuan" => $this->cleanRupiah(
+                        $request->harga[$index],
+                    ),
+                    "jumlah" => $this->cleanRupiah($request->total[$index]),
                 ]);
             }
 
@@ -55,30 +61,32 @@ class MemoKreditService
             $pelangganId = $request->pelanggan_id ?? $request->supplier_id;
 
             // Ambil saldo terakhir pelanggan
-            $lastPiutang = BukuBesarPiutang::where('user_id', auth()->id())
-                ->where('pelanggan_id', $pelangganId)
+            $lastPiutang = BukuBesarPiutang::where("user_id", auth()->id())
+                ->where("pelanggan_id", $pelangganId)
                 ->latest()
                 ->first();
             $saldoAwal = $lastPiutang->saldo ?? 0;
             $namaRelasi =
-                $dataFaktur->suratPengirimanBarang?->pesananPembelian?->pelanggan?->nama
-                ?? $dataFaktur->suratPengirimanBarang?->pesananPembelian?->supplier?->nama
-                ?? '-';
+                $dataFaktur->suratPengirimanBarang?->pesananPembelian
+                    ?->pelanggan?->nama ??
+                ($dataFaktur->suratPengirimanBarang?->pesananPembelian
+                    ?->supplier?->nama ??
+                    "-");
 
             // Simpan buku besar piutang
             BukuBesarPiutang::create([
-                'pelanggan_id' => $pelangganId,
-                'kode' => $dataFaktur->kode_faktur,
-                'uraian' => 'Memo Kredit - ' . $namaRelasi,
-                'tanggal' => $dataFaktur->tanggal_faktur,
-                'debit' => 0,
-                'kredit' => $total,
-                'saldo' => $saldoAwal - $total,
-                'buku_besar_pendapatan_id' => null,
-                'buku_besar_pengeluaran_id' => null,
-                'neraca_awal_id' => null,
-                'neraca_akhir_id' => null,
-                'user_id' => auth()->id(),
+                "pelanggan_id" => $pelangganId,
+                "kode" => $dataFaktur->kode_faktur,
+                "uraian" => "Memo Kredit - " . $namaRelasi,
+                "tanggal" => $dataFaktur->tanggal_faktur,
+                "debit" => 0,
+                "kredit" => $total,
+                "saldo" => $saldoAwal - $total,
+                "buku_besar_pendapatan_id" => null,
+                "buku_besar_pengeluaran_id" => null,
+                "neraca_awal_id" => null,
+                "neraca_akhir_id" => null,
+                "user_id" => auth()->id(),
             ]);
 
             DB::commit();
@@ -87,10 +95,10 @@ class MemoKreditService
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error('Error generating memo kredit', [
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
+            Log::error("Error generating memo kredit", [
+                "error" => $e->getMessage(),
+                "line" => $e->getLine(),
+                "file" => $e->getFile(),
             ]);
 
             return false;
@@ -105,7 +113,9 @@ class MemoKreditService
                 ->where("faktur_penjualan_id", $fakturId)
                 ->first();
 
-            $dataFaktur = FakturPenjualan::where('id', $fakturId)->where('user_id', auth()->user()->id)->first();
+            $dataFaktur = FakturPenjualan::where("id", $fakturId)
+                ->where("user_id", auth()->user()->id)
+                ->first();
             // Hitung total memo (form sudah punya, jadi pakai langsung)
             $total = $memo->total;
 
@@ -114,7 +124,13 @@ class MemoKreditService
                 "user_id",
                 auth()->user()->id,
             )
-                ->where("pelanggan_id", $dataFaktur->suratPengirimanBarang->pesananPembelian->pelanggan->id ?? $dataFaktur->suratPengirimanBarang->pesananPembelian->supplier->id)
+                ->where(
+                    "pelanggan_id",
+                    $dataFaktur->suratPengirimanBarang->pesananPembelian
+                        ->pelanggan->id ??
+                        $dataFaktur->suratPengirimanBarang->pesananPembelian
+                            ->supplier->id,
+                )
                 ->latest()
                 ->first();
             $newSaldo = $lastBukuPiutang
@@ -123,7 +139,11 @@ class MemoKreditService
 
             // Insert pembalik ke Buku Piutang
             BukuBesarPiutang::create([
-                "pelanggan_id" => $dataFaktur->suratPengirimanBarang->pesananPembelian->pelanggan->id ?? $dataFaktur->suratPengirimanBarang->pesananPembelian->supplier->id,
+                "pelanggan_id" =>
+                    $dataFaktur->suratPengirimanBarang->pesananPembelian
+                        ->pelanggan->id ??
+                    $dataFaktur->suratPengirimanBarang->pesananPembelian
+                        ->supplier->id,
                 "kode" => $dataFaktur->kode_faktur,
                 "uraian" => "Pembatalan Memo Kredit - " . $memo->nomor_memo,
                 "tanggal" => now()->format("Y-m-d"),
@@ -168,7 +188,9 @@ class MemoKreditService
             "administrasi.surat.memo-kredit.template-pdf",
             compact("faktur", "memo", "profileUser"),
         );
-        return $pdf->download(Str::slug("memo_kredit_- " . $memo->nomor_memo) . ".pdf");
+        return $pdf->download(
+            Str::slug("memo_kredit_- " . $memo->nomor_memo) . ".pdf",
+        );
     }
 
     private function cleanRupiah(string|int $value): int
@@ -180,13 +202,13 @@ class MemoKreditService
     {
         $userId = auth()->id();
         $now = now();
-        $tahunBulan = $now->format('Ym'); // Hasil: 202405
+        $tahunBulan = $now->format("Ym"); // Hasil: 202405
 
         // 1. Cari nomor terakhir untuk user ini di bulan & tahun yang sama
-        $lastMemo = MemoKredit::where('user_id', $userId)
-            ->whereYear('tanggal', $now->year)
-            ->whereMonth('tanggal', $now->month)
-            ->latest('id')
+        $lastMemo = MemoKredit::where("user_id", $userId)
+            ->whereYear("tanggal", $now->year)
+            ->whereMonth("tanggal", $now->month)
+            ->latest("id")
             ->first();
 
         // 2. Tentukan nomor urut
@@ -200,9 +222,9 @@ class MemoKreditService
         // 3. Format string (MK / ID User / YYYYMM / 0001)
         return sprintf(
             "MK/%s/%s/%s",
-            str_pad($userId, 3, '0', STR_PAD_LEFT),
+            str_pad($userId, 3, "0", STR_PAD_LEFT),
             $tahunBulan,
-            str_pad($nextNumber, 4, '0', STR_PAD_LEFT)
+            str_pad($nextNumber, 4, "0", STR_PAD_LEFT),
         );
     }
 }
