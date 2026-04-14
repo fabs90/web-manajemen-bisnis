@@ -62,36 +62,34 @@ class ManajemenRapatController extends Controller
     }
 
     public function store(AgendaRapatRequest $request)
-{
-    $validatedData = $request->validated();
-    $validatedData["user_id"] = auth()->user()->id;
+    {
+        $validatedData = $request->validated();
+        $validatedData["user_id"] = auth()->user()->id;
 
-    // Tambahkan file ke $validatedData jika ada
-    if ($request->hasFile('ttd_pemimpin')) {
-        $validatedData['ttd_pemimpin_file'] = $request->file('ttd_pemimpin');
+        try {
+            app(ManajemenRapatService::class)->store($validatedData);
+
+            return redirect()
+                ->route("administrasi.rapat.index")
+                ->with("success", "Agenda rapat berhasil ditambahkan.");
+
+        } catch (\Throwable $th) {
+            Log::error("Store rapat error", [
+                'message' => $th->getMessage(),
+                'payload' => $validatedData
+            ]);
+
+            $message = "Gagal menambahkan agenda rapat.";
+
+            if (str_contains($th->getMessage(), "Column 'nama' cannot be null")) {
+                $message = "Nama peserta rapat wajib diisi.";
+            }
+
+            return back()
+                ->withInput()
+                ->with("error", $message);
+        }
     }
-
-    if ($request->hasFile('peserta_ttd')) {
-        $validatedData['peserta_ttd_files'] = $request->file('peserta_ttd');
-    }
-
-    try {
-        app(ManajemenRapatService::class)->store($validatedData);
-
-        return redirect()
-            ->route("administrasi.rapat.index")
-            ->with("success", "Agenda rapat berhasil ditambahkan.");
-
-    } catch (\Throwable $th) {
-        Log::error("Store rapat error", [
-            'message' => $th->getMessage(),
-        ]);
-
-        return back()
-            ->withInput()
-            ->with("error", "Gagal menambahkan agenda rapat: " . $th->getMessage());
-    }
-}
 
     public function destroy($id)
     {
