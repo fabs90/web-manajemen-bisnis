@@ -12,32 +12,39 @@ class ManajemenRapatService
 {
     public function __construct(protected FileUploadService $fileUploadService)
     {
-
     }
+
     public function store($data)
     {
         DB::beginTransaction();
 
         try {
-            // MASTER TABLE
+            // 1. Upload TTD Pimpinan jika ada
+            $ttdPath = null;
+            if (request()->hasFile('ttd_pemimpin')) {
+                $ttdPath = $this->fileUploadService->upload(request()->file('ttd_pemimpin'), 'rapat/ttd', auth()->user()->email);
+            }
+
+            // 2. Simpan Master Rapat
             $rapat = AgendaRapat::create([
                 "user_id" => auth()->user()->id,
                 "nomor_surat" => $data['nomor_surat_rapat'],
                 "judul_rapat" => $data["judul_rapat"],
                 "tempat" => $data["tempat"],
                 "tanggal" => $data["tanggal"],
+                "ttd_pemimpin" => $ttdPath, 
                 "waktu" => $data["waktu"],
                 "pemimpin_rapat" => $data["pemimpin_rapat"],
                 "keputusan_rapat" => $data["keputusan_rapat"],
                 "nama_kota" => $data["nama_kota"],
                 "nama_notulis" => $data["nama_notulis"],
                 "agenda_rapat" => $data['agenda_rapat'],
-                "tanggal_rapat_berikutnya" => $data["tanggal_rapat_berikutnya"],
-                "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"],
-                "waktu_rapat_berikutnya" => $data["waktu_rapat_berikutnya"],
+                "tanggal_rapat_berikutnya" => $data["tanggal_rapat_berikutnya"] ?? null,
+                "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"] ?? null,
+                "waktu_rapat_berikutnya" => $data["waktu_rapat_berikutnya"] ?? null,
             ]);
 
-            // detail rapat
+            // 3. Detail Rapat
             if (isset($data["pembahasan_pembicara"])) {
                 foreach ($data["pembahasan_pembicara"] as $i => $pembicara) {
                     RapatDetail::create([
@@ -49,27 +56,24 @@ class ManajemenRapatService
                 }
             }
 
-            // peserta rapat
+            // 4. Peserta Rapat
             if (isset($data["peserta_nama"])) {
                 foreach ($data["peserta_nama"] as $i => $namaPeserta) {
-                    // Upload tanda tangan jika ada
-                    $ttdPath = null;
-                    if (
-                        isset($data["peserta_ttd"][$i]) &&
-                        $data["peserta_ttd"][$i] !== null
-                    ) {
-                        $ttdPath = $this->fileUploadService->upload($data['peserta_ttd'][$i], 'rapat/ttd', auth()->user()->email);
+                    $ttdPesertaPath = null;
+                    if (isset($data["peserta_ttd"][$i]) && $data["peserta_ttd"][$i] !== null) {
+                        $ttdPesertaPath = $this->fileUploadService->upload($data['peserta_ttd'][$i], 'rapat/ttd', auth()->user()->email);
                     }
 
                     PesertaRapat::create([
                         "agenda_rapat_id" => $rapat->id,
                         "nama" => $namaPeserta,
-                        "jabatan" => $data["peserta_jabatan"][$i],
-                        "tanda_tangan" => $ttdPath,
+                        "jabatan" => $data["peserta_jabatan"][$i] ?? null,
+                        "tanda_tangan" => $ttdPesertaPath,
                     ]);
                 }
             }
 
+            // 5. Tindak Lanjut
             if (isset($data["tindak_tindakan"])) {
                 foreach ($data["tindak_tindakan"] as $i => $tindakan) {
                     TindakLanjutRapat::create([
@@ -81,6 +85,7 @@ class ManajemenRapatService
                     ]);
                 }
             }
+
             DB::commit();
             return $rapat;
         } catch (Throwable $th) {
@@ -93,12 +98,25 @@ class ManajemenRapatService
     {
         DB::beginTransaction();
         try {
+            // 1. Tangani Upload TTD Pemimpin untuk Surat Hasil Keputusan
+            $ttdPath = null;
+            if (request()->hasFile('ttd_pemimpin')) {
+                // Menggunakan FileUploadService yang sama
+                $ttdPath = $this->fileUploadService->upload(
+                    request()->file('ttd_pemimpin'), 
+                    'rapat/ttd_hasil', 
+                    auth()->user()->email
+                );
+            }
+
+            // 2. Simpan ke tabel HasilKeputusanRapat
             $hasil = HasilKeputusanRapat::create([
                 "agenda_rapat_id" => $data["agenda_rapat_id"],
                 "nomor_surat" => $data["nomor_surat"],
                 "keputusan_rapat" => $data["keputusan"],
                 "kota_tujuan" => $data["kota_tujuan"],
                 "tanggal_tujuan" => $data["tanggal_tujuan"],
+                "ttd_pemimpin" => $ttdPath, // Path file tersimpan di sini
                 "jabatan_penanggung_jawab" => $data["jabatan_penanggung_jawab"],
                 "nama_penanggung_jawab" => $data["nama_penanggung_jawab"],
                 "user_id" => auth()->id(),
@@ -109,6 +127,7 @@ class ManajemenRapatService
             return $hasil;
         } catch (Throwable $e) {
             DB::rollBack();
+            Log::error("Gagal menyimpan hasil keputusan: " . $e->getMessage());
             throw $e;
         }
     }
@@ -116,32 +135,19 @@ class ManajemenRapatService
     public function destroy($id)
     {
         DB::beginTransaction();
-
         try {
             $rapat = AgendaRapat::findOrFail($id);
-
-            // Hapus detail rapat
             RapatDetail::where("agenda_rapat_id", $rapat->id)->delete();
-
-            // Hapus peserta + file tanda tangan
-            $peserta = PesertaRapat::where(
-                "agenda_rapat_id",
-                $rapat->id,
-            )->get();
+            
+            $peserta = PesertaRapat::where("agenda_rapat_id", $rapat->id)->get();
             foreach ($peserta as $p) {
-                if (
-                    $p->tanda_tangan &&
-                    Storage::disk("public")->exists($p->tanda_tangan)
-                ) {
+                if ($p->tanda_tangan && Storage::disk("public")->exists($p->tanda_tangan)) {
                     Storage::disk("public")->delete($p->tanda_tangan);
                 }
                 $p->delete();
             }
 
-            // Hapus tindak lanjut
             TindakLanjutRapat::where("agenda_rapat_id", $rapat->id)->delete();
-
-            // Hapus master rapat
             $rapat->delete();
 
             DB::commit();
@@ -152,40 +158,13 @@ class ManajemenRapatService
         }
     }
 
-    public function destroyHasilKeputusan($id)
-    {
-        DB::beginTransaction();
-        try {
-            $hasil = HasilKeputusanRapat::find($id);
-            if (!$hasil) {
-                return redirect()
-                    ->back()
-                    ->with("error", "Data Hasil Keputusan tidak ditemukan!");
-            }
-
-            $hasil->delete();
-
-            DB::commit();
-            return redirect()
-                ->back()
-                ->with("success", "Data Hasil Keputusan berhasil dihapus!");
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return redirect()
-                ->back()
-                ->with("error", "Terjadi kesalahan saat menghapus data!");
-        }
-    }
-
     public function update($id, $data)
     {
         DB::beginTransaction();
-
         try {
-            // Ambil data rapat
             $rapat = AgendaRapat::findOrFail($id);
 
-            // Update master
+            // Update Master
             $rapat->update([
                 "judul_rapat" => $data["judul_rapat"],
                 "tempat" => $data["tempat"],
@@ -199,11 +178,8 @@ class ManajemenRapatService
                 "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"],
             ]);
 
-            // ===========================
-            // DELETE DETAIL PEMBAHASAN LAMA
-            // ===========================
+            // Re-sync detail, peserta, dan tindak lanjut (Hapus lama, buat baru)
             RapatDetail::where("agenda_rapat_id", $rapat->id)->delete();
-
             if (isset($data["pembahasan_pembicara"])) {
                 foreach ($data["pembahasan_pembicara"] as $i => $pembicara) {
                     RapatDetail::create([
