@@ -111,6 +111,7 @@
 
                 <div class="signature" style="margin-top: 10px;">
                     {{-- Bagian TTD --}}
+                    {{-- udah bisa --}}
                     @if (!empty($result->ttd_pemimpin))
                         @php
                             $path = public_path('storage/' . $result->ttd_pemimpin);
