@@ -3,41 +3,60 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\{Auth, DB, Log, Storage};
-use App\Models\Rapat\{AgendaRapat, HasilKeputusanRapat, PesertaRapat, RapatDetail, TindakLanjutRapat};
+use App\Models\Rapat\{
+    AgendaRapat,
+    HasilKeputusanRapat,
+    PesertaRapat,
+    RapatDetail,
+    TindakLanjutRapat,
+};
 use Exception;
 use Throwable;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ManajemenRapatService
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-
-    }
+    public function __construct(
+        protected FileUploadService $fileUploadService,
+    ) {}
     public function store($data)
     {
         DB::beginTransaction();
 
         try {
-            // MASTER TABLE
+            // 1. Upload TTD Pimpinan jika ada
+            $ttdPath = null;
+            if (request()->hasFile("ttd_pemimpin")) {
+                $ttdPath = $this->fileUploadService->upload(
+                    request()->file("ttd_pemimpin"),
+                    "rapat/ttd",
+                    auth()->user()->email,
+                );
+            }
+
+            // 2. Simpan Master Rapat
             $rapat = AgendaRapat::create([
                 "user_id" => auth()->user()->id,
-                "nomor_surat" => $data['nomor_surat_rapat'],
+                "nomor_surat" => $data["nomor_surat_rapat"],
                 "judul_rapat" => $data["judul_rapat"],
                 "tempat" => $data["tempat"],
                 "tanggal" => $data["tanggal"],
+                "ttd_pemimpin" => $ttdPath,
                 "waktu" => $data["waktu"],
                 "pemimpin_rapat" => $data["pemimpin_rapat"],
                 "keputusan_rapat" => $data["keputusan_rapat"],
                 "nama_kota" => $data["nama_kota"],
                 "nama_notulis" => $data["nama_notulis"],
-                "agenda_rapat" => $data['agenda_rapat'],
-                "tanggal_rapat_berikutnya" => $data["tanggal_rapat_berikutnya"],
-                "agenda_rapat_berikutnya" => $data["agenda_rapat_berikutnya"],
-                "waktu_rapat_berikutnya" => $data["waktu_rapat_berikutnya"],
+                "agenda_rapat" => $data["agenda_rapat"],
+                "tanggal_rapat_berikutnya" =>
+                    $data["tanggal_rapat_berikutnya"] ?? null,
+                "agenda_rapat_berikutnya" =>
+                    $data["agenda_rapat_berikutnya"] ?? null,
+                "waktu_rapat_berikutnya" =>
+                    $data["waktu_rapat_berikutnya"] ?? null,
             ]);
 
-            // detail rapat
+            // 3. Detail Rapat
             if (isset($data["pembahasan_pembicara"])) {
                 foreach ($data["pembahasan_pembicara"] as $i => $pembicara) {
                     RapatDetail::create([
@@ -49,27 +68,31 @@ class ManajemenRapatService
                 }
             }
 
-            // peserta rapat
+            // 4. Peserta Rapat
             if (isset($data["peserta_nama"])) {
                 foreach ($data["peserta_nama"] as $i => $namaPeserta) {
-                    // Upload tanda tangan jika ada
-                    $ttdPath = null;
+                    $ttdPesertaPath = null;
                     if (
                         isset($data["peserta_ttd"][$i]) &&
                         $data["peserta_ttd"][$i] !== null
                     ) {
-                        $ttdPath = $this->fileUploadService->upload($data['peserta_ttd'][$i], 'rapat/ttd', auth()->user()->email);
+                        $ttdPesertaPath = $this->fileUploadService->upload(
+                            $data["peserta_ttd"][$i],
+                            "rapat/ttd",
+                            auth()->user()->email,
+                        );
                     }
 
                     PesertaRapat::create([
                         "agenda_rapat_id" => $rapat->id,
                         "nama" => $namaPeserta,
-                        "jabatan" => $data["peserta_jabatan"][$i],
-                        "tanda_tangan" => $ttdPath,
+                        "jabatan" => $data["peserta_jabatan"][$i] ?? null,
+                        "tanda_tangan" => $ttdPesertaPath,
                     ]);
                 }
             }
 
+            // 5. Tindak Lanjut
             if (isset($data["tindak_tindakan"])) {
                 foreach ($data["tindak_tindakan"] as $i => $tindakan) {
                     TindakLanjutRapat::create([
@@ -81,6 +104,7 @@ class ManajemenRapatService
                     ]);
                 }
             }
+
             DB::commit();
             return $rapat;
         } catch (Throwable $th) {
@@ -314,7 +338,10 @@ class ManajemenRapatService
 
     public function generatePdfHasilKeputusan($rapatId)
     {
-        $result = AgendaRapat::where("id", $rapatId)->where("user_id", Auth::id())->latest()->first();
+        $result = AgendaRapat::where("id", $rapatId)
+            ->where("user_id", Auth::id())
+            ->latest()
+            ->first();
         $user = Auth::user();
         $pdf = Pdf::setOptions([
             "isRemoteEnabled" => true,
@@ -325,6 +352,8 @@ class ManajemenRapatService
             ])
             ->setPaper("A4");
 
-        return $pdf->download("Surat Keputusan Rapat-" . $result->nomor_surat . ".pdf");
+        return $pdf->download(
+            "Surat Keputusan Rapat-" . $result->nomor_surat . ".pdf",
+        );
     }
 }

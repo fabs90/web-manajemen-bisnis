@@ -7,11 +7,14 @@
 
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: Arial, sans-serif;
             font-size: 13px;
+            line-height: 1.4;
+            color: #000;
             margin: 0;
             padding: 0;
         }
+
 
         .content {
             padding: 5px;
@@ -33,6 +36,10 @@
         .signature {
             margin-top: 50px;
             text-align: center;
+        }
+        .line {
+            border-bottom: 3px solid #000;
+            margin: 10px 0 15px;
         }
     </style>
 </head>
@@ -59,16 +66,14 @@
                     {{ $user->alamat ?? 'Alamat Perusahaan' }}
                 </div>
                 <div style="font-size:11px;">
-                    Telp: {{ $user->nomor_telepon ?? '-' }} •
+                    Telp: {{ $user->nomor_telepon ?? '-' }} |
                     Email: {{ $user->email ?? '-' }}
                 </div>
             </td>
             <td style="width:70px;"></td>
         </tr>
     </table>
-    <div class="content center">
-        <hr style="border:0; border-top:2px solid #000;">
-    </div>
+     <div class="line"></div>
     {{-- Judul --}}
     <div class="content center title-block">
         <span class="bold" style="text-decoration: underline;">KEPUTUSAN RAPAT</span><br>
@@ -93,16 +98,44 @@
         <hr style="border:0; border-top:1px solid #000; margin:6px 0 0 0;">
     </div>
 
-    {{-- Tanda Tangan --}}
-    <div class="content center">
-        {{ $result->nama_kota }},
-        {{ \Carbon\Carbon::parse($result->tanggal)->format('d-m-Y') }}<br>
-        <span class="bold">Pemimpin Rapat</span>
+    {{-- Tanda Tangan di Kanan --}}
+    <table style="width: 100%; margin-top: 30px; border-collapse: collapse;">
+        <tr>
 
-        <div class="signature">
-            <span class="bold">{{ $result->pemimpin_rapat }}</span>
-        </div>
-    </div>
+            <td style="width: 60%;"></td>
+
+
+            <td style="width: 40%; text-align: center;">
+                {{ $result->nama_kota }}, {{ \Carbon\Carbon::parse($result->tanggal)->format('d-m-Y') }}<br>
+                <span class="bold">Pemimpin Rapat</span>
+
+                <div class="signature" style="margin-top: 10px;">
+                    {{-- Bagian TTD --}}
+                    @if (!empty($result->ttd_pemimpin))
+                        @php
+                            $path = public_path('storage/' . $result->ttd_pemimpin);
+                        @endphp
+
+                        @if (file_exists($path))
+                            @php
+                                $type = pathinfo($path, PATHINFO_EXTENSION);
+                                $data = file_get_contents($path);
+                                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                            @endphp
+                            <img src="{{ $base64 }}" alt="Tanda Tangan" style="max-height: 80px; display: block; margin: 0 auto;">
+                        @endif
+                    @else
+                        {{-- Jarak jika tidak ada gambar --}}
+                        <div style="height: 60px;"></div>
+                    @endif
+
+                    <div style="margin-top: 5px;">
+                        <span class="bold" style="text-decoration: underline;">{{ $result->pemimpin_rapat }}</span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>
