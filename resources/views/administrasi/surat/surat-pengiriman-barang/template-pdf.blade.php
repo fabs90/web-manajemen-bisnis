@@ -95,7 +95,7 @@
 
     <div class="line"></div>
 
-    <h3 class="text-center fw-bold uppercase mb-3">SURAT PENGIRIMAN BARANG</h3>
+    <h3 class="text-center fw-bold uppercase mb-1">SURAT PENGIRIMAN BARANG</h3>
     <div class="text-center">
         <strong>Nomor:</strong>
         {{ $data->nomor_pengiriman_barang ?? '_' }}<br>
@@ -223,14 +223,50 @@
     </table>
 
     {{-- Tanda tangan --}}
-    <table width="100%" class="table-no-border" style="margin-top:50px;">
+    <table width="100%" class="table-no-border" style="margin-top:30px;">
         <tr>
             <td width="50%" class="text-center">
-                Yang Menerima,<br><br><br><br><br>
+                Yang Menerima,<br>
+                @if ($data->ttd_penerima)
+                    @php
+                        $ttdPenerimaPath = storage_path('app/public/' . $data->ttd_penerima);
+                        $ttdPenerimaBase64 = null;
+                        if (file_exists($ttdPenerimaPath)) {
+                            $ttdPenerimaBase64 = base64_encode(file_get_contents($ttdPenerimaPath));
+                            $ttdPenerimaMime = mime_content_type($ttdPenerimaPath);
+                        }
+                    @endphp
+                    @if ($ttdPenerimaBase64)
+                        <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}" style="height:60px;">
+                    @else
+                        <div style="height:60px;"></div>
+                    @endif
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <br>
                 <strong>( {{ $data->nama_penerima ?? '_________' }} )</strong>
             </td>
             <td width="50%" class="text-center">
-                Pengirim,<br><br><br><br><br>
+                Pengirim,<br>
+                @if ($data->ttd_pengirim)
+                    @php
+                        $ttdPengirimPath = storage_path('app/public/' . $data->ttd_pengirim);
+                        $ttdPengirimBase64 = null;
+                        if (file_exists($ttdPengirimPath)) {
+                            $ttdPengirimBase64 = base64_encode(file_get_contents($ttdPengirimPath));
+                            $ttdPengirimMime = mime_content_type($ttdPengirimPath);
+                        }
+                    @endphp
+                    @if ($ttdPengirimBase64)
+                        <img src="data:{{ $ttdPengirimMime }};base64,{{ $ttdPengirimBase64 }}" style="height:60px;">
+                    @else
+                        <div style="height:60px;"></div>
+                    @endif
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <br>
                 <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong>
             </td>
         </tr>

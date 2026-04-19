@@ -9,7 +9,7 @@ use App\Models\Rapat\{AgendaRapat, HasilKeputusanRapat};
 use App\Http\Controllers\Controller;
 use App\Services\ManajemenRapatService;
 
-class ManajemenRapatController extends Controller
+class NotulenRapatController extends Controller
 {
     public function index()
     {
@@ -69,17 +69,6 @@ class ManajemenRapatController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData["user_id"] = auth()->user()->id;
-
-        if ($request->hasFile("ttd_pemimpin")) {
-            $validatedData["ttd_pemimpin_file"] = $request->file(
-                "ttd_pemimpin",
-            );
-        }
-
-        if ($request->hasFile("peserta_ttd")) {
-            $validatedData["peserta_ttd_files"] = $request->file("peserta_ttd");
-        }
-
         try {
             app(ManajemenRapatService::class)->store($validatedData);
 

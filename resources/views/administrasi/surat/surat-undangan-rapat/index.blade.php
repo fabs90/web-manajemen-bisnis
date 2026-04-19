@@ -60,7 +60,7 @@
 
                                     <td class="text-center">
 
-                                        <a href="#" class="btn btn-info btn-sm"">
+                                        <a href="{{ route('administrasi.surat-undangan-rapat.edit', $item->id) }}" class="btn btn-info btn-sm">
                                             <i class="bi bi-pencil"></i>
                                         </a>
 
@@ -129,8 +129,38 @@
                         form.submit();
                     }
                 });
-
             });
+
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: true,
+                    timer: 2500,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+            @endif
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: '{{ session('error') }}',
+                    showConfirmButton: true,
+                    timer: 2500,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+            @endif
         });
     </script>
 @endpush

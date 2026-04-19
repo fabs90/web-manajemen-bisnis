@@ -4,36 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AgendaTelponRequest;
 use App\Http\Requests\PermintaanKasKecilRequest;
-use App\Http\Requests\SuratKeluarRequest;
-use App\Mail\SuratKeluarMail;
 use App\Models\AgendaJanjiTemu;
 use App\Models\AgendaPerjalanan;
-use App\Models\AgendaSuratKeluar;
 use App\Models\AgendaTelpon;
 use App\Models\KasKecil;
 use App\Models\KasKecilDetail;
 use App\Models\KasKecilFormulir;
-use App\Models\SuratKeluarEmailLog;
-use App\Models\SuratUndanganRapat;
 use App\Services\AgendaJanjiTemuService;
 use App\Services\AgendaSuratPerjalananService;
 use App\Services\AgendaTelponService;
-use App\Services\FileUploadService;
 use App\Services\PermintaanKasKecilService;
-use App\Services\SuratUndanganRapatService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class AdministrasiSuratController extends Controller
 {
-    public function __construct(protected FileUploadService $fileUploadService) {}
-
     private function cleanRupiah($value)
     {
         return (int) preg_replace("/\D/", '', $value);
@@ -42,18 +32,6 @@ class AdministrasiSuratController extends Controller
     public function index()
     {
         return view('administrasi.surat.index');
-    }
-
-    public function indexSuratKeluar()
-    {
-        $suratKeluar = AgendaSuratKeluar::where('user_id', auth()->id())
-            ->select('id', 'nomor_surat', 'tanggal_surat', 'nama_penerima', 'perihal', 'tembusan')
-            ->get();
-
-        return view(
-            'administrasi.surat.surat-keluar.index',
-            compact('suratKeluar'),
-        );
     }
 
     public function indexKasKecil()
@@ -119,24 +97,6 @@ class AdministrasiSuratController extends Controller
         );
     }
 
-    public function indexSuratUndanganRapat()
-    {
-        $agendaSuratUndanganRapat = SuratUndanganRapat::where(
-            'user_id',
-            auth()->id(),
-        )->get();
-
-        return view(
-            'administrasi.surat.surat-undangan-rapat.index',
-            compact('agendaSuratUndanganRapat'),
-        );
-    }
-
-    public function createSuratKeluar()
-    {
-        return view('administrasi.surat.surat-keluar.create');
-    }
-
     public function createKasKecil()
     {
         return view('administrasi.surat.kas-kecil.create');
@@ -155,13 +115,6 @@ class AdministrasiSuratController extends Controller
     public function createJanjiTemu()
     {
         return view('administrasi.surat.janji-temu.create');
-    }
-
-    public function createSuratUndanganRapat()
-    {
-        $user = auth()->user();
-
-        return view('administrasi.surat.surat-undangan-rapat.create', compact('user'));
     }
 
     public function showJanjiTemu($id)
@@ -216,91 +169,11 @@ class AdministrasiSuratController extends Controller
         return $agendaJanjiTemuService->generatePdf($id);
     }
 
-    public function pdfSuratUndanganRapat($id)
-    {
-        $suratUndanganRapatService = app(SuratUndanganRapatService::class);
-
-        return $suratUndanganRapatService->generatePdf($id);
-    }
-
     public function pdfAgendaPerjalanan($id)
     {
         $agendaPerjalananService = app(AgendaSuratPerjalananService::class);
 
         return $agendaPerjalananService->generatePdf($id);
-    }
-
-    public function storeSuratKeluar(SuratKeluarRequest $request)
-    {
-        DB::beginTransaction();
-        try {
-            $data = $request->validated();
-            $data['user_id'] = Auth::id();
-            $fileLampiran = null;
-            $ttdFile = null;
-            $user = Auth::user();
-
-            if ($request->hasFile('file_lampiran')) {
-                $fileLampiran = $this->fileUploadService->upload($request->file('file_lampiran'), 'surat-keluar/lampiran', auth()->user()->email);
-            }
-
-            if ($request->hasFile('ttd')) {
-                $ttdFile = $this->fileUploadService->upload($request->file('ttd'), 'surat-keluar/ttd', auth()->user()->email);
-            }
-
-            $surat = AgendaSuratKeluar::create([
-                'user_id' => Auth::id(),
-                'nomor_surat' => $request->nomor_surat,
-                'lampiran' => $request->lampiran_text,
-                'perihal' => $request->perihal,
-                'tanggal_surat' => $request->tanggal_surat,
-
-                // penerima
-                'nama_penerima' => $request->nama_penerima,
-                'jabatan_penerima' => $request->jabatan_penerima,
-                'alamat_penerima' => $request->alamat_penerima,
-                'email_penerima' => $request->email_penerima,
-
-                // isi surat
-                'paragraf_pembuka' => $request->paragraf_pembuka,
-                'paragraf_isi' => $request->paragraf_isi,
-                'paragraf_penutup' => $request->paragraf_penutup,
-
-                // pengirim
-                'nama_pengirim' => $request->nama_pengirim,
-                'jabatan_pengirim' => $request->jabatan_pengirim,
-
-                // tembusan
-                'tembusan' => $request->tembusan,
-
-                // file
-                'ttd' => $ttdFile,
-                'file_lampiran' => $fileLampiran,
-            ]);
-            Mail::to($data['email_penerima'])->send(
-                new SuratKeluarMail($surat, $user),
-            );
-
-            SuratKeluarEmailLog::create([
-                'surat_keluar_id' => $surat->id,
-                'email' => $data['email_penerima'],
-                'status' => 'success',
-            ]);
-
-            DB::commit();
-
-            return redirect()
-                ->route('administrasi.surat-keluar.index')
-                ->with('success', 'Surat keluar berhasil dikirim ke penerima.');
-        } catch (Throwable $e) {
-            DB::rollBack();
-            Log::error('Surat keluar error: '.$e->getMessage());
-
-            return back()->with(
-                'error',
-                'Terjadi kesalahan saat menyimpan surat keluar.',
-            );
-        }
     }
 
     public function storeKasKecil(
@@ -401,28 +274,12 @@ class AdministrasiSuratController extends Controller
                 $e->getMessage(),
             );
 
-            return back()->with(
-                'error',
-                'Terjadi kesalahan saat menyimpan Agenda Janji Temu.',
-            );
-        }
-    }
-
-    public function storeSuratUndanganRapat(Request $request)
-    {
-        $agendaService = app(SuratUndanganRapatService::class);
-
-        $surat = $agendaService->store($request->all());
-
-        if (! $surat) {
             return back()
-                ->with('error', 'Terjadi kesalahan saat menyimpan data')
-                ->withInput();
+                ->with(
+                    'error',
+                    'Terjadi kesalahan saat menyimpan Agenda Janji Temu.',
+                );
         }
-
-        return redirect()
-            ->route('administrasi.surat-undangan-rapat.index')
-            ->with('success', 'Surat undangan rapat berhasil disimpan.');
     }
 
     public function updateAgendaTelpon($id, Request $request)
@@ -463,44 +320,6 @@ class AdministrasiSuratController extends Controller
         $agenda->save();
 
         return back()->with('success', 'Agenda berhasil ditandai!');
-    }
-
-    public function destroyAgendaSuratKeluar($id)
-    {
-        DB::beginTransaction();
-        try {
-            $surat = AgendaSuratKeluar::findOrFail($id);
-
-            // Hapus file lampiran jika ada
-            if (
-                $surat->file_lampiran &&
-                Storage::disk('public')->exists($surat->file_lampiran)
-            ) {
-                Storage::disk('public')->delete($surat->file_lampiran);
-            }
-
-            // Hapus file ttd jika ada
-            if ($surat->ttd && Storage::disk('public')->exists($surat->ttd)) {
-                Storage::disk('public')->delete($surat->ttd);
-            }
-
-            // Hapus record surat keluar
-            $surat->delete();
-
-            DB::commit();
-
-            return redirect()
-                ->route('administrasi.surat-keluar.index')
-                ->with('success', 'Surat keluar berhasil dihapus.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('Gagal menghapus Surat Keluar: '.$e->getMessage());
-
-            return back()->with(
-                'error',
-                'Terjadi kesalahan saat menghapus surat.',
-            );
-        }
     }
 
     public function destroyKasKecil($kasId)
@@ -644,38 +463,6 @@ class AdministrasiSuratController extends Controller
             return back()->with(
                 'error',
                 'Terjadi kesalahan saat menghapus agenda janji temu.',
-            );
-        }
-    }
-
-    public function destroySuratUndanganRapat($id)
-    {
-        DB::beginTransaction();
-        try {
-            $suratUndanganRapatService = app(suratUndanganRapatService::class);
-            $suratUndanganRapat = SuratUndanganRapat::where(
-                'user_id',
-                auth()->id(),
-            )->findOrFail($id);
-            $suratUndanganRapatService->delete($suratUndanganRapat->id);
-            DB::commit();
-
-            return redirect()
-                ->back()
-                ->with(
-                    'success',
-                    'Agenda surat undangan rapat berhasil dihapus.',
-                );
-        } catch (Throwable $e) {
-            DB::rollBack();
-            Log::error(
-                'Gagal menghapus pada surat undangan rapat. Error: '.
-                $e->getMessage(),
-            );
-
-            return back()->with(
-                'error',
-                'Terjadi kesalahan saat menghapus surat undangan rapat.',
             );
         }
     }

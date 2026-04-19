@@ -70,7 +70,7 @@ class SuratPengirimanBarangController extends Controller
     public function generatePdf($id)
     {
         try {
-            $service = new SuratPengirimanBarangService();
+            $service = app(SuratPengirimanBarangService::class);
             return $service->generatePdf($id);
         } catch (Throwable $th) {
             Log::error(

@@ -1,13 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AdministrasiSuratController, AsetHutangController, BarangController, DebiturController, KasirController, ManajemenKasKecilController, NeracaAkhirController, PageController, PendapatanController, PengeluaranController, PernyataanPiutangController, ProfileController, ReturController, RugiLabaController, SuratMasukController, TutupBukuController};
+use App\Http\Controllers\AdministrasiSuratController;
+use App\Http\Controllers\AsetHutangController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DebiturController;
 use App\Http\Controllers\Faktur\AdministrasiFakturController;
+use App\Http\Controllers\KasirController;
+use App\Http\Controllers\ManajemenKasKecilController;
 use App\Http\Controllers\Memo\MemoKreditController;
-use App\Http\Controllers\Rapat\ManajemenRapatController;
+use App\Http\Controllers\NeracaAkhirController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\PendapatanController;
+use App\Http\Controllers\PengeluaranController;
+use App\Http\Controllers\PernyataanPiutangController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Rapat\NotulenRapatController;
+use App\Http\Controllers\Rapat\SuratUndanganRapatController;
+use App\Http\Controllers\ReturController;
+use App\Http\Controllers\RugiLabaController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
 use App\Http\Controllers\SuratKeluar\SuratKeluarController;
+use App\Http\Controllers\SuratMasukController;
+use App\Http\Controllers\TutupBukuController;
+use Illuminate\Support\Facades\Route;
 
 // Halaman publik
 Route::get('/', [PageController::class, 'index']);
@@ -323,23 +339,23 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
         // Surat Keluar
         Route::get('/surat-keluar', [
-            AdministrasiSuratController::class,
-            'indexSuratKeluar',
+            SuratKeluarController::class,
+            'index',
         ])->name('administrasi.surat-keluar.index');
 
         Route::get('/surat-keluar/create', [
-            AdministrasiSuratController::class,
-            'createSuratKeluar',
+            SuratKeluarController::class,
+            'create',
         ])->name('administrasi.surat-keluar.create');
 
         Route::post('/surat-keluar', [
-            AdministrasiSuratController::class,
-            'storeSuratKeluar',
+            SuratKeluarController::class,
+            'store',
         ])->name('administrasi.surat-keluar.store');
 
         Route::delete('/surat-keluar/{id}', [
-            AdministrasiSuratController::class,
-            'destroyAgendaSuratKeluar',
+            SuratKeluarController::class,
+            'destroy',
         ])->name('administrasi.surat-keluar.destroy');
 
         Route::get('/surat-keluar/{id}', [SuratKeluarController::class, 'downloadPdf'])->name('administrasi.surat-keluar.downloadPdf');
@@ -470,73 +486,83 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
         // Surat Undangan Rapat
         Route::get('/surat-undangan-rapat/', [
-            AdministrasiSuratController::class,
-            'indexSuratUndanganRapat',
+            SuratUndanganRapatController::class,
+            'index',
         ])->name('administrasi.surat-undangan-rapat.index');
 
         Route::get('/surat-undangan-rapat/create', [
-            AdministrasiSuratController::class,
-            'createSuratUndanganRapat',
+            SuratUndanganRapatController::class,
+            'create',
         ])->name('administrasi.surat-undangan-rapat.create');
 
         Route::get('/surat-undangan-rapat/{id}/pdf', [
-            AdministrasiSuratController::class,
-            'pdfSuratUndanganRapat',
+            SuratUndanganRapatController::class,
+            'generatePdf',
         ])->name('administrasi.surat-undangan-rapat.pdf');
 
         Route::post('/surat-undangan-rapat/', [
-            AdministrasiSuratController::class,
-            'storeSuratUndanganRapat',
+            SuratUndanganRapatController::class,
+            'store',
         ])->name('administrasi.surat-undangan-rapat.store');
 
+        Route::get('/surat-undangan-rapat/{id}/edit', [
+            SuratUndanganRapatController::class,
+            'edit',
+        ])->name('administrasi.surat-undangan-rapat.edit');
+
+        Route::put('/surat-undangan-rapat/{id}', [
+            SuratUndanganRapatController::class,
+            'update',
+        ])->name('administrasi.surat-undangan-rapat.update');
+
         Route::delete('/surat-undangan-rapat/{agendaId}', [
-            AdministrasiSuratController::class,
-            'destroySuratUndanganRapat',
+            SuratUndanganRapatController::class,
+            'destroy',
         ])->name('administrasi.surat-undangan-rapat.destroy');
 
         // Rapat
-        Route::get('/rapat', [ManajemenRapatController::class, 'index'])->name(
+        Route::get('/rapat', [NotulenRapatController::class, 'index'])->name(
             'administrasi.rapat.index',
         );
 
         Route::get('/rapat/create', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'create',
         ])->name('administrasi.rapat.create');
 
         Route::get('/rapat/edit/{rapatId}', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'edit',
         ])->name('administrasi.rapat.edit');
 
         Route::get('/rapat/generate/{rapatId}', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'generatePdf',
         ])->name('administrasi.rapat.generatePdf');
 
         Route::post('/rapat/', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'store',
         ])->name('administrasi.rapat.store');
 
         Route::put('/rapat/{rapatId}', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'update',
         ])->name('administrasi.rapat.update');
 
         Route::delete('/rapat/{rapatId}', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'destroy',
         ])->name('administrasi.rapat.destroy');
 
         // Hasil Keputusan Rapat
         Route::get('/rapat/hasil-keputusan', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'indexHasilKeputusan',
         ])->name('administrasi.rapat.hasil-keputusan.index');
 
         Route::get('/rapat/hasil-keputusan/{hasilKeputusanId}/generate', [
-            ManajemenRapatController::class,
+            NotulenRapatController::class,
             'generatePdfHasilKeputusan',
         ])->name('administrasi.rapat.hasil-keputusan.generatePdf');
 
@@ -696,4 +722,4 @@ Route::middleware(['web', 'auth'])
         ])->name('superadmin.dashboard');
     });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

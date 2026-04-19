@@ -144,8 +144,6 @@
         {{ $surat->alamat_penerima }}
     </div>
 
-    <p>Dengan hormat,</p>
-
     {{-- ISI SURAT --}}
     <div class="content">
         <p style="text-align: justify;">{!! nl2br(e($surat->paragraf_pembuka)) !!}</p>
@@ -153,49 +151,34 @@
         <p style="text-align: justify;">{!! nl2br(e($surat->paragraf_penutup)) !!}</p>
     </div>
 
-    <p>
-        Demikian surat ini kami sampaikan. Atas perhatian Bapak/Ibu, kami ucapkan terima kasih.
-    </p>
-
     {{-- AREA TANDA TANGAN --}}
     <table class="ttd-table" border="0">
         <tr>
+            <td width="25%" class="text-right">
+                Hormat kami,<br>
 
-            <<<<<<< HEAD @if ($surat->ttd)
-                <img src="{{ storage_path('app/public/' . $surat->ttd) }}" width="120"><br>
-            @else
-                <br><br><br>
-                @endif
-                =======
-                <td width="75%"></td>
-                >>>>>>> 8712ae3d69025df2b1f4989a895bb58a6169f4ad
-
-
-                <td width="25%" class="text-right">
-                    Hormat kami,<br>
-
-                    {{-- Validasi TTD --}}
-                    @if ($surat->ttd)
-                        @php
-                            $ttdPath = public_path('storage/' . $surat->ttd);
-                            if (file_exists($ttdPath)) {
-                                $ttdBase64 = base64_encode(file_get_contents($ttdPath));
-                                $ttdMime = mime_content_type($ttdPath);
-                            }
-                        @endphp
-                        @if (isset($ttdBase64))
-                            <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
-                        @else
-                            <br><br><br><br>
-                        @endif
+                {{-- Validasi TTD --}}
+                @if ($surat->ttd)
+                    @php
+                        $ttdPath = public_path('storage/' . $surat->ttd);
+                        if (file_exists($ttdPath)) {
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
+                        }
+                    @endphp
+                    @if (isset($ttdBase64))
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
                     @else
                         <br><br><br><br>
                     @endif
+                @else
+                    <br><br><br><br>
+                @endif
 
-                    <br>
-                    <strong><u>{{ $surat->nama_pengirim }}</u></strong><br>
-                    {{ $surat->jabatan_pengirim }}
-                </td>
+                <br>
+                <strong><u>{{ $surat->nama_pengirim }}</u></strong><br>
+                {{ $surat->jabatan_pengirim }}
+            </td>
         </tr>
     </table>
 

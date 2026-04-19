@@ -20,6 +20,8 @@ class SuratPengirimanBarang extends Model
         "keterangan",
         "nama_penerima",
         "nama_pengirim",
+        "ttd_pengirim",
+        "ttd_penerima",
         "user_id",
     ];
 
