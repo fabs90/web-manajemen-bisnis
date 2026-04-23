@@ -30,10 +30,10 @@
                         <div class="col-md-6">
                             <label class="form-label">Pilih Supplier</label>
                             <select name="supplier_id" id="supplierSelect" class="form-select" required>
-                                <option value="#">-- Pilih Supplier --</option>
-                                @foreach ($pelanggan as $p)
-                                    <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}">
-                                        {{ $p->nama }}
+                                <option value="">-- Pilih Supplier --</option>
+                                @foreach ($suppliers as $s)
+                                    <option value="{{ $s->id }}" data-alamat="{{ $s->alamat }}">
+                                        {{ $s->nama }}
                                     </option>
                                 @endforeach
                             </select>
@@ -76,9 +76,10 @@
                             <tr>
                                 <th width="5%">No</th>
                                 <th width="30%">Nama Barang</th>
-                                <th width="20%">Kuantitas</th>
-                                <th width="20%">Harga</th>
-                                <th width="35%">Total</th>
+                                <th width="10%">Stok</th>
+                                <th width="15%">Kuantitas</th>
+                                <th width="15%">Harga</th>
+                                <th width="20%">Total</th>
                                 <th width="5%">#</th>
                             </tr>
                         </thead>
@@ -86,7 +87,19 @@
                         <tbody id="tbody-detail">
                             <tr>
                                 <td class="row-index text-center">1</td>
-                                <td><input type="text" name="detail[0][nama_barang]" class="form-control" required></td>
+                                <td>
+                                    <select name="detail[0][barang_id]" class="form-select barang-select" required>
+                                        <option value="">-- Pilih Barang --</option>
+                                        @foreach ($barang as $b)
+                                            <option value="{{ $b->id }}" data-stok="{{ $b->getSaldoAkhir() }}"
+                                                data-harga="{{ $b->harga_beli_per_unit }}" data-nama="{{ $b->nama }}">
+                                                {{ $b->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <input type="hidden" name="detail[0][nama_barang]" class="nama-barang">
+                                </td>
+                                <td><input type="text" class="form-control stok" readonly></td>
                                 <td><input type="text" name="detail[0][kuantitas]" class="form-control qty" required>
                                 </td>
                                 <td><input type="text" name="detail[0][harga]" class="form-control harga" required></td>
@@ -118,6 +131,15 @@
 
 @push('script')
     <script>
+        // Inisialisasi Select2
+        $(document).ready(function() {
+            $('.barang-select').select2({
+                placeholder: '-- Pilih Barang --',
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
         // Fungsi format angka menjadi format rupiah (tanpa Rp)
         function formatRupiah(angka) {
             let numberString = angka.replace(/[^,\d]/g, '').toString();
@@ -148,41 +170,74 @@
             let row = document.createElement('tr');
 
             row.innerHTML = `
-        <td class="row-index text-center">${index + 1}</td>
-        <td><input type="text" name="detail[${index}][nama_barang]" class="form-control" required></td>
-        <td><input type="text" name="detail[${index}][kuantitas]" class="form-control qty" required></td>
-        <td><input type="text" name="detail[${index}][harga]" class="form-control harga" required></td>
-        <td><input type="text" name="detail[${index}][total]" class="form-control total" readonly required></td>
-        <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button></td>
-    `;
+                <td class="row-index text-center">${index + 1}</td>
+                <td>
+                    <select name="detail[${index}][barang_id]" class="form-select barang-select" required>
+                        <option value="">-- Pilih Barang --</option>
+                        @foreach ($barang as $b)
+                            <option value="{{ $b->id }}" data-stok="{{ $b->getSaldoAkhir() }}"
+                                data-harga="{{ $b->harga_beli_per_unit }}" data-nama="{{ $b->nama }}">
+                                {{ $b->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" name="detail[${index}][nama_barang]" class="nama-barang">
+                </td>
+                <td><input type="text" class="form-control stok" readonly></td>
+                <td><input type="text" name="detail[${index}][kuantitas]" class="form-control qty" required></td>
+                <td><input type="text" name="detail[${index}][harga]" class="form-control harga" required></td>
+                <td><input type="text" name="detail[${index}][total]" class="form-control total" readonly required></td>
+                <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button></td>
+            `;
 
             tbody.appendChild(row);
+
+            // Re-inisialisasi Select2 untuk baris baru
+            $(`.barang-select[name="detail[${index}][barang_id]"]`).select2({
+                placeholder: '-- Pilih Barang --',
+                allowClear: true,
+                width: '100%'
+            });
+
             index++;
         });
 
+        // Event listener untuk perubahan barang
+        $(document).on('change', '.barang-select', function() {
+            let row = $(this).closest('tr');
+            let selectedOption = $(this).find('option:selected');
+
+            let stok = selectedOption.data('stok') || 0;
+            let harga = selectedOption.data('harga') || 0;
+            let nama = selectedOption.data('nama') || '';
+
+            row.find('.stok').val(formatRupiah(stok.toString()));
+            row.find('.harga').val(formatRupiah(harga.toString()));
+            row.find('.nama-barang').val(nama);
+
+            // Trigger input event to recalculate total
+            row.find('.qty').trigger('input');
+        });
+
         // Format & Hitung Total
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('harga') || e.target.classList.contains('qty')) {
-                let val = e.target.value;
-                e.target.value = formatRupiah(val);
+        $(document).on('input', '.harga, .qty', function() {
+            let val = $(this).val();
+            $(this).val(formatRupiah(val));
 
-                let row = e.target.closest('tr');
-                let harga = getNumericValue(row.querySelector('.harga').value);
-                let qty = getNumericValue(row.querySelector('.qty').value);
+            let row = $(this).closest('tr');
+            let harga = getNumericValue(row.find('.harga').val());
+            let qty = getNumericValue(row.find('.qty').val());
 
-                let total = harga * qty;
-                row.querySelector('.total').value = total ? formatRupiah(total.toString()) : '';
-            }
+            let total = harga * qty;
+            row.find('.total').val(total ? formatRupiah(total.toString()) : '');
         });
 
         // Hapus baris
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-row')) {
-                e.target.closest('tr').remove();
-            }
+        $(document).on('click', '.remove-row', function() {
+            $(this).closest('tr').remove();
         });
 
-        // Auto set alamat dari pelanggan
+        // Auto set alamat dari supplier
         document.getElementById('supplierSelect').addEventListener('change', function() {
             let alamat = this.options[this.selectedIndex].dataset.alamat ?? "";
             document.getElementById('alamatSuplier').value = alamat;

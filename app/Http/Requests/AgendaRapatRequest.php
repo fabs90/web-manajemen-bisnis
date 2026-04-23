@@ -22,7 +22,9 @@ class AgendaRapatRequest extends FormRequest
             'tanggal' => 'required|date',
             'waktu' => 'required|date_format:H:i',
             'pemimpin_rapat' => 'required|string|max:255',
+            'ttd_pemimpin' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'nama_notulis' => 'required|string|max:255',
+            'ttd_notulis' => 'required|image|mimes:jpeg,png,jpg|max:2048',
 
             // ================= PESERTA =================
             'peserta_nama' => 'required|array|min:1',
@@ -80,7 +82,9 @@ class AgendaRapatRequest extends FormRequest
             'tanggal' => 'tanggal',
             'waktu' => 'waktu',
             'pemimpin_rapat' => 'pemimpin rapat',
-            'notulis' => 'notulis',
+            'ttd_pemimpin' => 'tanda tangan pemimpin',
+            'nama_notulis' => 'notulis',
+            'ttd_notulis' => 'tanda tangan notulis',
 
             'peserta_nama.*' => 'nama peserta',
             'peserta_jabatan.*' => 'jabatan peserta',

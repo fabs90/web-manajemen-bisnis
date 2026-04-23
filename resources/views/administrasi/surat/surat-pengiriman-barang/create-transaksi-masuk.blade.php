@@ -21,7 +21,7 @@
             </div>
 
             <div class="card-body py-4">
-                <form action="{{ route('administrasi.spb.store') }}" method="POST">
+                <form action="{{ route('administrasi.spb.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     {{-- ── 1. Pilih SPP & Nomor SPB ── --}}
@@ -141,7 +141,14 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nama Pengirim / Supir</label>
                             <input type="text" name="nama_pengirim" value="{{ old('nama_pengirim') }}"
-                                class="form-control">
+                                class="form-control mb-2">
+
+                            <label class="form-label fw-bold small">Tanda Tangan Pengirim</label>
+                            <input type="file" name="ttd_pengirim"
+                                class="form-control @error('ttd_pengirim') is-invalid @enderror" accept="image/*">
+                            @error('ttd_pengirim')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
                         </div>
                     </div>
 
@@ -206,8 +213,15 @@
                                     <label class="form-label fw-bold">Nama Penerima</label>
                                     <input type="text" name="nama_penerima" id="nama_penerima"
                                         value="{{ old('nama_penerima') }}"
-                                        class="form-control @error('nama_penerima') is-invalid @enderror">
+                                        class="form-control mb-2 @error('nama_penerima') is-invalid @enderror">
                                     @error('nama_penerima')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+
+                                    <label class="form-label fw-bold small">Tanda Tangan Penerima</label>
+                                    <input type="file" name="ttd_penerima" id="ttd_penerima"
+                                        class="form-control @error('ttd_penerima') is-invalid @enderror" accept="image/*">
+                                    @error('ttd_penerima')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
                                 </div>
