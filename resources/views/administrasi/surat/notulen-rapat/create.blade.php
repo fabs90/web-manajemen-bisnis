@@ -71,11 +71,53 @@
                         </tr>
                         <tr>
                             <td>Tanda Tangan Pimpinan</td>
-                            <td><input type="file" name="ttd_pemimpin" class="form-control" accept="image/*" required></td>
+                            <td>
+                                <div class="upload-container shadow-sm border rounded p-3 text-center bg-light" id="ttd-pemimpin-drop-zone"
+                                    onclick="document.getElementById('ttd-pemimpin-input').click()">
+                                    <div id="ttd-pemimpin-placeholder">
+                                        <i class="bi bi-pen fs-3 text-secondary mb-2 d-block"></i>
+                                        <span class="d-block mb-2 text-muted small">Klik atau Seret Tanda Tangan ke Sini</span>
+                                        <button type="button" class="btn btn-outline-primary btn-sm px-3">Pilih File TTD</button>
+                                    </div>
+                                    <input type="file" name="ttd_pemimpin" id="ttd-pemimpin-input" class="d-none" accept="image/*">
+                                    <div id="ttd-pemimpin-preview-container" class="mt-2 d-none">
+                                        <div class="position-relative d-inline-block">
+                                            <img id="ttd-pemimpin-preview" src="#" alt="Preview"
+                                                class="img-fluid rounded border shadow-sm" style="max-height: 80px;">
+                                        </div>
+                                        <p class="mb-0 mt-2 small text-success fw-bold">
+                                            <i class="bi bi-file-earmark-check me-1"></i> Terpilih: <span id="ttd-pemimpin-filename"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <td>Nama Notulis</td>
                             <td><input type="text" name="nama_notulis" class="form-control" required></td>
+                        </tr>
+                        <tr>
+                            <td>Tanda Tangan Notulis</td>
+                            <td>
+                                <div class="upload-container shadow-sm border rounded p-3 text-center bg-light" id="ttd-notulis-drop-zone"
+                                    onclick="document.getElementById('ttd-notulis-input').click()">
+                                    <div id="ttd-notulis-placeholder">
+                                        <i class="bi bi-pen fs-3 text-secondary mb-2 d-block"></i>
+                                        <span class="d-block mb-2 text-muted small">Klik atau Seret Tanda Tangan ke Sini</span>
+                                        <button type="button" class="btn btn-outline-primary btn-sm px-3">Pilih File TTD</button>
+                                    </div>
+                                    <input type="file" name="ttd_notulis" id="ttd-notulis-input" class="d-none" accept="image/*">
+                                    <div id="ttd-notulis-preview-container" class="mt-2 d-none">
+                                        <div class="position-relative d-inline-block">
+                                            <img id="ttd-notulis-preview" src="#" alt="Preview"
+                                                class="img-fluid rounded border shadow-sm" style="max-height: 80px;">
+                                        </div>
+                                        <p class="mb-0 mt-2 small text-success fw-bold">
+                                            <i class="bi bi-file-earmark-check me-1"></i> Terpilih: <span id="ttd-notulis-filename"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     </table>
 
@@ -219,6 +261,56 @@
             }
         });
 
+        function setupUploadPreview(id) {
+            const dropZone = document.getElementById(`ttd-${id}-drop-zone`);
+            const input = document.getElementById(`ttd-${id}-input`);
+            const preview = document.getElementById(`ttd-${id}-preview`);
+            const placeholder = document.getElementById(`ttd-${id}-placeholder`);
+            const previewContainer = document.getElementById(`ttd-${id}-preview-container`);
+            const filename = document.getElementById(`ttd-${id}-filename`);
+
+            if (!dropZone || !input) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+            });
+
+            dropZone.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                input.files = dt.files;
+                input.dispatchEvent(new Event('change'));
+            }, false);
+
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        placeholder.classList.add('d-none');
+                        previewContainer.classList.remove('d-none');
+                        filename.textContent = input.files[0].name;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupUploadPreview('pemimpin');
+            setupUploadPreview('notulis');
+        });
+
         document.getElementById('addPeserta').addEventListener('click', function() {
             const table = document.getElementById('peserta-rapat-body');
             const rowCount = table.rows.length + 1;
@@ -260,5 +352,22 @@
             table.insertAdjacentHTML('beforeend', row);
         });
     </script>
+
+@push('styles')
+    <style>
+        .upload-container {
+            border: 2px dashed #dee2e6 !important;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .upload-container:hover,
+        .upload-container.dragover {
+            border-color: #0d6efd !important;
+            background-color: #f1f8ff !important;
+            transform: translateY(-2px);
+        }
+    </style>
+@endpush
 
 @endsection

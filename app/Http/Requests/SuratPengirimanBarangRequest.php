@@ -27,12 +27,14 @@ class SuratPengirimanBarangRequest extends FormRequest
             'status_pengiriman' => ['required', 'in:diproses,dikirim,diterima,dibatalkan,dikembalikan'],
             'jenis_pengiriman' => ['required', 'string', 'max:100'],
             'nama_pengirim' => ['nullable', 'string', 'max:100'],
+            'ttd_pengirim' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'keterangan' => ['nullable', 'string'],
 
             // ── Konfirmasi (wajib saat diterima / dikembalikan) ─────────
             'tanggal_terima' => $butuhKonfirmasi ? ['required', 'date'] : ['nullable', 'date'],
             'keadaan' => $butuhKonfirmasi ? ['required', 'in:baik,rusak_ringan,rusak_berat'] : ['nullable', 'string'],
             'nama_penerima' => $butuhKonfirmasi ? ['required', 'string', 'max:100'] : ['nullable', 'string'],
+            'ttd_penerima' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
 
             // ── Items ────────────────────────────────────────────────────
             'items' => ['required', 'array', 'min:1'],

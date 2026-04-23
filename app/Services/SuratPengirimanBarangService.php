@@ -10,11 +10,37 @@ use Illuminate\Support\Str;
 
 class SuratPengirimanBarangService
 {
+    public function __construct(protected FileUploadService $fileUploadService)
+    {
+    }
+
     public function store($data)
     {
         DB::beginTransaction();
 
         try {
+            $userEmail = Auth::user()->email ?? 'system@email.com';
+
+            // Handle TTD Pengirim
+            $ttdPengirimPath = null;
+            if (request()->hasFile('ttd_pengirim')) {
+                $ttdPengirimPath = $this->fileUploadService->upload(
+                    request()->file('ttd_pengirim'),
+                    'surat/spb/ttd_pengirim',
+                    $userEmail
+                );
+            }
+
+            // Handle TTD Penerima
+            $ttdPenerimaPath = null;
+            if (request()->hasFile('ttd_penerima')) {
+                $ttdPenerimaPath = $this->fileUploadService->upload(
+                    request()->file('ttd_penerima'),
+                    'surat/spb/ttd_penerima',
+                    $userEmail
+                );
+            }
+
             // Simpan header SPB
             $spb = SuratPengirimanBarang::create([
                 "spp_id" => $data["spp_id"],
@@ -26,6 +52,8 @@ class SuratPengirimanBarangService
                 "keterangan" => $data["keterangan"],
                 "nama_penerima" => $data["nama_penerima"],
                 "nama_pengirim" => $data["nama_pengirim"],
+                "ttd_pengirim" => $ttdPengirimPath,
+                "ttd_penerima" => $ttdPenerimaPath,
                 "user_id" => auth()->user()->id,
             ]);
 

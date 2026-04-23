@@ -34,6 +34,16 @@ class ManajemenRapatService
                 );
             }
 
+            // 1b. Upload TTD Notulis jika ada
+            $ttdNotulisPath = null;
+            if (request()->hasFile("ttd_notulis")) {
+                $ttdNotulisPath = $this->fileUploadService->upload(
+                    request()->file("ttd_notulis"),
+                    "rapat/ttd",
+                    auth()->user()->email,
+                );
+            }
+
             // 2. Simpan Master Rapat
             $rapat = AgendaRapat::create([
                 "user_id" => auth()->user()->id,
@@ -42,6 +52,7 @@ class ManajemenRapatService
                 "tempat" => $data["tempat"],
                 "tanggal" => $data["tanggal"],
                 "ttd_pemimpin" => $ttdPath,
+                "ttd_notulis" => $ttdNotulisPath,
                 "waktu" => $data["waktu"],
                 "pemimpin_rapat" => $data["pemimpin_rapat"],
                 "keputusan_rapat" => $data["keputusan_rapat"],

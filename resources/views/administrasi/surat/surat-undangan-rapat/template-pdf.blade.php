@@ -76,7 +76,8 @@
             margin: 15px 0;
         }
 
-        .table-agenda th, .table-agenda td {
+        .table-agenda th,
+        .table-agenda td {
             border: 1px solid #000;
             padding: 6px;
         }
@@ -85,14 +86,16 @@
             background-color: #f0f0f0;
         }
 
-        .mb-4 { margin-bottom: 25px; }
+        .mb-4 {
+            margin-bottom: 25px;
+        }
     </style>
 </head>
 
 <body>
 
     {{-- KOP SURAT --}}
-        <table class="table-no-border" style="margin-bottom: 10px;">
+    <table class="table-no-border" style="margin-bottom: 10px;">
         <tr>
             <td width="15%">
                 @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
@@ -128,7 +131,9 @@
         </tr>
         <tr>
             <td>Perihal</td>
-            <td>: <strong>{{ strtoupper($agendaJanjiTemu->perihal ?? $agendaJanjiTemu->judul_rapat ?? 'UNDANGAN RAPAT') }}</strong></td>
+            <td>:
+                <strong>{{ strtoupper($agendaJanjiTemu->perihal ?? ($agendaJanjiTemu->judul_rapat ?? 'UNDANGAN RAPAT')) }}</strong>
+            </td>
         </tr>
     </table>
 
@@ -144,7 +149,8 @@
 
     <p>
         Dengan hormat,<br>
-        Sehubungan dengan akan diadakannya rapat <strong>{{ $agendaJanjiTemu->judul_rapat ?? '-' }}</strong>, kami mengundang Bapak/Ibu untuk hadir pada:
+        Sehubungan dengan akan diadakannya rapat <strong>{{ $agendaJanjiTemu->judul_rapat ?? '-' }}</strong>, kami
+        mengundang Bapak/Ibu untuk hadir pada:
     </p>
 
     {{-- Detail Waktu --}}
@@ -159,10 +165,11 @@
         </tr>
         <tr>
             <td>Waktu</td>
-            <td>: 
-                {{ $agendaJanjiTemu->waktu_mulai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_mulai)->format('H:i') : '-' }} 
-                - 
-                {{ $agendaJanjiTemu->waktu_selesai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_selesai)->format('H:i') : '-' }} WIB
+            <td>:
+                {{ $agendaJanjiTemu->waktu_mulai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_mulai)->format('H:i') : '-' }}
+                -
+                {{ $agendaJanjiTemu->waktu_selesai ? \Carbon\Carbon::parse($agendaJanjiTemu->waktu_selesai)->format('H:i') : '-' }}
+                WIB
             </td>
         </tr>
         <tr>
@@ -182,7 +189,7 @@
             </tr>
         </thead>
         <tbody>
-            @if(isset($agendaJanjiTemu->details) && count($agendaJanjiTemu->details) > 0)
+            @if (isset($agendaJanjiTemu->details) && count($agendaJanjiTemu->details) > 0)
                 @foreach ($agendaJanjiTemu->details as $detail)
                     <tr>
                         <td class="text-center">{{ $loop->iteration }}</td>
@@ -202,14 +209,32 @@
     </p>
 
     {{-- Footer Tanda Tangan --}}
-    <table width="100%" border="0" style="margin-top: 40px;">
+    <table class="ttd-table" border="0">
         <tr>
-            <td width="60%"></td>
-            <td width="40%" class="text-center">
-                {{ \Carbon\Carbon::now()->setTimezone('Asia/Jakarta')->translatedFormat('d F Y') }}<br>
-                <strong>{{ $agendaJanjiTemu->jabatan_penandatangan ?? 'Hormat Kami' }}</strong>
-                <br><br><br><br><br>
-                <strong><u>({{ $agendaJanjiTemu->nama_penandatangan ?? $profileUser->name }})</u></strong>
+            <td width="25%" class="text-right">
+                Hormat kami,<br>
+
+                {{-- Validasi TTD --}}
+                @if ($agendaJanjiTemu->ttd)
+                    @php
+                        $ttdPath = public_path('storage/' . $agendaJanjiTemu->ttd);
+                        if (file_exists($ttdPath)) {
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
+                        }
+                    @endphp
+                    @if (isset($ttdBase64))
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
+                    @else
+                        <br><br><br><br>
+                    @endif
+                @else
+                    <br><br><br><br>
+                @endif
+
+                <br>
+                <strong><u>{{ $agendaJanjiTemu->nama_penandatangan }}</u></strong><br>
+                {{ $agendaJanjiTemu->jabatan_penandatangan }}
             </td>
         </tr>
     </table>

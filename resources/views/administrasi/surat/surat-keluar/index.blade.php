@@ -44,19 +44,29 @@
                                 <td>{{ $surat->nama_penerima }}</td>
                                 <td>{{ $surat->perihal }}</td>
                                 <td>
-                                    <a href="{{ route('administrasi.surat-keluar.downloadPdf', ['id' => $surat->id]) }}"
-                                        target="_blank" class="btn btn-sm btn-success">
-                                        <i class="bi bi-file-earmark-pdf"></i>
-                                    </a>
-                                    <form action="{{ route('administrasi.surat-keluar.destroy', $surat->id) }}"
-                                        method="POST" class="d-inline" id="delete-form-{{ $surat->id }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                            onclick="confirmDelete({{ $surat->id }})">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('administrasi.surat-keluar.downloadPdf', ['id' => $surat->id]) }}"
+                                            target="_blank" class="btn btn-sm btn-success" title="Cetak PDF">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                        </a>
+
+                                        @if ($surat->file_lampiran)
+                                            <a href="{{ asset('storage/' . $surat->file_lampiran) }}" target="_blank"
+                                                class="btn btn-sm btn-info text-white" title="Lihat Lampiran">
+                                                <i class="bi bi-paperclip"></i>
+                                            </a>
+                                        @endif
+
+                                        <form action="{{ route('administrasi.surat-keluar.destroy', $surat->id) }}"
+                                            method="POST" class="d-inline" id="delete-form-{{ $surat->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-danger"
+                                                onclick="confirmDelete({{ $surat->id }})" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -73,6 +83,7 @@
         });
 
         function confirmDelete(id) {
+            const btn = document.querySelector(`#delete-form-${id} button`);
             Swal.fire({
                 title: 'Yakin ingin menghapus?',
                 text: "Data surat akan dihapus permanen!",
@@ -84,6 +95,10 @@
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    btn.disabled = true;
+                    btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-1"></span>
+            `;
                     document.getElementById('delete-form-' + id).submit();
                 }
             });

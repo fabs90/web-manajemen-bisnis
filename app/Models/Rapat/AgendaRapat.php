@@ -25,6 +25,7 @@ class AgendaRapat extends Model
         "agenda_rapat_berikutnya",
         "waktu_rapat_berikutnya",
         "ttd_pemimpin",
+        "ttd_notulis"
     ];
 
     public function user()

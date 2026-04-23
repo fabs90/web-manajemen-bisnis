@@ -6,25 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class SuratUndanganRapat extends Model
 {
-    protected $table = "surat_undangan_rapat";
+    protected $table = 'surat_undangan_rapat';
 
     protected $fillable = [
-        "user_id",
-        "nomor_surat",
-        "lampiran",
-        "perihal",
-        "nama_penerima",
-        "jabatan_penerima",
-        "kota_penerima",
-        "judul_rapat",
-        "tanggal_rapat",
-        "hari",
-        "waktu_mulai",
-        "waktu_selesai",
-        "tempat",
-        "nama_penandatangan",
-        "jabatan_penandatangan",
-        "tembusan",
+        'user_id',
+        'nomor_surat',
+        'lampiran',
+        'perihal',
+        'nama_penerima',
+        'jabatan_penerima',
+        'kota_penerima',
+        'judul_rapat',
+        'tanggal_rapat',
+        'hari',
+        'waktu_mulai',
+        'waktu_selesai',
+        'tempat',
+        'nama_penandatangan',
+        'jabatan_penandatangan',
+        'tembusan',
+        'ttd',
     ];
 
     public function user()
