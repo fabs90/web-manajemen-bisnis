@@ -94,18 +94,18 @@
     <div class="section-title">JADWAL DETAIL</div>
 
     @if($agendaPerjalanan->agendaPerjalananDetail && $agendaPerjalanan->agendaPerjalananDetail->count())
-        @foreach($agendaPerjalanan->agendaPerjalananDetail as $dIndex => $detail)
-            <table style="margin-bottom:8px;">
-                <thead>
-                    <tr>
-                        <th style="width:12%;">Hari</th>
-                        <th style="width:18%;">Tanggal</th>
-                        <th style="width:12%;">Waktu</th>
-                        <th>Kegiatan</th>
-                        <th style="width:20%;">Lokasi / PIC</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <table style="margin-bottom:8px;">
+            <thead>
+                <tr>
+                    <th style="width:12%;">Hari</th>
+                    <th style="width:18%;">Tanggal</th>
+                    <th style="width:12%;">Waktu</th>
+                    <th>Kegiatan</th>
+                    <th style="width:20%;">Lokasi / PIC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($agendaPerjalanan->agendaPerjalananDetail as $dIndex => $detail)
                     <tr>
                         <td class="small">{{ $dIndex + 1 }}</td>
                         <td class="small">{{ optional($detail->tanggal) ? \Carbon\Carbon::parse($detail->tanggal)->format('d M Y') : '-' }}</td>
@@ -113,9 +113,9 @@
                         <td class="small">{{ $detail->kegiatan ?? '-' }}</td>
                         <td class="small">{{ $detail->lokasi ?? '-' }}</td>
                     </tr>
-                </tbody>
-            </table>
-        @endforeach
+                @endforeach
+            </tbody>
+        </table>
     @else
         <div class="small">Tidak ada jadwal detail.</div>
     @endif
@@ -217,23 +217,22 @@
     <div class="section-title">CATATAN</div>
     <div class="small" style="margin-bottom:18px;">{{ $agendaPerjalanan->catatan ?? '-' }}</div>
 
-    <div style="margin-top:24px;">
-        <div class="signature">
-            <div>Disiapkan Oleh</div>
-            <div style="height:60px"></div>
-            <div style="font-weight:700">{{ $agendaPerjalanan->disiapkan_oleh ?? '-' }}</div>
-            <div class="small">{{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->format('d M Y') : '-' }}</div>
-        </div>
-
-        <div style="width:4%; display:inline-block;"></div>
-
-        <div class="signature">
-            <div>Disetujui Oleh</div>
-            <div style="height:60px"></div>
-            <div style="font-weight:700">{{ $agendaPerjalanan->disetujui_oleh ?? '-' }}</div>
-            <div class="small">{{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->format('d M Y') : '-' }}</div>
-        </div>
-    </div>
+    <table class="no-border" style="width:100%; margin-top:24px;">
+        <tr>
+            <td style="width:50%; text-align: center;">
+                <div>Disiapkan Oleh</div>
+                <div style="height:60px"></div>
+                <div style="font-weight:700">{{ $agendaPerjalanan->disiapkan_oleh ?? '-' }}</div>
+                <div class="small">{{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->format('d M Y') : '-' }}</div>
+            </td>
+            <td style="width:50%; text-align: center;">
+                <div>Disetujui Oleh</div>
+                <div style="height:60px"></div>
+                <div style="font-weight:700">{{ $agendaPerjalanan->disetujui_oleh ?? '-' }}</div>
+                <div class="small">{{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->format('d M Y') : '-' }}</div>
+            </td>
+        </tr>
+    </table>
 
 </body>
 </html>

@@ -159,7 +159,7 @@ class AdministrasiSuratController extends Controller
             'userProfile' => $userProfile,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('permintaan-kas-kecil-'.$data->id.'.pdf');
+        return $pdf->download('permintaan-kas-kecil-' . $data->id . '.pdf');
     }
 
     public function pdfJanjiTemu($id)
@@ -188,7 +188,7 @@ class AdministrasiSuratController extends Controller
                 'Permintaan kas kecil berhasil disimpan.',
             );
         } catch (\Exception $e) {
-            Log::error('Gagal simpan kas kecil: '.$e->getMessage(), [
+            Log::error('Gagal simpan kas kecil: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
                 'request' => $request->except(['_token', 'ttd_*']),
             ]);
@@ -218,7 +218,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menyimpan pada Agenda telepon. Error: '.
+                'Gagal menyimpan pada Agenda telepon. Error: ' .
                 $e->getMessage(),
             );
 
@@ -243,7 +243,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menyimpan pada Agenda Perjalanan. Error: '.
+                'Gagal menyimpan pada Agenda Perjalanan. Error: ' .
                 $e->getMessage(),
             );
 
@@ -270,7 +270,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menyimpan pada Agenda Janji Temu. Error: '.
+                'Gagal menyimpan pada Agenda Janji Temu. Error: ' .
                 $e->getMessage(),
             );
 
@@ -316,7 +316,7 @@ class AdministrasiSuratController extends Controller
             ->where('id', $id)
             ->first();
         // Ubah status is_done ke true
-        $agenda->is_done = ! $agenda->is_done;
+        $agenda->is_done = !$agenda->is_done;
         $agenda->save();
 
         return back()->with('success', 'Agenda berhasil ditandai!');
@@ -373,7 +373,7 @@ class AdministrasiSuratController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('Delete kas kecil error: '.$e->getMessage());
+            Log::error('Delete kas kecil error: ' . $e->getMessage());
 
             return redirect()
                 ->back()
@@ -398,7 +398,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada Agenda telepon. Error: '.
+                'Gagal menghapus pada Agenda telepon. Error: ' .
                 $e->getMessage(),
             );
 
@@ -427,7 +427,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada Agenda perjalanan. Error: '.
+                'Gagal menghapus pada Agenda perjalanan. Error: ' .
                 $e->getMessage(),
             );
 
@@ -456,7 +456,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada Agenda janji temu. Error: '.
+                'Gagal menghapus pada Agenda janji temu. Error: ' .
                 $e->getMessage(),
             );
 
