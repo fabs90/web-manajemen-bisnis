@@ -86,37 +86,45 @@
 
 <body>
 
-    {{-- KOP SURAT CENTERED --}}
+    {{-- KOP SURAT --}}
+    @php
+        $logoPath = $user->logo_perusahaan ? public_path('storage/' . $user->logo_perusahaan) : null;
+        $hasLogo = $logoPath && file_exists($logoPath);
+        if ($hasLogo) {
+            $logoBase64 = base64_encode(file_get_contents($logoPath));
+            $logoMime = mime_content_type($logoPath);
+        }
+    @endphp
+
     <table class="kop-table">
         <tr>
-            {{-- Cell Logo --}}
-            <td width="15%" class="logo-cell">
-                @if (isset($user->logo_perusahaan) && $user->logo_perusahaan)
-                    @php
-                        // Pakai path direktori lokal untuk DomPDF
-                        $logoPath = public_path('storage/' . $user->logo_perusahaan);
-                        if (file_exists($logoPath)) {
-                            $logoBase64 = base64_encode(file_get_contents($logoPath));
-                            $logoMime = mime_content_type($logoPath);
-                        }
-                    @endphp
-                    @if (isset($logoBase64))
-                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" width="70">
-                    @endif
-                @endif
-            </td>
+            @if ($hasLogo)
+                {{-- Cell Logo --}}
+                <td width="15%" class="logo-cell">
+                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" width="70">
+                </td>
 
-            {{-- Cell Teks Tengah --}}
-            <td width="70%" class="text-cell">
-                <strong style="font-size: 16px;" class="uppercase">{{ $user->name }}</strong><br>
-                <span style="font-size: 11px;">
-                    {{ $user->alamat }}<br>
-                    Telp: {{ $user->nomor_telepon }} | Email: {{ $user->email }}
-                </span>
-            </td>
+                {{-- Cell Teks Tengah --}}
+                <td width="70%" class="text-cell">
+                    <strong style="font-size: 16px;" class="uppercase">{{ $user->name }}</strong><br>
+                    <span style="font-size: 11px;">
+                        {{ $user->alamat }}<br>
+                        Telp: {{ $user->nomor_telepon }} | Email: {{ $user->email }}
+                    </span>
+                </td>
 
-            {{-- Cell Penyeimbang --}}
-            <td width="15%"></td>
+                {{-- Cell Penyeimbang --}}
+                <td width="15%"></td>
+            @else
+                {{-- Full width centered text when no logo --}}
+                <td width="100%" class="text-cell">
+                    <strong style="font-size: 18px;" class="uppercase">{{ $user->name }}</strong><br>
+                    <span style="font-size: 12px;">
+                        {{ $user->alamat }}<br>
+                        Telp: {{ $user->nomor_telepon }} | Email: {{ $user->email }}
+                    </span>
+                </td>
+            @endif
         </tr>
     </table>
 
