@@ -18,7 +18,9 @@ use Throwable;
 
 final class SuratKeluarController extends Controller
 {
-    public function __construct(protected FileUploadService $fileUploadService) {}
+    public function __construct(protected FileUploadService $fileUploadService)
+    {
+    }
 
     public function index()
     {
@@ -102,7 +104,7 @@ final class SuratKeluarController extends Controller
                 ->with('success', 'Surat keluar berhasil dikirim ke penerima.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Surat keluar error: '.$e->getMessage());
+            Log::error('Surat keluar error: ' . $e->getMessage());
 
             return back()->with(
                 'error',
@@ -140,7 +142,7 @@ final class SuratKeluarController extends Controller
                 ->with('success', 'Surat keluar berhasil dihapus.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus Surat Keluar: '.$e->getMessage());
+            Log::error('Gagal menghapus Surat Keluar: ' . $e->getMessage());
 
             return back()->with(
                 'error',
@@ -152,11 +154,11 @@ final class SuratKeluarController extends Controller
     public function downloadPdf(int $id)
     {
         $suratKeluar = AgendaSuratKeluar::find($id);
-        if (! $suratKeluar) {
+        if (!$suratKeluar) {
             abort(404, 'Data surat keluar tidak ditemukan.');
         }
-        $fileName = 'surat-keluar-'.Str::slug($suratKeluar->nomor_surat ?? 'dokumen').'.pdf';
-        $pdf = Pdf::loadView('emails.surat-keluar-pdf', [
+        $fileName = 'surat-keluar-' . Str::slug($suratKeluar->nomor_surat ?? 'dokumen') . '.pdf';
+        $pdf = Pdf::loadView('administrasi.surat.surat-keluar.template.surat-keluar-pdf', [
             'surat' => $suratKeluar,
             'user' => auth()->user(),
         ]);
