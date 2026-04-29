@@ -28,24 +28,29 @@ class PernyataanPiutangController extends Controller
     public function generatePdf($pelangganId)
     {
         $user = auth()->user();
-        $pelanggan = Pelanggan::findOrFail($pelangganId);
-        $items = \App\Models\BukuBesarPiutang::where("user_id", $user->id)
-            ->where("pelanggan_id", $pelangganId)
-            ->latest()->first();
-
-        $totalPiutang = $items->saldo;
-        if (empty($totalPiutang)) {
-            $totalPiutang = 0;
+        if (! $user) {
+            return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
+
+        $pelanggan = Pelanggan::findOrFail($pelangganId);
+
+        $items = \App\Models\BukuBesarPiutang::where('user_id', $user->id)
+            ->where('pelanggan_id', $pelangganId)
+            ->latest()
+            ->first();
+
+        $totalPiutang = $items ? ($items->saldo ?? 0) : 0;
+
         $pdf = Pdf::setOptions([
-            "isRemoteEnabled" => true,
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
         ])
-            ->loadView("administrasi.surat.pernyataan-piutang.template-pdf", [
-                "pelanggan" => $pelanggan,
-                "totalPiutang" => $totalPiutang,
-                "profileUser" => $user,
+            ->loadView('administrasi.surat.pernyataan-piutang.template-pdf', [
+                'pelanggan' => $pelanggan,
+                'totalPiutang' => $totalPiutang,
+                'profileUser' => $user,
             ])
-            ->setPaper("A4");
+            ->setPaper('A4');
 
         return $pdf->download("Pernyataan-Piutang-{$pelanggan->nama}.pdf");
     }

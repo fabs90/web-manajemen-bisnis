@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB, Log, Redirect, Storage};
-use Illuminate\View\View;
 use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
@@ -14,8 +19,8 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view("profile.edit", [
-            "user" => Auth::user(),
+        return view('profile.edit', [
+            'user' => Auth::user(),
         ]);
     }
 
@@ -34,32 +39,48 @@ class ProfileController extends Controller
              * Hanya field yang diinput & lolos validasi
              ---------------------------------*/
             // Hapus password jika kosong supaya tidak meng-overwrite
-            if (empty($data["password"])) {
-                unset($data["password"]);
-                unset($data["password_confirmation"]);
+            if (empty($data['password'])) {
+                unset($data['password']);
+                unset($data['password_confirmation']);
             }
 
             // Jika email berubah reset verifikasi
-            if ($user->email !== $data["email"]) {
-                $data["email_verified_at"] = 0;
+            if ($user->email !== $data['email']) {
+                $data['email_verified_at'] = 0;
             }
 
             /** -------------------------------
              * 2. HANDLE LOGO PERUSAHAAN (UPLOAD)
              ---------------------------------*/
-            if ($request->hasFile("logo_perusahaan")) {
+            if ($request->hasFile('logo_perusahaan')) {
                 // Hapus logo lama jika ada
                 if (
                     $user->logo_perusahaan &&
-                    Storage::disk("public")->exists($user->logo_perusahaan)
+                    Storage::disk('public')->exists($user->logo_perusahaan)
                 ) {
-                    Storage::disk("public")->delete($user->logo_perusahaan);
+                    Storage::disk('public')->delete($user->logo_perusahaan);
                 }
 
                 // Simpan logo baru
-                $data["logo_perusahaan"] = Storage::disk("public")->putFile(
-                    "profile",
-                    $request->file("logo_perusahaan"),
+                $data['logo_perusahaan'] = Storage::disk('public')->putFile(
+                    'profile',
+                    $request->file('logo_perusahaan'),
+                );
+            }
+
+            if ($request->hasFile('ttd_pemimpin')) {
+                // Hapus ttd_pemimpin lama jika ada
+                if (
+                    $user->ttd_pemimpin &&
+                    Storage::disk('public')->exists($user->ttd_pemimpin)
+                ) {
+                    Storage::disk('public')->delete($user->ttd_pemimpin);
+                }
+
+                // Simpan ttd_pemimpin baru
+                $data['ttd_pemimpin'] = Storage::disk('public')->putFile(
+                    'profile',
+                    $request->file('ttd_pemimpin'),
                 );
             }
 
@@ -71,16 +92,17 @@ class ProfileController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Profile update error: " . $e->getMessage());
+            Log::error('Profile update error: '.$e->getMessage());
+
             return back()->with(
-                "error",
-                "Terjadi kesalahan saat menyimpan data profile.",
+                'error',
+                'Terjadi kesalahan saat menyimpan data profile.',
             );
         }
 
-        return Redirect::route("profile.edit")->with(
-            "success",
-            "Profile berhasil diperbarui!",
+        return Redirect::route('profile.edit')->with(
+            'success',
+            'Profile berhasil diperbarui!',
         );
     }
 
@@ -89,8 +111,8 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag("userDeletion", [
-            "password" => ["required", "current_password"],
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
@@ -102,6 +124,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to("/");
+        return Redirect::to('/');
     }
 }

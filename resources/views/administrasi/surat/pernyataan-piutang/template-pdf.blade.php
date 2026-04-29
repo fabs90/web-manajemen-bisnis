@@ -66,12 +66,17 @@
     <table class="table-no-border">
         <tr>
             <td width="15%">
-                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
-                    @php
+                @php
+                    $logoBase64 = null;
+                    if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan) {
                         $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
-                    @endphp
+                        if (file_exists($logoPath) && is_file($logoPath)) {
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                            $logoMime = mime_content_type($logoPath);
+                        }
+                    }
+                @endphp
+                @if ($logoBase64)
                     <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
                 @endif
             </td>
@@ -140,8 +145,26 @@
                 {{ \Carbon\Carbon::now()->format('d/m/Y') }}
                 <br><br>
                 Yang Menyatakan,
-                <br><br><br><br><br>
+                <br>
+                @php
+                    $ttdBase64 = null;
+                    if (isset($profileUser->ttd_pemimpin) && $profileUser->ttd_pemimpin) {
+                        $ttdPath = public_path('storage/' . $profileUser->ttd_pemimpin);
+                        if (file_exists($ttdPath) && is_file($ttdPath)) {
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
+                        }
+                    }
+                @endphp
+                @if ($ttdBase64)
+                    <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:70px;">
+                @else
+                    <br><br><br><br>
+                @endif
+                <br>
                 <strong>{{ $profileUser->name ?? 'Nama Pimpinan' }}</strong>
+                <br>
+
                 <br>
                 ({{ $profileUser->jabatan ?? 'Pimpinan Perusahaan' }})
             </td>

@@ -42,35 +42,35 @@
                             <tr><th colspan="2">NOTULEN RAPAT</th></tr>
                         </thead>
                         <tr>
-                            <td width="30%">Nomor Surat Rapat</td>
+                            <td width="30%">Nomor Surat Rapat <span class="text-danger">*</span></td>
                             <td><input type="text" name="nomor_surat_rapat" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Judul Rapat</td>
+                            <td>Judul Rapat <span class="text-danger">*</span></td>
                             <td><input type="text" name="judul_rapat" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Tempat</td>
+                            <td>Tempat <span class="text-danger">*</span></td>
                             <td><input type="text" name="tempat" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Nama Kota</td>
+                            <td>Nama Kota <span class="text-danger">*</span></td>
                             <td><input type="text" name="nama_kota" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Tanggal</td>
+                            <td>Tanggal <span class="text-danger">*</span></td>
                             <td><input type="date" name="tanggal" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Waktu</td>
+                            <td>Waktu <span class="text-danger">*</span></td>
                             <td><input type="time" name="waktu" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Nama Pemimpin Rapat</td>
+                            <td>Nama Pemimpin Rapat <span class="text-danger">*</span></td>
                             <td><input type="text" name="pemimpin_rapat" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Tanda Tangan Pimpinan</td>
+                            <td>Tanda Tangan Pimpinan <span class="text-danger">*</span></td>
                             <td>
                                 <div class="upload-container shadow-sm border rounded p-3 text-center bg-light" id="ttd-pemimpin-drop-zone"
                                     onclick="document.getElementById('ttd-pemimpin-input').click()">
@@ -93,11 +93,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Nama Notulis</td>
+                            <td>Nama Notulis <span class="text-danger">*</span></td>
                             <td><input type="text" name="nama_notulis" class="form-control" required></td>
                         </tr>
                         <tr>
-                            <td>Tanda Tangan Notulis</td>
+                            <td>Tanda Tangan Notulis <span class="text-danger">*</span></td>
                             <td>
                                 <div class="upload-container shadow-sm border rounded p-3 text-center bg-light" id="ttd-notulis-drop-zone"
                                     onclick="document.getElementById('ttd-notulis-input').click()">
@@ -127,9 +127,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th>No</th>
-                                <th>Nama</th>
-                                <th>Jabatan</th>
-                                <th>Tanda Tangan</th>
+                                <th>Nama <span class="text-danger">*</span></th>
+                                <th>Jabatan <span class="text-danger">*</span></th>
+                                <th>Tanda Tangan <span class="text-danger">*</span></th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -137,7 +137,7 @@
                             <tr>
                                 <td>1</td>
                                 <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
-                                <td><input type="text" name="peserta_jabatan[]" class="form-control"></td>
+                                <td><input type="text" name="peserta_jabatan[]" class="form-control" required></td>
                                 <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*" required></td>
                                 <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
@@ -146,8 +146,8 @@
                     <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addPeserta">+ Tambah Peserta</button>
 
                     {{-- ================= AGENDA RAPAT ================= --}}
-                    <h6 class="fw-bold">Agenda Rapat:</h6>
-                    <textarea name="agenda_rapat" rows="3" class="form-control @error('agenda_rapat') is-invalid @enderror"></textarea>
+                    <h6 class="fw-bold">Agenda Rapat: <span class="text-danger">*</span></h6>
+                    <textarea name="agenda_rapat" rows="3" class="form-control @error('agenda_rapat') is-invalid @enderror" required></textarea>
 
                     <hr>
                     {{-- ================= PEMBAHASAN ================= --}}
@@ -155,18 +155,18 @@
                     <table class="table table-bordered text-center">
                         <thead class="table-light">
                             <tr>
-                                <th>Agenda</th>
-                                <th>Pembicara</th>
-                                <th>Pembahasan</th>
+                                <th>Agenda <span class="text-danger">*</span></th>
+                                <th>Pembicara <span class="text-danger">*</span></th>
+                                <th>Pembahasan <span class="text-danger">*</span></th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="pembahasan-body">
                             <tr>
-                                <td><input type="text" name="pembahasan_agenda[]" class="form-control"></td>
-                                <td><input type="text" name="pembahasan_pembicara[]" class="form-control"></td>
+                                <td><input type="text" name="pembahasan_agenda[]" class="form-control" required></td>
+                                <td><input type="text" name="pembahasan_pembicara[]" class="form-control" required></td>
                                 <td>
-                                    <textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea>
+                                    <textarea name="pembahasan_isi[]" rows="2" class="form-control" required></textarea>
                                 </td>
                                 <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
@@ -178,8 +178,8 @@
                     </button>
 
                     {{-- ================= KEPUTUSAN RAPAT ================= --}}
-                    <h6 class="fw-bold mt-3">Keputusan Rapat:</h6>
-                    <textarea name="keputusan_rapat" rows="3" class="form-control @error('keputusan_rapat') is-invalid @enderror"></textarea>
+                    <h6 class="fw-bold mt-3">Keputusan Rapat: <span class="text-danger">*</span></h6>
+                    <textarea name="keputusan_rapat" rows="3" class="form-control @error('keputusan_rapat') is-invalid @enderror" required></textarea>
 
                     {{-- ================= TINDAK LANJUT ================= --}}
                     <h6 class="fw-bold mt-3">Tindak Lanjut:</h6>
@@ -317,9 +317,9 @@
             const row = `
         <tr>
             <td>${rowCount}</td>
-            <td><input type="text" name="peserta_nama[]" class="form-control"></td>
-            <td><input type="text" name="peserta_jabatan[]" class="form-control"></td>
-            <td><input type="file" name="peserta_ttd[]" class="form-control"></td>
+            <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
+            <td><input type="text" name="peserta_jabatan[]" class="form-control" required></td>
+            <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*" required></td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
             table.insertAdjacentHTML('beforeend', row);
@@ -329,9 +329,9 @@
             const table = document.getElementById('pembahasan-body');
             const row = `
         <tr>
-            <td><input type="text" name="pembahasan_agenda[]" class="form-control"></td>
-            <td><input type="text" name="pembahasan_pembicara[]" class="form-control"></td>
-            <td><textarea name="pembahasan_isi[]" rows="2" class="form-control"></textarea></td>
+            <td><input type="text" name="pembahasan_agenda[]" class="form-control" required></td>
+            <td><input type="text" name="pembahasan_pembicara[]" class="form-control" required></td>
+            <td><textarea name="pembahasan_isi[]" rows="2" class="form-control" required></textarea></td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
             table.insertAdjacentHTML('beforeend', row);

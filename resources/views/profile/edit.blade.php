@@ -81,6 +81,18 @@
                         <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label d-block">Tanda Tangan Pemimpin Perusahaan</label>
+
+                        @if (auth()->user()->ttd_pemimpin)
+                            <img src="{{ asset('storage/' . auth()->user()->ttd_pemimpin) }}" alt="Logo"
+                                height="80" class="mb-2 d-block">
+                        @endif
+
+                        <input type="file" name="ttd_pemimpin" class="form-control">
+                        <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
+                    </div>
+
                 </div>
             </div>
 
