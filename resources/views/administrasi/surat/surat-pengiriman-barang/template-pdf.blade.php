@@ -46,6 +46,18 @@
             padding: 2px 0;
         }
 
+        h3 {
+            margin: 0;
+        }
+
+        .mb-1 {
+            margin-bottom: 0;
+        }
+
+        .mb-2 {
+            margin-bottom: 10px;
+        }
+
         .mb-3 {
             margin-bottom: 15px;
         }

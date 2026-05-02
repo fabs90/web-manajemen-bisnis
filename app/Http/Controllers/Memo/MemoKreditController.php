@@ -12,12 +12,19 @@ class MemoKreditController extends Controller
 {
     public function index()
     {
-        $memoKredit = FakturPenjualan::with("memoKredit")
+        $memoKredit = MemoKredit::with("fakturPenjualan.suratPengirimanBarang.pesananPembelian")
             ->where("user_id", auth()->id())
+            ->get();
+        $fakturPenjualan = FakturPenjualan::with([
+            "suratPengirimanBarang.pesananPembelian.pelanggan",
+            "suratPengirimanBarang.pesananPembelian.supplier",
+        ])
+            ->where("user_id", auth()->id())
+            ->whereDoesntHave("memoKredit")
             ->get();
         return view(
             "administrasi.surat.memo-kredit.index",
-            compact("memoKredit"),
+            compact("memoKredit", "fakturPenjualan"),
         );
     }
 
