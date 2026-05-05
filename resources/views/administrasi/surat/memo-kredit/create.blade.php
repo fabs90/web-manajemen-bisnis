@@ -28,32 +28,21 @@
                 <div class="row mb-4">
                     {{-- Kolom Kiri: Informasi Relasi --}}
                     <div class="col-md-6 border-end">
-                        <h6 class="text-muted text-uppercase fw-bold small mb-3">Informasi Pelanggan/Supplier</h6>
+                        <h6 class="text-muted text-uppercase fw-bold small mb-3">Informasi Pelanggan</h6>
                         <div class="row mb-2">
                             <div class="col-4 text-muted">Kepada:</div>
                             <div class="col-8 fw-bold">
                                 @php
                                     $po = $faktur->suratPengirimanBarang?->pesananPembelian;
                                 @endphp
-                                @if ($po?->jenis == 'transaksi_masuk')
-                                    <span class="text-primary">{{ $po->pelanggan?->nama ?? '-' }}</span>
-                                    <input type="hidden" name="pelanggan_id" value="{{ $po->pelanggan_id }}">
-                                @elseif ($po?->jenis == 'transaksi_keluar')
-                                    <span class="text-primary">{{ $po->supplier?->nama ?? '-' }}</span>
-                                    <input type="hidden" name="supplier_id" value="{{ $po->supplier_id }}">
-                                @else
-                                    -
-                                @endif
+                                <span class="text-primary">{{ $po->pelanggan?->nama ?? '-' }}</span>
+                                <input type="hidden" name="pelanggan_id" value="{{ $po->pelanggan_id }}">
                             </div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-4 text-muted">Alamat:</div>
                             <div class="col-8 small">
-                                @if ($po?->jenis == 'transaksi_masuk')
-                                    {{ $po->pelanggan?->alamat ?? '-' }}
-                                @else
-                                    {{ $po->supplier?->alamat ?? '-' }}
-                                @endif
+                                {{ $po->pelanggan?->alamat ?? '-' }}
                             </div>
                         </div>
                     </div>

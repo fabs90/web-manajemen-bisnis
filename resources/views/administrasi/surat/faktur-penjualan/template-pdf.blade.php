@@ -139,22 +139,14 @@
         <table class="table-no-border">
             <tr>
                 <td width="12%" class="fw-bold">Kepada</td>
-                @if ($faktur->suratPengirimanBarang->pesananPembelian->jenis == 'transaksi_masuk')
-                    <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
-                @else
-                    <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->supplier->nama }}</td>
-                @endif
+                <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
                 <td width="18%" class="fw-bold">Nomor Pesanan</td>
                 <td width="27%">:
                     {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="fw-bold">Alamat</td>
-                @if ($faktur->suratPengirimanBarang->pesananPembelian->jenis == 'transaksi_masuk')
-                    <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
-                @else
-                    <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->supplier->alamat }}</td>
-                @endif
+                <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
                 <td class="fw-bold">Nomor SPB</td>
                 <td>: {{ $faktur->suratPengirimanBarang->nomor_pengiriman_barang }}</td>
             </tr>
@@ -211,17 +203,54 @@
             class="fw-bold text-uppercase">{{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</span>
     </div>
 
-    {{-- TANDA TANGAN (Penyesuaian Posisi) --}}
-    <table class="table-no-border footer-signature">
+    {{-- TANDA TANGAN --}}
+    <table width="100%" class="table-no-border footer-signature">
         <tr>
-            <td width="60%"></td>
-            <td class="text-center">
-                <div style="margin-bottom: 10px;">Hormat Kami,</div>
-                <div class="fw-bold text-uppercase" style="margin-bottom: 65px;">Bagian Penjualan</div>
-                <div class="fw-bold text-uppercase" style="text-decoration: underline; font-size: 12px;">
-                    {{ $faktur->nama_bagian_penjualan ?? '....................' }}
-                </div>
-                <div style="font-size: 9px; margin-top: 5px;">(Tanda Tangan & Cap Resmi)</div>
+            <td width="50%" class="text-center">
+                Penerima,<br>
+                @if ($faktur->suratPengirimanBarang->ttd_penerima)
+                    @php
+                        $ttdPenerimaPath = storage_path('app/public/' . $faktur->suratPengirimanBarang->ttd_penerima);
+                        $ttdPenerimaBase64 = null;
+                        if (file_exists($ttdPenerimaPath)) {
+                            $ttdPenerimaBase64 = base64_encode(file_get_contents($ttdPenerimaPath));
+                            $ttdPenerimaMime = mime_content_type($ttdPenerimaPath);
+                        }
+                    @endphp
+                    @if ($ttdPenerimaBase64)
+                        <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}" style="height:60px;">
+                    @else
+                        <div style="height:60px;"></div>
+                    @endif
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <br>
+                <strong>( {{ $faktur->suratPengirimanBarang->nama_penerima ?? '_________' }} )</strong>
+            </td>
+            <td width="50%" class="text-center">
+                Hormat Kami,<br>
+                @if ($profileUser->ttd_pemimpin)
+                    @php
+                        $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
+                        $ttdBase64 = null;
+                        if (file_exists($ttdPath)) {
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
+                        }
+                    @endphp
+                    @if ($ttdBase64)
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:60px;">
+                    @else
+                        <div style="height:60px;"></div>
+                    @endif
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <br>
+                <strong
+                    style="text-decoration: underline;">({{ $faktur->nama_bagian_penjualan ?? '_________' }})</strong><br>
+                Bagian Penjualan
             </td>
         </tr>
     </table>

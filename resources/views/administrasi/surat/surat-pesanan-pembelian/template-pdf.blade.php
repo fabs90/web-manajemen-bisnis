@@ -103,7 +103,7 @@
     <div class="line"></div>
     <h3 class="text-center fw-bold mb-3 uppercase">SURAT PESANAN PEMBELIAN</h3>
     {{-- Nomor dan Tanggal Surat --}}
-    <table width="100%" class="no-border mb-4">
+    <table width="100%" class="table-no-border mb-4">
         <tr>
             <td width="70%"></td>
             <td width="30%">
@@ -190,12 +190,30 @@
     @endif
 
     {{-- Tanda Tangan --}}
-    <table width="100%" class="no-border" style="margin-top: 50px;">
+    <table width="100%" class="table-no-border" style="margin-top: 50px;">
         <tr>
             <td width="70%"></td>
             <td width="30%" class="text-center">
-                Hormat kami,<br><br><br><br><br>
-                <strong><u>({{ $profileUser->name ?? 'Nama Pengguna' }})</u></strong><br>
+                Hormat kami,<br>
+                @if ($profileUser->ttd_pemimpin)
+                    @php
+                        $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
+                        $ttdBase64 = null;
+                        if (file_exists($ttdPath)) {
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
+                        }
+                    @endphp
+                    @if ($ttdBase64)
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:60px;">
+                    @else
+                        <div style="height:60px;"></div>
+                    @endif
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <br>
+                <strong><u>({{ $profileUser->name ?? '_________' }})</u></strong><br>
                 {{ $profileUser->jabatan ?? 'Bagian Pembelian' }}
             </td>
         </tr>

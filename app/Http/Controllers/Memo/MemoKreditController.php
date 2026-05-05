@@ -12,19 +12,19 @@ class MemoKreditController extends Controller
 {
     public function index()
     {
-        $memoKredit = MemoKredit::with("fakturPenjualan.suratPengirimanBarang.pesananPembelian")
-            ->where("user_id", auth()->id())
+        $memoKredit = MemoKredit::with('fakturPenjualan.suratPengirimanBarang.pesananPembelian')
+            ->where('user_id', auth()->id())
             ->get();
         $fakturPenjualan = FakturPenjualan::with([
-            "suratPengirimanBarang.pesananPembelian.pelanggan",
-            "suratPengirimanBarang.pesananPembelian.supplier",
+            'suratPengirimanBarang.pesananPembelian.pelanggan',
         ])
-            ->where("user_id", auth()->id())
-            ->whereDoesntHave("memoKredit")
+            ->where('user_id', auth()->id())
+            ->whereDoesntHave('memoKredit')
             ->get();
+
         return view(
-            "administrasi.surat.memo-kredit.index",
-            compact("memoKredit", "fakturPenjualan"),
+            'administrasi.surat.memo-kredit.index',
+            compact('memoKredit', 'fakturPenjualan'),
         );
     }
 
@@ -35,7 +35,8 @@ class MemoKreditController extends Controller
             'suratPengirimanBarang.pesananPembelian',
             'suratPengirimanBarang.pesananPembelian.pesananPembelianDetail'
         )->findOrFail($fakturId);
-        return view("administrasi.surat.memo-kredit.create", compact("faktur"));
+
+        return view('administrasi.surat.memo-kredit.create', compact('faktur'));
     }
 
     public function store(Request $request, MemoKreditService $services)
@@ -43,12 +44,13 @@ class MemoKreditController extends Controller
         $serviceApp = $services->store($request);
         if ($serviceApp) {
             return redirect()
-                ->route("administrasi.memo-kredit.index")
-                ->with("success", "Memo Kredit berhasil disimpan!");
+                ->route('administrasi.memo-kredit.index')
+                ->with('success', 'Memo Kredit berhasil disimpan!');
         }
+
         return redirect()
-            ->route("administrasi.memo-kredit.create", ["fakturId" => $request->faktur_id])
-            ->with("error", "Memo Kredit gagal disimpan!")->withInput();
+            ->route('administrasi.memo-kredit.create', ['fakturId' => $request->faktur_id])
+            ->with('error', 'Memo Kredit gagal disimpan!')->withInput();
     }
 
     public function destroy($fakturId, MemoKreditService $services)
@@ -56,12 +58,13 @@ class MemoKreditController extends Controller
         $serviceApp = $services->destroy($fakturId);
         if ($serviceApp) {
             return redirect()
-                ->route("administrasi.memo-kredit.index")
-                ->with("success", "Memo Kredit berhasil dihapus!");
+                ->route('administrasi.memo-kredit.index')
+                ->with('success', 'Memo Kredit berhasil dihapus!');
         }
+
         return redirect()
-            ->route("administrasi.memo-kredit.index")
-            ->with("error", "Memo Kredit gagal dihapus!");
+            ->route('administrasi.memo-kredit.index')
+            ->with('error', 'Memo Kredit gagal dihapus!');
     }
 
     public function generatePdf($fakturId, MemoKreditService $services)

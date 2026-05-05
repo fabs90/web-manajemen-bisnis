@@ -121,7 +121,7 @@
                                         <td>{{ $faktur->tanggal_faktur ? \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d-m-Y') : '-' }}</td>
                                         <td>{{ $faktur->suratPengirimanBarang?->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}</td>
                                         <td>
-                                            {{ $faktur->suratPengirimanBarang?->pesananPembelian?->pelanggan?->nama ?? ($faktur->suratPengirimanBarang?->pesananPembelian?->supplier?->nama ?? '-') }}
+                                            {{ $faktur->suratPengirimanBarang?->pesananPembelian?->pelanggan?->nama ?? '-' }}
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('administrasi.memo-kredit.create', ['fakturId' => $faktur->id]) }}"

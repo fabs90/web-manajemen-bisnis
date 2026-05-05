@@ -577,11 +577,6 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'createKeluar',
         ])->name('administrasi.spp.createKeluar');
 
-        Route::get('/surat-pesanan-pembelian/pelanggan', [
-            SuratPesananPembelianController::class,
-            'createMasuk',
-        ])->name('administrasi.spp.createMasuk');
-
         Route::post('/surat-pesanan-pembelian', [
             SuratPesananPembelianController::class,
             'store',

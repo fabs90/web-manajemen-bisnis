@@ -18,29 +18,16 @@ class SuratPesananPembelianService
     {
         DB::beginTransaction();
         try {
-            if ($request['jenis'] == 'transaksi_keluar') {
-                $suratPesananPembelian = PesananPembelian::create([
-                    'jenis' => 'transaksi_keluar',
-                    'pelanggan_id' => null,
-                    'supplier_id' => $request->supplier_id,
-                    'nomor_pesanan_pembelian' => $request->nomor_pesanan_pembelian,
-                    'tanggal_pesanan_pembelian' => $request->tanggal_pesanan_pembelian,
-                    'tanggal_kirim_pesanan_pembelian' => $request->tanggal_kirim_pesanan_pembelian,
-                    'nama_bagian_pembelian' => $request->nama_bagian_pembelian,
-                    'user_id' => auth()->id(),
-                ]);
-            } else {
-                $suratPesananPembelian = PesananPembelian::create([
-                    'jenis' => 'transaksi_masuk',
-                    'pelanggan_id' => $request->pelanggan_id,
-                    'supplier_id' => null,
-                    'nomor_pesanan_pembelian' => $request->nomor_pesanan_pembelian,
-                    'tanggal_pesanan_pembelian' => $request->tanggal_pesanan_pembelian,
-                    'tanggal_kirim_pesanan_pembelian' => $request->tanggal_kirim_pesanan_pembelian,
-                    'nama_bagian_pembelian' => $request->nama_bagian_pembelian,
-                    'user_id' => auth()->id(),
-                ]);
-            }
+            $suratPesananPembelian = PesananPembelian::create([
+                'jenis' => 'transaksi_keluar',
+                'pelanggan_id' => null,
+                'supplier_id' => $request->supplier_id,
+                'nomor_pesanan_pembelian' => $request->nomor_pesanan_pembelian,
+                'tanggal_pesanan_pembelian' => $request->tanggal_pesanan_pembelian,
+                'tanggal_kirim_pesanan_pembelian' => $request->tanggal_kirim_pesanan_pembelian,
+                'nama_bagian_pembelian' => $request->nama_bagian_pembelian,
+                'user_id' => auth()->id(),
+            ]);
 
             foreach ($request->detail as $item) {
                 $kuantitas = $this->cleanRupiah($item['kuantitas']);
@@ -68,14 +55,8 @@ class SuratPesananPembelianService
                     $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
                     $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
 
-                    $diterima = 0;
+                    $diterima = $kuantitas;
                     $dikeluarkan = 0;
-
-                    if ($request['jenis'] == 'transaksi_keluar') {
-                        $diterima = $kuantitas;
-                    } else {
-                        $dikeluarkan = $kuantitas;
-                    }
 
                     $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
 
@@ -125,7 +106,7 @@ class SuratPesananPembelianService
     {
         try {
             $data = PesananPembelian::with(
-                'pelanggan',
+                'supplier',
                 'pesananPembelianDetail',
             )
                 ->where('user_id', auth()->user()->id)

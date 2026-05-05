@@ -32,17 +32,6 @@ class SuratPesananPembelianController extends Controller
         return view('administrasi.surat.surat-pesanan-pembelian.create-transaksi-keluar', compact('suppliers', 'barang'));
     }
 
-    public function createMasuk()
-    {
-        $pelanggan = Pelanggan::where('user_id', auth()->id())->where('jenis', 'debitur')->get();
-        $barang = Barang::where('user_id', auth()->id())->get();
-
-        return view(
-            'administrasi.surat.surat-pesanan-pembelian.create-transaksi-masuk',
-            compact('pelanggan', 'barang')
-        );
-    }
-
     public function store(
         Request $request,
         SuratPesananPembelianService $service,

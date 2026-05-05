@@ -2,37 +2,36 @@
 
 namespace App\Http\Controllers\Faktur;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Services\AdministrasiFakturService;
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
 use App\Models\SPB\SuratPengirimanBarang;
+use App\Services\AdministrasiFakturService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdministrasiFakturController extends Controller
 {
     public function index()
     {
         $fakturPenjualan = FakturPenjualan::with([
-            'suratPengirimanBarang.pesananPembelian.pelanggan'
+            'suratPengirimanBarang.pesananPembelian.pelanggan',
         ])
-            ->where("user_id", auth()->id())
+            ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
-        return view("administrasi.surat.faktur-penjualan.index", compact("fakturPenjualan"));
+        return view('administrasi.surat.faktur-penjualan.index', compact('fakturPenjualan'));
     }
 
     public function create()
     {
-        $dataSpb = SuratPengirimanBarang::where(function ($query) {
-            $query->whereHas('pesananPembelian.pelanggan')
-                ->orWhereHas('pesananPembelian.supplier');
+        $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian', function ($query) {
+            $query->where('jenis', 'transaksi_masuk')
+                ->whereNotNull('pelanggan_id');
         })
             ->whereDoesntHave('fakturPenjualan')
             ->with([
                 'pesananPembelian.pelanggan',
-                'pesananPembelian.supplier',
                 'suratPengirimanBarangDetail.pesananPembelianDetail',
             ])
             ->orderBy('id', 'DESC')
@@ -44,14 +43,10 @@ class AdministrasiFakturController extends Controller
                     'nama_pengirim' => $spb->nama_pengirim,
                     'pesanan_pembelian' => [
                         'jenis' => $spb->pesananPembelian->jenis,
-                        'pelanggan' => $spb->pesananPembelian->pelanggan ? [
+                        'pelanggan' => [
                             'nama' => $spb->pesananPembelian->pelanggan->nama,
                             'alamat' => $spb->pesananPembelian->pelanggan->alamat,
-                        ] : null,
-                        'supplier' => $spb->pesananPembelian->supplier ? [
-                            'nama' => $spb->pesananPembelian->supplier->nama,
-                            'alamat' => $spb->pesananPembelian->supplier->alamat,
-                        ] : null,
+                        ],
                     ],
                     'surat_pengiriman_barang_detail' => $spb->suratPengirimanBarangDetail->map(function ($detail) {
                         return [
@@ -75,22 +70,25 @@ class AdministrasiFakturController extends Controller
         try {
             $manajemenRapatServices = app(AdministrasiFakturService::class);
             $manajemenRapatServices->store($request->all());
+
             return redirect()
-                ->route("administrasi.faktur-penjualan.index")
-                ->with("success", "Faktur penjualan berhasil ditambahkan.");
+                ->route('administrasi.faktur-penjualan.index')
+                ->with('success', 'Faktur penjualan berhasil ditambahkan.');
         } catch (\Throwable $th) {
             Log::error(
-                "Gagal menambahkan faktur penjualan: " . $th->getMessage(),
+                'Gagal menambahkan faktur penjualan: '.$th->getMessage(),
             );
+
             return back()
                 ->withInput()
-                ->with("error", "Gagal menambahkan faktur penjualan.");
+                ->with('error', 'Gagal menambahkan faktur penjualan.');
         }
     }
 
     public function generatePdf($id)
     {
         $manajemenRapatServices = app(AdministrasiFakturService::class);
+
         return $manajemenRapatServices->generatePdf($id);
     }
 
@@ -100,18 +98,20 @@ class AdministrasiFakturController extends Controller
         try {
             $manajemenRapatServices = app(AdministrasiFakturService::class);
             $manajemenRapatServices->destroy($id);
+
             return redirect()
-                ->route("administrasi.faktur-penjualan.index")
-                ->with("success", "Faktur penjualan berhasil dihapus🗑️.");
+                ->route('administrasi.faktur-penjualan.index')
+                ->with('success', 'Faktur penjualan berhasil dihapus🗑️.');
         } catch (\Throwable $th) {
             Log::error(
-                "Gagal menghapus faktur penjualan: " . $th->getMessage(),
+                'Gagal menghapus faktur penjualan: '.$th->getMessage(),
             );
+
             return back()
                 ->withInput()
                 ->with(
-                    "error",
-                    "Gagal menghapus faktur penjualan: " . $th->getMessage(),
+                    'error',
+                    'Gagal menghapus faktur penjualan: '.$th->getMessage(),
                 );
         }
     }

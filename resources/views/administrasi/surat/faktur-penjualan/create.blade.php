@@ -29,30 +29,28 @@
                 <form action="{{ route('administrasi.faktur-penjualan.store') }}" method="POST">
                     @csrf
 
-                    <!-- Pilih Jenis Transaksi -->
+                    <!-- Pilih SPB -->
                     <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">Jenis Transaksi <span class="text-danger">*</span></label>
-                            <select name="jenis" id="jenis" class="form-select @error('jenis') is-invalid @enderror"
-                                required>
-                                <option value="">-- Pilih Jenis Transaksi --</option>
-                                <option value="transaksi_masuk" {{ old('jenis') == 'transaksi_masuk' ? 'selected' : '' }}>
-                                    Transaksi Masuk (Pelanggan)</option>
-                                <option value="transaksi_keluar" {{ old('jenis') == 'transaksi_keluar' ? 'selected' : '' }}>
-                                    Transaksi Keluar (Supplier)</option>
-                            </select>
-                            @error('jenis')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-
-                        <!-- Pilih SPB -->
-                        <div class="col-md-8">
+                        <div class="col-md-12">
                             <label class="form-label fw-bold">Pilih Surat Pengiriman Barang (SPB) <span
                                     class="text-danger">*</span></label>
                             <select name="spb_id" id="spb_id" class="form-select @error('spb_id') is-invalid @enderror"
-                                required disabled>
-                                <option value="">-- Pilih Jenis Transaksi Terlebih Dahulu --</option>
+                                required>
+                                <option value="">-- Pilih Nomor SPB --</option>
+                                @foreach ($dataSpb as $spb)
+                                    @php
+                                        $details = $spb['surat_pengiriman_barang_detail'];
+                                        $namaPihak = $spb['pesanan_pembelian']['pelanggan']['nama'];
+                                        $alamatPihak = $spb['pesanan_pembelian']['pelanggan']['alamat'] ?? '-';
+                                    @endphp
+                                    <option value="{{ $spb['id'] }}" 
+                                        data-pelanggan="{{ $namaPihak }}"
+                                        data-alamat="{{ $alamatPihak }}"
+                                        data-nomor="{{ $spb['nomor_pengiriman_barang'] }}"
+                                        data-details="{{ json_encode($details) }}">
+                                        {{ $spb['nomor_pengiriman_barang'] }} - {{ $namaPihak }}
+                                    </option>
+                                @endforeach
                             </select>
                             @error('spb_id')
                                 <small class="text-danger">{{ $message }}</small>
@@ -73,12 +71,12 @@
                         </div>
                     </div>
 
-                    <!-- Informasi Pelanggan/Supplier -->
+                    <!-- Informasi Pelanggan -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body">
                             <h6 class="fw-bold text-primary mb-3">
                                 <i class="bi bi-person-lines-fill me-1"></i> Informasi <span
-                                    id="info-label">Pelanggan/Supplier</span>
+                                    id="info-label">Pelanggan</span>
                             </h6>
 
                             <div class="row">
@@ -154,86 +152,6 @@
     </div>
 
     <script>
-        // Store all SPB data from the server
-        const allSpbData = @json($dataSpb);
-
-        // Handle jenis selection change
-        document.getElementById('jenis').addEventListener('change', function() {
-            const jenis = this.value;
-            const spbSelect = document.getElementById('spb_id');
-
-            // Reset SPB select
-            spbSelect.innerHTML = '<option value="">-- Pilih Nomor SPB --</option>';
-            spbSelect.disabled = !jenis;
-
-            // Reset info
-            document.getElementById('kepada').textContent = '-';
-            document.getElementById('alamat').textContent = '-';
-            document.getElementById('nomor_spb').textContent = '-';
-            document.getElementById('tabel-faktur').innerHTML =
-                `<tr><td colspan="6" class="text-center text-muted">Pilih SPB terlebih dahulu...</td></tr>`;
-
-            // Update label based on jenis
-            const infoLabel = document.getElementById('info-label');
-            if (jenis === 'transaksi_masuk') {
-                infoLabel.textContent = 'Pelanggan';
-            } else if (jenis === 'transaksi_keluar') {
-                infoLabel.textContent = 'Supplier';
-            } else {
-                infoLabel.textContent = 'Pelanggan/Supplier';
-            }
-
-            if (!jenis) return;
-
-            // Filter SPB data based on jenis
-            const filteredSpb = allSpbData.filter(spb => {
-                const pesanan = spb.pesanan_pembelian;
-                if (!pesanan) return false;
-
-                if (jenis === 'transaksi_masuk') {
-                    // Show only SPB with transaksi_masuk (has pelanggan)
-                    return pesanan.jenis === 'transaksi_masuk' && pesanan.pelanggan;
-                } else if (jenis === 'transaksi_keluar') {
-                    // Show only SPB with transaksi_keluar (has supplier)
-                    return pesanan.jenis === 'transaksi_keluar' && pesanan.supplier;
-                }
-                return false;
-            });
-
-            // Populate SPB options
-            if (filteredSpb.length === 0) {
-                spbSelect.innerHTML = '<option value="">-- Tidak ada SPB tersedia --</option>';
-                return;
-            }
-
-            filteredSpb.forEach(spb => {
-                const pesanan = spb.pesanan_pembelian;
-                const isMasuk = jenis === 'transaksi_masuk';
-                const pihak = isMasuk ? pesanan.pelanggan : pesanan.supplier;
-                const namaPihak = pihak ? pihak.nama : 'N/A';
-                const alamatPihak = pihak ? (pihak.alamat || '-') : '-';
-
-                // Build details JSON
-                const details = spb.surat_pengiriman_barang_detail.map(d => ({
-                    id: d.id,
-                    nama_barang: d.pesanan_pembelian_detail.nama_barang,
-                    jumlah_dipesan: d.pesanan_pembelian_detail.kuantitas,
-                    jumlah_dikirim: d.jumlah_dikirim,
-                    harga: d.pesanan_pembelian_detail.harga
-                }));
-
-                const option = document.createElement('option');
-                option.value = spb.id;
-                option.dataset.pelanggan = namaPihak;
-                option.dataset.alamat = alamatPihak;
-                option.dataset.nomor = spb.nomor_pengiriman_barang;
-                option.dataset.namaPengirim = spb.nama_pengirim;
-                option.dataset.details = JSON.stringify(details);
-                option.textContent = `${spb.nomor_pengiriman_barang} - ${namaPihak}`;
-                spbSelect.appendChild(option);
-            });
-        });
-
         // Handle SPB selection change
         document.getElementById('spb_id').addEventListener('change', function() {
             const opt = this.options[this.selectedIndex];
@@ -256,21 +174,22 @@
             let grandTotal = 0;
 
             details.forEach((item, i) => {
-                const total = item.harga * item.jumlah_dikirim;
+                const itemDetails = item.pesanan_pembelian_detail;
+                const total = itemDetails.harga * item.jumlah_dikirim;
                 grandTotal += total;
 
                 rows += `
             <tr>
                 <td class="text-center">${i+1}</td>
-                <td>${item.nama_barang}</td>
-                <td class="text-center">${item.jumlah_dipesan}</td>
+                <td>${itemDetails.nama_barang}</td>
+                <td class="text-center">${itemDetails.kuantitas}</td>
                 <td class="text-center">${item.jumlah_dikirim}</td>
-                <td class="text-end">Rp ${item.harga.toLocaleString()}</td>
+                <td class="text-end">Rp ${itemDetails.harga.toLocaleString()}</td>
                 <td class="text-end">Rp ${total.toLocaleString()}</td>
 
                 <input type="hidden" name="items[${i}][spb_detail_id]" value="${item.id}">
-                <input type="hidden" name="items[${i}][harga]" value="${item.harga}">
-                <input type="hidden" name="items[${i}][jumlah_dipesan]" value="${item.jumlah_dipesan}">
+                <input type="hidden" name="items[${i}][harga]" value="${itemDetails.harga}">
+                <input type="hidden" name="items[${i}][jumlah_dipesan]" value="${itemDetails.kuantitas}">
                 <input type="hidden" name="items[${i}][jumlah_dikirim]" value="${item.jumlah_dikirim}">
                 <input type="hidden" name="items[${i}][total]" value="${total}">
             </tr>
