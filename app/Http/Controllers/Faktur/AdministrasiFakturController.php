@@ -34,6 +34,7 @@ class AdministrasiFakturController extends Controller
                 'pesananPembelian.pelanggan',
                 'suratPengirimanBarangDetail.pesananPembelianDetail',
             ])
+            ->where("user_id", auth()->id())
             ->orderBy('id', 'DESC')
             ->get()
             ->map(function ($spb) {
@@ -76,7 +77,7 @@ class AdministrasiFakturController extends Controller
                 ->with('success', 'Faktur penjualan berhasil ditambahkan.');
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal menambahkan faktur penjualan: '.$th->getMessage(),
+                'Gagal menambahkan faktur penjualan: ' . $th->getMessage(),
             );
 
             return back()
@@ -104,14 +105,14 @@ class AdministrasiFakturController extends Controller
                 ->with('success', 'Faktur penjualan berhasil dihapus🗑️.');
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal menghapus faktur penjualan: '.$th->getMessage(),
+                'Gagal menghapus faktur penjualan: ' . $th->getMessage(),
             );
 
             return back()
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menghapus faktur penjualan: '.$th->getMessage(),
+                    'Gagal menghapus faktur penjualan: ' . $th->getMessage(),
                 );
         }
     }
