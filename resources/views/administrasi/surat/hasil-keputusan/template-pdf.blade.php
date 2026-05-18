@@ -52,10 +52,14 @@
                 @if (isset($user->logo_perusahaan) && $user->logo_perusahaan)
                     @php
                         $logoPath = public_path('storage/' . $user->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
                     @endphp
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" alt="Logo" style="height:60px;">
+                    @if (file_exists($logoPath))
+                        @php
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                            $logoMime = mime_content_type($logoPath);
+                        @endphp
+                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" alt="Logo" style="height:60px;">
+                    @endif
                 @endif
             </td>
             <td style="vertical-align:middle; text-align:center;">
@@ -113,7 +117,7 @@
                     {{-- Bagian TTD --}}
                     @if (!empty($result->ttd_pemimpin))
                         @php
-                            $path = public_path('storage/' . $result->ttd_pemimpin);
+                            $path = storage_path('app/public/' . $result->ttd_pemimpin);
                         @endphp
 
                         @if (file_exists($path))

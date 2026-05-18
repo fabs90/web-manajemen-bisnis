@@ -149,12 +149,12 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header  py-3">
                             <h5 class="card-title mb-0 text-primary fw-bold">
-                                <i class="bi bi-cloud-upload me-2"></i>File Lampiran & TTD
+                                <i class="bi bi-cloud-upload me-2"></i>File Lampirank
                             </h5>
                         </div>
                         <div class="card-body">
                             {{-- Stylish TTD Upload --}}
-                            <div class="mb-4">
+                            {{-- <div class="mb-4">
                                 <label class="form-label fw-semibold">Tanda Tangan digital</label>
                                 <div class="upload-container shadow-sm border rounded p-4 text-center bg-light"
                                     id="ttd-drop-zone">
@@ -172,7 +172,7 @@
                                         <p class="mb-0 mt-2 small text-success fw-bold" id="ttd-filename"></p>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             {{-- Stylish File Lampiran Upload --}}
                             <div class="mb-0">
@@ -202,7 +202,7 @@
                     </div>
 
                     {{-- Actions --}}
-                    <div class="sticky-bottom py-3 bg-white border border-top shadow-lg rounded-4 px-3 mb-4"
+                    <div class="sticky-bottom py-3 bg-success border border-top shadow-lg rounded-4 px-3 mb-4"
                         style="bottom: 1.5rem; z-index: 1000;">
                         <button type="submit" id="submitBtn" class="btn btn-primary btn-lg w-100 shadow-sm rounded-3">
                             <span class="btn-text fw-bold">Kirim & Simpan Surat Keluar</span>

@@ -40,7 +40,7 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $surat->nomor_surat }}</td>
                                 <td>{{ \Carbon\Carbon::parse($surat->tanggal_surat)->format('d/m/Y') }}</td>
-                                <td>{{ $surat->emailLogs->first()->email }}</td>
+                                <td>{{ $surat->email_penerima }}</td>
                                 <td>{{ $surat->nama_penerima }}</td>
                                 <td>{{ $surat->perihal }}</td>
                                 <td>

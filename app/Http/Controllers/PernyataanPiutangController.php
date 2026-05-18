@@ -3,21 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pelanggan;
+use App\Services\PernyataanPiutangService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PernyataanPiutangController extends Controller
 {
+    public function __construct(protected PernyataanPiutangService $service)
+    {
+    }
+
     public function index()
     {
-        $dataPiutang = \App\Models\BukuBesarPiutang::where(
-            'user_id',
-            auth()->id()
-        )
-            ->with('pelanggan')
-            ->latest()
-            ->get()
-            ->unique('pelanggan_id')
-            ->values();
+        $dataPiutang = $this->service->getDaftarPiutang();
 
         return view(
             'administrasi.surat.pernyataan-piutang.index',
@@ -28,21 +25,15 @@ class PernyataanPiutangController extends Controller
     public function generatePdf($pelangganId)
     {
         $user = auth()->user();
-        if (! $user) {
+        if (!$user) {
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $pelanggan = Pelanggan::findOrFail($pelangganId);
-
-        $items = \App\Models\BukuBesarPiutang::where('user_id', $user->id)
-            ->where('pelanggan_id', $pelangganId)
-            ->latest()
-            ->first();
-
-        $totalPiutang = $items ? ($items->saldo ?? 0) : 0;
+        $totalPiutang = $this->service->getTotalPiutangPelanggan($pelangganId);
 
         $pdf = Pdf::setOptions([
-            'isRemoteEnabled' => false,
+            'isRemoteEnabled' => true, // Diaktifkan agar bisa memuat gambar jika perlu
             'isHtml5ParserEnabled' => true,
         ])
             ->loadView('administrasi.surat.pernyataan-piutang.template-pdf', [

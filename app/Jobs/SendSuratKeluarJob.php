@@ -7,6 +7,7 @@ use App\Models\AgendaSuratKeluar;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendSuratKeluarJob implements ShouldQueue
@@ -31,6 +32,12 @@ class SendSuratKeluarJob implements ShouldQueue
      */
     public function handle(): void
     {
+        if (empty($this->surat->email_penerima)) {
+            Log::warning("Skipping SendSuratKeluarJob: email_penerima is empty for Surat ID: {$this->surat->id}");
+
+            return;
+        }
+
         Mail::to($this->surat->email_penerima)->send(new SuratKeluarMail($this->surat, $this->user));
     }
 }

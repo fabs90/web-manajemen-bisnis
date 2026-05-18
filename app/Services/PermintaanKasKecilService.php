@@ -3,47 +3,46 @@
 namespace App\Services;
 
 use App\Http\Requests\PermintaanKasKecilRequest;
+use App\Models\BukuBesarKas;
 use App\Models\KasKecil;
-use App\Models\KasKecilFormulir;
 use App\Models\KasKecilDetail;
+use App\Models\KasKecilFormulir;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class PermintaanKasKecilService
 {
     /**
-     * Simpan permintaan kas kecil baru.
+     * Store a new Permintaan Kas Kecil transaction.
      *
-     * @return KasKecil  // berhasil
-     * @throws \Exception // gagal (akan ditangkap controller)
+     * @throws \Exception
      */
     public function store(PermintaanKasKecilRequest $request): KasKecil
     {
-        $data = $request->validated();
-
-        return DB::transaction(function () use ($request, $data) {
-            // 1. Ambil saldo terakhir
-            $saldoLama = KasKecil::where('user_id', auth()->id())
-                ->latest('tanggal') // lebih eksplisit dari ->latest()
-                ->value('saldo_akhir') ?? 0;
-
+        return DB::transaction(function () use ($request) {
+            $data = $request->validated();
+            $userId = Auth::id();
             $total = $this->cleanRupiah($data['total']);
 
-            // 2. Validasi bisnis: saldo tidak boleh minus
-            if ($data['jenis'] === 'pengeluaran' && $total > $saldoLama) {
-                throw new \Exception('Saldo kas kecil tidak mencukup untuk pengeluaran ini.');
+            // 1. Get current balance and validate
+            $saldoLama = KasKecil::where('user_id', $userId)
+                ->latest()
+                ->value('saldo_akhir') ?? 0;
+
+            $isPengeluaran = ($data['jenis'] === 'pengeluaran');
+
+            if ($isPengeluaran && $total > $saldoLama) {
+                throw new \Exception('Saldo kas kecil tidak mencukupi untuk pengeluaran ini. Saldo saat ini: Rp '.number_format($saldoLama, 0, ',', '.'));
             }
 
-            // 3. Hitung nilai baru
-            $penerimaan = $data['jenis'] === 'pengeluaran' ? 0 : $total;
-            $pengeluaran = $data['jenis'] === 'pengeluaran' ? $total : 0;
+            // 2. Calculate new values
+            $penerimaan = $isPengeluaran ? 0 : $total;
+            $pengeluaran = $isPengeluaran ? $total : 0;
             $saldoBaru = $saldoLama + $penerimaan - $pengeluaran;
 
-            // 4. Simpan transaksi kas kecil
+            // 3. Save Transaction
             $kasKecil = KasKecil::create([
-                'user_id' => auth()->id(),
+                'user_id' => $userId,
                 'tanggal' => $data['tanggal'],
                 'nomor_referensi' => $data['nomor'],
                 'penerimaan' => $penerimaan,
@@ -51,48 +50,79 @@ class PermintaanKasKecilService
                 'saldo_akhir' => $saldoBaru,
             ]);
 
-            // 5. Upload tanda tangan
-            $ttdPemohon = $this->uploadFile($request, 'ttd_nama_pemohon', 'kas_kecil/ttd_nama_pemohon');
-            $ttdAtasan = $this->uploadFile($request, 'ttd_nama_atasan_langsung', 'kas_kecil/ttd_atasan_langsung');
-            $ttdKeuangan = $this->uploadFile($request, 'ttd_nama_bagian_keuangan', 'kas_kecil/ttd_bagian_keuangan');
+            // 3a. Record to BukuBesarKas if it's an addition (penambahan)
+            if (! $isPengeluaran) {
+                $kasBesarLatest = BukuBesarKas::where('user_id', $userId)->latest()->first();
+                $saldoKasBesarBaru = ($kasBesarLatest->saldo ?? 0) - $total;
 
-            // 6. Simpan formulir
-            KasKecilFormulir::create([
-                'user_id' => auth()->id(),
-                'kas_kecil_id' => $kasKecil->id,
-                'nama_pemohon' => $data['nama_pemohon'],
-                'departemen' => $data['departemen'],
-                'ttd_nama_pemohon' => $ttdPemohon,
-                'nama_atasan_langsung' => $data['nama_atasan_langsung'],
-                'ttd_atasan_langsung' => $ttdAtasan,
-                'nama_bagian_keuangan' => $data['nama_bagian_keuangan'],
-                'ttd_bagian_keuangan' => $ttdKeuangan,
-            ]);
-
-            // 7. Simpan detail
-            foreach ($request->keterangan as $i => $keterangan) {
-                KasKecilDetail::create([
-                    'user_id' => auth()->id(),
-                    'kas_kecil_id' => $kasKecil->id,
-                    'keterangan' => $keterangan,
-                    'kategori' => $request->kategori[$i] ?? null,
-                    'jumlah' => $this->cleanRupiah($request->jumlah[$i] ?? 0),
+                BukuBesarKas::create([
+                    'kode' => $data['nomor'],
+                    'tanggal' => $data['tanggal'],
+                    'uraian' => 'Penambahan Kas Kecil - Ref: '.$data['nomor'],
+                    'debit' => 0,
+                    'kredit' => $total,
+                    'saldo' => $saldoKasBesarBaru,
+                    'user_id' => $userId,
                 ]);
             }
 
-            return $kasKecil; // berhasil
+            // 4. Save Formulir and Details
+            $this->saveFormulir($kasKecil, $request, $data, $userId);
+            $this->saveDetails($kasKecil, $request, $userId);
+
+            return $kasKecil;
         });
+    }
+
+    /**
+     * Save the formulir and upload necessary signatures.
+     */
+    private function saveFormulir(KasKecil $kasKecil, $request, array $data, int $userId): void
+    {
+        KasKecilFormulir::create([
+            'user_id' => $userId,
+            'kas_kecil_id' => $kasKecil->id,
+            'nama_pemohon' => $data['nama_pemohon'],
+            'departemen' => $data['departemen'],
+            'nama_atasan_langsung' => $data['nama_atasan_langsung'],
+            'nama_bagian_keuangan' => $data['nama_bagian_keuangan'],
+            'ttd_nama_pemohon' => $this->uploadFile($request, 'ttd_nama_pemohon', 'kas_kecil/ttd_pemohon'),
+            'ttd_atasan_langsung' => $this->uploadFile($request, 'ttd_nama_atasan_langsung', 'kas_kecil/ttd_atasan'),
+            'ttd_bagian_keuangan' => $this->uploadFile($request, 'ttd_nama_bagian_keuangan', 'kas_kecil/ttd_keuangan'),
+        ]);
+    }
+
+    /**
+     * Save transaction details.
+     */
+    private function saveDetails(KasKecil $kasKecil, $request, int $userId): void
+    {
+        if (empty($request->keterangan)) {
+            return;
+        }
+
+        foreach ($request->keterangan as $index => $keterangan) {
+            KasKecilDetail::create([
+                'user_id' => $userId,
+                'kas_kecil_id' => $kasKecil->id,
+                'keterangan' => $keterangan,
+                'kategori' => $request->kategori[$index] ?? null,
+                'jumlah' => $this->cleanRupiah($request->jumlah[$index] ?? 0),
+            ]);
+        }
     }
 
     private function cleanRupiah(string|int $value): int
     {
-        return (int) preg_replace('/\D/', '', $value);
+        return (int) preg_replace('/\D/', '', (string) $value);
     }
 
     private function uploadFile($request, string $field, string $folder): ?string
     {
-        return $request->hasFile($field)
-            ? $request->file($field)->store($folder, 'public')
-            : null;
+        if (! $request->hasFile($field)) {
+            return null;
+        }
+
+        return $request->file($field)->store($folder, 'public');
     }
 }

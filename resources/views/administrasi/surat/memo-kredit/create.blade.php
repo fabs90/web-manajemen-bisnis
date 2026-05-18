@@ -98,10 +98,11 @@
 
                             <td>
                                 <select class="form-select" name="barang_id[]" required>
-                                    @foreach ($faktur->suratPengirimanBarang->pesananPembelian->pesananPembelianDetail as $detail)
-                                        <option value="{{ $detail->id }}" data-harga="{{ $detail->harga }}"
-                                            data-maxqty="{{ $detail->kuantitas }}">
-                                            {{ $detail->nama_barang }}
+                                    @foreach ($faktur->suratPengirimanBarang->suratPengirimanBarangDetail as $detail)
+                                        <option value="{{ $detail->pesananPembelianDetail->id }}"
+                                            data-harga="{{ $detail->pesananPembelianDetail->harga }}"
+                                            data-maxqty="{{ $detail->jumlah_dikirim }}">
+                                            {{ $detail->pesananPembelianDetail->nama_barang }}
                                         </option>
                                     @endforeach
                                 </select>

@@ -21,35 +21,18 @@
             </div>
         @endif
         <div class="row mb-3">
-            <div class="col-6">
+            <div class="col-12">
                 <div class="card shadow-sm h-100">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
-                            <h5 class="fw-bold">SPB dari Supplier</h5>
+                            <h5 class="fw-bold">Buat Surat Pengiriman Barang (SPB)</h5>
                             <p class="text-muted mb-3">
-                                Catat dan kelola pengiriman barang yang diterima dari supplier ke perusahaan.
+                                Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan untuk memudahkan pelacakan progress pengiriman.
                             </p>
                         </div>
 
-                        <a href="{{ route('administrasi.spb.createTransaksiKeluar') }}" class="btn btn-primary w-100">
-                            + Buat SPB Supplier
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="fw-bold">SPB ke Pelanggan</h5>
-                            <p class="text-muted mb-3">
-                                Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan.
-                            </p>
-                        </div>
-
-                        <a href="{{ route('administrasi.spb.createTransaksiMasuk') }}" class="btn btn-success w-100">
-                            + Buat SPB Pelanggan
+                        <a href="{{ route('administrasi.spb.create') }}" class="btn btn-success w-100">
+                            + Buat SPB Baru
                         </a>
                     </div>
                 </div>
@@ -66,11 +49,10 @@
                         <thead class="table-primary text-center">
                             <tr>
                                 <th width="5%">No</th>
-                                <th>Jenis</th>
                                 <th>Nomor SPB</th>
                                 <th>Tanggal Dikirim</th>
                                 <th>Status</th>
-                                <th>Pelanggan/Supplier</th>
+                                <th>Pelanggan</th>
                                 <th>Keadaan Barang</th>
                                 <th>Penerima</th>
                                 <th width="14%">Aksi</th>
@@ -80,17 +62,6 @@
                             @foreach ($suratPengirimanBarang as $spb)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
-                                    <td>
-                                        @if ($spb->pesananPembelian?->jenis == 'transaksi_keluar')
-                                            <span class="badge bg-danger">
-                                                Supplier
-                                            </span>
-                                        @else
-                                            <span class="badge bg-success">
-                                                Pelanggan
-                                            </span>
-                                        @endif
-                                    </td>
                                     <td class="fw-bold">{{ $spb->nomor_pengiriman_barang }}</td>
                                     <td class="text-center">
                                         {{ \Carbon\Carbon::parse($spb->created_at)->format('d-m-Y') }}
@@ -109,11 +80,7 @@
 <span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
                                     </td>
                                     <td>
-                                        @if ($spb->pesananPembelian?->jenis == 'transaksi_keluar')
-                                            {{ $spb->pesananPembelian->supplier->nama ?? '-' }}
-                                        @else
-                                            {{ $spb->pesananPembelian->pelanggan->nama ?? '-' }}
-                                        @endif
+                                        {{ $spb->pesananPembelian->pelanggan->nama ?? $spb->pesananPembelian->supplier->nama ?? '-' }}
                                     </td>
                                     <td class="text-center">
                                         @php

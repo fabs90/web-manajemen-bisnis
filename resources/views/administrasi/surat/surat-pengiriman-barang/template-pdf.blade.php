@@ -109,8 +109,7 @@
 
     <h3 class="text-center fw-bold uppercase mb-1">SURAT PENGIRIMAN BARANG</h3>
     <div class="text-center">
-        <strong>Nomor:</strong>
-        {{ $data->nomor_pengiriman_barang ?? '_' }}<br>
+        <strong>Nomor:</strong> {{ $data->nomor_pengiriman_barang ?? '_' }}<br>
     </div>
 
     {{-- Nomor --}}
@@ -121,18 +120,15 @@
         $tanggalKirim = $data->tanggal_terima ? \Carbon\Carbon::parse($data->tanggal_terima)->format('d/m/Y') : '-';
     @endphp
 
-    <table class="table-no-border mb-4">
+    <table class="table-no-border mb-5">
         <tr>
             <td width="60%"></td>
             <td width="40%">
                 @if ($data->fakturPenjualan && $data->fakturPenjualan->kode_faktur)
-                    <strong>Kode Faktur:</strong>
-                    {{ $data->fakturPenjualan->kode_faktur ?? '___' }}<br>
+                    <strong>Kode Faktur:</strong> {{ $data->fakturPenjualan->kode_faktur ?? '___' }}<br>
                 @endif
-                <strong>Nomor:</strong>
-                {{ $data->pesananPembelian->nomor_pesanan_pembelian ?? '___' }}<br>
-                <strong>Tanggal:</strong>
-                {{ \Carbon\Carbon::parse($data->created_at ?? now())->format('d/m/Y') }}
+                <strong>Nomor:</strong> {{ $data->pesananPembelian->nomor_pesanan_pembelian ?? '___' }}<br>
+                <strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($data->created_at ?? now())->format('d/m/Y') }}
             </td>
         </tr>
     </table>
@@ -154,10 +150,9 @@
         @endif
     </p>
 
-    <p class="mb-4">
+    <p class="mb-2">
         Bersama ini kami kirimkan barang dengan rincian sebagai berikut:
     </p>
-
     {{-- Info Tambahan --}}
     <table class="table-no-border mb-3">
         <tr>
@@ -166,7 +161,7 @@
         </tr>
         <tr>
             <td>Status Pengiriman</td>
-            <td>: {{ $data->status_pengiriman ?? '-' }}</td>
+            <td>: <b>{{ strtoupper($data->status_pengiriman) ?? '-' }}</b></td>
         </tr>
         @if ($data->status_pengiriman == 'diterima')
             <tr>
@@ -237,30 +232,35 @@
     {{-- Tanda tangan --}}
     <table width="100%" class="table-no-border" style="margin-top:30px;">
         <tr>
-            <td width="50%" class="text-center">
-                Yang Menerima,<br>
-                @if ($data->ttd_penerima)
-                    @php
-                        $ttdPenerimaPath = storage_path('app/public/' . $data->ttd_penerima);
-                        $ttdPenerimaBase64 = null;
-                        if (file_exists($ttdPenerimaPath)) {
-                            $ttdPenerimaBase64 = base64_encode(file_get_contents($ttdPenerimaPath));
-                            $ttdPenerimaMime = mime_content_type($ttdPenerimaPath);
-                        }
-                    @endphp
-                    @if ($ttdPenerimaBase64)
-                        <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}" style="height:60px;">
+            @if ($data->status_pengiriman == 'diterima')
+                <td width="50%" class="text-center">
+                    Yang Menerima,<br>
+                    @if ($data->ttd_penerima)
+                        @php
+                            $ttdPenerimaPath = storage_path('app/public/' . $data->ttd_penerima);
+                            $ttdPenerimaBase64 = null;
+                            if (file_exists($ttdPenerimaPath)) {
+                                $ttdPenerimaBase64 = base64_encode(file_get_contents($ttdPenerimaPath));
+                                $ttdPenerimaMime = mime_content_type($ttdPenerimaPath);
+                            }
+                        @endphp
+                        @if ($ttdPenerimaBase64)
+                            <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}" style="height:60px;">
+                        @else
+                            <div style="height:60px;"></div>
+                        @endif
                     @else
                         <div style="height:60px;"></div>
                     @endif
-                @else
-                    <div style="height:60px;"></div>
-                @endif
-                <br>
-                <strong>( {{ $data->nama_penerima ?? '_________' }} )</strong>
-            </td>
+                    <br>
+                    <strong>( {{ $data->nama_penerima ?? '_________' }} )</strong>
+                </td>
+            @else
+            <td width="50%"></td>
+            @endif
+
             <td width="50%" class="text-center">
-                Pengirim,<br>
+                Pengirim Barang,<br>
                 @if ($data->ttd_pengirim)
                     @php
                         $ttdPengirimPath = storage_path('app/public/' . $data->ttd_pengirim);

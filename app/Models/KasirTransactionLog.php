@@ -6,28 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class KasirTransactionLog extends Model
 {
-    protected $table = "kasir_transaction_logs";
+    protected $table = 'kasir_transaction_logs';
+
     protected $fillable = [
-        "pendapatan_id",
-        "buku_besar_kas_id",
-        "uraian",
-        "tanggal_transaksi",
-        "jumlah",
-        "user_id",
+        'journal_entry_id',
+        'uraian',
+        'tanggal_transaksi',
+        'jumlah',
+        'user_id',
     ];
 
-    public function bukuBesarPendapatan()
+    public function journalEntry()
     {
-        return $this->belongsTo(BukuBesarPendapatan::class, "pendapatan_id");
-    }
-
-    public function bukuBesarKas()
-    {
-        return $this->belongsTo(BukuBesarKas::class, "buku_besar_kas_id");
+        return $this->belongsTo(JournalEntry::class, 'journal_entry_id');
     }
 
     public function user()
     {
-        return $this->belongsto(User::class);
+        return $this->belongsTo(User::class);
     }
 }

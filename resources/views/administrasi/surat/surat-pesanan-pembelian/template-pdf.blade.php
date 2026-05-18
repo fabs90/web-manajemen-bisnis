@@ -1,3 +1,9 @@
+{{-- 
+    Template ini digunakan untuk menghasilkan salinan PDF Surat Pesanan Pembelian (SPP) 
+    yang dikirimkan kepada pelanggan sebagai konfirmasi bahwa mereka telah melakukan 
+    pemesanan barang. Dokumen ini berfungsi sebagai bukti transaksi/pesanan yang 
+    diterima oleh toko/perusahaan dari pelanggan.
+--}}
 <!DOCTYPE html>
 <html lang="id">
 
@@ -32,7 +38,7 @@
         }
 
         /* Tambahkan border untuk setiap sel header dan data */
-        .table th, 
+        .table th,
         .table td {
             border: 1px solid #000;
             padding: 8px; /* Menambah sedikit ruang agar teks tidak menempel ke garis */
@@ -119,22 +125,14 @@
     <p class="mb-3">
         Kepada Yth.<br>
         <strong>
-            @if ($data->jenis == 'transaksi_keluar')
-                {{ $data->supplier->nama ?? '-' }}
-            @else
-                {{ $data->pelanggan->nama ?? '-' }}
-            @endif
+            {{ $data->pelanggan->nama ?? '-' }}
         </strong><br>
-        @if ($data->jenis == 'transaksi_keluar')
-            {{ $data->supplier->alamat ?? '-' }}
-        @else
-            {{ $data->pelanggan->alamat ?? '-' }}
-        @endif
+        {{ $data->pelanggan->alamat ?? '-' }}
     </p>
 
     <p class="mb-4">
         Dengan hormat,<br>
-        Mohon kiranya Saudara dapat mengirimkan barang-barang berikut ini paling lambat tanggal
+        Terima kasih atas pesanan Anda. Berikut adalah rincian barang yang telah dipesan dan akan kami proses untuk pengiriman paling lambat pada tanggal
         <strong>{{ $data->tanggal_kirim_pesanan_pembelian ?? '(tanggal/bulan/tahun)' }}</strong>:
     </p>
 
@@ -192,9 +190,8 @@
     {{-- Tanda Tangan --}}
     <table width="100%" class="table-no-border" style="margin-top: 50px;">
         <tr>
-            <td width="70%"></td>
-            <td width="30%" class="text-center">
-                Hormat kami,<br>
+            <td width="50%" class="text-center">
+                Penerima,<br>
                 @if ($profileUser->ttd_pemimpin)
                     @php
                         $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
@@ -214,7 +211,30 @@
                 @endif
                 <br>
                 <strong><u>({{ $profileUser->name ?? '_________' }})</u></strong><br>
-                {{ $profileUser->jabatan ?? 'Bagian Pembelian' }}
+                {{ $profileUser->jabatan ?? 'Pemimpin Perusahaan' }}
+            </td>
+            <td width="50%" class="text-center">
+                Hormat kami,<br>
+                @if ($data->ttd_pengirim)
+                    @php
+                        $ttdPengirimPath = storage_path('app/public/' . $data->ttd_pengirim);
+                        $ttdPengirimBase64 = null;
+                        if (file_exists($ttdPengirimPath)) {
+                            $ttdPengirimBase64 = base64_encode(file_get_contents($ttdPengirimPath));
+                            $ttdMime = mime_content_type($ttdPengirimPath);
+                        }
+                    @endphp
+                    @if ($ttdPengirimBase64)
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdPengirimBase64 }}" style="height:60px;">
+                    @else
+                        <div style="height:60px;"></div>
+                    @endif
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <br>
+                <strong><u>({{ $data->nama_bagian_pembelian ?? '_________' }})</u></strong><br>
+                Bagian Pembelian
             </td>
         </tr>
     </table>

@@ -61,7 +61,7 @@
             <td width="15%">
                 @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
                     @php
-                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
+                        $logoPath = storage_path('app/public/' . $profileUser->logo_perusahaan);
                         if (file_exists($logoPath)) {
                             $logoBase64 = base64_encode(file_get_contents($logoPath));
                             $logoMime = mime_content_type($logoPath);

@@ -22,15 +22,15 @@
                 <div class="card shadow-sm h-100 text-center">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
-                            <h5 class="fw-bold">Buat Surat Pesanan Pembelian (SPP)</h5>
+                            <h5 class="fw-bold">Data Surat Pesanan Pembelian (SPP)</h5>
                             <p class="text-muted mb-3">
-                                Buat pesanan pembelian dari perusahaan ke supplier.
+                                Terima pesanan pembelian dari pelanggan ke perusahaan.
                             </p>
                         </div>
 
                         <div class="d-flex justify-content-center">
-                            <a href="{{ route('administrasi.spp.createKeluar') }}" class="btn btn-primary px-5">
-                                + Buat SPP Supplier
+                            <a href="{{ route('administrasi.spp.create') }}" class="btn btn-primary px-5">
+                                + Tambah SPP Pelanggan
                             </a>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                             <tr>
                                 <th>No</th>
                                 <th>Nomor SPP</th>
-                                <th>Supplier/Pemasok</th>
+                                <th>Pelanggan</th>
                                 <th>Tanggal Pesan</th>
                                 <th>Tanggal Kirim</th>
                                 <th>Nama Bagian Pembelian</th>
@@ -65,7 +65,7 @@
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td>{{ $item->nomor_pesanan_pembelian }}</td>
                                     <td>
-                                        {{ $item->supplier->nama ?? '-' }}
+                                        {{ $item->pelanggan->nama ?? '-' }}
                                     </td>
                                     <td>{{ $item->tanggal_pesanan_pembelian }}</td>
                                     <td>{{ $item->tanggal_kirim_pesanan_pembelian }}</td>
@@ -167,6 +167,22 @@
 @push('script')
     <script>
         $(document).ready(function() {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: "{{ session('success') }}",
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: "{{ session('error') }}",
+                });
+            @endif
+
             $('#faktur-penjualan-table').DataTable({
                 responsive: true,
                 pageLength: 10,

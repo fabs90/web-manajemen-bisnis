@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use App\Models\Barang;
-use App\Models\BukuBesarKas;
-use App\Models\BukuBesarPendapatan;
-use App\Models\BukuBesarPengeluaran;
+use App\Models\JenisPembayaran;
+use App\Models\JournalEntry;
 use App\Models\KartuGudang;
 use App\Models\KasirTransactionLog;
-use App\Models\NeracaAwal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,25 +18,24 @@ class KasirController extends Controller
 {
     public function index()
     {
-        $kasirTransactions = KasirTransactionLog::where("user_id", auth()->id())
-            ->orderBy("tanggal_transaksi", "desc")
+        $kasirTransactions = KasirTransactionLog::where('user_id', auth()->id())
+            ->orderBy('tanggal_transaksi', 'desc')
             ->get();
-        return view("keuangan.kasir.index", compact("kasirTransactions"));
+
+        return view('keuangan.kasir.index', compact('kasirTransactions'));
     }
 
     public function create()
     {
+        $jenisPembayaran = JenisPembayaran::select('id', 'nama')->get();
         // Ambil semua barang
-        $barang = Barang::where("user_id", auth()->id())
-            ->orderBy("nama")
+        $barang = Barang::where('user_id', auth()->id())
+            ->orderBy('nama')
             ->get();
-        // Pengeluaran Tunai
-        $pengeluaranTunai = BukuBesarPengeluaran::where("user_id", auth()->id())
-            ->orderBy("tanggal", "desc")
-            ->first();
+
         return view(
-            "keuangan.kasir.create",
-            compact("barang", "pengeluaranTunai"),
+            'keuangan.kasir.create',
+            compact('barang', 'jenisPembayaran'),
         );
     }
 
@@ -45,85 +43,67 @@ class KasirController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kodeTransaksi = Str::uuid();
-            $bukuBesarPendapatan = BukuBesarPendapatan::create([
-                "tanggal" => now(),
-                "uraian" =>
-                    "Pendapatan Tunai - Kasir: " .
-                    Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
-                "potongan_pembelian" => $request->potongan_pembelian
-                    ? array_sum($request->potongan_pembelian)
-                    : 0,
-                "piutang_dagang" => 0,
-                "penjualan_tunai" => $request->grand_total ?? 0,
-                "lain_lain" => 0,
-                "uang_diterima" => $request->grand_total ?? 0,
-                "bunga_bank" => 0,
-                "user_id" => auth()->id(),
-            ]);
+            $userId = auth()->id();
+            $prefix = 'TRX';
+            $date = Carbon::now()->format('Ymd');
+            $random = strtoupper(Str::random(6));
+            $kodeTransaksi = "{$prefix}-{$date}-{$random}";
+            $jenisPembayaran = JenisPembayaran::findOrFail($request->jenis_pembayaran_id);
+            $namaPembayaran = $jenisPembayaran ? $jenisPembayaran->nama : 'tunai';
 
-            $neracaAwalBefore = NeracaAwal::where(
-                "user_id",
-                auth()->id(),
-            )->first();
+            // Ambil akun-akun
+            $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
 
-            if (!$neracaAwalBefore) {
-                throw new \Exception("Data Neraca Awal belum ditemukan.
-            Silakan buat Neraca Awal terlebih dahulu sebelum menambahkan pendapatan.");
+            if (! isset($accounts['1101']) || ! isset($accounts['4101'])) {
+                throw new \Exception('Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) tidak ditemukan.');
             }
 
-            $bukuBesarKasBefore = BukuBesarKas::where("user_id", auth()->id())
-                ->latest()
-                ->first();
-
-            $saldoBaru =
-                ($bukuBesarKasBefore->saldo ?? 0) + $request->grand_total;
-
-            $bukuBesarKas = BukuBesarKas::create([
-                "kode" => $kodeTransaksi,
-                "uraian" =>
-                    "Pendapatan Tunai - Kasir: " .
-                    Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
-                "tanggal" => $bukuBesarPendapatan->tanggal,
-                "debit" => $request->grand_total,
-                "kredit" => 0,
-                "saldo" => $saldoBaru,
-                "neraca_awal_id" => $neracaAwalBefore->id,
-                "neraca_akhir_id" => null,
-                "user_id" => auth()->id(),
+            // Jurnal Entri
+            $entry = JournalEntry::create([
+                'user_id' => $userId,
+                'reference_number' => $kodeTransaksi,
+                'date' => now(),
+                'description' => "Penjualan Tunai Kasir: {$kodeTransaksi}",
+                'transaction_type' => 'pendapatan_tunai',
             ]);
 
-            // Insert into logs
-            KasirTransactionLog::create([
-                "pendapatan_id" => $bukuBesarPendapatan->id,
-                "buku_besar_kas_id" => $bukuBesarKas->id,
-                "uraian" =>
-                    "Pendapatan Tunai - Kasir: " .
-                    Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
-                "tanggal_transaksi" => $bukuBesarPendapatan->tanggal,
-                "jumlah" => $request->grand_total,
-                "user_id" => auth()->id(),
+            // Jurnal Item Debit Kas Utama
+            $entry->items()->create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'account_id' => $accounts['1101']->id,
+                'debit' => $request->grand_total,
+                'credit' => 0,
+            ]);
+
+            // Jurnal Item Credit Pendapatan Penjualan
+            $entry->items()->create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'account_id' => $accounts['4101']->id,
+                'debit' => 0,
+                'credit' => $request->grand_total,
             ]);
 
             // Insert barang
-            if ($request->filled("id_barang_terjual")) {
+            if ($request->filled('id_barang_terjual')) {
                 foreach ($request->id_barang_terjual as $index => $barangId) {
-                    if (!$barangId) {
+                    if (! $barangId) {
                         continue;
                     }
 
-                    $detailBarang = Barang::where("id", $barangId)->first();
-                    if (!$detailBarang) {
+                    $detailBarang = Barang::where('id', $barangId)->first();
+                    if (! $detailBarang) {
                         throw new \Exception(
                             "Barang dengan ID {$barangId} tidak ditemukan.",
                         );
                     }
 
-                    $barangItem = KartuGudang::where("barang_id", $barangId)
+                    $barangItem = KartuGudang::where('barang_id', $barangId)
                         ->latest()
                         ->first();
 
-                    if (!$barangItem) {
+                    if (! $barangItem) {
                         throw new \Exception(
                             "Kartu gudang untuk barang ID {$barangId} tidak ditemukan.",
                         );
@@ -146,66 +126,81 @@ class KasirController extends Controller
                     $saldoSatuanBaru = $saldoSatuanAwal - $jumlahDijual;
 
                     KartuGudang::create([
-                        "barang_id" => $barangId,
-                        "tanggal" => $bukuBesarPendapatan->tanggal,
-                        "diterima" => 0,
-                        "dikeluarkan" => $jumlahDijual,
-                        "uraian" =>
-                            "Pendapatan Kasir Tunai: " .
-                            $detailBarang->nama .
-                            " - " .
-                            Carbon::now("Asia/Jakarta")->format("d/m/Y H:i"),
-                        "saldo_persatuan" => $saldoSatuanBaru,
-                        "saldo_perkemasan" => $saldoPerKemasanBaru,
-                        "buku_besar_pendapatan_id" => $bukuBesarPendapatan->id,
-                        "user_id" => auth()->id(),
+                        'barang_id' => $barangId,
+                        'tanggal' => now(),
+                        'diterima' => 0,
+                        'dikeluarkan' => $jumlahDijual,
+                        'uraian' => 'Pendapatan Kasir Tunai: '.
+                            $detailBarang->nama.
+                            ' - '.
+                            Carbon::now('Asia/Jakarta')->format('d/m/Y H:i'),
+                        'saldo_persatuan' => $saldoSatuanBaru,
+                        'saldo_perkemasan' => $saldoPerKemasanBaru,
+                        'journal_entry_id' => $entry->id,
+                        'user_id' => auth()->id(),
                     ]);
                 }
             }
+
+            // Simpan Log Transaksi Kasir
+            KasirTransactionLog::create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'uraian' => "Penjualan Kasir - Pembayaran: {$namaPembayaran}",
+                'tanggal_transaksi' => now(),
+                'jumlah' => $request->grand_total,
+            ]);
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error occurred while processing request", [
-                "error" => $e->getMessage(),
+            Log::error('Error occurred while processing request', [
+                'error' => $e->getMessage(),
             ]);
+
             return redirect()
                 ->back()
-                ->with("error", "Terjadi Error: " . $e->getMessage());
+                ->with('error', 'Terjadi Error: '.$e->getMessage());
         }
-        return redirect()->back()->with("success", "Transaksi berhasil");
+
+        return redirect()->back()->with('success', 'Transaksi berhasil');
     }
 
     public function destroy($id)
     {
         DB::beginTransaction();
         try {
-            // delete logs
-            $logs = KasirTransactionLog::where("id", $id)->first();
-            // delete pendapatan
-            $bukuBesarPendapatan = BukuBesarPendapatan::where(
-                "id",
-                $logs->bukuBesarPendapatan->id,
-            )->first();
-            // buku besar kas
-            $bukuBesarKas = BukuBesarKas::where(
-                "id",
-                $logs->bukuBesarKas->id,
-            )->first();
-            $bukuBesarKas->delete();
-            $bukuBesarPendapatan->delete();
-            $logs->delete();
+            $log = KasirTransactionLog::findOrFail($id);
+            $journalEntryId = $log->journal_entry_id;
+
+            if ($journalEntryId) {
+                // Hapus kartu gudang terkait
+                KartuGudang::where('journal_entry_id', $journalEntryId)->delete();
+                // Hapus jurnal entry (ini akan men-cascade hapus ke journal_items dan kasir_transaction_logs)
+                $journalEntry = JournalEntry::find($journalEntryId);
+                if ($journalEntry) {
+                    $journalEntry->delete();
+                } else {
+                    $log->delete();
+                }
+            } else {
+                $log->delete();
+            }
+
             DB::commit();
+
             return redirect()
                 ->back()
-                ->with("success", "Hapus transaksi berhasil");
+                ->with('success', 'Hapus transaksi berhasil');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error occurred while processing request", [
-                "error" => $e->getMessage(),
+            Log::error('Error occurred while deleting transaction', [
+                'error' => $e->getMessage(),
             ]);
+
             return redirect()
                 ->back()
-                ->with("error", "Terjadi Error: " . $e->getMessage());
+                ->with('error', 'Terjadi Error: '.$e->getMessage());
         }
     }
 }

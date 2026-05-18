@@ -62,7 +62,7 @@
                                 @endif
                             </td>
                             <td>
-                                {{$item->KasKecilFormulir->pluck('nama_pemohon')->join(', ')}}
+                                {{$item->KasKecilFormulir->pluck('nama_pemohon')->join(', ') ?? '-'}}
                             </td>
                             <td>{{ $item->KasKecilFormulir->first()->departemen ?? '-' }}</td>
                             <td>

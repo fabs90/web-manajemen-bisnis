@@ -2,23 +2,26 @@
 
 namespace App\Models\SPP;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\{Pelanggan, User};
+use App\Models\Pelanggan;
 use App\Models\SPB\SuratPengirimanBarang;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
 class PesananPembelian extends Model
 {
-    protected $table = "pesanan_pembelian";
+    protected $table = 'surat_pesanan_pembelian';
+
     protected $fillable = [
-        "jenis",
-        "pelanggan_id",
-        "supplier_id",
-        "nomor_pesanan_pembelian",
-        "tanggal_pesanan_pembelian",
-        "tanggal_terima",
-        "tanggal_kirim_pesanan_pembelian",
-        "nama_bagian_pembelian",
-        "user_id",
+        'jenis',
+        'pelanggan_id',
+        'supplier_id',
+        'nomor_pesanan_pembelian',
+        'tanggal_pesanan_pembelian',
+        'tanggal_terima',
+        'tanggal_kirim_pesanan_pembelian',
+        'nama_bagian_pembelian',
+        'ttd_pengirim',
+        'user_id',
     ];
 
     public function pelanggan()
@@ -38,11 +41,24 @@ class PesananPembelian extends Model
 
     public function pesananPembelianDetail()
     {
-        return $this->hasMany(PesananPembelianDetail::class, "spp_id");
+        return $this->hasMany(PesananPembelianDetail::class, 'spp_id');
     }
 
     public function suratPengirimanBarang()
     {
-        return $this->hasMany(SuratPengirimanBarang::class, "spp_id");
+        return $this->hasMany(SuratPengirimanBarang::class, 'spp_id');
+    }
+
+    public function generatePdf()
+    {
+        $this->loadMissing(['pelanggan', 'pesananPembelianDetail', 'user']);
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'administrasi.surat.surat-pesanan-pembelian.template-pdf',
+            [
+                'data' => $this,
+                'profileUser' => $this->user,
+            ]
+        )->setPaper('A4', 'portrait');
     }
 }

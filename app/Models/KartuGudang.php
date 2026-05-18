@@ -8,36 +8,37 @@ use Illuminate\Database\Eloquent\Model;
 class KartuGudang extends Model
 {
     use HasFactory;
-    protected $table = "kartu_gudang";
+
+    protected $table = 'kartu_gudang';
+
     protected $fillable = [
-        "barang_id",
-        "tanggal",
-        "diterima",
-        "dikeluarkan",
-        "user_id",
-        "uraian",
-        "saldo_persatuan",
-        "saldo_perkemasan",
-        "user_id",
+        'barang_id',
+        'tanggal',
+        'diterima',
+        'dikeluarkan',
+        'user_id',
+        'uraian',
+        'saldo_persatuan',
+        'saldo_perkemasan',
+        'journal_entry_id',
     ];
+
     protected $casts = [
-        "tanggal" => "date",
+        'tanggal' => 'date',
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function barang()
     {
         return $this->belongsTo(Barang::class, 'barang_id', 'id');
     }
 
-    public function bukuBesarPendapatan()
+    public function journalEntry()
     {
-        return $this->belongsTo(BukuBesarPendapatan::class);
-    }
-    public function bukuBesarPengeluaran()
-    {
-        return $this->belongsTo(BukuBesarPengeluaran::class);
+        return $this->belongsTo(JournalEntry::class);
     }
 }

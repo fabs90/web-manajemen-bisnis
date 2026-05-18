@@ -1,12 +1,13 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Retur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnisn')
+@section('page-title', 'Retur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'List Retur Penjualan & Pengeluaran')
 @section('section-row')
 
 <div class="card shadow-sm mb-4">
-    <div class="card-header bg-info text-white fw-bold">
-        Retur Penjualan (Piutang)
+    <div class="card-header bg-info text-white fw-bold d-flex justify-content-between align-items-center">
+        <span>Retur Penjualan (Piutang/Kas)</span>
+        <a href="{{ route('retur.create-penjualan') }}" class="btn btn-light btn-sm">Tambah Retur Penjualan</a>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -16,34 +17,33 @@
                         <th>#</th>
                         <th>Tanggal</th>
                         <th>Debitur</th>
-                        <th>Kode Piutang</th>
-                        <th>Uraian</th>
+                        <th>Referensi</th>
+                        <th>Keterangan</th>
                         <th>Nominal (Rp)</th>
-                        <th>Penanganan</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($returPenjualan as $retur)
+                    @foreach ($returPenjualan as $retur)
+                        @php
+                            $pihak = $retur->items->firstWhere('sub_ledger_type', 'App\Models\Pelanggan');
+                            // Nominal retur adalah nilai debit pada akun pendapatan
+                            $nominal = $retur->items->where('account.code', '4101')->sum('debit');
+                        @endphp
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ \Carbon\Carbon::parse($retur->tanggal)->format('d/m/Y') }}</td>
-                            <td>{{ $retur->pelanggan->nama ?? '-' }}</td>
-                            <td><code>{{ $retur->kode }}</code></td>
-                            <td>{{ $retur->uraian }}</td>
+                            <td>{{ $retur->date->format('d/m/Y') }}</td>
+                            <td>{{ $pihak->subLedger->nama ?? '-' }}</td>
+                            <td><code>{{ $retur->reference_number }}</code></td>
+                            <td>{{ $retur->description }}</td>
                             <td class="text-end fw-bold text-danger">
-                                Rp {{ number_format($retur->debit > 0 ? $retur->debit : $retur->kredit, 0, ',', '.') }}
+                                Rp {{ number_format($nominal, 0, ',', '.') }}
                             </td>
-                            <td>
-                                @if($retur->kredit > 0)
-                                    <span class="badge bg-warning text-dark">Tunai Kembali</span>
-                                @else
-                                    <span class="badge bg-info">Kurangi Piutang</span>
-                                @endif
+                            <td class="text-center">
+                                <span class="badge bg-info">Tercatat di Jurnal</span>
                             </td>
                         </tr>
-                    @empty
-                        <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada retur penjualan.</td></tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -51,8 +51,9 @@
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-header bg-success text-white fw-bold">
-        Retur Pengeluaran (Pembelian / Hutang)
+    <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+        <span>Retur Pembelian (Hutang / Kas)</span>
+        <a href="{{ route('retur.create-pembelian') }}" class="btn btn-light btn-sm">Tambah Retur Pembelian</a>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -62,34 +63,33 @@
                         <th>#</th>
                         <th>Tanggal</th>
                         <th>Kreditur</th>
-                        <th>Kode Hutang</th>
-                        <th>Uraian</th>
+                        <th>Referensi</th>
+                        <th>Keterangan</th>
                         <th>Nominal (Rp)</th>
-                        <th>Penanganan</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($returPengeluaran as $retur)
+                    @foreach ($returPengeluaran as $retur)
+                        @php
+                            $pihak = $retur->items->firstWhere('sub_ledger_type', 'App\Models\Pelanggan');
+                            // Nominal retur pembelian adalah nilai kredit pada akun persediaan
+                            $nominal = $retur->items->where('account.code', '1105')->sum('credit');
+                        @endphp
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ \Carbon\Carbon::parse($retur->tanggal)->format('d/m/Y') }}</td>
-                            <td>{{ $retur->pelanggan->nama ?? '-' }}</td>
-                            <td><code>{{ $retur->kode }}</code></td>
-                            <td>{{ $retur->uraian }}</td>
+                            <td>{{ $retur->date->format('d/m/Y') }}</td>
+                            <td>{{ $pihak->subLedger->nama ?? '-' }}</td>
+                            <td><code>{{ $retur->reference_number }}</code></td>
+                            <td>{{ $retur->description }}</td>
                             <td class="text-end fw-bold text-success">
-                                Rp {{ number_format($retur->debit > 0 ? $retur->debit : $retur->kredit, 0, ',', '.') }}
+                                Rp {{ number_format($nominal, 0, ',', '.') }}
                             </td>
-                            <td>
-                                @if($retur->uraian && Str::contains(strtolower($retur->uraian), 'tunai'))
-                                    <span class="badge bg-warning text-dark">Tunai Kembali</span>
-                                @else
-                                    <span class="badge bg-info">Kurangi Hutang</span>
-                                @endif
+                            <td class="text-center">
+                                <span class="badge bg-success">Tercatat di Jurnal</span>
                             </td>
                         </tr>
-                    @empty
-                        <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada retur pengeluaran.</td></tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>

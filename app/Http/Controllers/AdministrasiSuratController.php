@@ -3,48 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AgendaTelponRequest;
-use App\Http\Requests\PermintaanKasKecilRequest;
 use App\Models\AgendaJanjiTemu;
 use App\Models\AgendaPerjalanan;
 use App\Models\AgendaTelpon;
-use App\Models\KasKecil;
-use App\Models\KasKecilDetail;
-use App\Models\KasKecilFormulir;
 use App\Services\AgendaJanjiTemuService;
 use App\Services\AgendaSuratPerjalananService;
 use App\Services\AgendaTelponService;
-use App\Services\PermintaanKasKecilService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class AdministrasiSuratController extends Controller
 {
-    private function cleanRupiah($value)
-    {
-        return (int) preg_replace("/\D/", '', $value);
-    }
-
     public function index()
     {
         return view('administrasi.surat.index');
-    }
-
-    public function indexKasKecil()
-    {
-        $kasKecil = KasKecil::where('user_id', auth()->id())->get();
-        $saldoAkhir = KasKecil::where('user_id', auth()->id())
-            ->latest()
-            ->value('saldo_akhir');
-
-        return view(
-            'administrasi.surat.kas-kecil.index',
-            compact('kasKecil', 'saldoAkhir'),
-        );
     }
 
     public function indexAgendaTelpon()
@@ -97,11 +71,6 @@ class AdministrasiSuratController extends Controller
         );
     }
 
-    public function createKasKecil()
-    {
-        return view('administrasi.surat.kas-kecil.create');
-    }
-
     public function createAgendaTelpon()
     {
         return view('administrasi.surat.agenda-telpon.create');
@@ -146,22 +115,6 @@ class AdministrasiSuratController extends Controller
         );
     }
 
-    public function pdfPermintaanKasKecil($id)
-    {
-        $data = KasKecil::with(
-            'kasKecilDetail',
-            'kasKecilFormulir',
-        )->findOrFail($id);
-        $userProfile = Auth::user();
-
-        $pdf = Pdf::loadView('administrasi.surat.kas-kecil.template-pdf', [
-            'data' => $data,
-            'userProfile' => $userProfile,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download('permintaan-kas-kecil-' . $data->id . '.pdf');
-    }
-
     public function pdfJanjiTemu($id)
     {
         $agendaJanjiTemuService = app(AgendaJanjiTemuService::class);
@@ -174,33 +127,6 @@ class AdministrasiSuratController extends Controller
         $agendaPerjalananService = app(AgendaSuratPerjalananService::class);
 
         return $agendaPerjalananService->generatePdf($id);
-    }
-
-    public function storeKasKecil(
-        PermintaanKasKecilRequest $request,
-        PermintaanKasKecilService $service,
-    ) {
-        try {
-            $service->store($request);
-
-            return back()->with(
-                'success',
-                'Permintaan kas kecil berhasil disimpan.',
-            );
-        } catch (\Exception $e) {
-            Log::error('Gagal simpan kas kecil: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
-                'request' => $request->except(['_token', 'ttd_*']),
-            ]);
-
-            return back()
-                ->withInput()
-                ->with(
-                    'error',
-                    $e->getMessage() ?:
-                    'Terjadi kesalahan saat menyimpan data.',
-                );
-        }
     }
 
     public function storeAgendaTelpon(AgendaTelponRequest $request)
@@ -218,7 +144,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menyimpan pada Agenda telepon. Error: ' .
+                'Gagal menyimpan pada Agenda telepon. Error: '.
                 $e->getMessage(),
             );
 
@@ -243,7 +169,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menyimpan pada Agenda Perjalanan. Error: ' .
+                'Gagal menyimpan pada Agenda Perjalanan. Error: '.
                 $e->getMessage(),
             );
 
@@ -270,7 +196,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menyimpan pada Agenda Janji Temu. Error: ' .
+                'Gagal menyimpan pada Agenda Janji Temu. Error: '.
                 $e->getMessage(),
             );
 
@@ -316,69 +242,10 @@ class AdministrasiSuratController extends Controller
             ->where('id', $id)
             ->first();
         // Ubah status is_done ke true
-        $agenda->is_done = !$agenda->is_done;
+        $agenda->is_done = ! $agenda->is_done;
         $agenda->save();
 
         return back()->with('success', 'Agenda berhasil ditandai!');
-    }
-
-    public function destroyKasKecil($kasId)
-    {
-        DB::beginTransaction();
-        try {
-            // Ambil kas kecil
-            $kas = KasKecil::where('id', $kasId)
-                ->where('user_id', auth()->id())
-                ->firstOrFail();
-
-            // Hapus detail kas kecil
-            KasKecilDetail::where('kas_kecil_id', $kasId)->delete();
-
-            // Ambil formulirnya
-            $formulir = KasKecilFormulir::where(
-                'kas_kecil_id',
-                $kasId,
-            )->first();
-
-            // Hapus file ttd jika ada
-            if ($formulir) {
-                if ($formulir->ttd_nama_pemohon) {
-                    Storage::disk('public')->delete(
-                        $formulir->ttd_nama_pemohon,
-                    );
-                }
-                if ($formulir->ttd_atasan_langsung) {
-                    Storage::disk('public')->delete(
-                        $formulir->ttd_atasan_langsung,
-                    );
-                }
-                if ($formulir->ttd_bagian_keuangan) {
-                    Storage::disk('public')->delete(
-                        $formulir->ttd_bagian_keuangan,
-                    );
-                }
-
-                // Hapus record formulir
-                $formulir->delete();
-            }
-
-            // Terakhir, hapus kas kecil header
-            $kas->delete();
-
-            DB::commit();
-
-            return redirect()
-                ->back()
-                ->with('success', 'Data kas kecil berhasil dihapus.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            Log::error('Delete kas kecil error: ' . $e->getMessage());
-
-            return redirect()
-                ->back()
-                ->with('error', 'Gagal menghapus data kas kecil.');
-        }
     }
 
     public function destroyAgendaTelpon($id)
@@ -398,7 +265,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada Agenda telepon. Error: ' .
+                'Gagal menghapus pada Agenda telepon. Error: '.
                 $e->getMessage(),
             );
 
@@ -427,7 +294,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada Agenda perjalanan. Error: ' .
+                'Gagal menghapus pada Agenda perjalanan. Error: '.
                 $e->getMessage(),
             );
 
@@ -456,7 +323,7 @@ class AdministrasiSuratController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada Agenda janji temu. Error: ' .
+                'Gagal menghapus pada Agenda janji temu. Error: '.
                 $e->getMessage(),
             );
 

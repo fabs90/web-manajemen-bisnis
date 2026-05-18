@@ -249,7 +249,7 @@
                 @endif
                 <br>
                 <strong
-                    style="text-decoration: underline;">({{ $faktur->nama_bagian_penjualan ?? '_________' }})</strong><br>
+                    style="text-decoration: underline;">({{ $profileUser->name ?? '_________' }})</strong><br>
                 Bagian Penjualan
             </td>
         </tr>

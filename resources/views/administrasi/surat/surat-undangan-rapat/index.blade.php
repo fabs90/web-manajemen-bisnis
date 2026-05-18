@@ -69,6 +69,14 @@
                                             <i class="bi bi-file-pdf"></i>
                                         </a>
 
+                                        @if ($item->file_lampiran)
+                                            <a href="{{ asset('storage/' . $item->file_lampiran) }}" target="_blank"
+                                                class="btn btn-sm btn-secondary text-white" title="Lihat Lampiran">
+                                                <i class="bi bi-paperclip"></i>
+                                            </a>
+                                        @endif
+
+
                                         <form action="{{ route('administrasi.surat-undangan-rapat.destroy', $item->id) }}"
                                             method="POST" class="d-inline delete-form">
 

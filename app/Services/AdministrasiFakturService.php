@@ -18,7 +18,6 @@ class AdministrasiFakturService
                 "spb_id" => $data["spb_id"],
                 "kode_faktur" => $data["kode_faktur"],
                 "tanggal_faktur" => $data["tanggal_faktur"],
-                "nama_bagian_penjualan" => $data['bagian_penjualan'],
                 "user_id" => auth()->user()->id,
             ]);
             DB::commit();

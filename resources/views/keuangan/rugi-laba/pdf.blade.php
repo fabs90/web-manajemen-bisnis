@@ -18,9 +18,14 @@
     <!-- KOP SURAT -->
     <div style="text-align:center; margin-bottom:10px;">
         @if(isset($userProfile->logo_perusahaan) && $userProfile->logo_perusahaan)
-            <img src="{{ public_path('storage/' . $userProfile->logo) }}"
-                 alt="Logo"
-                 style="height:60px; margin-bottom:5px;">
+            @php
+                $logoPath = public_path('storage/' . $userProfile->logo_perusahaan);
+            @endphp
+            @if(file_exists($logoPath))
+                <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoPath)) }}"
+                     alt="Logo"
+                     style="height:60px; margin-bottom:5px;">
+            @endif
         @endif
 
         <div style="font-size:15px; font-weight:bold; text-transform:uppercase;">

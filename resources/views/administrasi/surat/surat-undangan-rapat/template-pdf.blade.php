@@ -100,11 +100,15 @@
             <td width="15%">
                 @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
                     @php
-                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
+                        $logoPath = storage_path('app/public/' . $profileUser->logo_perusahaan);
                     @endphp
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                    @if (file_exists($logoPath))
+                        @php
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                            $logoMime = mime_content_type($logoPath);
+                        @endphp
+                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                    @endif
                 @endif
             </td>
             <td width="70%" class="text-center">
@@ -213,11 +217,12 @@
         <tr>
             <td width="25%" class="text-right">
                 Hormat kami,<br>
+                Pemimpin Perusahaan,<br>
 
-                {{-- Validasi TTD --}}
-                @if ($agendaJanjiTemu->ttd)
+                {{-- Validasi TTD Pemimpin --}}
+                @if ($profileUser->ttd_pemimpin)
                     @php
-                        $ttdPath = public_path('storage/' . $agendaJanjiTemu->ttd);
+                        $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
                         if (file_exists($ttdPath)) {
                             $ttdBase64 = base64_encode(file_get_contents($ttdPath));
                             $ttdMime = mime_content_type($ttdPath);
@@ -233,8 +238,7 @@
                 @endif
 
                 <br>
-                <strong><u>{{ $agendaJanjiTemu->nama_penandatangan }}</u></strong><br>
-                {{ $agendaJanjiTemu->jabatan_penandatangan }}
+                <strong><u>{{ $profileUser->name }}</u></strong>
             </td>
         </tr>
     </table>

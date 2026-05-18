@@ -52,21 +52,6 @@
                   </a>
               </div>
 
-        {{-- Alert sukses --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Sukses!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        {{-- Alert error --}}
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Gagal!</strong> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
         <form action="{{ route('keuangan.kasir.store') }}" method="POST">
             @csrf
 
@@ -109,6 +94,25 @@
                 {{-- 🔹 Area Pembayaran --}}
                 <div class="col-lg-5">
 
+                    <label><strong>Jenis Pembayaran</strong></label>
+                    <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="form-select form-select-lg mb-3" required>
+                        <option value="" disabled selected>-- Pilih Jenis Pembayaran --</option>
+                        @foreach ($jenisPembayaran as $jp)
+                            <option value="{{ $jp->id }}" data-nama="{{ strtolower($jp->nama) }}">{{ $jp->nama }}</option>
+                        @endforeach
+                    </select>
+
+                    <div id="qris-container" class="mt-2 mb-3 text-center d-none">
+                        <label class="fw-bold d-block mb-1">Pindai QRIS untuk Pembayaran</label>
+                        @if(auth()->user()->qris_image)
+                            <img src="{{ asset('storage/' . auth()->user()->qris_image) }}" alt="QRIS" class="img-fluid border p-2" style="max-height: 250px;">
+                        @else
+                            <div class="alert alert-warning py-2 small">
+                                <i class="fas fa-exclamation-circle me-1"></i> QRIS belum diatur. <a href="{{ route('qris.index') }}" class="fw-bold">Atur di sini</a>.
+                            </div>
+                        @endif
+                    </div>
+
                     <label><strong>Total Bayar</strong></label>
                     <div class="total-box mb-3" id="grand-total">Rp 0</div>
                     <input type="hidden" name="grand_total" id="grand-total-value">
@@ -136,6 +140,30 @@
 @push('script')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Sukses!',
+            text: "{{ session('success') }}",
+            toast: true,
+            position: 'top-end',
+            timer: 2800,
+            showConfirmButton: false
+        });
+    @endif
+
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: "{{ session('error') }}",
+            toast: true,
+            position: 'top-end',
+            timer: 3500,
+            showConfirmButton: false
+        });
+    @endif
 
     // Init AutoNumeric untuk semua input rupiah
     AutoNumeric.multiple('.rupiah', {
@@ -212,6 +240,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Hitung ulang bila bayar diketik
     document.getElementById('bayar').addEventListener('input', hitungKembalian);
+
+    // Toggle QRIS Display
+    const selectJenisPembayaran = document.getElementById('jenis_pembayaran_id');
+    const qrisContainer = document.getElementById('qris-container');
+
+    selectJenisPembayaran.addEventListener('change', function () {
+        const selectedOption = this.selectedOptions[0];
+        const namaPembayaran = selectedOption.dataset.nama || '';
+
+        if (namaPembayaran === 'qris') {
+            qrisContainer.classList.remove('d-none');
+        } else {
+            qrisContainer.classList.add('d-none');
+        }
+    });
 
     function hitungTotal() {
         let total = 0;

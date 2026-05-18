@@ -4,20 +4,6 @@
 
 @section('section-row')
     <div class="container mt-4">
-        {{-- Alert sukses --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                <strong>Sukses!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        {{-- Alert Error --}}
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
-                <strong>Gagal!</strong> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <strong>DATA NOTULEN RAPAT</strong>
@@ -103,6 +89,22 @@
 @push('script')
     <script>
         $(document).ready(function() {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: "{{ session('success') }}",
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: "{{ session('error') }}",
+                });
+            @endif
+
             $('#agenda-rapat-table').DataTable({
                 responsive: true,
                 pageLength: 10,

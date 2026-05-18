@@ -1,14 +1,15 @@
 <?php
 
 use App\Http\Controllers\AdministrasiSuratController;
-use App\Http\Controllers\AsetHutangController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
 use App\Http\Controllers\Faktur\AdministrasiFakturController;
 use App\Http\Controllers\KasirController;
+use App\Http\Controllers\KasKecilController;
 use App\Http\Controllers\ManajemenKasKecilController;
 use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\NeracaAkhirController;
+use App\Http\Controllers\NeracaAwalController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PendapatanController;
 use App\Http\Controllers\PengeluaranController;
@@ -41,6 +42,21 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified'])->group(function () {
         );
         Route::put('/update', [ProfileController::class, 'update'])->name(
             'profile.update',
+        );
+    });
+
+    // =============================
+    // 🏦 GROUP: QRIS
+    // =============================
+    Route::prefix('dashboard/qris')->group(function () {
+        Route::get('/', [\App\Http\Controllers\QrisController::class, 'index'])->name(
+            'qris.index',
+        );
+        Route::post('/update', [\App\Http\Controllers\QrisController::class, 'update'])->name(
+            'qris.update',
+        );
+        Route::delete('/', [\App\Http\Controllers\QrisController::class, 'destroy'])->name(
+            'qris.destroy',
         );
     });
 });
@@ -167,27 +183,27 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
     // 💵 GROUP: LAPORAN-KEUANGAN
     // =============================
     Route::prefix('dashboard/laporan-keuangan')->group(function () {
-        // Aset & Hutang
+        // Neraca Awal
         Route::get('/neraca-awal', [
-            AsetHutangController::class,
+            NeracaAwalController::class,
             'index',
-        ])->name('laporan-keuangan.aset-hutang.index');
+        ])->name('laporan-keuangan.neraca-awal.index');
         Route::get('/neraca-awal/create', [
-            AsetHutangController::class,
+            NeracaAwalController::class,
             'create',
-        ])->name('laporan-keuangan.aset-hutang.create');
+        ])->name('laporan-keuangan.neraca-awal.create');
         Route::post('/neraca-awal', [
-            AsetHutangController::class,
+            NeracaAwalController::class,
             'store',
-        ])->name('laporan-keuangan.aset-hutang.store');
+        ])->name('laporan-keuangan.neraca-awal.store');
         Route::get('/neraca-awal/{id}', [
-            AsetHutangController::class,
+            NeracaAwalController::class,
             'show',
-        ])->name('laporan-keuangan.aset-hutang.show');
+        ])->name('laporan-keuangan.neraca-awal.show');
         Route::delete('/neraca-awal/{id}', [
-            AsetHutangController::class,
+            NeracaAwalController::class,
             'destroy',
-        ])->name('laporan-keuangan.aset-hutang.destroy');
+        ])->name('laporan-keuangan.neraca-awal.destroy');
 
         // Rugi Laba
         Route::get('/rugi-laba', [RugiLabaController::class, 'index'])->name(
@@ -239,9 +255,6 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
     Route::prefix('dashboard/debitur-kreditur')->group(function () {
         Route::get('/list', [DebiturController::class, 'list'])->name(
             'debitur-kreditur.list',
-        );
-        Route::get('/create', [DebiturController::class, 'create'])->name(
-            'debitur-kreditur.create',
         );
         Route::post('/', [DebiturController::class, 'store'])->name(
             'debitur-kreditur.store',
@@ -362,28 +375,28 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
         // Surat Kas Kecil
         Route::get('/kas-kecil/', [
-            AdministrasiSuratController::class,
-            'indexKasKecil',
+            KasKecilController::class,
+            'index',
         ])->name('administrasi.kas-kecil.index');
 
         Route::get('/kas-kecil/create', [
-            AdministrasiSuratController::class,
-            'createKasKecil',
+            KasKecilController::class,
+            'create',
         ])->name('administrasi.kas-kecil.create');
 
         Route::get('/kas-kecil/{id}', [
-            AdministrasiSuratController::class,
-            'pdfPermintaanKasKecil',
+            KasKecilController::class,
+            'generatePdf',
         ])->name('administrasi.kas-kecil.generatePdf');
 
         Route::post('/kas-kecil/', [
-            AdministrasiSuratController::class,
-            'storeKasKecil',
+            KasKecilController::class,
+            'store',
         ])->name('administrasi.kas-kecil.store');
 
         Route::delete('/kas-kecil/{kasId}', [
-            AdministrasiSuratController::class,
-            'destroyKasKecil',
+            KasKecilController::class,
+            'destroy',
         ])->name('administrasi.kas-kecil.destroy');
 
         // Surat Agenda Telpon
@@ -572,10 +585,10 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'index',
         ])->name('administrasi.spp.index');
 
-        Route::get('/surat-pesanan-pembelian/supplier', [
+        Route::get('/surat-pesanan-pembelian/create', [
             SuratPesananPembelianController::class,
-            'createKeluar',
-        ])->name('administrasi.spp.createKeluar');
+            'create',
+        ])->name('administrasi.spp.create');
 
         Route::post('/surat-pesanan-pembelian', [
             SuratPesananPembelianController::class,
@@ -634,19 +647,14 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'index',
         ])->name('administrasi.spb.index');
 
-        Route::get('/surat-pengiriman-barang/supplier', [
+        Route::get('/surat-pengiriman-barang/create', [
             SuratPengirimanBarangController::class,
-            'createTransaksiKeluar',
-        ])->name('administrasi.spb.createTransaksiKeluar');
+            'create',
+        ])->name('administrasi.spb.create');
 
-        Route::get('/surat-pengiriman-barang/pelanggan', [
+        Route::get('/surat-pengiriman-barang/{id}/edit', [
             SuratPengirimanBarangController::class,
-            'createTransaksiMasuk',
-        ])->name('administrasi.spb.createTransaksiMasuk');
-
-        Route::get('/surat-pengiriman-barang/{id}/pelanggan', [
-            SuratPengirimanBarangController::class,
-            'editTransaksiMasuk',
+            'edit',
         ])->name('administrasi.spb.edit');
 
         Route::get('/surat-pengiriman-barang/{id}/generate', [

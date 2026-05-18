@@ -134,9 +134,23 @@
     <table class="info-table">
         <tr>
             <td width="60%">
-                <strong>Nomor:</strong> {{ $surat->nomor_surat }}<br>
-                <strong>Lampiran:</strong> {{ $surat->lampiran ?? '-' }}<br>
-                <strong>Perihal:</strong> {{ $surat->perihal }}
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td width="70"><strong>Nomor</strong></td>
+                        <td width="10"><strong>:</strong></td>
+                        <td>{{ $surat->nomor_surat }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lampiran</strong></td>
+                        <td><strong>:</strong></td>
+                        <td>{{ $surat->lampiran ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Perihal</strong></td>
+                        <td><strong>:</strong></td>
+                        <td>{{ $surat->perihal }}</td>
+                    </tr>
+                </table>
             </td>
             <td width="40%" class="text-right">
                 {{ \Carbon\Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y') }}
@@ -164,25 +178,21 @@
         <tr>
             <td width="25%" class="text-right">
                 Hormat kami,<br>
-
-                {{-- Validasi TTD --}}
-                @if ($surat->ttd)
-                    @php
-                        $ttdPath = public_path('storage/' . $surat->ttd);
-                        if (file_exists($ttdPath)) {
+                @php
+                    $ttdBase64 = null;
+                    if (isset($user->ttd_pemimpin) && $user->ttd_pemimpin) {
+                        $ttdPath = public_path('storage/' . $user->ttd_pemimpin);
+                        if (file_exists($ttdPath) && is_file($ttdPath)) {
                             $ttdBase64 = base64_encode(file_get_contents($ttdPath));
                             $ttdMime = mime_content_type($ttdPath);
                         }
-                    @endphp
-                    @if (isset($ttdBase64))
-                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
-                    @else
-                        <br><br><br><br>
-                    @endif
+                    }
+                @endphp
+                @if ($ttdBase64)
+                    <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:70px;">
                 @else
                     <br><br><br><br>
                 @endif
-
                 <br>
                 <strong><u>{{ $surat->nama_pengirim }}</u></strong><br>
                 {{ $surat->jabatan_pengirim }}

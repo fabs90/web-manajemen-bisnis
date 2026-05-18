@@ -44,11 +44,11 @@
                 <li>
                     Setelah profil lengkap, tambahkan
                     <a href="{{ url('/barang/create') }}"><strong>Data Barang</strong></a> dan
-                    <a href="{{ url('/debitur-kreditur/create') }}"><strong>Data Debitur/Kreditur</strong></a>.
+                    <a href="{{ url('/dashboard/debitur-kreditur/list') }}"><strong>Data Debitur/Kreditur</strong></a>.
                 </li>
                 <li>
                     Masukkan saldo awal pada menu
-                    <a href="{{ url('/laporan-keuangan/aset-hutang/create') }}"><strong>Aset Hutang</strong></a>.
+                    <a href="{{ url('/dashboard/laporan-keuangan/neraca-awal/create') }}"><strong>Neraca Awal</strong></a>.
                 </li>
                 <li>
                     Catat transaksi pendapatan penjualan melalui menu

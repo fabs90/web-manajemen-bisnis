@@ -18,15 +18,13 @@ use Throwable;
 
 final class SuratKeluarController extends Controller
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(protected FileUploadService $fileUploadService) {}
 
     public function index()
     {
         $suratKeluar = AgendaSuratKeluar::with('emailLogs')
             ->where('user_id', auth()->id())
-            ->select('id', 'nomor_surat', 'tanggal_surat', 'nama_penerima', 'perihal', 'tembusan', 'file_lampiran')
+            ->select('id', 'nomor_surat', 'tanggal_surat', 'nama_penerima', 'email_penerima', 'perihal', 'tembusan', 'file_lampiran')
             ->get();
 
         return view(
@@ -89,7 +87,7 @@ final class SuratKeluarController extends Controller
             ]);
 
             // queue to send email bruh
-            dispatch(new SendSuratKeluarJob($surat, $user));
+            dispatch(new SendSuratKeluarJob($surat, $user))->afterCommit();
 
             SuratKeluarEmailLog::create([
                 'surat_keluar_id' => $surat->id,
@@ -104,7 +102,7 @@ final class SuratKeluarController extends Controller
                 ->with('success', 'Surat keluar berhasil dikirim ke penerima.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Surat keluar error: ' . $e->getMessage());
+            Log::error('Surat keluar error: '.$e->getMessage());
 
             return back()->with(
                 'error',
@@ -142,7 +140,7 @@ final class SuratKeluarController extends Controller
                 ->with('success', 'Surat keluar berhasil dihapus.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus Surat Keluar: ' . $e->getMessage());
+            Log::error('Gagal menghapus Surat Keluar: '.$e->getMessage());
 
             return back()->with(
                 'error',
@@ -154,10 +152,10 @@ final class SuratKeluarController extends Controller
     public function downloadPdf(int $id)
     {
         $suratKeluar = AgendaSuratKeluar::find($id);
-        if (!$suratKeluar) {
+        if (! $suratKeluar) {
             abort(404, 'Data surat keluar tidak ditemukan.');
         }
-        $fileName = 'surat-keluar-' . Str::slug($suratKeluar->nomor_surat ?? 'dokumen') . '.pdf';
+        $fileName = 'surat-keluar-'.Str::slug($suratKeluar->nomor_surat ?? 'dokumen').'.pdf';
         $pdf = Pdf::loadView('administrasi.surat.surat-keluar.template.surat-keluar-pdf', [
             'surat' => $suratKeluar,
             'user' => auth()->user(),

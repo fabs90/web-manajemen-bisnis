@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-class AsetHutangService
+class QrisService
 {
     /**
      * Create a new class instance.
@@ -10,10 +10,5 @@ class AsetHutangService
     public function __construct()
     {
         //
-    }
-
-    public function store()
-    {
-
     }
 }

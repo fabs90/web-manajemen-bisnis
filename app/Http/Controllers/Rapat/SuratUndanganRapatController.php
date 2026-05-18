@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Rapat;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Log};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuratUndanganRapatRequest;
 use App\Models\SuratUndanganRapat;
 use App\Services\SuratUndanganRapatService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SuratUndanganRapatController extends Controller
@@ -37,7 +37,7 @@ class SuratUndanganRapatController extends Controller
         $data = $request->validated();
         $agendaService = app(SuratUndanganRapatService::class);
         $surat = $agendaService->store($data);
-        if (!$surat) {
+        if (! $surat) {
             return back()
                 ->with('error', 'Terjadi kesalahan saat menyimpan data')
                 ->withInput();
@@ -66,8 +66,8 @@ class SuratUndanganRapatController extends Controller
         $data = $request->validated();
         $agendaService = app(SuratUndanganRapatService::class);
         $surat = $agendaService->update($id, $data);
-        
-        if (!$surat) {
+
+        if (! $surat) {
             return back()
                 ->with('error', 'Terjadi kesalahan saat memperbarui data')
                 ->withInput();
@@ -106,7 +106,7 @@ class SuratUndanganRapatController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                'Gagal menghapus pada surat undangan rapat. Error: ' .
+                'Gagal menghapus pada surat undangan rapat. Error: '.
                 $e->getMessage(),
             );
 

@@ -38,20 +38,22 @@
                         @foreach ($dataPiutang as $item)
                             @php
                                 $pelanggan = $item->pelanggan;
-                                $totalPiutang = max($item->saldo ?? 0, 0);
+                                $totalPiutang = max($item->total_piutang ?? 0, 0);
                             @endphp
 
-                            <tr>
-                                <td class="text-center">{{ $loop->iteration }}</td>
-                                <td>{{ $pelanggan->nama ?? '-' }}</td>
-                                <td>Rp {{ number_format($totalPiutang, 0, ',', '.') }}</td>
-                                <td class="text-center">
-                                    <a href="{{ route('administrasi.pernyataan-piutang.generatePdf', $pelanggan->id) }}"
-                                        class="btn btn-sm btn-success">
-                                        <i class="fa fa-print"></i> Cetak Surat
-                                    </a>
-                                </td>
-                            </tr>
+                            @if ($pelanggan)
+                                <tr>
+                                    <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td>{{ $pelanggan->nama ?? '-' }}</td>
+                                    <td>Rp {{ number_format($totalPiutang, 0, ',', '.') }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ route('administrasi.pernyataan-piutang.generatePdf', $pelanggan->id) }}"
+                                            class="btn btn-sm btn-success">
+                                            <i class="fa fa-print"></i> Cetak Surat
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>

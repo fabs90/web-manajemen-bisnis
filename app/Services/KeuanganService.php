@@ -2,15 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\{
-    BukuBesarPiutang,
-    BukuBesarHutang,
-    BukuBesarPendapatan,
-    BukuBesarPengeluaran,
-    KartuGudang,
-    NeracaAwal,
-};
-use Illuminate\Support\Facades\{Auth, DB};
+use App\Models\Account;
+use App\Models\JournalItem;
+use Illuminate\Support\Facades\Auth;
 
 class KeuanganService
 {
@@ -19,179 +13,226 @@ class KeuanganService
     public function hitungLabaRugi($startDate = null, $endDate = null)
     {
         $userId = Auth::id();
-        $startDate = $startDate ?? now()->startOfYear()->format("Y-m-d");
-        $endDate = $endDate ?? now()->endOfYear()->format("Y-m-d");
+        $startDate = $startDate ?? now()->startOfYear()->format('Y-m-d');
+        $endDate = $endDate ?? now()->endOfYear()->format('Y-m-d');
         $dateRange = [$startDate, $endDate];
 
         // === GATHER METRICS ===
         $sales = $this->getSalesMetrics($userId, $dateRange);
-        $purchases = $this->getPurchaseMetrics($userId, $dateRange);
-        $inventory = $this->getInventoryMetrics($userId, $endDate);
+        $inventory = $this->getInventoryMetrics($userId, $dateRange);
         $operating = $this->getOperatingMetrics($userId, $dateRange);
 
         // === CALCULATE SUMMARY ===
         $penjualanBersih =
-            $sales["totalPenjualan"] -
-            $sales["returPenjualan"] +
-            $sales["potonganPenjualan"];
+            $sales['totalPenjualan'] -
+            $sales['returPenjualan'] -
+            $sales['potonganPenjualan'];
 
-        $pembelianBersih =
-            $purchases["pembelianKredit"] +
-            $purchases["pembelianTunai"] -
-            $purchases["returPembelian"] -
-            $purchases["potonganPembelian"];
+        // In perpetual inventory system:
+        // HPP is recorded directly.
+        $hpp = $this->getHppTotal($userId, $dateRange);
 
-        $barangTersedia = $inventory["persediaanAwal"] + $pembelianBersih;
-        $hpp = $barangTersedia - $inventory["persediaanAkhir"];
+        // Purchases (for report detail)
+        // Purchases = Ending Inventory - Beginning Inventory + HPP
+        $pembelianBersih = $inventory['persediaanAkhir'] - $inventory['persediaanAwal'] + $hpp;
+
+        // Split into components for report consistency if possible
+        $pembelianKredit = $pembelianBersih;
+        $pembelianTunai = 0;
+        $returPembelian = 0;
+        $potonganPembelian = 0;
+
         $labaKotor = $penjualanBersih - $hpp;
 
-        $labaOperasional = $labaKotor - $operating["biayaOperasional"];
+        $labaOperasional = $labaKotor - $operating['biayaOperasional'];
 
         $labaSebelumPajak =
             $labaOperasional +
-            $operating["pendapatanLain"] -
-            $operating["biayaAdministrasiBank"];
+            $operating['pendapatanLain'] -
+            $operating['biayaAdministrasiBank'];
 
-        $pajak = $labaSebelumPajak * self::TAX_RATE;
+        $pajak = $labaSebelumPajak > 0 ? $labaSebelumPajak * self::TAX_RATE : 0;
         $labaSetelahPajak = $labaSebelumPajak - $pajak;
 
-        return array_merge($sales, $purchases, $inventory, $operating, [
-            "penjualanBersih" => $penjualanBersih,
-            "pembelianBersih" => $pembelianBersih,
-            "hpp" => $hpp,
-            "labaKotor" => $labaKotor,
-            "labaOperasional" => $labaOperasional,
-            "labaSebelumPajak" => $labaSebelumPajak,
-            "pajak" => $pajak,
-            "labaSetelahPajak" => $labaSetelahPajak,
+        return array_merge($sales, $inventory, $operating, [
+            'penjualanBersih' => $penjualanBersih,
+            'pembelianKredit' => $pembelianKredit,
+            'pembelianTunai' => $pembelianTunai,
+            'returPembelian' => $returPembelian,
+            'potonganPembelian' => $potonganPembelian,
+            'pembelianBersih' => $pembelianBersih,
+            'hpp' => $hpp,
+            'labaKotor' => $labaKotor,
+            'labaOperasional' => $labaOperasional,
+            'labaSebelumPajak' => $labaSebelumPajak,
+            'pajak' => $pajak,
+            'labaSetelahPajak' => $labaSetelahPajak,
         ]);
     }
 
     private function getSalesMetrics(int $userId, array $dateRange): array
     {
-        $penjualanKredit = BukuBesarPiutang::where("user_id", $userId)
-            ->whereBetween("tanggal", $dateRange)
-            ->sum("debit");
+        // Revenue accounts are category 'revenue'
+        $revenueAccounts = Account::where('user_id', $userId)->where('category', 'revenue')->pluck('id');
 
-        $penjualanTunai = BukuBesarPendapatan::where("user_id", $userId)
-            ->whereBetween("tanggal", $dateRange)
-            ->sum("penjualan_tunai");
-
-        $bungaPenjualan =
-            BukuBesarPendapatan::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->sum("bunga_bank") ?? 0;
-
-        $totalPenjualan = $penjualanKredit + $penjualanTunai + $bungaPenjualan;
-
-        $returPenjualan = BukuBesarPiutang::where("user_id", $userId)
-            ->whereBetween("tanggal", $dateRange)
-            ->where(function ($q) {
-                $q->where("uraian", "like", "%Retur%")->orWhere(
-                    "uraian",
-                    "like",
-                    "%memo%",
-                );
+        $items = JournalItem::where('user_id', $userId)
+            ->whereIn('account_id', $revenueAccounts)
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange);
             })
-            ->sum("kredit");
+            ->get();
 
-        $potonganPenjualan =
-            BukuBesarPendapatan::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->sum("potongan_pembelian") ?? 0;
+        // Normal balance for revenue is Credit.
+        // totalPenjualan = sum of credit
+        $totalPenjualan = $items->sum('credit');
+
+        // returPenjualan = sum of debit
+        $returPenjualan = $items->sum('debit');
+
+        $potonganPenjualan = 0;
+        $penjualanKredit = $totalPenjualan; // For display
+        $penjualanTunai = 0;
+        $bungaPenjualan = 0;
 
         return compact(
-            "penjualanKredit",
-            "penjualanTunai",
-            "bungaPenjualan",
-            "totalPenjualan",
-            "returPenjualan",
-            "potonganPenjualan",
+            'penjualanKredit',
+            'penjualanTunai',
+            'bungaPenjualan',
+            'totalPenjualan',
+            'returPenjualan',
+            'potonganPenjualan',
         );
     }
 
-    private function getPurchaseMetrics(int $userId, array $dateRange): array
+    private function getInventoryMetrics(int $userId, array $dateRange): array
     {
-        $pembelianKredit =
-            BukuBesarHutang::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->where("uraian", "not like", "%saldo awal%")
-                ->sum("kredit") ?? 0;
+        $startDate = $dateRange[0];
+        $endDate = $dateRange[1];
 
-        $pembelianTunai =
-            BukuBesarPengeluaran::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->sum("jumlah_pembelian_tunai") ?? 0;
+        $persediaanAwal = $this->getAccountBalance($userId, '1105', date('Y-m-d', strtotime($startDate.' -1 day')));
+        $persediaanAkhir = $this->getAccountBalance($userId, '1105', $endDate);
 
-        $returPembelian = BukuBesarHutang::where("user_id", $userId)
-            ->whereBetween("tanggal", $dateRange)
-            ->where(function ($q) {
-                $q->where("uraian", "like", "%Retur%")->orWhere(
-                    "uraian",
-                    "like",
-                    "%memo%",
-                );
-            })
-            ->sum("debit");
-
-        $potonganPembelian =
-            BukuBesarPengeluaran::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->sum("potongan_pembelian") ?? 0;
-
-        return compact(
-            "pembelianKredit",
-            "pembelianTunai",
-            "returPembelian",
-            "potonganPembelian",
-        );
+        return compact('persediaanAwal', 'persediaanAkhir');
     }
 
-    private function getInventoryMetrics(int $userId, string $endDate): array
+    private function getHppTotal(int $userId, array $dateRange): float
     {
-        $persediaanAwal =
-            NeracaAwal::where("user_id", $userId)
-                ->where("created_at", "<=", $endDate)
-                ->value("total_persediaan") ?? 0;
+        $hppAccount = Account::where('user_id', $userId)->where('code', '5101')->first();
+        if (! $hppAccount) {
+            return 0;
+        }
 
-        $persediaanAkhir = KartuGudang::where("user_id", $userId)
-            ->whereIn("id", function ($query) use ($userId) {
-                $query
-                    ->select(DB::raw("MAX(id)"))
-                    ->from("kartu_gudang")
-                    ->where("user_id", $userId)
-                    ->groupBy("barang_id");
+        $items = JournalItem::where('user_id', $userId)
+            ->where('account_id', $hppAccount->id)
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange);
             })
-            ->with("barang:id,harga_beli_per_unit")
-            ->get()
-            ->sum(
-                fn($i) => ($i->saldo_persatuan ?? 0) *
-                ($i->barang->harga_beli_per_unit ?? 0),
-            );
+            ->get();
 
-        return compact("persediaanAwal", "persediaanAkhir");
+        // Normal balance is Debit
+        return $items->sum('debit') - $items->sum('credit');
     }
 
     private function getOperatingMetrics(int $userId, array $dateRange): array
     {
-        $biayaOperasional = BukuBesarPengeluaran::where("user_id", $userId)
-            ->whereBetween("tanggal", $dateRange)
-            ->sum("lain_lain");
+        // Expense accounts are category 'expense', but excluding HPP (5101)
+        $expenseAccounts = Account::where('user_id', $userId)
+            ->where('category', 'expense')
+            ->where('code', '!=', '5101')
+            ->pluck('id');
 
-        $pendapatanLain =
-            BukuBesarPendapatan::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->sum("lain_lain") ?? 0;
+        $items = JournalItem::where('user_id', $userId)
+            ->whereIn('account_id', $expenseAccounts)
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange);
+            })
+            ->get();
 
-        $biayaAdministrasiBank =
-            BukuBesarPengeluaran::where("user_id", $userId)
-                ->whereBetween("tanggal", $dateRange)
-                ->sum("admin_bank") ?? 0;
+        // Normal balance for expense is Debit
+        $biayaOperasional = $items->sum('debit') - $items->sum('credit');
+
+        $pendapatanLain = 0;
+        $biayaAdministrasiBank = 0; // If specific account exists, use it.
 
         return compact(
-            "biayaOperasional",
-            "pendapatanLain",
-            "biayaAdministrasiBank",
+            'biayaOperasional',
+            'pendapatanLain',
+            'biayaAdministrasiBank',
         );
+    }
+
+    public function hitungNeraca($date = null)
+    {
+        $userId = Auth::id();
+        $date = $date ?? now()->format('Y-m-d');
+
+        // === AKTIVA ===
+        $kas = $this->getAccountBalance($userId, '1101', $date);
+        $kasKecil = $this->getAccountBalance($userId, '1102', $date);
+        $bank = $this->getAccountBalance($userId, '1103', $date);
+        $totalKas = $kas + $kasKecil + $bank;
+
+        $saldoPiutang = $this->getAccountBalance($userId, '1104', $date);
+        $nilaiPersediaan = $this->getAccountBalance($userId, '1105', $date);
+
+        $tanah = $this->getAccountBalance($userId, '1203', $date);
+        $kendaraan = $this->getAccountBalance($userId, '1202', $date);
+        $peralatan = $this->getAccountBalance($userId, '1201', $date);
+
+        $totalAktiva = $totalKas + $saldoPiutang + $nilaiPersediaan + $tanah + $kendaraan + $peralatan;
+
+        // === PASIVA ===
+        $saldoHutang = $this->getAccountBalance($userId, '2101', $date);
+
+        // Modal & Retained Earnings
+        $modal = $this->getAccountBalance($userId, '3100', $date);
+        $labaDitahan = $this->getAccountBalance($userId, '3200', $date);
+
+        // Current period profit
+        $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date);
+        $pajak = $dataLabaRugi['pajak'];
+        $labaBersih = $dataLabaRugi['labaSetelahPajak'];
+
+        $totalPasiva = $saldoHutang + $pajak + $labaBersih + $modal + $labaDitahan;
+
+        return compact(
+            'totalKas',
+            'saldoPiutang',
+            'nilaiPersediaan',
+            'tanah',
+            'kendaraan',
+            'peralatan',
+            'totalAktiva',
+            'saldoHutang',
+            'pajak',
+            'labaBersih',
+            'modal',
+            'labaDitahan',
+            'totalPasiva'
+        );
+    }
+
+    private function getAccountBalance(int $userId, string $accountCode, string $date): float
+    {
+        $account = Account::where('user_id', $userId)->where('code', $accountCode)->first();
+        if (! $account) {
+            return 0;
+        }
+
+        $items = JournalItem::where('user_id', $userId)
+            ->where('account_id', $account->id)
+            ->whereHas('journalEntry', function ($q) use ($date) {
+                $q->where('date', '<=', $date);
+            })
+            ->get();
+
+        $debit = $items->sum('debit');
+        $credit = $items->sum('credit');
+
+        if ($account->normal_balance === 'debit') {
+            return (float) ($debit - $credit);
+        } else {
+            return (float) ($credit - $debit);
+        }
     }
 }

@@ -3,6 +3,64 @@
 @section('page-title', 'Dashboard | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Dashboard')
 
+@push('styles')
+    <style>
+        /* DataTables Dark Mode Fixes */
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_length select,
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter input {
+            background-color: #1b1b29;
+            color: #c2c2d9;
+            border-color: #435ebe;
+        }
+
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_info,
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate {
+            color: #c2c2d9 !important;
+        }
+
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: #c2c2d9 !important;
+            border: 1px solid transparent;
+        }
+
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: #435ebe !important;
+            border-color: #435ebe !important;
+            color: white !important;
+        }
+
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #25396f !important;
+            border-color: #435ebe !important;
+            color: white !important;
+        }
+
+        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: #607080 !important;
+        }
+
+        html[data-bs-theme="dark"] table.dataTable {
+            border-color: #343a40 !important;
+        }
+
+        html[data-bs-theme="dark"] table.dataTable thead th {
+            border-bottom: 2px solid #435ebe !important;
+            color: #e9ecef;
+        }
+
+        html[data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
+            --bs-table-accent-bg: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Grouping row contrast in dark mode */
+        html[data-bs-theme="dark"] .table-secondary.fw-bold {
+            background-color: #25396f !important;
+            color: #e9ecef !important;
+        }
+    </style>
+@endpush
+
 @section('section-row')
     <!-- Summary Cards -->
     <div class="row mb-4 g-4">
@@ -94,187 +152,272 @@
         </div>
     </div>
 
+    {{-- Transaksi Kas --}}
+    <div class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Buku Besar Kas</h5>
+            </div>
+            <div class="card-body">
+                <div>
+                    <table id="table-kas" class="table table-bordered table-striped mt-3">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Uraian</th>
+                                <th>Debit</th>
+                                <th>Kredit</th>
+                                <th>Sisa Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($detailKas as $kas)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($kas->created_at)->isoFormat('dddd, D MMMM YYYY') }}</td>
+                                    <td>{{ $kas->uraian }}</td>
+                                    <td>{{ number_format($kas->debit, 0, ',', '.') }}</td>
+                                    <td>{{ number_format($kas->kredit, 0, ',', '.') }}</td>
+                                    <td>{{ number_format($kas->saldo, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Chart Pendapatan vs Pengeluaran -->
     <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5>Chart Pendapatan vs Pengeluaran</h5>
-            <div>
-                <select id="filterPeriode" class="form-select form-select-sm w-auto d-inline-block">
-                    <option value="1">1 Bulan Terakhir</option>
-                    <option value="6" selected>6 Bulan Terakhir</option>
-                    <option value="12">1 Tahun Terakhir</option>
-                </select>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Chart Pendapatan vs Pengeluaran</h5>
+                <div>
+                    <select id="filterPeriode" class="form-select form-select-sm w-auto d-inline-block">
+                        <option value="1">1 Bulan Terakhir</option>
+                        <option value="6" selected>6 Bulan Terakhir</option>
+                        <option value="12">1 Tahun Terakhir</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="financeChart" height="200"></canvas>
             </div>
         </div>
-        <canvas id="financeChart" height="200"></canvas>
     </div>
 
-    <!-- Tabel Data Barang (seperti yang sudah ada) -->
+    <!-- Tabel Data Barang -->
     <div class="mb-4">
-        <h5>Data Barang dan Kartu Gudang Terbaru</h5>
-        <table class="table table-bordered table-striped mt-3">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama Barang</th>
-                    <th>Kode Barang</th>
-                    <th>Stok Per-unit (Terbaru)</th>
-                    <th>Stok Perkemasan (Terbaru)</th>
-                    <th>Tanggal Update</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($barangDenganKartuTerbaru as $index => $barang)
-                    @php
-                        $kartu = $barang->kartuGudang->first();
-                    @endphp
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $barang->nama }}</td>
-                        <td>{{ $barang->kode_barang }}</td>
-                        <td>{{ $kartu->saldo_persatuan ?? '-' }}</td>
-                        <td>{{ $kartu->saldo_perkemasan ?? '-' }}</td>
-                        <td>{{ $kartu->created_at ?? '-' }}</td>
-                        <td>
-                            @if (empty($kartu->saldo_perkemasan) || empty($barang->jumlah_min))
-                                <span class="badge bg-secondary">Data Belum Ada</span>
-                            @elseif ($kartu->saldo_perkemasan > $barang->jumlah_min)
-                                <span class="badge bg-success">Stok Cukup</span>
-                            @elseif ($kartu->saldo_perkemasan - $barang->jumlah_min == 2)
-                                <span class="badge bg-warning">Isi Stok!</span>
-                            @else
-                                <span class="badge bg-danger">Stok Kurang</span>
-                            @endif
-                        </td>
-
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center">Belum ada data barang atau kartu gudang.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="card">
+            <div class="card-header">
+                <h5>Data Barang dan Kartu Gudang Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="table-barang" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Barang</th>
+                                <th>Kode Barang</th>
+                                <th>Stok Per-unit (Terbaru)</th>
+                                <th>Stok Perkemasan (Terbaru)</th>
+                                <th>Tanggal Update</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($barangDenganKartuTerbaru as $index => $barang)
+                                @php
+                                    $kartu = $barang->kartuGudang->first();
+                                @endphp
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $barang->nama }}</td>
+                                    <td>{{ $barang->kode_barang }}</td>
+                                    <td>{{ $kartu->saldo_persatuan ?? '-' }}</td>
+                                    <td>{{ $kartu->saldo_perkemasan ?? '-' }}</td>
+                                    <td>{{ $kartu->created_at ?? '-' }}</td>
+                                    <td>
+                                        @if (empty($kartu->saldo_perkemasan) || empty($barang->jumlah_min))
+                                            <span class="badge bg-secondary">Data Belum Ada</span>
+                                        @elseif ($kartu->saldo_perkemasan > $barang->jumlah_min)
+                                            <span class="badge bg-success">Stok Cukup</span>
+                                        @elseif ($kartu->saldo_perkemasan - $barang->jumlah_min == 2)
+                                            <span class="badge bg-warning">Isi Stok!</span>
+                                        @else
+                                            <span class="badge bg-danger">Stok Kurang</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center">Belum ada data barang atau kartu gudang.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Transaksi Terbaru -->
     <div class="mb-4">
-        <h5>Transaksi Terbaru</h5>
-        <table class="table table-bordered table-striped mt-3">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Uraian</th>
-                    <th>Jumlah</th>
-                    <th>Tipe</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($transaksiTerbaru as $transaksi)
-                    <tr>
-                        <td>{{ $transaksi->tanggal }}</td>
-                        <td>{{ $transaksi->uraian }}</td>
-                        <td>Rp {{ number_format($transaksi->jumlah, 2, ',', '.') }}</td>
-                        <td>{{ $transaksi->tipe }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center">Belum ada transaksi.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="mb-4">
-        <h5 class="mt-5 mb-3">Semua Data Piutang Perusahaan</h5>
-        <div class="table-responsive">
-            <table class="table table-sm hutang-table">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Uraian</th>
-                        <th>Debit</th>
-                        <th>Kredit</th>
-                        <th>Saldo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @forelse ($listPiutang as $pelangganId => $items)
-                    <tr class="table-secondary fw-bold">
-                        <td colspan="6">
-                            {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
-                        </td>
-                    </tr>
-
-                    @foreach ($items as $item)
-                        <tr>
-                            <td>{{ $item->tanggal }}</td>
-                            <td>{{ $item->uraian }}</td>
-                            <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-3">
-                            <em>Tidak ada data hutang.</em>
-                        </td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
+        <div class="card">
+            <div class="card-header">
+                <h5>Transaksi Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="table-transaksi" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Uraian</th>
+                                <th>Jumlah</th>
+                                <th>Tipe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($transaksiTerbaru as $transaksi)
+                                <tr>
+                                    <td>{{ $transaksi->tanggal }}</td>
+                                    <td>{{ $transaksi->uraian }}</td>
+                                    <td>Rp {{ number_format($transaksi->jumlah, 2, ',', '.') }}</td>
+                                    <td>{{ $transaksi->tipe }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">Belum ada transaksi.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Piutang Perusahaan -->
     <div class="mb-4">
-        <h5 class="mt-5 mb-3">Semua Data Hutang Perusahaan</h5>
-        <div class="table-responsive">
-            <table class="table table-sm hutang-table">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Uraian</th>
-                        <th>Debit</th>
-                        <th>Kredit</th>
-                        <th>Saldo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @forelse ($listHutang as $pelangganId => $items)
-                    <tr class="table-secondary fw-bold">
-                        <td colspan="6">
-                            {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
-                        </td>
-                    </tr>
+        <div class="card">
+            <div class="card-header">
+                <h5>Semua Data Piutang Perusahaan</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="table-piutang" class="table table-sm table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Uraian</th>
+                                <th>Debit</th>
+                                <th>Kredit</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @forelse ($listPiutang as $subLedgerId => $items)
+                            <tr class="table-secondary fw-bold">
+                                <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            @foreach ($items as $item)
+                                <tr>
+                                    <td>{{ $item->tanggal }}</td>
+                                    <td>{{ $item->uraian }}</td>
+                                    <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">
+                                    <em>Tidak ada data piutang.</em>
+                                </td>
+                            </tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    @foreach ($items as $item)
-                        <tr>
-                            <td>{{ $item->tanggal }}</td>
-                            <td>{{ $item->uraian }}</td>
-                            <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-3">
-                            <em>Tidak ada data hutang.</em>
-                        </td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
+    <!-- Hutang Perusahaan -->
+    <div class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Semua Data Hutang Perusahaan</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="table-hutang" class="table table-sm table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Uraian</th>
+                                <th>Debit</th>
+                                <th>Kredit</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @forelse ($listHutang as $subLedgerId => $items)
+                            <tr class="table-secondary fw-bold">
+                                <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            @foreach ($items as $item)
+                                <tr>
+                                    <td>{{ $item->tanggal }}</td>
+                                    <td>{{ $item->uraian }}</td>
+                                    <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">
+                                    <em>Tidak ada data hutang.</em>
+                                </td>
+                            </tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
 @push('script')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        $(document).ready(function() {
+            const tableOptions = {
+                responsive: true,
+                order: [], // Menonaktifkan sort otomatis di awal agar mengikuti urutan dari server
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Indonesian.json"
+                }
+            };
+            $('#table-kas').DataTable(tableOptions);
+            $('#table-barang').DataTable(tableOptions);
+            $('#table-transaksi').DataTable(tableOptions);
+            $('#table-piutang').DataTable(tableOptions);
+            $('#table-hutang').DataTable(tableOptions);
+        });
+
         let chartInstance = null;
 
         function renderFinanceChart(labels, pendapatan, pengeluaran) {

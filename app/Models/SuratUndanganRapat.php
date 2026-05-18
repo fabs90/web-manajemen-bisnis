@@ -12,8 +12,10 @@ class SuratUndanganRapat extends Model
         'user_id',
         'nomor_surat',
         'lampiran',
+        'file_lampiran',
         'perihal',
         'nama_penerima',
+        'email_penerima',
         'jabatan_penerima',
         'kota_penerima',
         'judul_rapat',
@@ -36,5 +38,15 @@ class SuratUndanganRapat extends Model
     public function details()
     {
         return $this->hasMany(SuratUndanganRapatDetail::class);
+    }
+
+    public function generatePdf()
+    {
+        $this->loadMissing('details');
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('administrasi.surat.surat-undangan-rapat.template-pdf', [
+            'agendaJanjiTemu' => $this,
+            'profileUser' => $this->user,
+        ])->setPaper('a4', 'portrait');
     }
 }

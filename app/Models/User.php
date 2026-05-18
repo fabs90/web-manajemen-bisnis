@@ -51,6 +51,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function checkIsVerified(): bool
+    {
+        return $this->is_verified;
+    }
+
     // Relasi ke master data
     public function pelanggan()
     {
@@ -67,45 +72,25 @@ class User extends Authenticatable
         return $this->hasMany(Barang::class);
     }
 
-    // Relasi ke transaksi
-    public function bukuBesarKas()
+    // Relasi ke sistem akuntansi baru
+    public function accounts()
     {
-        return $this->hasMany(BukuBesarKas::class);
+        return $this->hasMany(Account::class);
     }
 
-    public function bukuBesarPiutang()
+    public function journalEntries()
     {
-        return $this->hasMany(BukuBesarPiutang::class);
+        return $this->hasMany(JournalEntry::class);
     }
 
-    public function bukuBesarHutang()
+    public function journalItems()
     {
-        return $this->hasMany(BukuBesarHutang::class);
+        return $this->hasMany(JournalItem::class);
     }
 
     public function kartuGudang()
     {
         return $this->hasMany(KartuGudang::class);
-    }
-
-    public function biayaOperasional()
-    {
-        return $this->hasMany(BiayaOperasional::class);
-    }
-
-    public function neracaAwal()
-    {
-        return $this->hasOne(NeracaAwal::class);
-    }
-
-    public function neracaAkhir()
-    {
-        return $this->hasOne(NeracaAkhir::class);
-    }
-
-    public function rugiLaba()
-    {
-        return $this->hasOne(RugiLaba::class);
     }
 
     public function agendaSuratMasuk()

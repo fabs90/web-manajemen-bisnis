@@ -79,6 +79,16 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Email Penerima <span class="text-danger">*</span></label>
+                        <input type="email" name="email_penerima"
+                            class="form-control @error('email_penerima') is-invalid @enderror"
+                            placeholder="Email penerima surat" value="{{ old('email_penerima', $suratUndanganRapat->email_penerima) }}">
+                        @error('email_penerima')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Jabatan Penerima</label>
                         <input type="text" name="jabatan_penerima" class="form-control"
                             placeholder="Manager / Direktur / Kepala Bagian" value="{{ old('jabatan_penerima', $suratUndanganRapat->jabatan_penerima) }}">
@@ -210,67 +220,35 @@
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white mb-3">
-                    <strong>Penandatangan</strong>
+                    <strong>Lampiran (Opsional)</strong>
                 </div>
                 <div class="card-body">
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nama Penandatangan <span class="text-danger">*</span></label>
-                            <input type="text" name="nama_penandatangan"
-                                class="form-control @error('nama_penandatangan') is-invalid @enderror"
-                                placeholder="Nama lengkap" value="{{ old('nama_penandatangan', $suratUndanganRapat->nama_penandatangan) }}">
-                            @error('nama_penandatangan')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Jabatan Penandatangan <span class="text-danger">*</span></label>
-                            <input type="text" name="jabatan_penandatangan"
-                                class="form-control @error('jabatan_penandatangan') is-invalid @enderror"
-                                placeholder="Direktur / Manager" value="{{ old('jabatan_penandatangan', $suratUndanganRapat->jabatan_penandatangan) }}">
-                            @error('jabatan_penandatangan')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Tanda Tangan</label>
-                        @if($suratUndanganRapat->ttd)
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Dokumen Lampiran <small class="text-muted fw-normal">(PDF/Gambar)</small></label>
+                        @if($suratUndanganRapat->file_lampiran)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/' . $suratUndanganRapat->ttd) }}" alt="Tanda Tangan" class="img-fluid border rounded" style="max-height: 100px;">
-                                <p class="small text-muted">Tanda tangan saat ini</p>
+                                <a href="{{ asset('storage/' . $suratUndanganRapat->file_lampiran) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-file-earmark-pdf"></i> Lihat Lampiran Saat Ini
+                                </a>
                             </div>
                         @endif
-                        <div class="upload-container shadow-sm border rounded p-4 text-center bg-light" id="ttd-drop-zone"
-                            onclick="document.getElementById('ttd-input').click()">
-                            <div id="ttd-placeholder">
-                                <i class="bi bi-pen fs-1 text-secondary mb-2 d-block"></i>
-                                <span class="d-block mb-3 text-muted small">Klik atau Seret Tanda Tangan Baru ke Sini<br>(JPG,
-                                    PNG Max 2MB)</span>
-                                <button type="button" class="btn btn-outline-primary btn-sm px-4">
-                                    Pilih File TTD Baru
-                                </button>
-                            </div>
-                            <input type="file" name="ttd" id="ttd-input" class="d-none" accept="image/*">
-                            <div id="ttd-preview-container" class="mt-2 d-none">
-                                <div class="position-relative d-inline-block">
-                                    <img id="ttd-preview" src="#" alt="Preview"
-                                        class="img-fluid rounded border shadow-sm" style="max-height: 120px;">
-                                    <span
-                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success border border-white">
-                                        <i class="bi bi-check"></i>
-                                    </span>
+                        <div class="upload-container shadow-sm border rounded p-4 text-center bg-light"
+                            id="lampiran-drop-zone">
+                            <i class="bi bi-file-earmark-pdf fs-1 text-secondary mb-2 d-block"></i>
+                            <span class="d-block mb-3 text-black small">Max 5MB (Ganti lampiran jika perlu)</span>
+                            <input type="file" name="file_lampiran" id="lampiran-input" class="d-none">
+                            <button type="button" class="btn btn-outline-primary btn-sm px-4 text-white"
+                                onclick="document.getElementById('lampiran-input').click()">
+                                Pilih Dokumen Baru
+                            </button>
+                            <div id="lampiran-preview-container" class="mt-3 d-none text-start">
+                                <div class="d-flex align-items-center p-2 border rounded ">
+                                    <i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
+                                    <div class="overflow-hidden">
+                                        <p class="mb-0 fw-bold small text-truncate" id="lampiran-filename"></p>
+                                        <span class="small text-muted" id="lampiran-filesize"></span>
+                                    </div>
                                 </div>
-                                <p class="mb-0 mt-2 small text-success fw-bold">
-                                    <i class="bi bi-file-earmark-check me-1"></i> Terpilih: <span
-                                        id="ttd-filename"></span>
-                                </p>
-                                <button type="button"
-                                    class="btn btn-link btn-sm text-muted mt-1 text-decoration-none">Ganti Tanda
-                                    Tangan</button>
                             </div>
                         </div>
                     </div>
@@ -341,53 +319,59 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             // =========================
-            // Drag and Drop Logic
+            // Lampiran Preview
             // =========================
-            const ttdDropZone = document.getElementById('ttd-drop-zone');
-            const ttdInput = document.getElementById('ttd-input');
+            const lampiranDropZone = document.getElementById('lampiran-drop-zone');
+            const lampiranInput = document.getElementById('lampiran-input');
+            const lampiranPreviewContainer = document.getElementById('lampiran-preview-container');
+            const lampiranFilename = document.getElementById('lampiran-filename');
+            const lampiranFilesize = document.getElementById('lampiran-filesize');
 
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                ttdDropZone.addEventListener(eventName, e => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                ttdDropZone.addEventListener(eventName, () => ttdDropZone.classList.add('dragover'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                ttdDropZone.addEventListener(eventName, () => ttdDropZone.classList.remove('dragover'),
-                    false);
-            });
-
-            ttdDropZone.addEventListener('drop', e => {
-                const dt = e.dataTransfer;
-                ttdInput.files = dt.files;
-                ttdInput.dispatchEvent(new Event('change'));
-            }, false);
-
-            // =========================
-            // TTD Preview
-            // =========================
-            const ttdPreview = document.getElementById('ttd-preview');
-            const ttdPlaceholder = document.getElementById('ttd-placeholder');
-            const ttdPreviewContainer = document.getElementById('ttd-preview-container');
-            const ttdFilename = document.getElementById('ttd-filename');
-
-            ttdInput?.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        ttdPreview.src = e.target.result;
-                        ttdPlaceholder.classList.add('d-none');
-                        ttdPreviewContainer.classList.remove('d-none');
-                        ttdFilename.textContent = ttdInput.files[0].name;
-                    };
-                    reader.readAsDataURL(this.files[0]);
+            lampiranDropZone?.addEventListener('click', function(e) {
+                if (e.target !== lampiranInput && !e.target.closest('button')) {
+                    lampiranInput.click();
                 }
             });
+
+            lampiranInput?.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    lampiranPreviewContainer.classList.remove('d-none');
+                    lampiranFilename.textContent = this.files[0].name;
+
+                    let size = this.files[0].size / 1024;
+                    lampiranFilesize.textContent =
+                        size > 1024 ?
+                        (size / 1024).toFixed(2) + ' MB' :
+                        size.toFixed(2) + ' KB';
+                } else {
+                    lampiranPreviewContainer.classList.add('d-none');
+                }
+            });
+
+            if (lampiranDropZone) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    lampiranDropZone.addEventListener(eventName, e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }, false);
+                });
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    lampiranDropZone.addEventListener(eventName, () => lampiranDropZone.classList.add('dragover'), false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    lampiranDropZone.addEventListener(eventName, () => lampiranDropZone.classList.remove('dragover'), false);
+                });
+
+                lampiranDropZone.addEventListener('drop', e => {
+                    const dt = e.dataTransfer;
+                    if (dt.files && dt.files.length > 0) {
+                        lampiranInput.files = dt.files;
+                        lampiranInput.dispatchEvent(new Event('change'));
+                    }
+                }, false);
+            }
 
             // =========================
             // Submit Loading

@@ -16,7 +16,7 @@
         </div>
     @endif
     {{-- Form --}}
-    <form action="{{ route('laporan-keuangan.aset-hutang.store') }}" method="POST">
+    <form action="{{ route('laporan-keuangan.neraca-awal.store') }}" method="POST">
         @csrf
         {{-- Aset --}}
         <legend>Aset Lancar</legend>
@@ -49,7 +49,7 @@
                 </label>
             </div>
 
-            <p>Tidak ada nama debitur? <a href="{{ route('debitur-kreditur.create') }}" target="_blank">Tambah Data Debitur
+            <p>Tidak ada nama debitur? <a href="{{ route('debitur-kreditur.list') }}" target="_blank">Tambah Data Debitur
                     Disini</a>
             </p>
             <div id="piutang-wrapper">
@@ -108,7 +108,7 @@
                     Tidak ada hutang sama sekali
                 </label>
             </div>
-            <p>Tidak ada nama kreditur? <a href="{{ route('debitur-kreditur.create') }}" target="_blank">Tambah Data
+            <p>Tidak ada nama kreditur? <a href="{{ route('debitur-kreditur.list') }}" target="_blank">Tambah Data
                     Kreditur
                     Disini</a>
             </p>

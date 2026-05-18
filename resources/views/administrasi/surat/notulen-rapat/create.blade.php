@@ -4,30 +4,6 @@
 
 @section('section-row')
     <div class="container mt-4">
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                <strong>Sukses!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        {{-- Alert Error --}}
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
-                <strong>Gagal!</strong> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show">
-                <strong>Oops! Ada kesalahan:</strong>
-                <ul class="mb-0 mt-2">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
  <form action="{{ route('administrasi.rapat.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="card shadow-sm">
@@ -129,7 +105,7 @@
                                 <th>No</th>
                                 <th>Nama <span class="text-danger">*</span></th>
                                 <th>Jabatan <span class="text-danger">*</span></th>
-                                <th>Tanda Tangan <span class="text-danger">*</span></th>
+                                <th>Tanda Tangan</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -138,7 +114,7 @@
                                 <td>1</td>
                                 <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
                                 <td><input type="text" name="peserta_jabatan[]" class="form-control" required></td>
-                                <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*" required></td>
+                                <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*"></td>
                                 <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                             </tr>
                         </tbody>
@@ -319,7 +295,7 @@
             <td>${rowCount}</td>
             <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
             <td><input type="text" name="peserta_jabatan[]" class="form-control" required></td>
-            <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*" required></td>
+            <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*"></td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
             table.insertAdjacentHTML('beforeend', row);
@@ -352,6 +328,34 @@
             table.insertAdjacentHTML('beforeend', row);
         });
     </script>
+
+    @push('script')
+        <script>
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: "{{ session('success') }}",
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: "{{ session('error') }}",
+                });
+            @endif
+
+            @if ($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops! Ada kesalahan:',
+                    html: '<ul class="text-start">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
+                });
+            @endif
+        </script>
+    @endpush
 
 @push('styles')
     <style>

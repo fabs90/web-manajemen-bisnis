@@ -43,7 +43,7 @@
                                         $namaPihak = $spb['pesanan_pembelian']['pelanggan']['nama'];
                                         $alamatPihak = $spb['pesanan_pembelian']['pelanggan']['alamat'] ?? '-';
                                     @endphp
-                                    <option value="{{ $spb['id'] }}" 
+                                    <option value="{{ $spb['id'] }}"
                                         data-pelanggan="{{ $namaPihak }}"
                                         data-alamat="{{ $alamatPihak }}"
                                         data-nomor="{{ $spb['nomor_pengiriman_barang'] }}"
@@ -105,13 +105,6 @@
                             <input type="date" name="tanggal_faktur" class="form-control"
                                 value="{{ old('tanggal_faktur', date('Y-m-d')) }}" required>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Bagian Penjualan <span class="text-danger">*</span></label>
-                            <input type="text" name="bagian_penjualan" class="form-control"
-                                value="{{ old('bagian_penjualan') }}" required>
-                        </div>
-
                     </div>
 
                     <!-- Tabel Barang -->

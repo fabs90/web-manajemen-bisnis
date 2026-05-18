@@ -42,7 +42,7 @@
                     @foreach ($kasirTransactions as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ date('d-m-Y', strtotime($item->tanggal_transaksi)) }}</td>
+                            <td>{{$item->created_at }}</td>
                             <td>{{ $item->uraian }}</td>
                             <td>Rp {{ number_format($item->jumlah ?? 0, 0, ',', '.') }}</td>
 

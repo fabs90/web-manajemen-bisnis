@@ -1,0 +1,22 @@
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: web_pembukuan_docker
+    ports:
+      - 3309:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

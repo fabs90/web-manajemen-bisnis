@@ -2,311 +2,109 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BukuBesarHutang;
-use App\Models\BukuBesarKas;
-use App\Models\BukuBesarPendapatan;
-use App\Models\BukuBesarPiutang;
+use App\Models\Barang;
 use App\Models\Pelanggan;
+use App\Services\ReturService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Throwable;
 
 class ReturController extends Controller
 {
+    public function __construct(protected ReturService $service) {}
+
     public function list()
     {
-        $userId = auth()->id();
-
-        // === Retur Penjualan (kredit/pendapatan) ===
-        $returPenjualan = BukuBesarPiutang::where("user_id", $userId)
-            ->where(function ($query) {
-                $query
-                    ->where("uraian", "like", "%retur%")
-                    ->orWhere("uraian", "like", "%memo%");
-            })
-            ->get();
-
-        // === Retur Pengeluaran (pembelian/hutang) ===
-        $returPengeluaran = BukuBesarHutang::where("user_id", $userId)
-            ->where(function ($query) {
-                $query
-                    ->where("uraian", "like", "%retur%")
-                    ->orWhere("uraian", "like", "%memo%");
-            })
-            ->get();
+        $returPenjualan = $this->service->getReturPenjualanList();
+        $returPengeluaran = $this->service->getReturPembelianList();
 
         return view(
-            "retur-kredit.list",
-            compact("returPenjualan", "returPengeluaran"),
+            'retur-kredit.list',
+            compact('returPenjualan', 'returPengeluaran'),
         );
     }
 
     public function create()
     {
-        $debitur = Pelanggan::where("user_id", auth()->id())
-            ->where("jenis", "debitur")
-            ->orderBy("nama")
-            ->get();
-        $listPiutang = BukuBesarPiutang::where("user_id", auth()->id())
-            ->where("saldo", ">", 0)
-            ->whereIn("id", function ($query) {
-                $query
-                    ->select(DB::raw("MAX(id)"))
-                    ->from("buku_besar_piutang")
-                    ->where("user_id", auth()->id())
-                    ->groupBy("pelanggan_id");
-            })
-            ->with("pelanggan") // Eager load relasi pelanggan
-            ->latest()
+        $userId = auth()->id();
+        $debitur = Pelanggan::where('user_id', $userId)
+            ->where('jenis', 'debitur')
+            ->orderBy('nama')
             ->get();
 
-        return view("retur-kredit.create", compact("debitur", "listPiutang"));
+        $listPiutang = $this->service->getActivePiutang($userId);
+        $barang = Barang::where('user_id', $userId)->get();
+
+        return view('retur-kredit.create', compact('debitur', 'listPiutang', 'barang'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            "hutang_aktif" => "required",
-            "retur_jumlah" => "required|numeric|min:1",
-            "retur_penanganan" => "required|in:kurangi_piutang,tunai_kembali",
-            "retur_keterangan" => "nullable|string|max:255",
-            "tanggal" => "required|date",
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'nama_pelanggan' => 'required|exists:pelanggan,id',
+            'retur_penanganan' => 'required|in:kurangi_piutang,tunai_kembali',
+            'retur_keterangan' => 'nullable|string|max:255',
+            'items' => 'required|array|min:1',
+            'items.*.barang_id' => 'required|exists:barang,id',
+            'items.*.qty' => 'required|integer|min:1',
+            'items.*.harga' => 'required|numeric|min:0',
         ]);
 
         try {
-            DB::beginTransaction();
+            $this->service->storeReturPenjualan($validated);
 
-            $returJumlah = (float) str_replace(
-                ["Rp ", ".", ","],
-                "",
-                $request->retur_jumlah,
-            );
-            $kodePiutang = $request->hutang_aktif;
-            $pelangganId = $request->nama_pelanggan;
-            $keterangan =
-                $request->retur_keterangan ?: "Retur penjualan kredit";
-
-            // Ambil saldo terakhir
-            $saldoTerakhir = BukuBesarPiutang::where("kode", $kodePiutang)
-                ->latest()
-                ->first();
-
-            if (!$saldoTerakhir || $saldoTerakhir->saldo < $returJumlah) {
-                throw new \Exception(
-                    "Saldo piutang tidak mencukupi untuk retur.",
-                );
-            }
-
-            $pendapatanId = null;
-
-            // Jika penanganan retur = tunai kembali → catat juga di pendapatan dan kas
-            if ($request->retur_penanganan === "tunai_kembali") {
-                // Buat entri pendapatan (negatif untuk retur)
-                $pendapatan = BukuBesarPendapatan::create([
-                    "tanggal" => $request->tanggal,
-                    "uraian" => "Retur Penjualan - {$keterangan}",
-                    "potongan_pembelian" => 0,
-                    "piutang_dagang" => 0,
-                    "penjualan_tunai" => 0,
-                    "lain_lain" => 0,
-                    "uang_diterima" => -$returJumlah,
-                    "bunga_bank" => 0,
-                    "jumlah_retur_penjualan" => $returJumlah,
-                    "jenis_retur" => $request->retur_penanganan,
-                    "user_id" => auth()->id(),
-                ]);
-
-                $pendapatanId = $pendapatan->id;
-
-                // Update kas
-                $kasLama = BukuBesarKas::latest()->first();
-
-                if (!$kasLama || $kasLama->saldo < $returJumlah) {
-                    throw new \Exception(
-                        "Saldo kas tidak mencukupi untuk pengembalian tunai retur.",
-                    );
-                }
-
-                BukuBesarKas::create([
-                    "kode" => Str::uuid(),
-                    "uraian" => "Retur Penjualan (Tunai Kembali) - {$keterangan}",
-                    "tanggal" => $request->tanggal,
-                    "debit" => 0,
-                    "kredit" => $returJumlah,
-                    "saldo" => $kasLama->saldo - $returJumlah,
-                    "neraca_awal_id" => $kasLama->neraca_awal_id,
-                    "user_id" => auth()->id(),
-                ]);
-            }
-
-            // Catat perubahan piutang (berlaku untuk semua jenis retur)
-            $saldoBaru = $saldoTerakhir->saldo - $returJumlah;
-
-            BukuBesarPiutang::create([
-                "kode" => $kodePiutang,
-                "pelanggan_id" => $pelangganId,
-                "uraian" => "Retur Penjualan - {$keterangan}",
-                "tanggal" => $request->tanggal,
-                "debit" => 0,
-                "kredit" => $returJumlah,
-                "saldo" => $saldoBaru,
-                "buku_besar_pendapatan_id" => $pendapatanId, // bisa null jika kurangi_piutang
-                "user_id" => auth()->id(),
-            ]);
-
-            DB::commit();
             return redirect()
-                ->route("retur.create-penjualan")
-                ->with("success", "Retur berhasil dicatat.");
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
+                ->route('retur.list')
+                ->with('success', 'Retur penjualan berhasil dicatat.');
+        } catch (Throwable $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Gagal mencatat retur: '.$e->getMessage());
         }
     }
 
     public function create_retur_pembelian()
     {
-        $kreditur = Pelanggan::where("user_id", auth()->id())
-            ->where("jenis", "kreditur")
-            ->orderBy("nama")
+        $userId = auth()->id();
+        $kreditur = Pelanggan::where('user_id', $userId)
+            ->where('jenis', 'kreditur')
+            ->orderBy('nama')
             ->get();
 
-        $listHutang = BukuBesarHutang::where("user_id", auth()->id())
-            ->where("saldo", ">", 0)
-            ->whereIn("id", function ($query) {
-                $query
-                    ->select(DB::raw("MAX(id)"))
-                    ->from("buku_besar_hutang")
-                    ->where("user_id", auth()->id())
-                    ->groupBy("pelanggan_id");
-            })
-            ->with("pelanggan") // Eager load relasi pelanggan
-            ->latest()
-            ->get();
+        $listHutang = $this->service->getActiveHutang($userId);
+        $barang = Barang::where('user_id', $userId)->get();
+
         return view(
-            "retur-kredit.create-pembelian",
-            compact("kreditur", "listHutang"),
+            'retur-kredit.create-pembelian',
+            compact('kreditur', 'listHutang', 'barang'),
         );
     }
 
     public function store_retur_pembelian(Request $request)
     {
-        $request->validate([
-            "tanggal" => "required|date",
-            "nama_pelanggan" => "required|exists:pelanggan,id",
-            "hutang_aktif" => "required",
-            "retur_jumlah" => "required|numeric|min:1",
-            "retur_penanganan" => "required|in:kurangi_hutang,tunai_kembali",
-            "retur_keterangan" => "nullable|string|max:255",
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'nama_pelanggan' => 'required|exists:pelanggan,id',
+            'retur_penanganan' => 'required|in:kurangi_hutang,tunai_kembali',
+            'retur_keterangan' => 'nullable|string|max:255',
+            'items' => 'required|array|min:1',
+            'items.*.barang_id' => 'required|exists:barang,id',
+            'items.*.qty' => 'required|integer|min:1',
+            'items.*.harga' => 'required|numeric|min:0',
         ]);
 
         try {
-            DB::beginTransaction();
-
-            $returJumlah = (float) preg_replace(
-                "/[^0-9]/",
-                "",
-                $request->retur_jumlah,
-            );
-            $kodeHutang = $request->hutang_aktif;
-            $pelangganId = $request->nama_pelanggan;
-            $keterangan =
-                $request->retur_keterangan ?: "Retur pembelian kepada kreditur";
-            $userId = auth()->id();
-
-            // Ambil saldo hutang terakhir
-            $saldoTerakhir = BukuBesarHutang::where("kode", $kodeHutang)
-                ->where("pelanggan_id", $pelangganId)
-                ->where("user_id", $userId)
-                ->latest("id")
-                ->first();
-
-            if (!$saldoTerakhir) {
-                throw new \Exception("Data hutang tidak ditemukan.");
-            }
-
-            // Cegah retur melebihi saldo hutang
-            if ($saldoTerakhir->saldo < $returJumlah) {
-                throw new \Exception(
-                    "Jumlah retur melebihi saldo hutang aktif.",
-                );
-            }
-
-            $pendapatanId = null;
-
-            // Jika penanganan retur = tunai kembali → buat jurnal pendapatan & kas
-            if ($request->retur_penanganan === "tunai_kembali") {
-                $pendapatan = BukuBesarPendapatan::create([
-                    "tanggal" => $request->tanggal,
-                    "uraian" => "Retur Pembelian - {$keterangan}",
-                    "potongan_pembelian" => 0,
-                    "piutang_dagang" => 0,
-                    "penjualan_tunai" => 0,
-                    "lain_lain" => 0,
-                    "uang_diterima" => $returJumlah, // uang masuk ke kas
-                    "bunga_bank" => 0,
-                    "jumlah_retur_penjualan" => $returJumlah,
-                    "jenis_retur" => $request->retur_penanganan,
-                    "user_id" => $userId,
-                ]);
-
-                $pendapatanId = $pendapatan->id;
-
-                $kasLama = BukuBesarKas::where("user_id", $userId)
-                    ->latest("id")
-                    ->first();
-                $saldoKasLama = $kasLama?->saldo ?? 0;
-                $saldoKasBaru = $saldoKasLama + $returJumlah;
-
-                BukuBesarKas::create([
-                    "kode" => Str::uuid(),
-                    "uraian" => "Penerimaan tunai dari retur pembelian: {$keterangan}",
-                    "tanggal" => $request->tanggal,
-                    "debit" => $returJumlah, // Kas bertambah
-                    "kredit" => 0,
-                    "saldo" => $saldoKasBaru,
-                    "neraca_awal_id" => $kasLama?->neraca_awal_id,
-                    "user_id" => $userId,
-                ]);
-            }
-
-            // Catat pengurangan hutang (berlaku untuk semua jenis retur)
-            $saldoBaru = $saldoTerakhir->saldo - $returJumlah;
-
-            BukuBesarHutang::create([
-                "kode" => $kodeHutang,
-                "pelanggan_id" => $pelangganId,
-                "uraian" => "Retur Pembelian - {$keterangan}",
-                "tanggal" => $request->tanggal,
-                "debit" => $returJumlah, // Hutang berkurang
-                "kredit" => 0,
-                "saldo" => $saldoBaru,
-                "buku_besar_pendapatan_id" => $pendapatanId, // bisa null kalau kurangi_hutang
-                "user_id" => $userId,
-            ]);
-
-            DB::commit();
+            $this->service->storeReturPembelian($validated);
 
             return redirect()
-                ->route("retur.create-pembelian")
-                ->with("success", "Retur pembelian berhasil disimpan.");
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            Log::error("Gagal simpan retur pembelian", [
-                "error" => $e->getMessage(),
-                "user_id" => auth()->id(),
-                "input" => $request->all(),
-            ]);
-
+                ->route('retur.list')
+                ->with('success', 'Retur pembelian berhasil dicatat.');
+        } catch (Throwable $e) {
             return redirect()
                 ->back()
                 ->withInput()
-                ->with(
-                    "error",
-                    $e->getMessage() ?: "Gagal menyimpan retur pembelian.",
-                );
+                ->with('error', 'Gagal mencatat retur: '.$e->getMessage());
         }
     }
 }

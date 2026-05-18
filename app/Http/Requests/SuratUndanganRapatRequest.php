@@ -25,8 +25,10 @@ class SuratUndanganRapatRequest extends FormRequest
         return [
             'nomor_surat' => ['required', 'string', 'max:255'],
             'lampiran' => ['nullable', 'string', 'max:255'],
+            'file_lampiran' => ['nullable', 'file', 'max:5120'],
             'perihal' => ['required', 'string', 'max:255'],
             'nama_penerima' => ['required', 'string', 'max:255'],
+            'email_penerima' => ['required', 'email', 'max:255'],
             'jabatan_penerima' => ['nullable', 'string', 'max:255'],
             'kota_penerima' => ['nullable', 'string', 'max:255'],
             'judul_rapat' => ['required', 'string', 'max:255'],
@@ -38,14 +40,6 @@ class SuratUndanganRapatRequest extends FormRequest
             'agenda' => ['nullable', 'array'],
             'agenda.*' => ['nullable', 'string'],
             'tembusan' => ['nullable', 'string', 'max:1000'],
-            'nama_penandatangan' => ['required', 'string', 'max:255'],
-            'jabatan_penandatangan' => ['required', 'string', 'max:255'],
-            'ttd' => [
-                $this->isMethod('POST') ? 'required' : 'nullable',
-                'image',
-                'mimes:jpeg,png,jpg',
-                'max:2048',
-            ],
         ];
     }
 
@@ -58,12 +52,6 @@ class SuratUndanganRapatRequest extends FormRequest
             'judul_rapat.required' => 'Judul rapat wajib diisi.',
             'tanggal_rapat.required' => 'Tanggal rapat wajib diisi.',
             'tanggal_rapat.date' => 'Format tanggal rapat tidak valid.',
-            'nama_penandatangan.required' => 'Nama penandatangan wajib diisi.',
-            'jabatan_penandatangan.required' => 'Jabatan penandatangan wajib diisi.',
-            'ttd.required' => 'Tanda tangan wajib diunggah.',
-            'ttd.image' => 'File tanda tangan harus berupa gambar.',
-            'ttd.mimes' => 'Format gambar tanda tangan harus jpeg, png, atau jpg.',
-            'ttd.max' => 'Ukuran gambar tanda tangan maksimal 2MB.',
         ];
     }
 }

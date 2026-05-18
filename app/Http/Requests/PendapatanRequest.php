@@ -17,9 +17,9 @@ class PendapatanRequest extends FormRequest
      */
     protected function prepareForValidation()
     {
-        $clean = fn($val) => $val === null || $val === ""
+        $clean = fn ($val) => $val === null || $val === ''
             ? null
-            : (int) round((float) str_replace(["Rp ", "."], "", $val));
+            : (int) round((float) str_replace(['Rp ', '.'], '', $val));
 
         // Bersihkan array barang
         $barangTerjual = [];
@@ -27,7 +27,7 @@ class PendapatanRequest extends FormRequest
         $potonganPembelian = [];
 
         if (
-            $this->filled("barang_terjual") &&
+            $this->filled('barang_terjual') &&
             is_array($this->barang_terjual)
         ) {
             foreach ($this->barang_terjual as $index => $barang) {
@@ -46,134 +46,132 @@ class PendapatanRequest extends FormRequest
         }
 
         $this->merge([
-            "jumlah" => $this->filled("jumlah") ? $clean($this->jumlah) : null,
-            "bunga_bank" => $this->filled("bunga_bank")
+            'jumlah' => $this->filled('jumlah') ? $clean($this->jumlah) : null,
+            'bunga_bank' => $this->filled('bunga_bank')
                 ? $clean($this->bunga_bank)
                 : null,
-            "biaya_lain" => $this->filled("biaya_lain")
+            'biaya_lain' => $this->filled('biaya_lain')
                 ? $clean($this->biaya_lain)
                 : null,
 
             // Array barang
-            "barang_terjual" => $barangTerjual,
-            "jumlah_barang_dijual" => $jumlahBarangDijual,
-            "potongan_pembelian" => $potonganPembelian,
+            'barang_terjual' => $barangTerjual,
+            'jumlah_barang_dijual' => $jumlahBarangDijual,
+            'potongan_pembelian' => $potonganPembelian,
 
             // Checkbox → boolean
-            "barang_terjual_check" => $this->has("barang_terjual_check"),
-            "ada_debitur_check" => $this->has("ada_debitur_check"),
+            'barang_terjual_check' => $this->has('barang_terjual_check'),
+            'ada_debitur_check' => $this->has('ada_debitur_check'),
         ]);
     }
 
     public function rules(): array
     {
-        $jenis = $this->input("jenis_pendapatan");
+        $jenis = $this->input('jenis_pendapatan');
 
         return [
             // -------------------------------------------------
             // SELALU WAJIB
             // -------------------------------------------------
-            "uraian_pendapatan" => ["required", "string", "max:255"],
-            "tanggal" => ["required", "date"],
-            "jenis_pendapatan" => [
-                "required",
-                Rule::in(["tunai", "piutang", "kredit"]),
+            'uraian_pendapatan' => ['required', 'string', 'max:255'],
+            'tanggal' => ['required', 'date'],
+            'jenis_pendapatan' => [
+                'required',
+                Rule::in(['tunai', 'piutang', 'kredit']),
             ],
 
             // -------------------------------------------------
             // JUMLAH (wajib untuk semua jenis)
             // -------------------------------------------------
-            "jumlah" => ["required", "integer", "gte:0"],
-            "jumlah_piutang" => "nullable|numeric|min:0",
-            "jumlah_kredit" => "nullable|numeric|min:0",
+            'jumlah' => ['required', 'integer', 'gte:0'],
+            'jumlah_piutang' => 'nullable|numeric|min:0',
+            'jumlah_kredit' => 'nullable|numeric|min:0',
 
             // -------------------------------------------------
             // BIAYA TAMBAHAN LAINNYA
             // -------------------------------------------------
-            "bunga_bank" => ["nullable", "integer", "min:0"],
-            "biaya_lain" => ["nullable", "integer", "min:0"],
+            'bunga_bank' => ['nullable', 'integer', 'min:0'],
+            'biaya_lain' => ['nullable', 'integer', 'min:0'],
 
             // -------------------------------------------------
             // DEBITUR
             // -------------------------------------------------
-            "ada_debitur_check" => ["nullable", "boolean"],
+            'ada_debitur_check' => ['nullable', 'boolean'],
 
-            "nama_pelanggan" => [
-                Rule::requiredIf(fn() => $this->ada_debitur_check === true),
-                "nullable",
-                "integer",
-                "exists:pelanggan,id",
+            'nama_pelanggan' => [
+                Rule::requiredIf(fn () => $this->ada_debitur_check === true),
+                'nullable',
+                'integer',
+                'exists:pelanggan,id',
             ],
 
             // -------------------------------------------------
             // PIUTANG / HUTANG
             // -------------------------------------------------
-            "piutang_aktif" => [
+            'piutang_aktif' => [
                 Rule::requiredIf(
-                    fn() => $jenis === "piutang" &&
+                    fn () => $jenis === 'piutang' &&
                         $this->ada_debitur_check === true &&
-                        $this->filled("piutang_aktif"),
+                        $this->filled('piutang_aktif'),
                 ),
-                "nullable",
-                "string",
-                Rule::exists("buku_besar_piutang", "kode"),
+                'nullable',
+                'string',
             ],
 
-            "hutang_aktif" => [
+            'hutang_aktif' => [
                 Rule::requiredIf(
-                    fn() => $jenis === "kredit" &&
-                        $this->filled("hutang_aktif"),
+                    fn () => $jenis === 'kredit' &&
+                        $this->filled('hutang_aktif'),
                 ),
-                Rule::prohibitedIf(fn() => $jenis !== "kredit"),
-                "nullable",
-                "string",
-                Rule::exists("buku_besar_piutang", "kode"),
+                Rule::prohibitedIf(fn () => $jenis !== 'kredit'),
+                'nullable',
+                'string',
             ],
 
             // -------------------------------------------------
             // BARANG TERJUAL (array)
             // -------------------------------------------------
-            "barang_terjual" => [
+            'barang_terjual' => [
                 Rule::when(
-                    fn() => $this->barang_terjual_check === false,
-                    ["required", "array", "min:1"],
-                    ["nullable", "array"],
+                    fn () => $this->barang_terjual_check === false,
+                    ['required', 'array', 'min:1'],
+                    ['nullable', 'array'],
                 ),
             ],
 
-            "barang_terjual.*" => [
+            'barang_terjual.*' => [
                 Rule::when(
-                    fn() => $this->barang_terjual_check === false,
-                    ["required", "integer", "exists:barang,id"],
-                    ["nullable", "integer"],
+                    fn () => $this->barang_terjual_check === false,
+                    ['required', 'integer', 'exists:barang,id'],
+                    ['nullable', 'integer'],
                 ),
             ],
 
-            "jumlah_barang_dijual" => [
+            'jumlah_barang_dijual' => [
                 Rule::when(
-                    fn() => $this->barang_terjual_check === false,
-                    ["required", "array", "min:1"],
-                    ["nullable", "array"],
+                    fn () => $this->barang_terjual_check === false,
+                    ['required', 'array', 'min:1'],
+                    ['nullable', 'array'],
                 ),
             ],
 
-            "jumlah_barang_dijual.*" => [
+            'jumlah_barang_dijual.*' => [
                 Rule::when(
-                    fn() => $this->barang_terjual_check === false,
-                    ["required", "integer", "min:1"],
-                    ["nullable", "integer"],
+                    fn () => $this->barang_terjual_check === false,
+                    ['required', 'integer', 'min:1'],
+                    ['nullable', 'integer'],
                 ),
             ],
 
-            "potongan_pembelian" => [
+            'potongan_pembelian' => [
                 Rule::when(
-                    fn() => $this->barang_terjual_check === false,
-                    ["nullable", "array"],
-                    ["nullable", "array"],
+                    fn () => $this->barang_terjual_check === false,
+                    ['nullable', 'array'],
+                    ['nullable', 'array'],
                 ),
             ],
 
-            "potongan_pembelian.*" => ["nullable", "integer", "min:0"],
+            'potongan_pembelian.*' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -181,95 +179,99 @@ class PendapatanRequest extends FormRequest
     {
         return [
             // umum
-            "uraian_pendapatan.required" => "Uraian pendapatan wajib diisi.",
-            "tanggal.required" => "Tanggal transaksi wajib diisi.",
-            "jenis_pendapatan.required" => "Jenis pendapatan wajib dipilih.",
-            "jenis_pendapatan.in" => "Jenis pendapatan tidak valid.",
+            'uraian_pendapatan.required' => 'Uraian pendapatan wajib diisi.',
+            'tanggal.required' => 'Tanggal transaksi wajib diisi.',
+            'jenis_pendapatan.required' => 'Jenis pendapatan wajib dipilih.',
+            'jenis_pendapatan.in' => 'Jenis pendapatan tidak valid.',
 
             // jumlah
-            "jumlah.required" => "Jumlah penjualan wajib diisi.",
-            "jumlah.min" => "Jumlah minimal Rp 1.",
+            'jumlah.required' => 'Jumlah penjualan wajib diisi.',
+            'jumlah.min' => 'Jumlah minimal Rp 1.',
 
             // debitur
-            "nama_pelanggan.required_if" =>
-                "Pilih debitur jika ada transaksi piutang/kredit.",
-            "nama_pelanggan.exists" => "Debitur tidak ditemukan.",
+            'nama_pelanggan.required_if' => 'Pilih debitur jika ada transaksi piutang/kredit.',
+            'nama_pelanggan.exists' => 'Debitur tidak ditemukan.',
 
             // piutang / hutang
-            "piutang_aktif.required_if" =>
-                "Pilih piutang aktif yang ingin ditambah.",
-            "piutang_aktif.prohibited_if" =>
-                "Piutang aktif hanya untuk jenis Piutang.",
-            "piutang_aktif.exists" =>
-                "Kode piutang tidak valid atau sudah lunas.",
+            'piutang_aktif.required_if' => 'Pilih piutang aktif yang ingin ditambah.',
+            'piutang_aktif.prohibited_if' => 'Piutang aktif hanya untuk jenis Piutang.',
+            'piutang_aktif.exists' => 'Kode piutang tidak valid atau sudah lunas.',
 
-            "hutang_aktif.required_if" =>
-                "Pilih hutang aktif yang ingin dilunasi.",
-            "hutang_aktif.prohibited_if" =>
-                "Hutang aktif hanya untuk jenis Kredit.",
-            "hutang_aktif.exists" =>
-                "Kode hutang tidak valid atau sudah lunas.",
+            'hutang_aktif.required_if' => 'Pilih hutang aktif yang ingin dilunasi.',
+            'hutang_aktif.prohibited_if' => 'Hutang aktif hanya untuk jenis Kredit.',
+            'hutang_aktif.exists' => 'Kode hutang tidak valid atau sudah lunas.',
 
             // barang
-            "barang_terjual.required" =>
-                'Pilih barang atau centang "Tidak ada barang terjual".',
-            "barang_terjual.array" => "Barang terjual harus berupa array.",
-            "barang_terjual.min" => "Minimal satu barang harus dipilih.",
-            "barang_terjual.*.required" => "Barang wajib dipilih.",
-            "barang_terjual.*.exists" => "Barang tidak ditemukan.",
+            'barang_terjual.required' => 'Pilih barang atau centang "Tidak ada barang terjual".',
+            'barang_terjual.array' => 'Barang terjual harus berupa array.',
+            'barang_terjual.min' => 'Minimal satu barang harus dipilih.',
+            'barang_terjual.*.required' => 'Barang wajib dipilih.',
+            'barang_terjual.*.exists' => 'Barang tidak ditemukan.',
 
-            "jumlah_barang_dijual.required" => "Jumlah barang wajib diisi.",
-            "jumlah_barang_dijual.array" => "Jumlah barang harus berupa array.",
-            "jumlah_barang_dijual.min" =>
-                "Minimal satu jumlah barang harus diisi.",
-            "jumlah_barang_dijual.*.required" => "Jumlah barang wajib diisi.",
-            "jumlah_barang_dijual.*.min" => "Jumlah minimal 1.",
+            'jumlah_barang_dijual.required' => 'Jumlah barang wajib diisi.',
+            'jumlah_barang_dijual.array' => 'Jumlah barang harus berupa array.',
+            'jumlah_barang_dijual.min' => 'Minimal satu jumlah barang harus diisi.',
+            'jumlah_barang_dijual.*.required' => 'Jumlah barang wajib diisi.',
+            'jumlah_barang_dijual.*.min' => 'Jumlah minimal 1.',
 
-            "potongan_pembelian.*.min" => "Potongan minimal 0.",
+            'potongan_pembelian.*.min' => 'Potongan minimal 0.',
         ];
     }
 
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $jenis = $this->input("jenis_pendapatan");
+            $jenis = $this->input('jenis_pendapatan');
+            $userId = auth()->id();
+
+            $accounts = \App\Models\Account::where('user_id', $userId)->get()->keyBy('code');
+            $piutangId = $accounts->has('1104') ? $accounts['1104']->id : null;
 
             // ---- piutang aktif ----
-            if ($jenis === "piutang" && $this->filled("piutang_aktif")) {
-                $piutang = \App\Models\BukuBesarPiutang::where(
-                    "kode",
-                    $this->piutang_aktif,
-                )->first();
-                if (!$piutang || $piutang->saldo <= 0) {
-                    $validator
-                        ->errors()
-                        ->add(
-                            "piutang_aktif",
-                            "Kode piutang tidak valid atau sudah lunas.",
-                        );
+            if ($jenis === 'piutang' && $this->filled('piutang_aktif') && $piutangId) {
+                $balance = \App\Models\JournalItem::where('user_id', $userId)
+                    ->where('account_id', $piutangId)
+                    ->whereHas('journalEntry', function ($q) {
+                        $q->where('reference_number', $this->piutang_aktif);
+                    })
+                    ->selectRaw('SUM(debit - credit) as saldo')
+                    ->value('saldo');
+
+                if ($balance === null || $balance <= 0) {
+                    // Cek apakah ini reference_number yang valid
+                    $exists = \App\Models\JournalEntry::where('user_id', $userId)
+                        ->where('reference_number', $this->piutang_aktif)
+                        ->exists();
+                    if (! $exists) {
+                        $validator->errors()->add('piutang_aktif', 'Referensi piutang tidak valid.');
+                    }
                 }
             }
 
             // ---- hutang aktif ----
-            if ($jenis === "kredit" && $this->filled("hutang_aktif")) {
-                $hutang = \App\Models\BukuBesarPiutang::where(
-                    "kode",
-                    $this->hutang_aktif,
-                )->first();
-                if (!$hutang || $hutang->saldo <= 0) {
-                    $validator
-                        ->errors()
-                        ->add(
-                            "hutang_aktif",
-                            "Kode hutang tidak valid atau sudah lunas.",
-                        );
+            if ($jenis === 'kredit' && $this->filled('hutang_aktif') && $piutangId) {
+                $balance = \App\Models\JournalItem::where('user_id', $userId)
+                    ->where('account_id', $piutangId)
+                    ->whereHas('journalEntry', function ($q) {
+                        $q->where('reference_number', $this->hutang_aktif);
+                    })
+                    ->selectRaw('SUM(debit - credit) as saldo')
+                    ->value('saldo');
+
+                if ($balance === null || $balance <= 0) {
+                    $exists = \App\Models\JournalEntry::where('user_id', $userId)
+                        ->where('reference_number', $this->hutang_aktif)
+                        ->exists();
+                    if (! $exists) {
+                        $validator->errors()->add('hutang_aktif', 'Referensi hutang tidak valid.');
+                    }
                 }
             }
 
             // ---- Validasi jumlah total dari subtotal barang ----
             if (
                 $this->barang_terjual_check === false &&
-                $this->filled("barang_terjual")
+                $this->filled('barang_terjual')
             ) {
                 $totalCalculated = 0;
                 foreach ($this->barang_terjual as $index => $barangId) {
@@ -292,8 +294,8 @@ class PendapatanRequest extends FormRequest
                     $validator
                         ->errors()
                         ->add(
-                            "jumlah",
-                            "Jumlah total tidak sesuai dengan kalkulasi barang terjual.",
+                            'jumlah',
+                            'Jumlah total tidak sesuai dengan kalkulasi barang terjual.',
                         );
                 }
             }

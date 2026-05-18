@@ -1,46 +1,37 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Surat Pesanan Pembelian ke Supplier | Digitrans')
+@section('page-title', 'Input Surat Pesanan Pembelian dari Pelanggan | Digitrans')
 @section('section-row')
     <div class="container mt-4">
-        {{-- Alert sukses --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                <strong>Sukses!</strong> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        {{-- Alert Error --}}
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
-                <strong>Gagal!</strong> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-        <form action="{{ route('administrasi.spp.store') }}" method="POST">
+        <form action="{{ route('administrasi.spp.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
-                    Input Surat Pesanan Pembelian (SPP) ke Supplier
+                    Input Surat Pesanan Pembelian (SPP) dari Pelanggan
                 </div>
                 <div class="card-body mt-3">
                     {{-- DATA PELANGGAN --}}
-                    <h6 class="fw-bold">Data Supplier</h6>
+                    <h6 class="fw-bold">Data Pelanggan</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Pilih Supplier</label>
-                            <select name="supplier_id" id="supplierSelect" class="form-select" required>
-                                <option value="">-- Pilih Supplier --</option>
-                                @foreach ($suppliers as $s)
-                                    <option value="{{ $s->id }}" data-alamat="{{ $s->alamat }}">
-                                        {{ $s->nama }}
+                            <label class="form-label">Pilih Pelanggan</label>
+                            <select name="pelanggan_id" id="pelangganSelect" class="form-select" required>
+                                <option value="">-- Pilih Pelanggan --</option>
+                                @foreach ($pelanggans as $p)
+                                    <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}" data-email="{{ $p->email }}">
+                                        {{ $p->nama }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Alamat Supplier</label>
-                            <input type="text" id="alamatSuplier" class="form-control" readonly>
+                            <label class="form-label">Alamat Pelanggan</label>
+                            <input type="text" name="alamat_pelanggan" id="alamatPelanggan" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="form-label">Email Pelanggan (Dapat diubah)<span class="text-danger">*</span></label>
+                            <input type="email" name="email_pelanggan" id="emailPelanggan" class="form-control" required>
+                            <small class="form-text text-muted">Email digunakan untuk mengirimkan surat pesanan pembelian</small>
                         </div>
                     </div>
 
@@ -63,8 +54,13 @@
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label class="form-label">Nama Bagian Pembelian<span class="text-danger">*</span></label>
-                            <input type="text" name="nama_bagian_pembelian" class="form-control" required>
+                            <label class="form-label">Nama Bagian Pelanggan<span class="text-danger">*</span></label>
+                            <input type="text" name="nama_bagian_pelanggan" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">TTD Pelanggan</label>
+                            <input type="file" accept="image/*" name="ttd_pelanggan" class="form-control">
                         </div>
                     </div>
 
@@ -91,8 +87,10 @@
                                     <select name="detail[0][barang_id]" class="form-select barang-select" required>
                                         <option value="">-- Pilih Barang --</option>
                                         @foreach ($barang as $b)
-                                            <option value="{{ $b->id }}" data-stok="{{ $b->getSaldoAkhir() }}"
-                                                data-harga="{{ $b->harga_beli_per_unit }}" data-nama="{{ $b->nama }}">
+                                            <option value="{{ $b->id }}"
+                                                data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
+                                                data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
+                                                data-nama="{{ $b->nama }}">
                                                 {{ $b->nama }}
                                             </option>
                                         @endforeach
@@ -118,7 +116,7 @@
                     <a href="{{ route('administrasi.spp.index') }}" class="btn btn-secondary me-2">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
-                    <input type="hidden" name="jenis" value="transaksi_keluar">
+                    <input type="hidden" name="jenis" value="transaksi_masuk">
                     <button type="submit" class="btn btn-primary">
                         Simpan SPP
                     </button>
@@ -175,8 +173,10 @@
                     <select name="detail[${index}][barang_id]" class="form-select barang-select" required>
                         <option value="">-- Pilih Barang --</option>
                         @foreach ($barang as $b)
-                            <option value="{{ $b->id }}" data-stok="{{ $b->getSaldoAkhir() }}"
-                                data-harga="{{ $b->harga_beli_per_unit }}" data-nama="{{ $b->nama }}">
+                            <option value="{{ $b->id }}"
+                                data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
+                                data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
+                                data-nama="{{ $b->nama }}">
                                 {{ $b->nama }}
                             </option>
                         @endforeach
@@ -229,7 +229,7 @@
             let qty = getNumericValue(row.find('.qty').val());
 
             let total = harga * qty;
-            row.find('.total').val(total ? formatRupiah(total.toString()) : '');
+            row.find('.total').val(total ? formatRupiah(total.toString()) : '0');
         });
 
         // Hapus baris
@@ -237,10 +237,36 @@
             $(this).closest('tr').remove();
         });
 
-        // Auto set alamat dari supplier
-        document.getElementById('supplierSelect').addEventListener('change', function() {
+        // Auto set alamat dari pelanggan
+        document.getElementById('pelangganSelect').addEventListener('change', function() {
             let alamat = this.options[this.selectedIndex].dataset.alamat ?? "";
-            document.getElementById('alamatSuplier').value = alamat;
+            let email = this.options[this.selectedIndex].dataset.email ?? "";
+            document.getElementById('alamatPelanggan').value = alamat;
+            document.getElementById('emailPelanggan').value = email;
         });
+
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses!',
+                text: "{{ session('success') }}",
+            });
+        @endif
+
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+            });
+        @endif
+
+        @if ($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops! Ada kesalahan:',
+                html: '<ul class="text-start">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
+            });
+        @endif
     </script>
 @endpush
