@@ -62,6 +62,25 @@
 @endpush
 
 @section('section-row')
+    <!-- Greetings Card -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary text-white shadow-sm border-0 greeting-card">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    {{-- Left Side --}}
+                    <div>
+                        <h4 class="fw-bold mb-1 text-white">Selamat Datang, {{ Auth::user()->name }}! 👋</h4>
+                        <p class="mb-0 opacity-75">Anda masuk sebagai <span class="badge bg-white text-primary fw-bold">{{ strtoupper(Auth::user()->role) }}</span></p>
+                    </div>
+                    {{-- Right Side --}}
+                    <div class="d-none d-md-block text-end">
+                        <p class="mb-0 opacity-75 small">{{ \Carbon\Carbon::now()->isoFormat('dddd, D MMMM YYYY') }}</p>
+                        <h5 class="mb-0 fw-bold" id="live-clock"></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Summary Cards -->
     <div class="row mb-4 g-4">
         <!-- KAS -->
@@ -386,10 +405,7 @@
         $(document).ready(function() {
             const tableOptions = {
                 responsive: true,
-                order: [], // Menonaktifkan sort otomatis di awal agar mengikuti urutan dari server
-                language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.10.25/i18n/Indonesian.json"
-                }
+                order: [],
             };
             $('#table-kas').DataTable(tableOptions);
             $('#table-barang').DataTable(tableOptions);
