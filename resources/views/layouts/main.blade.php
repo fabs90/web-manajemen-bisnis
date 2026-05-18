@@ -228,7 +228,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($barangDenganKartuTerbaru as $index => $barang)
+                            @foreach ($barangDenganKartuTerbaru as $index => $barang)
                                 @php
                                     $kartu = $barang->kartuGudang->first();
                                 @endphp
@@ -251,11 +251,7 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">Belum ada data barang atau kartu gudang.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -281,18 +277,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($transaksiTerbaru as $transaksi)
+                            @foreach ($transaksiTerbaru as $transaksi)
                                 <tr>
                                     <td>{{ $transaksi->tanggal }}</td>
                                     <td>{{ $transaksi->uraian }}</td>
                                     <td>Rp {{ number_format($transaksi->jumlah, 2, ',', '.') }}</td>
                                     <td>{{ $transaksi->tipe }}</td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center">Belum ada transaksi.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -319,7 +311,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @forelse ($listPiutang as $subLedgerId => $items)
+                        @foreach ($listPiutang as $subLedgerId => $items)
                             <tr class="table-secondary fw-bold">
                                 <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
                                 <td></td>
@@ -336,13 +328,7 @@
                                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-3">
-                                    <em>Tidak ada data piutang.</em>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -369,7 +355,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @forelse ($listHutang as $subLedgerId => $items)
+                        @foreach ($listHutang as $subLedgerId => $items)
                             <tr class="table-secondary fw-bold">
                                 <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
                                 <td></td>
@@ -386,13 +372,7 @@
                                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-3">
-                                    <em>Tidak ada data hutang.</em>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                         </tbody>
                     </table>
                 </div>

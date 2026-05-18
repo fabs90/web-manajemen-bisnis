@@ -44,6 +44,10 @@
                                 <span class="small fw-bold">{{ $barang->jumlah_unit_per_kemasan }} Unit</span>
                             </div>
                             <div class="d-flex justify-content-between">
+                                <span class="small">Stok Maksimum (Rekomendasi)</span>
+                                <span class="small fw-bold text-success">{{ $barang->jumlah_max }} Kemasan</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
                                 <span class="small">Stok Minimum</span>
                                 <span class="small fw-bold text-danger">{{ $barang->jumlah_min }} Kemasan</span>
                             </div>
