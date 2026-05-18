@@ -30,7 +30,7 @@
             </div>
         @endif
 
-        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+        <form id="profile-form" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -115,10 +115,31 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary w-100" type="submit">
+            <button id="submit-btn" class="btn btn-primary w-100" type="submit">
                 Simpan Perubahan
             </button>
 
         </form>
     </div>
 @endsection
+
+@push('script')
+    <script>
+        $(document).ready(function() {
+            $('#profile-form').on('submit', function() {
+                Swal.fire({
+                    title: 'Mohon Tunggu',
+                    text: 'Sedang memperbarui profil...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $('#submit-btn').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sedang Menyimpan...'
+                );
+            });
+        });
+    </script>
+@endpush
