@@ -8,10 +8,6 @@
         <!-- Summary and Action Button -->
         <div class="row mb-4">
             <div class="col-md-12 d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="mb-0">Daftar Pelanggan</h4>
-                    <p class="text-muted small mb-0">Kelola data debitur (piutang) dan kreditur (hutang) perusahaan Anda.</p>
-                </div>
                 <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#createFormCollapse" aria-expanded="false" aria-controls="createFormCollapse">
                     <i class="bi bi-plus-circle me-1"></i> Tambah Data Baru
                 </button>
@@ -49,10 +45,10 @@
                                 <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama pelanggan" required value="{{ old('nama') }}">
                             </div>
                             <div class="col-md-6">
-                                <label for="jenis" class="form-label fw-bold small">Jenis Keanggotaan <span class="text-danger">*</span></label>
+                                <label for="jenis" class="form-label fw-bold small">Jenis <span class="text-danger">*</span></label>
                                 <select class="form-select" id="jenis" name="jenis" required>
-                                    <option value="debitur" {{ old('jenis') == 'debitur' ? 'selected' : '' }}>Debitur (Pelanggan Piutang)</option>
-                                    <option value="kreditur" {{ old('jenis') == 'kreditur' ? 'selected' : '' }}>Kreditur (Pemasok Hutang)</option>
+                                    <option value="debitur" {{ old('jenis') == 'debitur' ? 'selected' : '' }}>Debitur (Orang yang berhutang ke kita / Pelanggan)</option>
+                                    <option value="kreditur" {{ old('jenis') == 'kreditur' ? 'selected' : '' }}>Kreditur (Tempat kita berhutang / Supplier)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">

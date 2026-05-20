@@ -77,7 +77,7 @@
                                 height="80" class="mb-2 d-block">
                         @endif
 
-                        <input type="file" name="logo_perusahaan" class="form-control">
+                        <input id="logo_perusahaan" type="file" name="logo_perusahaan" class="form-control">
                         <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
                     </div>
 
@@ -89,7 +89,7 @@
                                 height="80" class="mb-2 d-block">
                         @endif
 
-                        <input type="file" name="ttd_pemimpin" class="form-control">
+                        <input id="ttd_pemimpin" type="file" name="ttd_pemimpin" class="form-control">
                         <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
                     </div>
 
@@ -126,6 +126,7 @@
 @push('script')
     <script>
         $(document).ready(function() {
+            // Event listener untuk submit form
             $('#profile-form').on('submit', function() {
                 Swal.fire({
                     title: 'Mohon Tunggu',
@@ -139,6 +140,13 @@
                 $('#submit-btn').prop('disabled', true).html(
                     '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sedang Menyimpan...'
                 );
+            });
+
+            // Auto-submit form ketika file dipilih
+            $('input[type="file"]').on('change', function() {
+                if (this.files && this.files.length > 0) {
+                    $('#profile-form').submit();
+                }
             });
         });
     </script>
