@@ -103,13 +103,13 @@
 
                     <div class="mb-3">
                         <label class="form-label">Password Baru</label>
-                        <input type="password" name="password" class="form-control"
+                        <input type="password" name="password" class="form-control" autocomplete="off"
                             placeholder="Kosongkan jika tidak diubah">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Konfirmasi Password</label>
-                        <input type="password" name="password_confirmation" class="form-control">
+                        <input type="password" name="password_confirmation" class="form-control" autocomplete="off">
                     </div>
 
                 </div>

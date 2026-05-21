@@ -39,7 +39,7 @@ class ProfileController extends Controller
              * Hanya field yang diinput & lolos validasi
              ---------------------------------*/
             // Hapus password jika kosong supaya tidak meng-overwrite
-            if (empty($data['password'])) {
+            if (empty($data['password']) || empty($data['password_confirmation'])) {
                 unset($data['password']);
                 unset($data['password_confirmation']);
             }
@@ -92,7 +92,7 @@ class ProfileController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Profile update error: '.$e->getMessage());
+            Log::error('Profile update error: ' . $e->getMessage());
 
             return back()->with(
                 'error',
