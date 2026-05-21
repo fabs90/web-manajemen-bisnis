@@ -104,12 +104,12 @@
                     <div class="mb-3">
                         <label class="form-label">Password Baru</label>
                         <input type="password" name="password" class="form-control"
-                            placeholder="Kosongkan jika tidak diubah">
+                            placeholder="Kosongkan jika tidak diubah" autocomplete="new-password">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Konfirmasi Password</label>
-                        <input type="password" name="password_confirmation" class="form-control" >
+                        <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
                     </div>
 
                 </div>
