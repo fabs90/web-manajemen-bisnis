@@ -30,7 +30,7 @@
             </div>
         @endif
 
-        <form id="profile-form" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+        <form id="profile-form" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" autocomplete="off">
             @csrf
             @method('PUT')
 
@@ -103,13 +103,13 @@
 
                     <div class="mb-3">
                         <label class="form-label">Password Baru</label>
-                        <input type="password" name="password" class="form-control" autocomplete="off"
+                        <input type="password" name="password" class="form-control"
                             placeholder="Kosongkan jika tidak diubah">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Konfirmasi Password</label>
-                        <input type="password" name="password_confirmation" class="form-control" autocomplete="off">
+                        <input type="password" name="password_confirmation" class="form-control" >
                     </div>
 
                 </div>
