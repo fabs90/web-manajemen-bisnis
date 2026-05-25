@@ -23,19 +23,19 @@ class SuratPesananPembelianRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pelanggan_id' => [
+            'supplier_id' => [
                 'required',
                 Rule::exists('pelanggan', 'id')->where(function ($query) {
                     return $query->where('user_id', auth()->id());
                 }),
             ],
-            'alamat_pelanggan' => 'required|string',
-            'email_pelanggan' => 'required|email|max:255',
+            'alamat_supplier' => 'required|string',
+            'email_supplier' => 'required|email|max:255',
             'nomor_pesanan_pembelian' => 'required|string|max:255',
             'tanggal_pesanan_pembelian' => 'required|date',
             'tanggal_kirim_pesanan_pembelian' => 'required|date',
-            'nama_bagian_pelanggan' => 'required|string|max:255',
-            'ttd_pelanggan' => 'nullable|file|mimes:jpg,png,jpeg|max:2048',
+            'nama_pimpinan_supplier' => 'required|string|max:255',
+            'ttd_pimpinan_supplier' => 'nullable|file|mimes:jpg,png,jpeg|max:2048',
             'detail' => 'required|array|min:1',
             'detail.*.barang_id' => [
                 'required',
@@ -58,13 +58,14 @@ class SuratPesananPembelianRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'pelanggan_id' => 'pelanggan',
-            'alamat_pelanggan' => 'alamat pelanggan',
-            'email_pelanggan' => 'email pelanggan',
+            'supplier_id' => 'supplier',
+            'alamat_supplier' => 'alamat supplier',
+            'email_supplier' => 'email supplier',
             'nomor_pesanan_pembelian' => 'nomor pesanan pembelian',
             'tanggal_pesanan_pembelian' => 'tanggal pesanan pembelian',
             'tanggal_kirim_pesanan_pembelian' => 'tanggal kirim pesanan',
-            'nama_bagian_pelanggan' => 'nama bagian pelanggan',
+            'nama_bagian_supplier' => 'nama pimpinan supplier',
+            'ttd_pimpinan_supplier' => 'tanda tangan pimpinan supplier',
             'detail' => 'detail barang',
             'detail.*.barang_id' => 'barang',
             'detail.*.nama_barang' => 'nama barang',

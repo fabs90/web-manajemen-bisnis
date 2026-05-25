@@ -29,4 +29,14 @@ class JournalEntry extends Model
     {
         return $this->hasMany(JournalItem::class);
     }
+
+    public function kartuGudang(): HasMany
+    {
+        return $this->hasMany(KartuGudang::class);
+    }
+
+    public function kasir(): HasMany
+    {
+        return $this->hasMany(KasirTransactionLog::class);
+    }
 }

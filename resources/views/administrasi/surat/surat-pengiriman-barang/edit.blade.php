@@ -29,14 +29,15 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-8">
                             <label class="form-label fw-bold">Pesanan Pembelian (SPP)</label>
-                            <input type="hidden" name="spp_id" value="{{ $dataSpb->spp_id }}">
+                            <input type="hidden" name="spp_id" value="{{ $dataSpb->pesanan_penjualan_id ? 'penjualan_' . $dataSpb->pesanan_penjualan_id : 'pembelian_' . $dataSpb->spp_id }}">
                             @php
-                                $pp = $dataSpb->pesananPembelian;
+                                $pp = $dataSpb->pesananPenjualan ?? $dataSpb->pesananPembelian;
                                 $pelangganNama = $pp->pelanggan->nama ?? $pp->supplier->nama ?? '-';
                                 $pelangganAlamat = $pp->pelanggan->alamat ?? $pp->supplier->alamat ?? '-';
+                                $nomorPesanan = $pp->nomor_pesanan_penjualan ?? $pp->nomor_pesanan_pembelian ?? '-';
                             @endphp
                             <input type="text" class="form-control bg-light"
-                                value="{{ $pp->nomor_pesanan_pembelian ?? '-' }} – {{ $pelangganNama }}" readonly>
+                                value="{{ $nomorPesanan }} – {{ $pelangganNama }}" readonly>
                             <small class="text-muted">SPP tidak dapat diubah setelah SPB dibuat.</small>
                         </div>
                         <div class="col-md-4">
@@ -52,7 +53,7 @@
                     <div class="alert alert-info mb-4">
                         <strong>Kepada&nbsp;&nbsp;:</strong> {{ $pelangganNama }}<br>
                         <strong>Alamat&nbsp;&nbsp;&nbsp;:</strong> {{ $pelangganAlamat }}<br>
-                        <strong>No. Pesanan:</strong> {{ $pp->nomor_pesanan_pembelian ?? '-' }}
+                        <strong>No. Pesanan:</strong> {{ $nomorPesanan }}
                     </div>
 
                     <div class="row g-3 mb-4">
@@ -61,7 +62,7 @@
                                 Tanggal Pengiriman <span class="text-danger">*</span>
                             </label>
                             <input type="date" name="tanggal_pengiriman"
-                                value="{{ old('tanggal_pengiriman', $dataSpb->tanggal_pengiriman ?? $pp->tanggal_kirim_pesanan_pembelian ?? '') }}"
+                                value="{{ old('tanggal_pengiriman', $dataSpb->tanggal_pengiriman ?? ($pp->tanggal_kirim_pesanan_penjualan ?? ($pp->tanggal_kirim_pesanan_pembelian ?? ''))) }}"
                                 class="form-control @error('tanggal_pengiriman') is-invalid @enderror" required>
                             @error('tanggal_pengiriman')
                                 <small class="text-danger">{{ $message }}</small>
@@ -138,7 +139,7 @@
                             <tbody id="tabel-barang">
                                 @forelse ($dataSpb->suratPengirimanBarangDetail as $i => $detail)
                                     @php
-                                        $sppDetail = $detail->pesananPembelianDetail;
+                                        $sppDetail = $detail->pesananPenjualanDetail ?? $detail->pesananPembelianDetail;
                                         $kuantitasDipesan = $sppDetail->kuantitas ?? 0;
                                         $satuan = $sppDetail->satuan ?? '';
                                         $jumlahDikirim = old("items.{$i}.jumlah_dikirim", $detail->jumlah_dikirim);

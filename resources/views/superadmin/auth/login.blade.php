@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis</title>
-    <link rel="shortcut icon" href="{{ asset('./dist/assets/static/images/logo_web.png') }}" type="image/x-icon" />
+    <title>Login Admin | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis</title>
+    <link rel="shortcut icon" href="{{ asset('dist/assets/static/images/logo_web.png') }}" type="image/x-icon" />
 
     <!--<link rel="stylesheet" href="{{ asset('css/login.css') }}"> Nanti Pakai ini -->
 </head>
@@ -227,9 +227,16 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" class="auth-form">
-                @csrf
+            @if (session('success'))
+                <div class="alert success">{{ session('success') }}</div>
+            @endif
 
+            @if (session('error'))
+                <div class="alert danger">{{ session('error') }}</div>
+            @endif
+
+            <form method="POST" action="{{ route('superadmin.store') }}" class="auth-form">
+                @csrf
                 <div class="form-group">
                     <label for="email">Alamat Email</label>
                     <input id="email" type="email" name="email" placeholder="contoh@email.com"

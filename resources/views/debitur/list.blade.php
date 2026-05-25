@@ -18,7 +18,7 @@
         <div class="collapse {{ $errors->any() ? 'show' : '' }} mb-4" id="createFormCollapse">
             <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0 small text-uppercase fw-bold"><i class="bi bi-pencil-square me-2"></i>Form Tambah Debitur/Kreditur</h5>
+                    <h5 class="mb-0 small text-uppercase text-white fw-bold"><i class="bi bi-pencil-square me-2"></i>Form Tambah Debitur/Kreditur</h5>
                 </div>
                 <div class="card-body p-4">
                     <form action="{{ route('debitur-kreditur.store') }}" method="post" id="createForm">
@@ -41,8 +41,8 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="nama" class="form-label fw-bold small">Nama Lengkap <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama pelanggan" required value="{{ old('nama') }}">
+                                <label for="nama" class="form-label fw-bold small">Nama Perusahaan/Perorangan <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama perusahaan/perorangan" required value="{{ old('nama') }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="jenis" class="form-label fw-bold small">Jenis <span class="text-danger">*</span></label>

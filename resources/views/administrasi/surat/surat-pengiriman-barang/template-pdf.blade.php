@@ -127,8 +127,8 @@
                 @if ($data->fakturPenjualan && $data->fakturPenjualan->kode_faktur)
                     <strong>Kode Faktur:</strong> {{ $data->fakturPenjualan->kode_faktur ?? '___' }}<br>
                 @endif
-                <strong>Nomor:</strong> {{ $data->pesananPembelian->nomor_pesanan_pembelian ?? '___' }}<br>
-                <strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($data->created_at ?? now())->format('d/m/Y') }}
+                <strong>Nomor SPP:</strong> {{ $data->pesananPenjualan->nomor_pesanan_penjualan ?? $data->pesananPembelian->nomor_pesanan_pembelian ?? '___' }}<br>
+                <strong>Tanggal Pesan:</strong> {{ \Carbon\Carbon::parse($data->pesananPenjualan->tanggal_pesanan_penjualan ?? now())->format('d/m/Y') }}
             </td>
         </tr>
     </table>
@@ -137,16 +137,12 @@
     <p class="mb-3">
         Kepada Yth.<br>
         <strong>
-            @if ($data->pesananPembelian->jenis == 'transaksi_keluar')
-                {{ $data->pesananPembelian->supplier->nama ?? '-' }}
-            @else
-                {{ $data->pesananPembelian->pelanggan->nama ?? '-' }}
+            @if ($data->pesananPenjualan)
+                {{ $data->pesananPenjualan->pelanggan->nama ?? '-' }}
             @endif
         </strong><br>
-        @if ($data->pesananPembelian->jenis == 'transaksi_keluar')
-            {{ $data->pesananPembelian->supplier->alamat ?? '-' }}
-        @else
-            {{ $data->pesananPembelian->pelanggan->alamat ?? '-' }}
+        @if ($data->pesananPenjualan)
+            {{ $data->pesananPenjualan->pelanggan->alamat ?? '-' }}
         @endif
     </p>
 
@@ -195,15 +191,15 @@
 
             @foreach ($data->suratPengirimanBarangDetail as $item)
                 @php
-                    $detail = $item->pesananPembelianDetail;
-                    $subtotal = $item->jumlah_dikirim * $detail->harga;
+                    $detail = $item->pesananPenjualanDetail ?? $item->pesananPembelianDetail;
+                    $subtotal = $item->jumlah_dikirim * ($detail->harga ?? 0);
                     $total += $subtotal;
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td class="text-center">{{ $item->jumlah_dikirim }}</td>
-                    <td>{{ $detail->nama_barang }}</td>
-                    <td class="text-right">Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
+                    <td>{{ $detail->nama_barang ?? '-' }}</td>
+                    <td class="text-right">Rp {{ number_format($detail->harga ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
@@ -279,7 +275,8 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong>
+                <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong><br>
+                <span>Tanggal: {{ \Carbon\Carbon::now()->format('d/m/Y') }}</span>
             </td>
         </tr>
     </table>

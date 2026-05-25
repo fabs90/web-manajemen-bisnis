@@ -4,6 +4,4 @@
 
 @include('layouts.superadmin-partial.contents')
 
-@include('layouts.partial.footer')
-
 @include('layouts.superadmin-partial.scripts')

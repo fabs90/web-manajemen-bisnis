@@ -42,9 +42,20 @@ class SuratPengirimanBarangService
                 );
             }
 
+            // Parse spp_id to distinguish between pembelian and penjualan
+            $sppIdVal = null;
+            $pesananPenjualanIdVal = null;
+
+            if (str_starts_with($data['spp_id'], 'penjualan_')) {
+                $pesananPenjualanIdVal = (int) str_replace('penjualan_', '', $data['spp_id']);
+            } else {
+                $sppIdVal = (int) str_replace('pembelian_', '', $data['spp_id']);
+            }
+
             // Simpan header SPB
             $spb = SuratPengirimanBarang::create([
-                'spp_id' => $data['spp_id'],
+                'spp_id' => $sppIdVal,
+                'pesanan_penjualan_id' => $pesananPenjualanIdVal,
                 'nomor_pengiriman_barang' => $data['nomor_pengiriman_barang'],
                 'tanggal_terima' => $data['tanggal_terima'],
                 'status_pengiriman' => $data['status_pengiriman'],
@@ -61,9 +72,19 @@ class SuratPengirimanBarangService
             // Simpan detail barang
             if (isset($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
+                    $sppDetailIdVal = null;
+                    $pesananPenjualanDetailIdVal = null;
+
+                    if (str_starts_with($item['spp_detail_id'], 'penjualan_')) {
+                        $pesananPenjualanDetailIdVal = (int) str_replace('penjualan_', '', $item['spp_detail_id']);
+                    } else {
+                        $sppDetailIdVal = (int) str_replace('pembelian_', '', $item['spp_detail_id']);
+                    }
+
                     SuratPengirimanBarangDetail::create([
                         'spb_id' => $spb->id,
-                        'spp_detail_id' => $item['spp_detail_id'],
+                        'spp_detail_id' => $sppDetailIdVal,
+                        'pesanan_penjualan_detail_id' => $pesananPenjualanDetailIdVal,
                         'jumlah_dikirim' => $item['jumlah_dikirim'] ?? 0,
                     ]);
                 }
@@ -87,7 +108,10 @@ class SuratPengirimanBarangService
             $data = SuratPengirimanBarang::with([
                 'pesananPembelian.pelanggan',
                 'pesananPembelian',
+                'pesananPenjualan.pelanggan',
+                'pesananPenjualan',
                 'suratPengirimanBarangDetail.pesananPembelianDetail',
+                'suratPengirimanBarangDetail.pesananPenjualanDetail',
             ])
                 ->where('user_id', auth()->id())
                 ->findOrFail($id);

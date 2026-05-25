@@ -14,7 +14,7 @@ class SuratPesananPembelianController extends Controller
 {
     public function index()
     {
-        $data = PesananPembelian::with('pelanggan', 'pesananPembelianDetail')
+        $data = PesananPembelian::with('supplier', 'pesananPembelianDetail')
             ->where('user_id', auth()->user()->id)
             ->get();
 
@@ -26,10 +26,10 @@ class SuratPesananPembelianController extends Controller
 
     public function create()
     {
-        $pelanggans = Pelanggan::where('user_id', auth()->id())->get();
+        $suppliers = Pelanggan::where('user_id', auth()->id())->get();
         $barang = Barang::where('user_id', auth()->id())->get();
 
-        return view('administrasi.surat.surat-pesanan-pembelian.create', compact('pelanggans', 'barang'));
+        return view('administrasi.surat.surat-pesanan-pembelian.create', compact('suppliers', 'barang'));
     }
 
     public function store(

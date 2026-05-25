@@ -24,14 +24,9 @@ class PesananPembelian extends Model
         'user_id',
     ];
 
-    public function pelanggan()
-    {
-        return $this->belongsTo(Pelanggan::class);
-    }
-
     public function supplier()
     {
-        return $this->belongsTo(Pelanggan::class);
+        return $this->belongsTo(Pelanggan::class, 'supplier_id', 'id');
     }
 
     public function user()
@@ -51,7 +46,7 @@ class PesananPembelian extends Model
 
     public function generatePdf()
     {
-        $this->loadMissing(['pelanggan', 'pesananPembelianDetail', 'user']);
+        $this->loadMissing(['supplier', 'pesananPembelianDetail', 'user']);
 
         return \Barryvdh\DomPDF\Facade\Pdf::loadView(
             'administrasi.surat.surat-pesanan-pembelian.template-pdf',

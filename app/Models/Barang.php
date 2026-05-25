@@ -8,18 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Barang extends Model
 {
     use HasFactory;
-    protected $table = "barang";
+
+    protected $table = 'barang';
 
     protected $fillable = [
-        "kode_barang",
-        "nama",
-        "user_id",
-        "jumlah_max",
-        "jumlah_min",
-        "jumlah_unit_per_kemasan",
-        "harga_beli_per_unit",
-        "harga_beli_per_kemas",
-        "harga_jual_per_unit",
+        'kode_barang',
+        'nama',
+        'user_id',
+        'jumlah_max',
+        'jumlah_min',
+        'jumlah_unit_per_kemasan',
+        'harga_beli_per_unit',
+        'harga_beli_per_kemas',
+        'harga_jual_per_unit',
     ];
 
     public function user()
@@ -32,11 +33,17 @@ class Barang extends Model
         return $this->hasMany(KartuGudang::class);
     }
 
+    public function latestKartuGudang()
+    {
+        return $this->hasOne(KartuGudang::class)->latestOfMany();
+    }
+
     public function getSaldoAkhir()
     {
         $latestKartu = $this->kartuGudang()
-            ->orderBy("created_at", "desc")
+            ->orderBy('created_at', 'desc')
             ->first();
+
         return $latestKartu ? $latestKartu->saldo_persatuan : 0;
     }
 }

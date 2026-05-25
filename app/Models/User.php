@@ -51,6 +51,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
     public function checkIsVerified(): bool
     {
         return $this->is_verified;

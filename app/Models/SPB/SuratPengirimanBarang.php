@@ -9,39 +9,46 @@ use Illuminate\Database\Eloquent\Model;
 
 class SuratPengirimanBarang extends Model
 {
-    protected $table = "surat_pengiriman_barang";
+    protected $table = 'surat_pengiriman_barang';
+
     protected $fillable = [
-        "spp_id",
-        "nomor_pengiriman_barang",
-        "jenis_pengiriman",
-        "status_pengiriman",
-        "tanggal_terima",
-        "keadaan",
-        "keterangan",
-        "nama_penerima",
-        "nama_pengirim",
-        "ttd_pengirim",
-        "ttd_penerima",
-        "user_id",
+        'spp_id',
+        'pesanan_penjualan_id',
+        'nomor_pengiriman_barang',
+        'jenis_pengiriman',
+        'status_pengiriman',
+        'tanggal_terima',
+        'keadaan',
+        'keterangan',
+        'nama_penerima',
+        'nama_pengirim',
+        'ttd_pengirim',
+        'ttd_penerima',
+        'user_id',
     ];
 
-    public function pesananPembelian()
+    public function pesananPembelian(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(PesananPembelian::class, "spp_id");
+        return $this->belongsTo(PesananPembelian::class, 'spp_id');
     }
 
-    public function suratPengirimanBarangDetail()
+    public function pesananPenjualan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->hasMany(SuratPengirimanBarangDetail::class, "spb_id");
+        return $this->belongsTo(\App\Models\SPP\SuratPesananPenjualan::class, 'pesanan_penjualan_id');
     }
 
-    public function user()
+    public function suratPengirimanBarangDetail(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SuratPengirimanBarangDetail::class, 'spb_id');
+    }
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function fakturPenjualan()
+    public function fakturPenjualan(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(FakturPenjualan::class, "spb_id", "id");
+        return $this->hasOne(FakturPenjualan::class, 'spb_id', 'id');
     }
 }

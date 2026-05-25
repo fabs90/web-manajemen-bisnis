@@ -60,6 +60,11 @@
                             @error('spp_id')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
+                            <div class="mt-2 text-end">
+                                <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}" class="text-decoration-none small text-success fw-bold">
+                                    Belum ada pesanan? <i class="bi bi-plus-circle"></i> Buat Pesanan Pelanggan Baru
+                                </a>
+                            </div>
                         </div>
 
                         <div class="col-md-4">

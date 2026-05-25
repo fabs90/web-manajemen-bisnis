@@ -20,12 +20,12 @@ class SuratPengirimanBarangRequest extends FormRequest
 
         return [
             // ── SPB Info ────────────────────────────────────────────────
-            'spp_id' => ['required', 'exists:surat_pesanan_pembelian,id'],
+            'spp_id' => ['required', 'string'],
             'nomor_pengiriman_barang' => ['required', 'string'],
             'tanggal_pengiriman' => ['required', 'date'],
             'status_pengiriman' => ['required', 'in:diproses,dikirim,diterima,dibatalkan,dikembalikan'],
             'jenis_pengiriman' => ['required', 'string', 'max:100'],
-            'nama_pengirim' => ['nullable', 'string', 'max:100'],
+            'nama_pengirim' => ['required', 'string', 'max:100'],
             'ttd_pengirim' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'keterangan' => ['nullable', 'string'],
 
@@ -37,7 +37,7 @@ class SuratPengirimanBarangRequest extends FormRequest
 
             // ── Items ────────────────────────────────────────────────────
             'items' => ['required', 'array', 'min:1'],
-            'items.*.spp_detail_id' => ['required', 'exists:surat_pesanan_pembelian_detail,id'],
+            'items.*.spp_detail_id' => ['required', 'string'],
             'items.*.jumlah_dikirim' => ['required', 'integer', 'min:0'],
         ];
     }

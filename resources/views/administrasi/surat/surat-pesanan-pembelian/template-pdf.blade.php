@@ -1,8 +1,7 @@
-{{-- 
-    Template ini digunakan untuk menghasilkan salinan PDF Surat Pesanan Pembelian (SPP) 
-    yang dikirimkan kepada pelanggan sebagai konfirmasi bahwa mereka telah melakukan 
-    pemesanan barang. Dokumen ini berfungsi sebagai bukti transaksi/pesanan yang 
-    diterima oleh toko/perusahaan dari pelanggan.
+{{--
+    Template ini digunakan untuk menghasilkan salinan PDF Surat Pesanan Pembelian (SPP)
+    yang dikirimkan kepada pemasok (supplier) sebagai pemesanan barang. Dokumen ini
+    berfungsi sebagai bukti pesanan yang diajukan oleh perusahaan kepada pemasok.
 --}}
 <!DOCTYPE html>
 <html lang="id">
@@ -125,14 +124,14 @@
     <p class="mb-3">
         Kepada Yth.<br>
         <strong>
-            {{ $data->pelanggan->nama ?? '-' }}
+            {{ $data->supplier->nama ?? '-' }}
         </strong><br>
-        {{ $data->pelanggan->alamat ?? '-' }}
+        {{ $data->supplier->kontak ?? '-' }}
     </p>
 
     <p class="mb-4">
         Dengan hormat,<br>
-        Terima kasih atas pesanan Anda. Berikut adalah rincian barang yang telah dipesan dan akan kami proses untuk pengiriman paling lambat pada tanggal
+        Melalui surat ini, kami bermaksud melakukan pemesanan barang kepada perusahaan Bapak/Ibu. Berikut adalah rincian barang yang kami pesan dan kami harapkan pengirimannya paling lambat pada tanggal
         <strong>{{ $data->tanggal_kirim_pesanan_pembelian ?? '(tanggal/bulan/tahun)' }}</strong>:
     </p>
 
@@ -191,7 +190,7 @@
     <table width="100%" class="table-no-border" style="margin-top: 50px;">
         <tr>
             <td width="50%" class="text-center">
-                Penerima,<br>
+                Hormat Kami,<br>
                 @if ($profileUser->ttd_pemimpin)
                     @php
                         $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
@@ -214,7 +213,7 @@
                 {{ $profileUser->jabatan ?? 'Pemimpin Perusahaan' }}
             </td>
             <td width="50%" class="text-center">
-                Hormat kami,<br>
+                Mengetahui,<br>
                 @if ($data->ttd_pengirim)
                     @php
                         $ttdPengirimPath = storage_path('app/public/' . $data->ttd_pengirim);
@@ -234,7 +233,7 @@
                 @endif
                 <br>
                 <strong><u>({{ $data->nama_bagian_pembelian ?? '_________' }})</u></strong><br>
-                Bagian Pembelian
+                Pemimpin Perusahaan Supplier/Pemasok
             </td>
         </tr>
     </table>

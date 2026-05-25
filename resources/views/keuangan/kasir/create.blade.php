@@ -8,31 +8,31 @@
     .total-box {
         background: #222;
         color: #0f0;
-        font-size: 32px;
+        font-size: 24px;
         font-weight: bold;
-        padding: 15px;
+        padding: 10px;
         border-radius: 12px;
         text-align: right;
     }
     #kembalian {
-        font-size: 24px;
+        font-size: 18px;
         font-weight: bold;
         text-align: right;
     }
     #bayar {
-        font-size: 22px;
+        font-size: 18px;
         font-weight: bold;
         text-align: right;
         border: 2px solid #007bff;
     }
     .btn-action {
-        font-size: 20px;
+        font-size: 16px;
         font-weight: bold;
-        padding: 14px;
-        border-radius: 10px;
+        padding: 10px;
+        border-radius: 8px;
     }
     .keranjang-table td, .keranjang-table th {
-        font-size: 18px;
+        font-size: 14px;
         vertical-align: middle;
     }
     .status-kurang {
@@ -41,7 +41,29 @@
     .status-cukup {
         color: #008000 !important;
     }
+    /* Loading Overlay */
+    #page-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
+
+<!-- Loading Overlay -->
+<div id="page-loader">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <h5 class="mt-3 fw-bold text-secondary">Memuat Kasir...</h5>
+</div>
 
 <div class="card shadow-sm kasir-card">
     <div class="card-body">
@@ -57,25 +79,38 @@
 
             <div class="row">
                 {{-- 🔹 Area Barang --}}
-                <div class="col-lg-7">
-                    <label><strong>Pilih Barang</strong></label>
-                    <select class="form-select form-select-lg mb-3" id="select-barang">
-                        <option disabled selected>-- Pilih barang --</option>
-                        @foreach ($barang as $item)
-                        <option value="{{ $item->id }}"
-                            data-nama="{{ $item->nama }}"
-                            data-harga="{{ $item->harga_jual_per_unit }}">
-                            {{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <label><strong>Qty</strong></label>
-                    <input type="number" id="qty" class="form-control form-control-lg mb-3"
-                        value="1" min="1">
+                <div class="col-lg-8">
+                    <div class="row align-items-start mb-3">
+                        <div class="col-md-7">
+                            <label><strong>Pilih Barang</strong></label>
+                            <select class="form-select mb-1" id="select-barang" onchange="updateStokInfo(this)">
+                                <option disabled selected>-- Pilih barang --</option>
+                                @foreach ($barang as $item)
+                                <option value="{{ $item->id }}"
+                                    data-nama="{{ $item->nama }}"
+                                    data-stok="{{ $item->latestKartuGudang ? number_format($item->latestKartuGudang->saldo_persatuan, 0, '.', '') : '0' }}"
+                                    data-harga="{{ $item->harga_jual_per_unit }}">
+                                    {{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
+                                </option>
+                                @endforeach
+                            </select>
+                            <div id="stok-info" class="text-muted fw-bold">
+                                Stok tersedia: <span id="stok-value" class="text-primary">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label><strong>Jumlah</strong></label>
+                            <input type="number" id="qty" class="form-control mb-1" value="1" min="1">
+                        </div>
 
-                    <button type="button" id="btn-tambah" class="btn btn-success w-100 btn-action mb-3">
-                        ➕ Tambah ke Keranjang
-                    </button>
+                        <div class="col-md-3">
+                            <label class="d-none d-md-block">&nbsp;</label>
+                            <button type="button" id="btn-tambah" class="btn btn-success w-100 btn-action mb-1">
+                                ➕ Tambah
+                            </button>
+                        </div>
+                    </div>
 
                     <table class="table keranjang-table table-bordered table-striped" id="keranjang-table">
                         <thead class="table-dark text-center">
@@ -92,14 +127,20 @@
                 </div>
 
                 {{-- 🔹 Area Pembayaran --}}
-                <div class="col-lg-5">
+                <div class="col-lg-4">
 
                     <label><strong>Jenis Pembayaran</strong></label>
-                    <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="form-select form-select-lg mb-3" required>
+                    <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="form-select mb-3" required>
                         <option value="" disabled selected>-- Pilih Jenis Pembayaran --</option>
-                        @foreach ($jenisPembayaran as $jp)
-                            <option value="{{ $jp->id }}" data-nama="{{ strtolower($jp->nama) }}">{{ $jp->nama }}</option>
-                        @endforeach
+                        @if (!$jenisPembayaran)
+                            <option value="1">Tunai</option>
+                            <option value="2">Transfer Bank</option>
+                            <option value="3">QRIS</option>
+                        @else
+                            @foreach ($jenisPembayaran as $jp)
+                                <option value="{{ $jp->id }}" data-nama="{{ strtolower($jp->nama) }}">{{ $jp->nama }}</option>
+                            @endforeach
+                        @endif
                     </select>
 
                     <div id="qris-container" class="mt-2 mb-3 text-center d-none">
@@ -118,7 +159,7 @@
                     <input type="hidden" name="grand_total" id="grand-total-value">
                     <label class="fw-bold">Uang Dibayar</label>
                     <input type="text" name="uang_bayar" id="bayar"
-                        class="form-control rupiah mb-3" placeholder="Masukkan uang">
+                        class="form-control rupiah mb-3" placeholder="Masukkan uang" autocomplete="off">
 
                     <label class="fw-bold">Kembalian</label>
                     <input type="text" id="kembalian"
@@ -139,17 +180,33 @@
 @endsection
 @push('script')
 <script>
+function updateStokInfo(selectElement) {
+    const opt = selectElement.options[selectElement.selectedIndex];
+    const stokValue = document.getElementById('stok-value');
+    if (opt && opt.value) {
+        stokValue.innerText = opt.dataset.stok || '0';
+    } else {
+        stokValue.innerText = '-';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Sembunyikan loading overlay setelah semua ter-load
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('page-loader');
+        if (loader) {
+            loader.style.display = 'none';
+        }
+    });
 
     @if (session('success'))
         Swal.fire({
             icon: 'success',
             title: 'Sukses!',
             text: "{{ session('success') }}",
-            toast: true,
-            position: 'top-end',
             timer: 2800,
-            showConfirmButton: false
+            showConfirmButton: true
         });
     @endif
 
@@ -158,10 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
             icon: 'error',
             title: 'Gagal!',
             text: "{{ session('error') }}",
-            toast: true,
-            position: 'top-end',
-            timer: 3500,
-            showConfirmButton: false
+            showConfirmButton: true
         });
     @endif
 
@@ -186,6 +240,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const grandTotalEl = document.getElementById('grand-total');
     const inputKembalian = document.getElementById('kembalian');
     const btnSimpan = document.getElementById('btn-simpan');
+
+    // updateStokInfo() dipanggil via inline onchange atribut di select
+    const initialOpt = document.getElementById('select-barang');
+    if (initialOpt && initialOpt.value) {
+        updateStokInfo(initialOpt);
+    }
 
     document.getElementById('btn-tambah').addEventListener('click', () => {
         const opt = selectBarang.selectedOptions[0];

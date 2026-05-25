@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AdministrasiSuratController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
@@ -20,10 +21,10 @@ use App\Http\Controllers\Rapat\SuratUndanganRapatController;
 use App\Http\Controllers\ReturController;
 use App\Http\Controllers\RugiLabaController;
 use App\Http\Controllers\SPB\SuratPengirimanBarangController;
+use App\Http\Controllers\SPB\SuratPesananPelangganController;
 use App\Http\Controllers\SPP\SuratPesananPembelianController;
 use App\Http\Controllers\SuratKeluar\SuratKeluarController;
 use App\Http\Controllers\SuratMasukController;
-use App\Http\Controllers\TutupBukuController;
 use Illuminate\Support\Facades\Route;
 
 // Halaman publik
@@ -641,6 +642,22 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'destroy',
         ])->name('administrasi.faktur-penjualan.destroy');
 
+        // SPP Pelanggan (dibuat dari modul SPB)
+        Route::get('/surat-pengiriman-barang/pesanan-pelanggan/create', [
+            SuratPesananPelangganController::class,
+            'create',
+        ])->name('administrasi.spb.spp-pelanggan.create');
+
+        Route::post('/surat-pengiriman-barang/pesanan-pelanggan', [
+            SuratPesananPelangganController::class,
+            'store',
+        ])->name('administrasi.spb.spp-pelanggan.store');
+
+        Route::delete('/surat-pengiriman-barang/pesanan-pelanggan/{id}', [
+            SuratPesananPelangganController::class,
+            'destroy',
+        ])->name('administrasi.spb.spp-pelanggan.destroy');
+
         // Surat Pengiriman Barang (SPB)
         Route::get('/surat-pengiriman-barang', [
             SuratPengirimanBarangController::class,
@@ -716,13 +733,14 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
     });
 });
 
-Route::middleware(['web', 'auth'])
+Route::middleware(['web', 'auth', 'checkIsAdmin'])
     ->prefix('superadmin')
+    ->name('superadmin.')
     ->group(function () {
-        Route::get('/dashboard', [
-            PageController::class,
-            'dashboard_superadmin',
-        ])->name('superadmin.dashboard');
+        Route::get('/', [
+            AdminController::class,
+            'index',
+        ])->name('index');
     });
 
 require __DIR__.'/auth.php';

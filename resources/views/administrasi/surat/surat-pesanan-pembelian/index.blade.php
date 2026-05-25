@@ -23,14 +23,11 @@
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h5 class="fw-bold">Data Surat Pesanan Pembelian (SPP)</h5>
-                            <p class="text-muted mb-3">
-                                Terima pesanan pembelian dari pelanggan ke perusahaan.
-                            </p>
                         </div>
 
                         <div class="d-flex justify-content-center">
                             <a href="{{ route('administrasi.spp.create') }}" class="btn btn-primary px-5">
-                                + Tambah SPP Pelanggan
+                                + Tambah SPP kepada Supplier/Pemasok
                             </a>
                         </div>
                     </div>
@@ -49,10 +46,10 @@
                             <tr>
                                 <th>No</th>
                                 <th>Nomor SPP</th>
-                                <th>Pelanggan</th>
+                                <th>Supplier/Pemasok</th>
                                 <th>Tanggal Pesan</th>
                                 <th>Tanggal Kirim</th>
-                                <th>Nama Bagian Pembelian</th>
+                                <th>Nama Pimpinan Perusahaan Supplier/Pemasok</th>
                                 <th>Detail Barang</th>
                                 <th>Total Pembelian</th>
                                 <th>Aksi</th>
@@ -65,7 +62,7 @@
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td>{{ $item->nomor_pesanan_pembelian }}</td>
                                     <td>
-                                        {{ $item->pelanggan->nama ?? '-' }}
+                                        {{ $item->supplier->nama ?? '-' }}
                                     </td>
                                     <td>{{ $item->tanggal_pesanan_pembelian }}</td>
                                     <td>{{ $item->tanggal_kirim_pesanan_pembelian }}</td>

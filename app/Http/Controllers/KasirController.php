@@ -18,8 +18,9 @@ class KasirController extends Controller
 {
     public function index()
     {
-        $kasirTransactions = KasirTransactionLog::where('user_id', auth()->id())
-            ->orderBy('tanggal_transaksi', 'desc')
+        $kasirTransactions = KasirTransactionLog::with('journalEntry.kartuGudang.barang')
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return view('keuangan.kasir.index', compact('kasirTransactions'));
@@ -29,7 +30,8 @@ class KasirController extends Controller
     {
         $jenisPembayaran = JenisPembayaran::select('id', 'nama')->get();
         // Ambil semua barang
-        $barang = Barang::where('user_id', auth()->id())
+        $barang = Barang::with('latestKartuGudang')
+            ->where('user_id', auth()->id())
             ->orderBy('nama')
             ->get();
 
@@ -115,7 +117,7 @@ class KasirController extends Controller
                     $jumlahDijual = $request->jumlah_barang_dijual[$index] ?? 0;
                     if ($saldoSatuanAwal < $jumlahDijual) {
                         throw new \Exception(
-                            "Saldo barang '{$detailBarang->nama}' tidak mencukupi. Tersedia: {$saldoSatuanAwal}, Dibutuhkan: {$jumlahDijual}",
+                            "Saldo barang {$detailBarang->nama} tidak mencukupi. Tersedia: {$saldoSatuanAwal}, Dibutuhkan: {$jumlahDijual}",
                         );
                     }
 

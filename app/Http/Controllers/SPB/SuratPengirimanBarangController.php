@@ -5,7 +5,6 @@ namespace App\Http\Controllers\SPB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuratPengirimanBarangRequest;
 use App\Models\SPB\SuratPengirimanBarang;
-use App\Models\SPP\PesananPembelian;
 use App\Services\SuratPengirimanBarangService;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -17,6 +16,8 @@ class SuratPengirimanBarangController extends Controller
         $suratPengirimanBarang = SuratPengirimanBarang::with([
             'pesananPembelian',
             'pesananPembelian.pelanggan',
+            'pesananPenjualan',
+            'pesananPenjualan.pelanggan',
             'user',
         ])
             ->latest()
@@ -30,7 +31,8 @@ class SuratPengirimanBarangController extends Controller
 
     public function create()
     {
-        $dataSpp = PesananPembelian::with([
+        // 1. Old SPP Pelanggan
+        $oldSpp = \App\Models\SPP\PesananPembelian::with([
             'pelanggan',
             'pesananPembelianDetail',
         ])
@@ -41,6 +43,47 @@ class SuratPengirimanBarangController extends Controller
             ->latest()
             ->get();
 
+        // 2. New SPP Pelanggan
+        $newSpp = \App\Models\SPP\SuratPesananPenjualan::with([
+            'pelanggan',
+            'details',
+        ])
+            ->where('user_id', auth()->id())
+            ->whereDoesntHave('suratPengirimanBarang')
+            ->latest()
+            ->get();
+
+        // Map both to a consistent structure for the select list
+        $dataSpp = collect();
+
+        foreach ($oldSpp as $item) {
+            $dataSpp->push((object) [
+                'id' => 'pembelian_'.$item->id,
+                'nomor_pesanan_pembelian' => $item->nomor_pesanan_pembelian,
+                'tanggal_kirim_pesanan_pembelian' => $item->tanggal_kirim_pesanan_pembelian ? $item->tanggal_kirim_pesanan_pembelian->format('Y-m-d') : null,
+                'pelanggan' => $item->pelanggan,
+                'pesananPembelianDetail' => $item->pesananPembelianDetail->map(fn ($d) => (object) [
+                    'id' => 'pembelian_'.$d->id,
+                    'nama_barang' => $d->nama_barang,
+                    'kuantitas' => $d->kuantitas,
+                ]),
+            ]);
+        }
+
+        foreach ($newSpp as $item) {
+            $dataSpp->push((object) [
+                'id' => 'penjualan_'.$item->id,
+                'nomor_pesanan_pembelian' => $item->nomor_pesanan_penjualan,
+                'tanggal_kirim_pesanan_pembelian' => $item->tanggal_kirim_pesanan_penjualan ? $item->tanggal_kirim_pesanan_penjualan->format('Y-m-d') : null,
+                'pelanggan' => $item->pelanggan,
+                'pesananPembelianDetail' => $item->details->map(fn ($d) => (object) [
+                    'id' => 'penjualan_'.$d->id,
+                    'nama_barang' => $d->nama_barang,
+                    'kuantitas' => $d->kuantitas,
+                ]),
+            ]);
+        }
+
         return view('administrasi.surat.surat-pengiriman-barang.create', compact('dataSpp'));
     }
 
@@ -48,8 +91,10 @@ class SuratPengirimanBarangController extends Controller
     {
         $dataSpb = SuratPengirimanBarang::with([
             'pesananPembelian',
+            'pesananPenjualan',
             'suratPengirimanBarangDetail.pesananPembelianDetail',
-        ])->where('id', $id)->first();
+            'suratPengirimanBarangDetail.pesananPenjualanDetail',
+        ])->where('id', $id)->firstOrFail();
 
         return view('administrasi.surat.surat-pengiriman-barang.edit', compact('dataSpb'));
     }

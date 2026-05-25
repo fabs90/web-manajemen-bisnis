@@ -18,25 +18,23 @@ use Illuminate\Support\Str;
 
 class SuratPesananPembelianService
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(protected FileUploadService $fileUploadService) {}
 
     public function store($request)
     {
         DB::beginTransaction();
         try {
-            if ($request->hasFile('ttd_pelanggan')) {
-                $ttdFile = $this->fileUploadService->upload($request->ttd_pelanggan, 'surat-pesanan-pembelian/ttd_pelanggan', Auth::user()->email);
+            if ($request->hasFile('ttd_pimpinan_supplier')) {
+                $ttdFile = $this->fileUploadService->upload($request->ttd_pimpinan_supplier, 'surat-pesanan-pembelian/ttd_pimpinan_supplier', Auth::user()->email);
             }
             $suratPesananPembelian = PesananPembelian::create([
-                'jenis' => 'transaksi_masuk',
-                'pelanggan_id' => $request->pelanggan_id,
-                'supplier_id' => null,
+                'jenis' => 'transaksi_keluar',
+                'pelanggan_id' => null,
+                'supplier_id' => $request->supplier_id,
                 'nomor_pesanan_pembelian' => $request->nomor_pesanan_pembelian,
                 'tanggal_pesanan_pembelian' => $request->tanggal_pesanan_pembelian,
                 'tanggal_kirim_pesanan_pembelian' => $request->tanggal_kirim_pesanan_pembelian,
-                'nama_bagian_pembelian' => $request->nama_bagian_pelanggan,
+                'nama_bagian_pembelian' => $request->nama_pimpinan_supplier,
                 'ttd_pengirim' => $ttdFile ?? null,
                 'user_id' => auth()->id(),
             ]);
@@ -75,8 +73,8 @@ class SuratPesananPembelianService
                     $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
                     $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
 
-                    $diterima = 0;
-                    $dikeluarkan = $kuantitas;
+                    $diterima = $kuantitas;
+                    $dikeluarkan = 0;
 
                     $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
 
@@ -89,7 +87,7 @@ class SuratPesananPembelianService
                         'tanggal' => $request->tanggal_pesanan_pembelian,
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pesanan Pembelian - ' . $suratPesananPembelian->nomor_pesanan_pembelian,
+                        'uraian' => 'Pesanan Pembelian Barang - '.$suratPesananPembelian->nomor_pesanan_pembelian,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -97,70 +95,41 @@ class SuratPesananPembelianService
                 }
             }
 
-            // Calculate total Sales and total COGS (HPP)
-            $totalSalesAmount = 0;
-            $totalCogsAmount = 0;
+            // Calculate total Purchase Amount
+            $totalPurchaseAmount = 0;
             foreach ($request->detail as $item) {
-                $totalSalesAmount += $this->cleanRupiah($item['total']);
-
-                // Lookup barang for COGS calculation
-                $barang = Barang::where('nama', $item['nama_barang'])
-                    ->where('user_id', auth()->id())
-                    ->first();
-
-                if ($barang) {
-                    // Total Harga Modal Saat Beli Barang, Buat dibandingin dengan harga jual saat ini
-                    $totalCogsAmount += ($this->cleanRupiah($item['kuantitas']) * ($barang->harga_beli_per_unit ?? 0));
-                }
+                $totalPurchaseAmount += $this->cleanRupiah($item['total']);
             }
 
-            // Get accounts for Sales Journal
-            $receivableAccount = Account::where('user_id', auth()->id())->where('code', '1104')->first(); // Piutang Usaha
-            $revenueAccount = Account::where('user_id', auth()->id())->where('code', '4101')->first();    // Pendapatan Penjualan
-            $hppAccount = Account::where('user_id', auth()->id())->where('code', '5101')->first();        // HPP
+            // Get accounts for Purchase Journal
             $inventoryAccount = Account::where('user_id', auth()->id())->where('code', '1105')->first();  // Persediaan Barang Dagang
+            $payableAccount = Account::where('user_id', auth()->id())->where('code', '2101')->first(); // Utang Usaha
 
-            if ($receivableAccount && $revenueAccount && $hppAccount && $inventoryAccount) {
+            if ($payableAccount && $inventoryAccount) {
                 $journalEntry = JournalEntry::create([
                     'user_id' => auth()->id(),
-                    'reference_number' => 'SPP-' . date('Ymd', strtotime($request->tanggal_pesanan_pembelian)) . '-' . strtoupper(Str::random(6)),
+                    'reference_number' => 'SPP-'.date('Ymd', strtotime($request->tanggal_pesanan_pembelian)).'-'.strtoupper(Str::random(6)),
                     'date' => $request->tanggal_pesanan_pembelian,
-                    'description' => 'Pesanan Pembelian - ' . $suratPesananPembelian->nomor_pesanan_pembelian,
-                    'transaction_type' => 'penjualan',
+                    'description' => 'Pesanan Pembelian - '.$suratPesananPembelian->nomor_pesanan_pembelian,
+                    'transaction_type' => 'pemesanan-barang',
                 ]);
 
-                // 1. Debit: Piutang Usaha (1104)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $receivableAccount->id,
-                    'debit' => $totalSalesAmount,
-                    'credit' => 0,
-                    'sub_ledger_type' => Pelanggan::class,
-                    'sub_ledger_id' => $request->pelanggan_id,
-                ]);
-
-                // 2. Credit: Pendapatan Penjualan (4101)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $revenueAccount->id,
-                    'debit' => 0,
-                    'credit' => $totalSalesAmount,
-                ]);
-
-                // 3. Debit: HPP (5101)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $hppAccount->id,
-                    'debit' => $totalCogsAmount,
-                    'credit' => 0,
-                ]);
-
-                // 4. Credit: Persediaan (1105)
+                // 1. Debit: Persediaan (1105)
                 $journalEntry->items()->create([
                     'user_id' => auth()->id(),
                     'account_id' => $inventoryAccount->id,
+                    'debit' => $totalPurchaseAmount,
+                    'credit' => 0,
+                ]);
+
+                // 2. Credit: Utang Usaha (2101)
+                $journalEntry->items()->create([
+                    'user_id' => auth()->id(),
+                    'account_id' => $payableAccount->id,
                     'debit' => 0,
-                    'credit' => $totalCogsAmount,
+                    'credit' => $totalPurchaseAmount,
+                    'sub_ledger_type' => Pelanggan::class,
+                    'sub_ledger_id' => $request->supplier_id,
                 ]);
             }
 
@@ -170,8 +139,49 @@ class SuratPesananPembelianService
             SendSuratPesananPembelianJob::dispatch(
                 $suratPesananPembelian,
                 auth()->user(),
-                $request->email_pelanggan
+                $request->email_supplier
             );
+
+            return $suratPesananPembelian;
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function storePelanggan($request)
+    {
+        DB::beginTransaction();
+        try {
+            if ($request->hasFile('ttd_pelanggan')) {
+                $ttdFile = $this->fileUploadService->upload($request->ttd_pelanggan, 'surat-pesanan-pembelian/ttd_pelanggan', Auth::user()->email);
+            }
+            $suratPesananPembelian = PesananPembelian::create([
+                'jenis' => 'transaksi_masuk',
+                'pelanggan_id' => $request->pelanggan_id,
+                'supplier_id' => null,
+                'nomor_pesanan_pembelian' => $request->nomor_pesanan_pembelian,
+                'tanggal_pesanan_pembelian' => $request->tanggal_pesanan_pembelian,
+                'tanggal_kirim_pesanan_pembelian' => $request->tanggal_pesanan_pembelian, // Using the same date or can be nullable
+                'nama_bagian_pembelian' => $request->nama_pelanggan ?? null,
+                'ttd_pengirim' => $ttdFile ?? null,
+                'user_id' => auth()->id(),
+            ]);
+
+            if (isset($request->detail) && is_array($request->detail)) {
+                foreach ($request->detail as $item) {
+                    PesananPembelianDetail::create([
+                        'spp_id' => $suratPesananPembelian->id,
+                        'nama_barang' => $item['nama_barang'],
+                        'kuantitas' => $this->cleanRupiah($item['kuantitas']),
+                        'harga' => $this->cleanRupiah($item['harga']),
+                        'diskon' => $item['diskon'] ?? 0,
+                        'total' => $this->cleanRupiah($item['total']),
+                    ]);
+                }
+            }
+
+            DB::commit();
 
             return $suratPesananPembelian;
         } catch (Exception $e) {
@@ -218,7 +228,7 @@ class SuratPesananPembelianService
                         'tanggal' => now(), // Atau bisa menggunakan tanggal hari ini untuk pembatalan
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pembatalan Pesanan Pembelian - ' . $suratPesananPembelian->nomor_pesanan_pembelian,
+                        'uraian' => 'Pembatalan Pesanan Pembelian - '.$suratPesananPembelian->nomor_pesanan_pembelian,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -231,7 +241,7 @@ class SuratPesananPembelianService
 
             // Hapus Journal Entry terkait
             JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Pesanan Pembelian - ' . $suratPesananPembelian->nomor_pesanan_pembelian)
+                ->where('description', 'Pesanan Pembelian - '.$suratPesananPembelian->nomor_pesanan_pembelian)
                 ->delete();
 
             $suratPesananPembelian->delete();
@@ -249,7 +259,7 @@ class SuratPesananPembelianService
     {
         try {
             $data = PesananPembelian::with(
-                'pelanggan',
+                'supplier',
                 'pesananPembelianDetail',
             )
                 ->where('user_id', auth()->user()->id)
@@ -263,8 +273,8 @@ class SuratPesananPembelianService
             )->setPaper('A4', 'portrait');
 
             return $pdf->download(
-                Str::slug('surat-pesanan-pembelian-' .
-                    $data->nomor_pesanan_pembelian) . '.pdf',
+                Str::slug('surat-pesanan-pembelian-'.
+                    $data->nomor_pesanan_pembelian).'.pdf',
             );
         } catch (Exception $e) {
             throw $e;

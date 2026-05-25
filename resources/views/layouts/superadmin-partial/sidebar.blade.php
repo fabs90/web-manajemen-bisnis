@@ -45,7 +45,7 @@
                 <li class="sidebar-title">Menu</li>
 
                 <li class="sidebar-item {{ Request::is('/') ? 'active' : '' }}">
-                    <a href="{{ route('superadmin.dashboard') }}" class="sidebar-link">
+                    <a href="{{ route('superadmin.index') }}" class="sidebar-link">
                         <i class="bi bi-grid-fill"></i>
                         <span>Dashboard</span>
                     </a>
@@ -68,12 +68,11 @@
                 <li class="sidebar-title">Logout</li>
 
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link" id="logout-link">
-                        <i class="bi bi-box-arrow-right"></i>
+                    <a href="#" id="logout-link" class="sidebar-link">
+                        <i class="bi bi-box-arrow-left"></i>
                         <span>Logout</span>
                     </a>
-
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    <form id="logout-form" action="{{ route('superadmin.logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
                 </li>
@@ -83,20 +82,20 @@
 </div>
 
 <script>
-    document.getElementById('logout-link').addEventListener('click', function(event) {
-        event.preventDefault();
-
-        Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: 'Anda akan keluar dari sistem ini.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#FF0000',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, Keluar',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('logout-link').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: 'Anda akan keluar dari sistem ini.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#FF0000',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
                 document.getElementById('logout-form').submit();
             }
         });

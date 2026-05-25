@@ -31,9 +31,14 @@
                             </p>
                         </div>
 
-                        <a href="{{ route('administrasi.spb.create') }}" class="btn btn-success w-100">
-                            + Buat SPB Baru
-                        </a>
+                        <div class="d-flex gap-2 w-100">
+                            <a href="{{ route('administrasi.spb.create') }}" class="btn btn-success flex-fill text-center">
+                                + Buat SPB Baru
+                            </a>
+                            <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}" class="btn btn-outline-success flex-fill text-center">
+                                + Tambah Pesanan Pelanggan (SPP Masuk)
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,7 +85,7 @@
 <span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
                                     </td>
                                     <td>
-                                        {{ $spb->pesananPembelian->pelanggan->nama ?? $spb->pesananPembelian->supplier->nama ?? '-' }}
+                                        {{ $spb->pesananPenjualan->pelanggan->nama ?? $spb->pesananPembelian->pelanggan->nama ?? $spb->pesananPembelian->supplier->nama ?? '-' }}
                                     </td>
                                     <td class="text-center">
                                         @php
@@ -162,7 +167,7 @@
                                                                         @foreach ($spb->suratPengirimanBarangDetail as $detail)
                                                                             <tr>
                                                                                 <td>{{ $loop->iteration }}</td>
-                                                                                <td>{{ $detail->pesananPembelianDetail->nama_barang }}
+                                                                                <td>{{ $detail->pesananPenjualanDetail->nama_barang ?? $detail->pesananPembelianDetail->nama_barang }}
                                                                                 </td>
                                                                                 <td>{{ $detail->jumlah_dikirim }}</td>
                                                                             </tr>

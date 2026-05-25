@@ -347,11 +347,4 @@ class PageController extends Controller
     {
         return view('get-started');
     }
-
-    public function deleteAllData() {}
-
-    public function dashboard_superadmin()
-    {
-        return view('superadmin.dashboard.superadmin');
-    }
 }

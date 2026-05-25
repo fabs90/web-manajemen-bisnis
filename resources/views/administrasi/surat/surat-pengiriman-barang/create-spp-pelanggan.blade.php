@@ -1,66 +1,105 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Surat Pesanan Pembelian ke Supplier/Pemasok | Digitrans')
+@section('page-title', 'Input Surat Pesanan Pembelian dari Pelanggan | Digitrans')
 @section('section-row')
     <div class="container mt-4">
-        <form action="{{ route('administrasi.spp.store') }}" method="POST" enctype="multipart/form-data">
+        {{-- DAFTAR SPP PELANGGAN --}}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+                <span>Daftar Surat Pesanan Penjualan (SPP)</span>
+                <button type="button" class="btn btn-light btn-sm fw-bold" id="btn-toggle-form">
+                    <i class="bi bi-plus-circle"></i> Buat SPP Baru
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="spp-penjualan-table" class="table table-bordered table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">No</th>
+                                <th>Nomor Pesanan</th>
+                                <th>Pelanggan</th>
+                                <th>Tanggal</th>
+                                <th width="15%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($sppList as $index => $spp)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $spp->nomor_pesanan_penjualan }}</td>
+                                    <td>{{ $spp->pelanggan->nama ?? '-' }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($spp->tanggal_pesanan_penjualan)->format('d-m-Y') }}</td>
+                                    <td>
+                                        <form action="{{ route('administrasi.spb.spp-pelanggan.destroy', $spp->id) }}" method="POST" class="d-inline form-delete">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-danger btn-sm btn-delete">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <form action="{{ route('administrasi.spb.spp-pelanggan.store') }}" method="POST" enctype="multipart/form-data" id="spp-pelanggan-form" style="display: none;">
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
-                    Input Surat Pesanan Pembelian (SPP) kepada Supplier/Pemasok
+                    Input Surat Pesanan Penjualan
                 </div>
                 <div class="card-body mt-3">
-                    {{-- DATA SUPPLIER/PEMASOK --}}
-                    <h6 class="fw-bold">Data Supplier/Pemasok</h6>
+                    {{-- DATA PELANGGAN --}}
+                    <h6 class="fw-bold">Data Pelanggan</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Pilih Supplier/Pemasok</label>
-                            <select name="supplier_id" id="supplierSelect" class="form-select" required>
-                                <option value="">-- Pilih Supplier/Pemasok --</option>
-                                @foreach ($suppliers as $s)
-                                    <option value="{{ $s->id }}" data-alamat="{{ $s->alamat }}" data-email="{{ $s->email }}">
-                                        {{ $s->nama }}
+                            <label class="form-label">Pilih Pelanggan</label>
+                            <select name="pelanggan_id" id="pelangganSelect" class="form-select" required>
+                                <option value="">-- Pilih Pelanggan --</option>
+                                @foreach ($pelanggan as $p)
+                                    <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}">
+                                        {{ $p->nama }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Alamat Supplier/Pemasok</label>
-                            <input type="text" name="alamat_supplier" id="alamatSupplier" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-6 mt-3">
-                            <label class="form-label">Email Supplier/Pemasok (Dapat diubah)<span class="text-danger">*</span></label>
-                            <input type="email" name="email_supplier" id="emailSupplier" class="form-control" required>
-                            <small class="form-text text-muted">Email digunakan untuk mengirimkan surat pesanan pembelian kepada Supplier/Pemasok</small>
+                            <label class="form-label">Alamat Pelanggan</label>
+                            <input type="text" name="alamat_pelanggan" id="alamatPelanggan" class="form-control" readonly>
                         </div>
                     </div>
 
                     {{-- DATA SPP --}}
-                    <h6 class="fw-bold mt-4">Informasi SPP</h6>
+                    <h6 class="fw-bold mt-4">Informasi Pesanan</h6>
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label class="form-label">Nomor SPP<span class="text-danger">*</span></label>
-                            <input type="text" name="nomor_pesanan_pembelian" class="form-control" required>
+                            <label class="form-label">Nomor Pesanan<span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_pesanan_pembelian" class="form-control" placeholder="Contoh: PO-001" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Tanggal SPP<span class="text-danger">*</span></label>
+                            <label class="form-label">Tanggal Pesanan<span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_pesanan_pembelian" class="form-control" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Rencana Tanggal Kirim<span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal_kirim_pesanan_pembelian" class="form-control" required>
+                            <label class="form-label">Permintaan Tanggal Kirim<span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_kirim_pesanan_pembelian" class="form-control">
                         </div>
                     </div>
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label class="form-label">Nama Pimpinan Perusahaan Supplier/Pemasok<span class="text-danger">*</span></label>
-                            <input type="text" name="nama_pimpinan_supplier" class="form-control" required>
+                            <label class="form-label">Nama Pihak Pemesan<span class="text-danger">*</span></label>
+                            <input type="text" name="nama_pelanggan" class="form-control" placeholder="Nama orang yang memesan" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">TTD Pemimpin Perusahaan Supplier/Pemasok</label>
-                            <input type="file" accept="image/*" name="ttd_pimpinan_supplier" class="form-control">
+                            <label class="form-label">Tanda Tangan Pelanggan (Opsional)</label>
+                            <input type="file" accept="image/*" name="ttd_pelanggan" class="form-control">
                         </div>
                     </div>
 
@@ -113,12 +152,11 @@
                 </div>
 
                 <div class="card-footer text-end">
-                    <a href="{{ route('administrasi.spp.index') }}" class="btn btn-secondary me-2">
-                        <i class="bi bi-arrow-left"></i> Kembali
+                    <a href="{{ route('administrasi.spb.create') }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Kembali ke Buat SPB
                     </a>
-                    <input type="hidden" name="jenis" value="transaksi_masuk">
-                    <button type="submit" class="btn btn-primary">
-                        Simpan SPP
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        Simpan Pesanan Pelanggan
                     </button>
                 </div>
 
@@ -129,6 +167,43 @@
 
 @push('script')
     <script>
+        $(document).ready(function() {
+            $('#spp-penjualan-table').DataTable();
+        });
+
+        // Toggle Form
+        $('#btn-toggle-form').click(function() {
+            let btn = $(this);
+            $('#spp-pelanggan-form').slideToggle(300, function() {
+                if ($(this).is(':visible')) {
+                    btn.html('<i class="bi bi-x-circle"></i> Batal Buat SPP');
+                    btn.removeClass('btn-light').addClass('btn-danger');
+                } else {
+                    btn.html('<i class="bi bi-plus-circle"></i> Buat SPP Baru');
+                    btn.removeClass('btn-danger').addClass('btn-light');
+                }
+            });
+        });
+
+        // Delete Confirmation
+        $(document).on('click', '.btn-delete', function() {
+            let form = $(this).closest('form');
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data pesanan ini akan dihapus permanen beserta jurnal dan kartu gudang terkait!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
         // Inisialisasi Select2
         $(document).ready(function() {
             $('.barang-select').select2({
@@ -136,6 +211,12 @@
                 allowClear: true,
                 width: '100%'
             });
+        });
+
+        // Loading Button
+        $('#submit-btn').click(function() {
+            $(this).prop('disabled', true).html('<i class="bi bi-spinner spinner-border spinner-border-sm"></i> Loading...');
+            $('#spp-pelanggan-form').submit();
         });
 
         // Fungsi format angka menjadi format rupiah (tanpa Rp)
@@ -237,12 +318,10 @@
             $(this).closest('tr').remove();
         });
 
-        // Auto set alamat dari supplier
-        document.getElementById('supplierSelect').addEventListener('change', function() {
+        // Auto set alamat dari pelanggan
+        document.getElementById('pelangganSelect').addEventListener('change', function() {
             let alamat = this.options[this.selectedIndex].dataset.alamat ?? "";
-            let email = this.options[this.selectedIndex].dataset.email ?? "";
-            document.getElementById('alamatSupplier').value = alamat;
-            document.getElementById('emailSupplier').value = email;
+            document.getElementById('alamatPelanggan').value = alamat;
         });
 
         @if (session('success'))
