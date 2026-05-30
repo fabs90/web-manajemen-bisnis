@@ -2,252 +2,222 @@
 
 @section('page-title', 'Input Permintaan Kas Kecil | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-row')
-<div class="container mt-4">
-    {{-- Alert sukses --}}
-     @if(session('success'))
-         <div class="alert alert-success alert-dismissible fade show" role="alert">
-             <strong>Sukses!</strong> {{ session('success') }}
-             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-         </div>
-     @endif
+    <div class="container mt-4">
+        {{-- Alert sukses --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Sukses!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-     {{-- Alert error --}}
-     @if(session('error'))
-         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-             <strong>Gagal!</strong> {{ session('error') }}
-             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-         </div>
-     @endif
+        {{-- Alert error --}}
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Gagal!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-    <form action="{{route('administrasi.kas-kecil.store')}}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <h4 class="text-center mb-4"><strong>FORMULIR PERMINTAAN KAS KECIL</strong></h4>
+        {{-- Alert validation errors --}}
+        @if ($errors->any())
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>Perhatian!</strong> Harap lengkapi semua kolom yang wajib diisi.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        <form action="{{ route('administrasi.kas-kecil.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <h4 class="text-center mb-4"><strong>FORMULIR PERMINTAAN KAS KECIL</strong></h4>
 
-        {{-- Informasi Utama --}}
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label>Nomor<span
-                        class="text-danger">*</span></label>
-                <input type="text"
-                       name="nomor"
-                       class="form-control @error('nomor') is-invalid @enderror"
-                       >
-                @error('nomor')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
+            {{-- Informasi Utama --}}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Tanggal<span class="text-danger">*</span></label>
+                    <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror">
+                    @error('tanggal')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+                <div class="col-md-6">
+                    <label>Nama Pemohon<span class="text-danger">*</span></label>
+                    <input type="text" name="nama_pemohon"
+                        class="form-control @error('nama_pemohon') is-invalid @enderror">
+                    @error('nama_pemohon')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
             </div>
 
-            <div class="col-md-6">
-                <label>Tanggal<span
-                        class="text-danger">*</span></label>
-                <input type="date"
-                       name="tanggal"
-                       class="form-control @error('tanggal') is-invalid @enderror"
-                       >
-                @error('tanggal')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <label>Nama Pemohon<span
-                        class="text-danger">*</span></label>
-                <input type="text"
-                       name="nama_pemohon"
-                       class="form-control @error('nama_pemohon') is-invalid @enderror"
-                       >
-                @error('nama_pemohon')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label>Departemen<span class="text-danger">*</span></label>
+                    <input type="text" name="departemen" class="form-control @error('departemen') is-invalid @enderror">
+                    @error('departemen')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+                <div class="col-md-6">
+                    <label>Jenis Permintaan <span class="text-danger">*</span></label>
+                    <select name="jenis" class="form-control @error('jenis') is-invalid @enderror">
+                        <option value="">-- Pilih Jenis --</option>
+                        <option value="penambahan">Penambahan</option>
+                        <option value="pengeluaran">Pengeluaran</option>
+                    </select>
+                    @error('jenis')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
             </div>
 
-            <div class="col-md-6">
-                <label>Departemen<span
-                        class="text-danger">*</span></label>
-                <input type="text"
-                       name="departemen"
-                       class="form-control @error('departemen') is-invalid @enderror"
-                       >
-                @error('departemen')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
-        </div>
+            {{-- Rincian Permintaan --}}
+            <h5><strong>Rincian Permintaan:</strong></h5>
+            <table class="table table-bordered" id="table-kebutuhan">
+                <thead class="text-center">
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th>Uraian Kebutuhan<span class="text-danger">*</span></th>
+                        <th style="width: 180px;">Jenis<span class="text-danger">*</span></th>
+                        <th style="width: 200px;">Jumlah (Rp)<span class="text-danger">*</span></th>
+                        <th style="width: 60px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="body-kebutuhan">
+                    <tr>
+                        <td class="text-center nomor">1</td>
+                        <td>
+                            <input type="text" name="keterangan[]"
+                                class="form-control @error('keterangan.*') is-invalid @enderror">
+                            @foreach ($errors->get('keterangan.*') as $msg)
+                                <small class="text-danger d-block">{{ $msg[0] }}</small>
+                            @endforeach
+                        </td>
+                        <td>
+                            <select name="kategori[]" class="form-control @error('kategori') is-invalid @enderror">
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="transport">Transport</option>
+                                <option value="bensin">Bensin</option>
+                                <option value="konsumsi">Konsumsi</option>
+                                <option value="atm">ATM</option>
+                                <option value="lain">Lain-lain</option>
+                            </select>
+                            @foreach ($errors->get('kategori') as $error)
+                                <small class="text-danger d-block">{{ $error }}</small>
+                            @endforeach
+                        </td>
+                        <td>
+                            <input type="text" name="jumlah[]" class="form-control rupiah" placeholder="0">
+                            @foreach ($errors->get('jumlah.*') as $msg)
+                                <small class="text-danger d-block">{{ $msg[0] }}</small>
+                            @endforeach
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-danger btn-sm btn-hapus">X</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">
+                            <button type="button" id="btnTambah" class="btn btn-success btn-sm">
+                                + Tambah Baris
+                            </button>
+                        </td>
+                    </tr>
 
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <label>Jenis Permintaan <span class="text-danger">*</span></label>
-                <select name="jenis" class="form-control @error('jenis') is-invalid @enderror">
-                    <option value="">-- Pilih Jenis --</option>
-                    <option value="penambahan">Penambahan</option>
-                    <option value="pengeluaran">Pengeluaran</option>
-                </select>
-                @error('jenis')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
-        </div>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total</strong></td>
+                        <td>
+                            <input type="text" id="total_rupiah" name="total" class="form-control fw-bold text-end"
+                                readonly value="0">
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
 
-        {{-- Rincian Permintaan --}}
-        <h5><strong>Rincian Permintaan:</strong></h5>
-        <table class="table table-bordered" id="table-kebutuhan">
-            <thead class="text-center">
-                <tr>
-                    <th style="width: 60px;">No</th>
-                    <th>Uraian Kebutuhan<span
-                            class="text-danger">*</span></th>
-                    <th style="width: 180px;">Jenis<span
-                            class="text-danger">*</span></th>
-                    <th style="width: 200px;">Jumlah (Rp)<span
-                            class="text-danger">*</span></th>
-                    <th style="width: 60px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="body-kebutuhan">
-                <tr>
-                    <td class="text-center nomor">1</td>
-                    <td>
-                        <input type="text"
-                               name="keterangan[]"
-                               class="form-control @error('keterangan.*') is-invalid @enderror">
-                        @foreach ($errors->get('keterangan.*') as $msg)
-                            <small class="text-danger d-block">{{ $msg[0] }}</small>
-                        @endforeach
-                    </td>
-                    <td>
-                        <select name="kategori[]"
-                                class="form-control @error('kategori') is-invalid @enderror">
-                            <option value="">-- Pilih Kategori --</option>
-                            <option value="transport">Transport</option>
-                            <option value="bensin">Bensin</option>
-                            <option value="konsumsi">Konsumsi</option>
-                            <option value="atm">ATM</option>
-                            <option value="lain">Lain-lain</option>
-                        </select>
-                        @foreach ($errors->get('kategori') as $error)
-                            <small class="text-danger d-block">{{ $error }}</small>
-                        @endforeach
-                    </td>
-                    <td>
-                        <input type="text" name="jumlah[]" class="form-control rupiah" placeholder="0">
-                        @foreach ($errors->get('jumlah.*') as $msg)
-                            <small class="text-danger d-block">{{ $msg[0] }}</small>
-                        @endforeach
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-sm btn-hapus">X</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="4">
-                        <button type="button" id="btnTambah" class="btn btn-success btn-sm">
-                            + Tambah Baris
-                        </button>
-                    </td>
-                </tr>
+            {{-- Tanda Tangan --}}
+            <h5 class="mt-4"><strong>Pengesahan</strong></h5>
 
-                <tr>
-                    <td colspan="3" class="text-end"><strong>Total</strong></td>
-                    <td>
-                        <input type="text"
-                               id="total_rupiah"
-                               name="total"
-                               class="form-control fw-bold text-end"
-                               readonly
-                               value="0">
-                    </td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
+            <div class="row text-center mt-3">
+                <!-- PEMOHON -->
+                <div class="col-md-4">
+                    <label>Ttd. Pemohon</label>
 
-        {{-- Tanda Tangan --}}
-        <h5 class="mt-4"><strong>Pengesahan</strong></h5>
+                    <input type="file" name="ttd_nama_pemohon"
+                        class="form-control mt-2 @error('ttd_nama_pemohon') is-invalid @enderror" accept="image/*">
+                    @error('ttd_nama_pemohon')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
-        <div class="row text-center mt-3">
-            <!-- PEMOHON -->
-            <div class="col-md-4">
-                <label>Ttd. Pemohon</label>
+                <!-- ATASAN -->
+                <div class="col-md-4">
+                    <label>Atasan Langsung <span class="text-danger">*</span></label>
 
-                <input type="file" name="ttd_nama_pemohon"
-                    class="form-control mt-2 @error('ttd_nama_pemohon') is-invalid @enderror"
-                    accept="image/*">
-                @error('ttd_nama_pemohon')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
+                    <!-- Nama Atasan (WAJIB) -->
+                    <input type="text" name="nama_atasan_langsung"
+                        class="form-control mt-2 @error('nama_atasan_langsung') is-invalid @enderror"
+                        placeholder="Nama Atasan">
+                    @error('nama_atasan_langsung')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                    <label class="mt-2">Ttd. Atasan Langsung</label>
+                    <input type="file" name="ttd_nama_atasan_langsung"
+                        class="form-control mt-2 @error('ttd_nama_atasan_langsung') is-invalid @enderror"
+                        accept="image/*">
+                    @error('ttd_nama_atasan_langsung')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
-            <!-- ATASAN -->
-            <div class="col-md-4">
-                <label>Atasan Langsung <span class="text-danger">*</span></label>
+                <!-- KEUANGAN -->
+                <div class="col-md-4">
+                    <label>Bagian Keuangan <span class="text-danger">*</span></label>
 
-                <!-- Nama Atasan (WAJIB) -->
-                <input type="text" name="nama_atasan_langsung"
-                    class="form-control mt-2 @error('nama_atasan_langsung') is-invalid @enderror"
-                    placeholder="Nama Atasan">
-                @error('nama_atasan_langsung')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-                <label class="mt-2">Ttd. Atasan Langsung</label>
-                <input type="file" name="ttd_nama_atasan_langsung"
-                    class="form-control mt-2 @error('ttd_nama_atasan_langsung') is-invalid @enderror"
-                    accept="image/*">
-                @error('ttd_nama_atasan_langsung')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
+                    <!-- Nama Keuangan (WAJIB) -->
+                    <input type="text" name="nama_bagian_keuangan"
+                        class="form-control mt-2 @error('nama_bagian_keuangan') is-invalid @enderror"
+                        placeholder="Nama Keuangan">
+                    @error('nama_bagian_keuangan')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                    <label class="mt-2">Ttd. Nama Bagian Keuangan</label>
+                    <input type="file" name="ttd_nama_bagian_keuangan"
+                        class="form-control mt-2 @error('ttd_nama_bagian_keuangan') is-invalid @enderror"
+                        accept="image/*">
+                    @error('ttd_nama_bagian_keuangan')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
             </div>
 
-            <!-- KEUANGAN -->
-            <div class="col-md-4">
-                <label>Bagian Keuangan <span class="text-danger">*</span></label>
 
-                <!-- Nama Keuangan (WAJIB) -->
-                <input type="text" name="nama_bagian_keuangan"
-                    class="form-control mt-2 @error('nama_bagian_keuangan') is-invalid @enderror"
-                    placeholder="Nama Keuangan">
-                @error('nama_bagian_keuangan')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-                <label class="mt-2">Ttd. Nama Bagian Keuangan</label>
-                <input type="file" name="ttd_nama_bagian_keuangan"
-                    class="form-control mt-2 @error('ttd_nama_bagian_keuangan') is-invalid @enderror"
-                    accept="image/*">
-                @error('ttd_nama_bagian_keuangan')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
+            {{-- Tombol Submit --}}
+            <div class="mt-4 text-end">
+                <a href="{{ route('administrasi.kas-kecil.index') }}" class="btn btn-secondary">Kembali</a>
+                <button type="submit" class="btn btn-primary">
+                    Simpan Permintaan
+                </button>
             </div>
-        </div>
 
-
-        {{-- Tombol Submit --}}
-        <div class="mt-4 text-end">
-             <a href="{{ route('administrasi.kas-kecil.index') }}" class="btn btn-secondary">Kembali</a>
-            <button type="submit" class="btn btn-primary">
-                Simpan Permintaan
-            </button>
-        </div>
-
-    </form>
-</div>
+        </form>
+    </div>
 @endsection
 @push('script')
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    RupiahHelper.initAll('.rupiah');
-    RupiahHelper.calculateTotal('.rupiah', '#total_rupiah');
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            RupiahHelper.initAll('.rupiah');
+            RupiahHelper.calculateTotal('.rupiah', '#total_rupiah');
 
-    // Saat tambah baris baru:
-    RupiahHelper.initAll('#body-kebutuhan tr:last-child .rupiah');
-    RupiahHelper.calculateTotal();
+            // Saat tambah baris baru:
+            RupiahHelper.initAll('#body-kebutuhan tr:last-child .rupiah');
+            RupiahHelper.calculateTotal();
 
-    // Tambah baris
-    document.getElementById("btnTambah").addEventListener("click", function () {
-        const rowCount = document.querySelectorAll("#body-kebutuhan tr").length + 1;
-        let row = `
+            // Tambah baris
+            document.getElementById("btnTambah").addEventListener("click", function() {
+                const rowCount = document.querySelectorAll("#body-kebutuhan tr").length + 1;
+                let row = `
         <tr>
             <td class="text-center nomor">${rowCount}</td>
             <td><input type="text" name="keterangan[]" class="form-control"></td>
@@ -264,35 +234,35 @@ document.addEventListener("DOMContentLoaded", function () {
             <td><input type="text" name="jumlah[]" class="form-control rupiah" placeholder="0"></td>
             <td class="text-center"><button type="button" class="btn btn-danger btn-sm btn-hapus">X</button></td>
         </tr>`;
-        document.getElementById("body-kebutuhan").insertAdjacentHTML('beforeend', row);
+                document.getElementById("body-kebutuhan").insertAdjacentHTML('beforeend', row);
 
-        // Inisialisasi ulang hanya baris baru (lebih cepat)
-        RupiahHelper.initAll('#body-kebutuhan tr:last-child .rupiah');
-        updateNomor();
-        RupiahHelper.calculateTotal();
-    });
+                // Inisialisasi ulang hanya baris baru (lebih cepat)
+                RupiahHelper.initAll('#body-kebutuhan tr:last-child .rupiah');
+                updateNomor();
+                RupiahHelper.calculateTotal();
+            });
 
-    // Hapus baris
-    document.getElementById("body-kebutuhan").addEventListener("click", function (e) {
-        if (e.target.classList.contains("btn-hapus")) {
-            e.target.closest("tr").remove();
-            updateNomor();
-            RupiahHelper.calculateTotal();
-        }
-    });
+            // Hapus baris
+            document.getElementById("body-kebutuhan").addEventListener("click", function(e) {
+                if (e.target.classList.contains("btn-hapus")) {
+                    e.target.closest("tr").remove();
+                    updateNomor();
+                    RupiahHelper.calculateTotal();
+                }
+            });
 
-    // Update total saat ketik
-    document.getElementById("body-kebutuhan").addEventListener("input", function (e) {
-        if (e.target.classList.contains("rupiah")) {
-            RupiahHelper.calculateTotal();
-        }
-    });
+            // Update total saat ketik
+            document.getElementById("body-kebutuhan").addEventListener("input", function(e) {
+                if (e.target.classList.contains("rupiah")) {
+                    RupiahHelper.calculateTotal();
+                }
+            });
 
-    function updateNomor() {
-        document.querySelectorAll(".nomor").forEach((el, i) => {
-            el.textContent = i + 1;
+            function updateNomor() {
+                document.querySelectorAll(".nomor").forEach((el, i) => {
+                    el.textContent = i + 1;
+                });
+            }
         });
-    }
-});
-</script>
+    </script>
 @endpush

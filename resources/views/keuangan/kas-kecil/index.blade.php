@@ -54,7 +54,7 @@
                                 <td>{{ date('d-m-Y', strtotime($item->tanggal)) }}</td>
 
                                 <td>
-                                    {{ $item->bukuBesarKas->kode }}
+                                    {{ $item->journalEntry->reference_number }}
                                 </td>
                                 <td>
                                     {{ $item->uraian }}

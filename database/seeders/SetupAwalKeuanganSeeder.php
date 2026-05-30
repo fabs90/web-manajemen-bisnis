@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Barang;
 use App\Models\KartuGudang;
-use App\Models\NeracaAwal;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -77,95 +76,83 @@ class SetupAwalKeuanganSeeder extends Seeder
                 $totalPersediaan += $stokAwal * $beli;
             }
 
-            // 3. Buat Neraca Awal yang 100% sesuai dengan kartu gudang
-            NeracaAwal::create([
-                'user_id' => 3,
-                'kas_awal' => 100_000_000,
-                'total_piutang' => 0,
-                'total_hutang' => 0,
-                'total_persediaan' => $totalPersediaan, // PASTI SAMA dengan kartu gudang
-                'modal_awal' => 400_000_000,
-                'tanah_bangunan' => 150_000_000,
-                'kendaraan' => 50_000_000,
-                'meubel_peralatan' => 50_000_000,
-                'total_debit' => 400_000_000,
-                'total_kredit' => 400_000_000,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // 3. Pastikan Akun tersedia (panggil DefaultAccountSeeder jika kosong)
+            $accounts = \App\Models\Account::where('user_id', 3)->get()->keyBy('code');
+            if ($accounts->isEmpty()) {
+                \Database\Seeders\DefaultAccountSeeder::seedForUser(3);
+                $accounts = \App\Models\Account::where('user_id', 3)->get()->keyBy('code');
+            }
 
-            // 4. Buat entri kas awal di buku besar kas
-            \App\Models\BukuBesarKas::create([
-                'kode' => \Illuminate\Support\Str::uuid(),
-                'user_id' => 3,
-                'tanggal' => '2025-01-01',
-                'uraian' => 'Modal awal disetor',
-                'debit' => 100_000_000,
-                'kredit' => 0,
-                'saldo' => 100_000_000,
-                'neraca_awal_id' => 1,
-            ]);
+            // pelanggan: Debitur PT Sumber Makmur
+            $pelangganDebitur = \App\Models\Pelanggan::where('jenis', 'debitur')->first();
+            // supplier: Kreditur PT Bumi Rezeki
+            $pelangganKreditur = \App\Models\Pelanggan::where('jenis', 'kreditur')->first();
 
-            \App\Models\BukuBesarModal::create([
-                'kode' => \Illuminate\Support\Str::uuid(),
-                'user_id' => 3,
-                'tanggal' => '2025-01-01',
-                'uraian' => 'Modal awal disetor',
-                'debit' => 0,
-                'kredit' => 400_000_000,
-                'saldo' => 400_000_000,
-                'neraca_awal_id' => 1,
-            ]);
-
-            // pelanggan: Debitur PT Sumber Makmur (id = 1)
-            $pelangganDebitur = \App\Models\Pelanggan::where(
-                'jenis',
-                'debitur',
-            )->first();
-
-            // supplier: Kreditur PT Bumi Rezeki (id = 4 di seeder pelanggan)
-            $pelangganKreditur = \App\Models\Pelanggan::where(
-                'jenis',
-                'kreditur',
-            )->first();
-
+            $kasAwal = 100_000_000;
             $piutangAwal = 25_000_000;
+            $tanahBangunan = 150_000_000;
+            $kendaraan = 50_000_000;
+            $peralatan = 50_000_000;
+
             $hutangAwal = 15_000_000;
 
-            // Piutang Dagang (Debit)
-            $bukuPiutang = \App\Models\BukuBesarPiutang::create([
-                'kode' => \Illuminate\Support\Str::uuid(),
-                'pelanggan_id' => $pelangganDebitur->id,
-                'uraian' => 'Piutang Dagang Awal',
-                'tanggal' => '2025-01-01',
-                'debit' => $piutangAwal,
-                'kredit' => 0,
-                'saldo' => $piutangAwal,
-                'neraca_awal_id' => 1,
+            $totalDebit = $kasAwal + $piutangAwal + $totalPersediaan + $tanahBangunan + $kendaraan + $peralatan;
+            $modalAwal = $totalDebit - $hutangAwal; // Agar balance
+
+            // Buat Jurnal Entry untuk Setup Awal (Saldo Awal)
+            $entry = \App\Models\JournalEntry::create([
                 'user_id' => 3,
+                'reference_number' => 'SA-20250101-'.\Illuminate\Support\Str::random(4),
+                'date' => '2025-01-01',
+                'description' => 'Setup Saldo Awal',
+                'transaction_type' => 'neraca_awal',
             ]);
 
-            // Hutang Dagang (Kredit)
-            $bukuHutang = \App\Models\BukuBesarHutang::create([
-                'kode' => \Illuminate\Support\Str::uuid(),
-                'pelanggan_id' => $pelangganKreditur->id,
-                'uraian' => 'Hutang Dagang Awal',
-                'tanggal' => '2025-01-01',
-                'debit' => 0,
-                'kredit' => $hutangAwal,
-                'saldo' => $hutangAwal,
-                'neraca_awal_id' => 1,
-                'user_id' => 3,
+            // Debits
+            $entry->items()->create([
+                'user_id' => 3, 'account_id' => $accounts['1101']->id, 'debit' => $kasAwal, 'credit' => 0,
+            ]);
+            if ($pelangganDebitur) {
+                $entry->items()->create([
+                    'user_id' => 3, 'account_id' => $accounts['1104']->id,
+                    'sub_ledger_type' => \App\Models\Pelanggan::class, 'sub_ledger_id' => $pelangganDebitur->id,
+                    'debit' => $piutangAwal, 'credit' => 0,
+                ]);
+            }
+            $entry->items()->create([
+                'user_id' => 3, 'account_id' => $accounts['1105']->id, 'debit' => $totalPersediaan, 'credit' => 0,
+            ]);
+            $entry->items()->create([
+                'user_id' => 3, 'account_id' => $accounts['1201']->id, 'debit' => $peralatan, 'credit' => 0,
+            ]);
+            $entry->items()->create([
+                'user_id' => 3, 'account_id' => $accounts['1202']->id, 'debit' => $kendaraan, 'credit' => 0,
+            ]);
+            $entry->items()->create([
+                'user_id' => 3, 'account_id' => $accounts['1203']->id, 'debit' => $tanahBangunan, 'credit' => 0,
             ]);
 
-            // Update nilai neraca_awal
-            $neracaAwal = \App\Models\NeracaAwal::first();
-            $neracaAwal->update([
-                'total_piutang' => $piutangAwal,
-                'total_hutang' => $hutangAwal,
-                'total_debit' => $neracaAwal->total_debit + $piutangAwal,
-                'total_kredit' => $neracaAwal->total_kredit + $hutangAwal,
+            // Credits
+            if ($pelangganKreditur) {
+                $entry->items()->create([
+                    'user_id' => 3, 'account_id' => $accounts['2101']->id,
+                    'sub_ledger_type' => \App\Models\Pelanggan::class, 'sub_ledger_id' => $pelangganKreditur->id,
+                    'debit' => 0, 'credit' => $hutangAwal,
+                ]);
+            }
+            $entry->items()->create([
+                'user_id' => 3, 'account_id' => $accounts['3100']->id, 'debit' => 0, 'credit' => $modalAwal,
             ]);
+
+            // Update opening_balance di master accounts
+            $accounts['1101']->update(['opening_balance' => $kasAwal]);
+            $accounts['1104']->update(['opening_balance' => $piutangAwal]);
+            $accounts['1105']->update(['opening_balance' => $totalPersediaan]);
+            $accounts['1201']->update(['opening_balance' => $peralatan]);
+            $accounts['1202']->update(['opening_balance' => $kendaraan]);
+            $accounts['1203']->update(['opening_balance' => $tanahBangunan]);
+            $accounts['2101']->update(['opening_balance' => $hutangAwal]);
+            $accounts['3100']->update(['opening_balance' => $modalAwal]);
         });
     }
 }

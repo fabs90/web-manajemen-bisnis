@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class PengisianKasKecilLog extends Model
 {
-    protected $table = "pengisian_kas_kecil_logs";
+    protected $table = 'pengisian_kas_kecil_logs';
 
     protected $fillable = [
-        "buku_besar_kas_id",
-        "kas_kecil_id",
-        "uraian",
-        "jumlah",
-        "tanggal_transaksi",
-        "user_id",
+        'journal_entry_id',
+        'kas_kecil_id',
+        'uraian',
+        'jumlah',
+        'tanggal_transaksi',
+        'user_id',
     ];
 
     public function user()
@@ -22,9 +22,9 @@ class PengisianKasKecilLog extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function bukuBesarKas()
+    public function journalEntry()
     {
-        return $this->belongsTo(BukuBesarKas::class);
+        return $this->belongsTo(JournalEntry::class);
     }
 
     public function kasKecil()

@@ -24,7 +24,7 @@ class KasKecilController extends Controller
     public function index(): View
     {
         $userId = Auth::id();
-        $kasKecil = KasKecil::where('user_id', $userId)->get();
+        $kasKecil = KasKecil::with(['kasKecilDetail', 'kasKecilFormulir', 'kasKecilLog'])->where('user_id', $userId)->get();
         $saldoAkhir = KasKecil::where('user_id', $userId)
             ->latest()
             ->value('saldo_akhir');

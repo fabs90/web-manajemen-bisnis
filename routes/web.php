@@ -146,7 +146,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'destroyPelunasanHutang',
         ])->name('keuangan.pengeluaran.pelunasan-hutang.destroy');
 
-        // Kas Kecil
+        // Kas Kecil (Form Pengeluaran)
         Route::get('/pengeluaran-kas-kecil', [
             ManajemenKasKecilController::class,
             'index',

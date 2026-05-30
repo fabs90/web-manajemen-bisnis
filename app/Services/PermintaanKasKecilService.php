@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Http\Requests\PermintaanKasKecilRequest;
-use App\Models\BukuBesarKas;
+use App\Models\Account;
+use App\Models\JournalEntry;
 use App\Models\KasKecil;
 use App\Models\KasKecilDetail;
 use App\Models\KasKecilFormulir;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PermintaanKasKecilService
 {
@@ -40,31 +42,79 @@ class PermintaanKasKecilService
             $pengeluaran = $isPengeluaran ? $total : 0;
             $saldoBaru = $saldoLama + $penerimaan - $pengeluaran;
 
+            $formattedDate = now()->format('Ymd');
+            $random = strtoupper(Str::random(6));
+            $referenceNumber = "PKK-{$formattedDate}-{$random}";
+
             // 3. Save Transaction
             $kasKecil = KasKecil::create([
                 'user_id' => $userId,
                 'tanggal' => $data['tanggal'],
-                'nomor_referensi' => $data['nomor'],
+                'nomor_referensi' => $referenceNumber,
                 'penerimaan' => $penerimaan,
                 'pengeluaran' => $pengeluaran,
                 'saldo_akhir' => $saldoBaru,
             ]);
 
-            // 3a. Record to BukuBesarKas if it's an addition (penambahan)
-            if (! $isPengeluaran) {
-                $kasBesarLatest = BukuBesarKas::where('user_id', $userId)->latest()->first();
-                $saldoKasBesarBaru = ($kasBesarLatest->saldo ?? 0) - $total;
+            // 3a. Jurnal
+            $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
 
-                BukuBesarKas::create([
-                    'kode' => $data['nomor'],
-                    'tanggal' => $data['tanggal'],
-                    'uraian' => 'Penambahan Kas Kecil - Ref: '.$data['nomor'],
-                    'debit' => 0,
-                    'kredit' => $total,
-                    'saldo' => $saldoKasBesarBaru,
+            if ($accounts->isEmpty()) {
+                throw new \Exception('Akun belum diatur. Silakan atur akun di Neraca Awal.');
+            }
+
+            $kasUtama = $accounts['1101'] ?? $accounts->firstWhere('category', 'asset');
+            $kasKecilAccount = $accounts['1102'] ?? $accounts->firstWhere('category', 'asset');
+            $expenseAccount = $accounts['5202'] ?? $accounts->firstWhere('category', 'expense');
+
+            if (! $kasUtama || ! $kasKecilAccount || ! $expenseAccount) {
+                throw new \Exception('Beberapa akun standar (Kas Utama / Kas Kecil / Beban) tidak ditemukan.');
+            }
+
+            $entry = JournalEntry::create([
+                'user_id' => $userId,
+                'reference_number' => $referenceNumber,
+                'date' => $data['tanggal'],
+                'description' => ($isPengeluaran ? 'Pengeluaran Kas Kecil: ' : 'Penambahan Kas Kecil: ').$referenceNumber,
+                'transaction_type' => 'kas_kecil',
+            ]);
+
+            if (! $isPengeluaran) {
+                $entry->items()->create([
                     'user_id' => $userId,
+                    'account_id' => $kasKecilAccount->id,
+                    'debit' => $total,
+                    'credit' => 0,
+                ]);
+                $entry->items()->create([
+                    'user_id' => $userId,
+                    'account_id' => $kasUtama->id,
+                    'debit' => 0,
+                    'credit' => $total,
+                ]);
+            } else {
+                $entry->items()->create([
+                    'user_id' => $userId,
+                    'account_id' => $expenseAccount->id,
+                    'debit' => $total,
+                    'credit' => 0,
+                ]);
+                $entry->items()->create([
+                    'user_id' => $userId,
+                    'account_id' => $kasKecilAccount->id,
+                    'debit' => 0,
+                    'credit' => $total,
                 ]);
             }
+
+            \App\Models\PengisianKasKecilLog::create([
+                'journal_entry_id' => $entry->id,
+                'kas_kecil_id' => $kasKecil->id,
+                'uraian' => ($isPengeluaran ? 'Pengeluaran Kas Kecil: ' : 'Penambahan Kas Kecil: ').$referenceNumber,
+                'jumlah' => $total,
+                'tanggal_transaksi' => $data['tanggal'],
+                'user_id' => $userId,
+            ]);
 
             // 4. Save Formulir and Details
             $this->saveFormulir($kasKecil, $request, $data, $userId);
