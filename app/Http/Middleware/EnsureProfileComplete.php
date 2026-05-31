@@ -17,7 +17,7 @@ class EnsureProfileComplete
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        if (empty($user->alamat) || empty($user->nomor_telepon) || empty($user->logo_perusahaan)) {
+        if (empty($user->alamat) || empty($user->nomor_telepon)) {
             return redirect()->route('profile.edit')->with('error', 'Lengkapi profil terlebih dahulu sebelum mengakses fitur yang tersedia.');
         }
 

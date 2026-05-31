@@ -1,39 +1,188 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
+<!DOCTYPE html>
+<html lang="id">
 
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password | Digitrans</title>
+    <link rel="shortcut icon" href="{{ asset('./dist/assets/static/images/logo_web.png') }}" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #e6f3ec;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 420px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.7s ease;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-header h1 {
+            font-size: 26px;
+            color: #3bb273;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .alert.danger {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.25s ease, transform 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Buat Password Baru</h1>
+                <p>Silakan masukkan password baru untuk akun Anda. Gunakan minimal 8 karakter agar aman.</p>
+            </div>
+
+            <!-- Notifikasi Error -->
+            @if ($errors->any())
+                <div class="alert danger">
+                    <ul style="padding-left: 20px; margin: 0;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('password.store') }}">
+                @csrf
+                
+                <!-- Token Rahasia (Disembunyikan) -->
+                <input type="hidden" name="token" value="{{ $request->route('token') }}">
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Alamat Email</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $request->email) }}" required readonly style="background-color: #f3f4f6; color: #6b7280; cursor: not-allowed;">
+                </div>
+
+                <!-- Password Baru -->
+                <div class="form-group">
+                    <label for="password">Password Baru</label>
+                    <input type="password" id="password" name="password" class="form-control" required autofocus placeholder="Masukkan password baru">
+                </div>
+
+                <!-- Konfirmasi Password -->
+                <div class="form-group">
+                    <label for="password_confirmation">Konfirmasi Password Baru</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required placeholder="Ulangi password baru">
+                </div>
+
+                <button type="submit" class="btn-primary">Simpan Password Baru</button>
+            </form>
         </div>
+    </div>
+</body>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+</html>

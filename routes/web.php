@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\VerifyUserController;
 use App\Http\Controllers\AdministrasiSuratController;
 use App\Http\Controllers\BarangController;
@@ -29,7 +30,7 @@ use App\Http\Controllers\SuratMasukController;
 use Illuminate\Support\Facades\Route;
 
 // Halaman publik
-Route::get('/', [PageController::class, 'index']);
+Route::get('/', [PageController::class, 'index'])->name('home');
 
 Route::middleware(['web', 'auth', 'ensureUserIsVerified'])->group(function () {
     // =============================
@@ -743,15 +744,46 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
             'index',
         ])->name('index');
 
+        Route::post('/logout', [
+            AdminController::class,
+            'logout',
+        ])->name('logout');
 
         Route::prefix('verify-account')
             ->name('verify-account.')
             ->group(function () {
                 Route::get('/', [
-                    VerifyUserController::class, 'index',
+                    VerifyUserController::class,
+                    'index',
                 ])->name('index');
+            });
+
+
+        Route::prefix('user-management')
+            ->name('user-management.')
+            ->group(function () {
+                Route::get('/', [
+                    UserManagementController::class,
+                    'index',
+                ])->name('index');
+                Route::get('/{id}', [
+                    UserManagementController::class,
+                    'show',
+                ])->name('show');
+                Route::get('/{id}/edit', [
+                    UserManagementController::class,
+                    'edit',
+                ])->name('edit');
+                Route::put('/{id}', [
+                    UserManagementController::class,
+                    'update',
+                ])->name('update');
+                Route::delete('/{id}', [
+                    UserManagementController::class,
+                    'destroy',
+                ])->name('destroy');
             });
 
     });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

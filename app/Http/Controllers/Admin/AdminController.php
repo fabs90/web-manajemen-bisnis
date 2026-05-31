@@ -13,4 +13,10 @@ class AdminController extends Controller
 
         return view('superadmin.dashboard.superadmin', compact('users'));
     }
+
+    public function logout()
+    {
+        auth()->logout();
+        return redirect()->route('home')->with('success', 'Berhasil logout');
+    }
 }

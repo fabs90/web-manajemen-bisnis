@@ -56,8 +56,8 @@
                         <span>Verify Account</span>
                     </a>
                 </li>
-                <li class="sidebar-item {{ request()->routeIs('superadmin.manage-user.index') ? 'active' : '' }}">
-                    <a href="#" class="sidebar-link">
+                <li class="sidebar-item {{ request()->routeIs('superadmin.user-management.index') ? 'active' : '' }}">
+                    <a href="{{ route('superadmin.user-management.index') }}" class="sidebar-link">
                         <i class="bi bi-people-fill"></i>
                         <span>Manage User</span>
                     </a>
@@ -80,11 +80,11 @@
                 <li class="sidebar-title">Logout</li>
 
                 <li class="sidebar-item">
-                    <a href="#" id="logout-link" class="sidebar-link">
+                    <a href="#" id="logout-admin-link" class="sidebar-link">
                         <i class="bi bi-box-arrow-left"></i>
                         <span>Logout</span>
                     </a>
-                    <form id="logout-form" action="{{ route('superadmin.logout') }}" method="POST" class="d-none">
+                    <form id="logout-admin-form" action="{{ route('superadmin.logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
                 </li>
@@ -95,7 +95,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('logout-link').addEventListener('click', function(event) {
+        document.getElementById('logout-admin-link').addEventListener('click', function(event) {
             event.preventDefault();
             Swal.fire({
                 title: 'Apakah Anda yakin?',
@@ -108,8 +108,9 @@
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                document.getElementById('logout-form').submit();
-            }
+                    document.getElementById('logout-admin-form').submit();
+                }
+            });
         });
     });
 </script>

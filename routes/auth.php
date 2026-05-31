@@ -77,6 +77,16 @@ Route::middleware('auth')->group(function () {
         'regenerateOtp',
     ])->name('account-verification.resend');
 
+    Route::get('reset-email', [
+        UserVerificationController::class,
+        'resetEmailView',
+    ])->name('account-verification.reset-email');
+
+    Route::post('reset-email', [
+        UserVerificationController::class,
+        'resetEmail',
+    ])->name('account-verification.reset-email.store');
+
     Route::get('confirm-password', [
         ConfirmablePasswordController::class,
         'show',

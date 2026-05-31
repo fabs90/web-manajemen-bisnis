@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\MailSend;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -38,9 +39,32 @@ class UserVerificationController extends Controller
         return response()->json(["message" => "Invalid OTP"], 400);
     }
 
+    public function resetEmailView()
+    {
+        return view("auth.reset-email");
+    }
+
+    public function resetEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|unique:users,email,' . $request->user()->id,
+        ]);
+
+        $user = $request->user();
+        $newEmail = $request->input("email");
+        $user->email = $newEmail;
+        $user->save();
+
+        return $this->generateAndSendOtp($user);
+    }
+
     public function regenerateOtp(Request $request)
     {
-        $user = $request->user();
+        $this->generateAndSendOtp($request->user());
+    }
+
+    public function generateAndSendOtp(User $user)
+    {
         $otp = random_int(100000, 999999);
         $expiresAt = Carbon::now("Asia/Makassar")->addMinutes(30);
         $user->otp = $otp;

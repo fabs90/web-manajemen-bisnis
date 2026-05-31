@@ -128,14 +128,65 @@
         color: #4b5563;
     }
 
-    .resend-text a {
+    .resend-text a, .btn-link {
+        background: none;
+        border: none;
         color: #3bb273;
         text-decoration: none;
         font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0;
+        font-family: inherit;
     }
 
-    .resend-text a:hover {
+    .resend-text a:hover, .btn-link:hover {
         text-decoration: underline;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 20px 0;
+        color: #9ca3af;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .divider span {
+        padding: 0 10px;
+    }
+
+    .btn-secondary {
+        width: 100%;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 15px;
+        transition: background 0.25s ease, transform 0.1s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-secondary:active {
+        transform: scale(0.97);
     }
 
     @keyframes fadeIn {
@@ -210,13 +261,21 @@
                 <button type="submit" class="btn-primary">Verifikasi</button>
             </form>
 
-            <form method="POST" action="{{ route('account-verification.resend') }}" style="margin-top: 18px; text-align:center;">
+            <form method="POST" action="{{ route('account-verification.resend') }}">
                 @csrf
                 <p class="resend-text">
                     Tidak menerima kode?
                     <button type="submit" class="btn-link">Kirim Ulang OTP</button>
                 </p>
             </form>
+
+            <div class="divider">
+                <span>Atau</span>
+            </div>
+
+            <div class="change-email-wrapper">
+                <a href="{{ route('account-verification.reset-email') }}" class="btn-secondary">Salah ketik email? Ubah Email</a>
+            </div>
         </div>
     </div>
 
