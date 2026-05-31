@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\VerifyUserController;
 use App\Http\Controllers\AdministrasiSuratController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
@@ -741,6 +742,16 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
             AdminController::class,
             'index',
         ])->name('index');
+
+
+        Route::prefix('verify-account')
+            ->name('verify-account.')
+            ->group(function () {
+                Route::get('/', [
+                    VerifyUserController::class, 'index',
+                ])->name('index');
+            });
+
     });
 
 require __DIR__.'/auth.php';

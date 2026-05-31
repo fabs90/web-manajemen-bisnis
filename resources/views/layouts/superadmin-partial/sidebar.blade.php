@@ -44,10 +44,22 @@
             <ul class="menu">
                 <li class="sidebar-title">Menu</li>
 
-                <li class="sidebar-item {{ Request::is('/') ? 'active' : '' }}">
+                <li class="sidebar-item {{ request()->routeIs('superadmin.index') ? 'active' : '' }}">
                     <a href="{{ route('superadmin.index') }}" class="sidebar-link">
                         <i class="bi bi-grid-fill"></i>
                         <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {{ request()->routeIs('superadmin.verify-account.index') ? 'active' : '' }}">
+                    <a href="{{ route('superadmin.verify-account.index') }}" class="sidebar-link">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>Verify Account</span>
+                    </a>
+                </li>
+                <li class="sidebar-item {{ request()->routeIs('superadmin.manage-user.index') ? 'active' : '' }}">
+                    <a href="#" class="sidebar-link">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Manage User</span>
                     </a>
                 </li>
 

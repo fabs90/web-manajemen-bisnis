@@ -17,7 +17,8 @@ class UserVerificationController extends Controller
                 ->route("login")
                 ->with("errors", "Silakan login terlebih dahulu");
         }
-        return view("auth.verify-account");
+        $user = Auth::user();
+        return view("auth.verify-account", compact("user"));
     }
 
     public function verify(Request $request)

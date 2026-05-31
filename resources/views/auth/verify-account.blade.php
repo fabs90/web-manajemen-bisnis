@@ -179,7 +179,7 @@
         <div class="auth-card">
             <div class="auth-header">
                 <h1>Verifikasi Akun</h1>
-                <p>Masukkan kode OTP 6 digit yang dikirim ke email Anda.</p>
+                <p>Masukkan kode OTP 6 digit yang dikirim ke email Anda ({{ $user->email }}).</p>
             </div>
 
             {{-- Notifikasi Error --}}
