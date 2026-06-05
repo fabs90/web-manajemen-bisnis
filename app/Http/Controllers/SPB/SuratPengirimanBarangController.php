@@ -14,12 +14,11 @@ class SuratPengirimanBarangController extends Controller
     public function index()
     {
         $suratPengirimanBarang = SuratPengirimanBarang::with([
-            'pesananPembelian',
-            'pesananPembelian.pelanggan',
             'pesananPenjualan',
             'pesananPenjualan.pelanggan',
             'user',
         ])
+            ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
@@ -31,19 +30,6 @@ class SuratPengirimanBarangController extends Controller
 
     public function create()
     {
-        // 1. Old SPP Pelanggan
-        $oldSpp = \App\Models\SPP\PesananPembelian::with([
-            'pelanggan',
-            'pesananPembelianDetail',
-        ])
-            ->where('user_id', auth()->id())
-            ->where('jenis', 'transaksi_masuk')
-            ->whereNotNull('pelanggan_id')
-            ->whereDoesntHave('suratPengirimanBarang')
-            ->latest()
-            ->get();
-
-        // 2. New SPP Pelanggan
         $newSpp = \App\Models\SPP\SuratPesananPenjualan::with([
             'pelanggan',
             'details',
@@ -53,31 +39,16 @@ class SuratPengirimanBarangController extends Controller
             ->latest()
             ->get();
 
-        // Map both to a consistent structure for the select list
         $dataSpp = collect();
-
-        foreach ($oldSpp as $item) {
-            $dataSpp->push((object) [
-                'id' => 'pembelian_'.$item->id,
-                'nomor_pesanan_pembelian' => $item->nomor_pesanan_pembelian,
-                'tanggal_kirim_pesanan_pembelian' => $item->tanggal_kirim_pesanan_pembelian ? $item->tanggal_kirim_pesanan_pembelian->format('Y-m-d') : null,
-                'pelanggan' => $item->pelanggan,
-                'pesananPembelianDetail' => $item->pesananPembelianDetail->map(fn ($d) => (object) [
-                    'id' => 'pembelian_'.$d->id,
-                    'nama_barang' => $d->nama_barang,
-                    'kuantitas' => $d->kuantitas,
-                ]),
-            ]);
-        }
 
         foreach ($newSpp as $item) {
             $dataSpp->push((object) [
-                'id' => 'penjualan_'.$item->id,
+                'id' => $item->id,
                 'nomor_pesanan_pembelian' => $item->nomor_pesanan_penjualan,
                 'tanggal_kirim_pesanan_pembelian' => $item->tanggal_kirim_pesanan_penjualan ? $item->tanggal_kirim_pesanan_penjualan->format('Y-m-d') : null,
                 'pelanggan' => $item->pelanggan,
-                'pesananPembelianDetail' => $item->details->map(fn ($d) => (object) [
-                    'id' => 'penjualan_'.$d->id,
+                'pesananPembelianDetail' => $item->details->map(fn($d) => (object) [
+                    'id' => $d->id,
                     'nama_barang' => $d->nama_barang,
                     'kuantitas' => $d->kuantitas,
                 ]),
@@ -90,9 +61,7 @@ class SuratPengirimanBarangController extends Controller
     public function edit($id)
     {
         $dataSpb = SuratPengirimanBarang::with([
-            'pesananPembelian',
             'pesananPenjualan',
-            'suratPengirimanBarangDetail.pesananPembelianDetail',
             'suratPengirimanBarangDetail.pesananPenjualanDetail',
         ])->where('id', $id)->firstOrFail();
 
@@ -107,7 +76,7 @@ class SuratPengirimanBarangController extends Controller
             return $service->generatePdf($id);
         } catch (Throwable $th) {
             Log::error(
-                'Gagal generate PDF Surat Pengiriman): '.$th->getMessage(),
+                'Gagal generate PDF Surat Pengiriman): ' . $th->getMessage(),
             );
 
             return back()
@@ -134,7 +103,7 @@ class SuratPengirimanBarangController extends Controller
                 );
         } catch (Throwable $th) {
             Log::error(
-                'Gagal menambahkan Surat Pengiriman Barang (SPB): '.
+                'Gagal menambahkan Surat Pengiriman Barang (SPB): ' .
                 $th->getMessage(),
             );
 
@@ -142,7 +111,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menambahkan Surat Pengiriman Barang (SPB): '.
+                    'Gagal menambahkan Surat Pengiriman Barang (SPB): ' .
                     $th->getMessage(),
                 );
         }
@@ -163,7 +132,7 @@ class SuratPengirimanBarangController extends Controller
                 );
         } catch (Throwable $th) {
             Log::error(
-                'Gagal mengubah Surat Pengiriman Barang (SPB): '.
+                'Gagal mengubah Surat Pengiriman Barang (SPB): ' .
                 $th->getMessage(),
             );
 
@@ -171,7 +140,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal mengubah Surat Pengiriman Barang (SPB): '.
+                    'Gagal mengubah Surat Pengiriman Barang (SPB): ' .
                     $th->getMessage(),
                 );
         }
@@ -191,7 +160,7 @@ class SuratPengirimanBarangController extends Controller
                 );
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal menghapus Surat Pengiriman Barang (SPB): '.
+                'Gagal menghapus Surat Pengiriman Barang (SPB): ' .
                 $th->getMessage(),
             );
 
@@ -199,7 +168,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menghapus Surat Pengiriman Barang (SPB): '.
+                    'Gagal menghapus Surat Pengiriman Barang (SPB): ' .
                     $th->getMessage(),
                 );
         }

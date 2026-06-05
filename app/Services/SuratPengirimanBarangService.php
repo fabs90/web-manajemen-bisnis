@@ -13,12 +13,13 @@ use Illuminate\Support\Str;
 
 class SuratPengirimanBarangService
 {
-    public function __construct(protected FileUploadService $fileUploadService) {}
+    public function __construct(protected FileUploadService $fileUploadService)
+    {
+    }
 
     public function store($data)
     {
         DB::beginTransaction();
-
         try {
             $userEmail = Auth::user()->email ?? 'system@email.com';
 
@@ -42,20 +43,11 @@ class SuratPengirimanBarangService
                 );
             }
 
-            // Parse spp_id to distinguish between pembelian and penjualan
-            $sppIdVal = null;
-            $pesananPenjualanIdVal = null;
-
-            if (str_starts_with($data['spp_id'], 'penjualan_')) {
-                $pesananPenjualanIdVal = (int) str_replace('penjualan_', '', $data['spp_id']);
-            } else {
-                $sppIdVal = (int) str_replace('pembelian_', '', $data['spp_id']);
-            }
 
             // Simpan header SPB
             $spb = SuratPengirimanBarang::create([
-                'spp_id' => $sppIdVal,
-                'pesanan_penjualan_id' => $pesananPenjualanIdVal,
+                'spp_id' => null,
+                'pesanan_penjualan_id' => $data['spp_id'] ?? null,
                 'nomor_pengiriman_barang' => $data['nomor_pengiriman_barang'],
                 'tanggal_terima' => $data['tanggal_terima'],
                 'status_pengiriman' => $data['status_pengiriman'],
@@ -72,19 +64,10 @@ class SuratPengirimanBarangService
             // Simpan detail barang
             if (isset($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
-                    $sppDetailIdVal = null;
-                    $pesananPenjualanDetailIdVal = null;
-
-                    if (str_starts_with($item['spp_detail_id'], 'penjualan_')) {
-                        $pesananPenjualanDetailIdVal = (int) str_replace('penjualan_', '', $item['spp_detail_id']);
-                    } else {
-                        $sppDetailIdVal = (int) str_replace('pembelian_', '', $item['spp_detail_id']);
-                    }
-
                     SuratPengirimanBarangDetail::create([
                         'spb_id' => $spb->id,
-                        'spp_detail_id' => $sppDetailIdVal,
-                        'pesanan_penjualan_detail_id' => $pesananPenjualanDetailIdVal,
+                        'spp_detail_id' => null,
+                        'pesanan_penjualan_detail_id' => $item['spp_detail_id'],
                         'jumlah_dikirim' => $item['jumlah_dikirim'] ?? 0,
                     ]);
                 }
@@ -123,9 +106,9 @@ class SuratPengirimanBarangService
             )->setPaper('A4', 'portrait');
 
             return $pdf->download(
-                Str::slug('Surat Pengiriman Barang-'.
+                Str::slug('Surat Pengiriman Barang-' .
                     $data->nomor_pengiriman_barang)
-                .'.pdf',
+                . '.pdf',
             );
         } catch (Exception $e) {
             Log::error('Error generate SPB PDF', [
@@ -151,9 +134,12 @@ class SuratPengirimanBarangService
 
             $userEmail = Auth::user()->email ?? 'system@email.com';
 
+            // Jangan update foreign key SPP yang tidak boleh berubah
+            unset($data['spp_id']);
+            unset($data['pesanan_penjualan_id']);
+
             // Handle TTD Pengirim
             if (request()->hasFile('ttd_pengirim')) {
-                // Delete old file if exists
                 if ($spb->ttd_pengirim) {
                     $this->fileUploadService->delete($spb->ttd_pengirim);
                 }
@@ -162,11 +148,12 @@ class SuratPengirimanBarangService
                     'surat/spb/ttd_pengirim',
                     $userEmail
                 );
+            } else {
+                unset($data['ttd_pengirim']);
             }
 
             // Handle TTD Penerima
             if (request()->hasFile('ttd_penerima')) {
-                // Delete old file if exists
                 if ($spb->ttd_penerima) {
                     $this->fileUploadService->delete($spb->ttd_penerima);
                 }
@@ -175,6 +162,8 @@ class SuratPengirimanBarangService
                     'surat/spb/ttd_penerima',
                     $userEmail
                 );
+            } else {
+                unset($data['ttd_penerima']);
             }
 
             $spb->update($data);

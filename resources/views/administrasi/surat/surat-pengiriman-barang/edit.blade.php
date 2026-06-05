@@ -29,9 +29,9 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-8">
                             <label class="form-label fw-bold">Pesanan Pembelian (SPP)</label>
-                            <input type="hidden" name="spp_id" value="{{ $dataSpb->pesanan_penjualan_id ? 'penjualan_' . $dataSpb->pesanan_penjualan_id : 'pembelian_' . $dataSpb->spp_id }}">
+                            <input type="hidden" name="spp_id" value="{{ $dataSpb->pesanan_penjualan_id }}">
                             @php
-                                $pp = $dataSpb->pesananPenjualan ?? $dataSpb->pesananPembelian;
+                                $pp = $dataSpb->pesananPenjualan;
                                 $pelangganNama = $pp->pelanggan->nama ?? $pp->supplier->nama ?? '-';
                                 $pelangganAlamat = $pp->pelanggan->alamat ?? $pp->supplier->alamat ?? '-';
                                 $nomorPesanan = $pp->nomor_pesanan_penjualan ?? $pp->nomor_pesanan_pembelian ?? '-';
@@ -61,8 +61,12 @@
                             <label class="form-label fw-bold">
                                 Tanggal Pengiriman <span class="text-danger">*</span>
                             </label>
+                            @php
+                                $tglKirim = $pp->tanggal_kirim_pesanan_penjualan ?? $pp->tanggal_pesanan_penjualan;
+                                $tglKirimFormatted = $tglKirim ? \Carbon\Carbon::parse($tglKirim)->format('Y-m-d') : '';
+                            @endphp
                             <input type="date" name="tanggal_pengiriman"
-                                value="{{ old('tanggal_pengiriman', $dataSpb->tanggal_pengiriman ?? ($pp->tanggal_kirim_pesanan_penjualan ?? ($pp->tanggal_kirim_pesanan_pembelian ?? ''))) }}"
+                                value="{{ $tglKirimFormatted }}"
                                 class="form-control @error('tanggal_pengiriman') is-invalid @enderror" required>
                             @error('tanggal_pengiriman')
                                 <small class="text-danger">{{ $message }}</small>
@@ -114,11 +118,14 @@
                             <label class="form-label fw-bold">Nama Pengirim / Supir</label>
                             <input type="text" name="nama_pengirim"
                                 value="{{ old('nama_pengirim', $dataSpb->nama_pengirim) }}" class="form-control mb-2">
-                            
+
                             <label class="form-label fw-bold small">Tanda Tangan Pengirim (Opsional)</label>
                             <input type="file" name="ttd_pengirim"
                                 class="form-control @error('ttd_pengirim') is-invalid @enderror" accept="image/*">
                             @if($dataSpb->ttd_pengirim)
+                                <div class="mt-2 mb-1">
+                                    <img src="{{ Storage::url($dataSpb->ttd_pengirim) }}" alt="TTD Pengirim" class="img-thumbnail" style="max-height: 100px;">
+                                </div>
                                 <small class="text-success">Sudah ada tanda tangan. Unggah lagi untuk mengganti.</small>
                             @endif
                         </div>
@@ -224,6 +231,9 @@
                                     <input type="file" name="ttd_penerima" id="ttd_penerima"
                                         class="form-control @error('ttd_penerima') is-invalid @enderror" accept="image/*">
                                     @if($dataSpb->ttd_penerima)
+                                        <div class="mt-2 mb-1">
+                                            <img src="{{ Storage::url($dataSpb->ttd_penerima) }}" alt="TTD Penerima" class="img-thumbnail" style="max-height: 100px;">
+                                        </div>
                                         <small class="text-success">Sudah ada tanda tangan. Unggah lagi untuk mengganti.</small>
                                     @endif
                                 </div>

@@ -167,7 +167,7 @@
                                                                         @foreach ($spb->suratPengirimanBarangDetail as $detail)
                                                                             <tr>
                                                                                 <td>{{ $loop->iteration }}</td>
-                                                                                <td>{{ $detail->pesananPenjualanDetail->nama_barang ?? $detail->pesananPembelianDetail->nama_barang }}
+                                                                                <td>{{ $detail->pesananPenjualanDetail?->nama_barang ?? $detail->pesananPembelianDetail?->nama_barang ?? '-' }}
                                                                                 </td>
                                                                                 <td>{{ $detail->jumlah_dikirim }}</td>
                                                                             </tr>

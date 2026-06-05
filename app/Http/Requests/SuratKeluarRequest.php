@@ -31,7 +31,7 @@ class SuratKeluarRequest extends FormRequest
             "nama_penerima" => ["required", "string", "max:255"],
             "jabatan_penerima" => ["nullable", "string", "max:255"],
             "alamat_penerima" => ["nullable", "string"],
-            "email_penerima" => ["required", "email", "max:255"],
+            "email_penerima" => ["required", "string", "max:255", "email:rfc,dns"],
 
             // Isi surat
             "paragraf_pembuka" => ["nullable", "string"],
