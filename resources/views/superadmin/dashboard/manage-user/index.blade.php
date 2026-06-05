@@ -4,6 +4,21 @@
 @section('section-heading', 'Manage User')
 @section('section-row')
 
+    {{-- Alert sukses --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            <strong>Sukses!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    {{-- Alert Error --}}
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            <strong>Gagal!</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -51,7 +66,7 @@
                                     <form action="{{ route('superadmin.user-management.destroy', ['id'=>$user->id]) }}" method="POST" class="form-delete m-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-xs btn-danger btn-delete" style="border-top-right-radius: 50rem; border-bottom-right-radius: 50rem; border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0;">
+                                        <button type="button" id="btn-delete" class="btn btn-xs btn-danger btn-delete" style="border-top-right-radius: 50rem; border-bottom-right-radius: 50rem; border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0;">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -74,7 +89,7 @@
             });
 
             // SweetAlert for Delete User
-            $('.btn-delete').on('click', function(e) {
+            $(document).on('click', '.btn-delete', function(e) {
                 e.preventDefault();
                 let form = $(this).closest('form');
 

@@ -756,6 +756,11 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
                     VerifyUserController::class,
                     'index',
                 ])->name('index');
+                
+                Route::post('/{id}/verify', [
+                    VerifyUserController::class,
+                    'verify'
+                ])->name('verify');
             });
 
 

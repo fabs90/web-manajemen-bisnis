@@ -21,7 +21,10 @@
                 <td>{{ $user->role }}</td>
                 <td>
                     @if($user->is_verified != 1)
-                        <a href="#" class="btn btn-primary">Verify</a>
+                        <form action="{{ route('superadmin.verify-account.verify', $user->id) }}" method="POST" class="d-inline m-0 p-0">
+                            @csrf
+                            <button type="submit" class="btn btn-primary btn-sm">Verify</button>
+                        </form>
                     @else
                         <span class="badge bg-success">Verified</span>
                     @endif

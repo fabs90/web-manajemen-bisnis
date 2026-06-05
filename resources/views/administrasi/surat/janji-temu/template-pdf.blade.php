@@ -127,7 +127,7 @@
         </tr>
         <tr>
             <td>Nomor Telepon</td>
-            <td>: {{ $agendaJanjiTemu->nomor_telepon ?? '-' }}</td>
+            <td>: {{ $agendaJanjiTemu->nomor_telpon ?? '-' }}</td>
         </tr>
     </table>
 
@@ -135,11 +135,11 @@
     <table class="table mb-4">
         <tr>
             <td width="30%" class="fw-bold">Tanggal Pertemuan</td>
-            <td>{{ \Carbon\Carbon::parse($agendaJanjiTemu->tgl_panggilan)->translatedFormat('d F Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($agendaJanjiTemu->tgl_janji)->translatedFormat('d F Y') }}</td>
         </tr>
         <tr>
             <td class="fw-bold">Waktu Pertemuan</td>
-            <td>{{ \Carbon\Carbon::parse($agendaJanjiTemu->waktu_panggilan)->format('H:i') }} WIB</td>
+            <td>{{ \Carbon\Carbon::parse($agendaJanjiTemu->waktu)->format('H:i') }} WIB</td>
         </tr>
         <tr>
             <td class="fw-bold">Bertemu Dengan</td>
