@@ -25,13 +25,13 @@
                 Form Agenda Perjalanan
             </div>
             <div class="card-body mt-3">
-                <form action="{{ route('administrasi.agenda-perjalanan.store') }}" method="POST">
+                <form action="{{ route('administrasi.agenda-perjalanan.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     {{-- HEADER INFO --}}
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Nama Pelaksana</label>
+                            <label>Nama Pelaksana <span class="text-danger">*</span></label>
                             <input type="text" name="nama_pelaksana"
                                 class="form-control @error('nama_pelaksana') is-invalid @enderror"
                                 value="{{ old('nama_pelaksana') }}" required>
@@ -41,7 +41,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label>Jabatan</label>
+                            <label>Jabatan <span class="text-danger">*</span></label>
                             <input type="text" name="jabatan" class="form-control @error('jabatan') is-invalid @enderror"
                                 value="{{ old('jabatan') }}" required>
                             @error('jabatan')
@@ -50,7 +50,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label>Tujuan</label>
+                            <label>Tujuan <span class="text-danger">*</span></label>
                             <input type="text" name="tujuan" class="form-control @error('tujuan') is-invalid @enderror"
                                 value="{{ old('tujuan') }}" required>
                             @error('tujuan')
@@ -59,7 +59,7 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label>Tanggal Mulai</label>
+                            <label>Tanggal Mulai <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_mulai"
                                 class="form-control @error('tanggal_mulai') is-invalid @enderror"
                                 value="{{ old('tanggal_mulai') }}" required>
@@ -69,7 +69,7 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label>Tanggal Selesai</label>
+                            <label>Tanggal Selesai <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_selesai"
                                 class="form-control @error('tanggal_selesai') is-invalid @enderror"
                                 value="{{ old('tanggal_selesai') }}" required>
@@ -79,7 +79,7 @@
                         </div>
 
                         <div class="col-12 mb-3">
-                            <label>Keperluan</label>
+                            <label>Keperluan <span class="text-danger">*</span></label>
                             <textarea name="keperluan" class="form-control @error('keperluan') is-invalid @enderror" rows="2" required>{{ old('keperluan') }}</textarea>
                             @error('keperluan')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -247,7 +247,7 @@
                     {{-- INFORMASI TRANSPORTASI --}}
                     <h5>INFORMASI TRANSPORTASI</h5>
                     <div class="mb-3">
-                        <label>Penerbangan Pergi (contoh: GA-799, 12.45-14.45 wita, MDO-CKG)</label>
+                        <label>Penerbangan Pergi (contoh: GA-799, 12.45-14.45 wita, MDO-CKG) <span class="text-danger">*</span></label>
                         <input type="text" name="transportasi_pergi"
                             class="form-control @error('transportasi_pergi') is-invalid @enderror"
                             value="{{ old('transportasi_pergi') }}" required>
@@ -257,7 +257,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>Penerbangan Pulang</label>
+                        <label>Penerbangan Pulang <span class="text-danger">*</span></label>
                         <input type="text" name="transportasi_pulang"
                             class="form-control @error('transportasi_pulang') is-invalid @enderror"
                             value="{{ old('transportasi_pulang') }}" required>
@@ -267,7 +267,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>Kode Booking</label>
+                        <label>Kode Booking <span class="text-danger">*</span></label>
                         <input type="text" name="kode_booking"
                             class="form-control @error('kode_booking') is-invalid @enderror"
                             value="{{ old('kode_booking') }}" required>
@@ -277,7 +277,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>Transportasi Lokal (Rental / Taxi / Lainnya)</label>
+                        <label>Transportasi Lokal (Rental / Taxi / Lainnya) <span class="text-danger">*</span></label>
                         <input type="text" name="transportasi_lokal"
                             class="form-control @error('transportasi_lokal') is-invalid @enderror"
                             value="{{ old('transportasi_lokal') }}" required>
@@ -291,32 +291,32 @@
                     <h5>INFORMASI AKOMODASI</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Hotel</label>
+                            <label>Hotel <span class="text-danger">*</span></label>
                             <input type="text" name="akomodasi_hotel" class="form-control"
                                 value="{{ old('akomodasi_hotel') }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Alamat</label>
+                            <label>Alamat <span class="text-danger">*</span></label>
                             <input type="text" name="akomodasi_alamat" class="form-control"
                                 value="{{ old('akomodasi_alamat') }}" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label>Nomor Telepon</label>
+                            <label>Nomor Telepon <span class="text-danger">*</span></label>
                             <input type="text" name="akomodasi_telpon" class="form-control"
                                 value="{{ old('akomodasi_telpon') }}" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label>Check-In</label>
+                            <label>Check-In <span class="text-danger">*</span></label>
                             <input type="date" name="akomodasi_check_in" class="form-control"
                                 value="{{ old('akomodasi_check_in') }}" placeholder="Check-In / Check-Out" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label>Check-Out</label>
+                            <label>Check-Out <span class="text-danger">*</span></label>
                             <input type="date" name="akomodasi_check_out" class="form-control"
                                 value="{{ old('akomodasi_check_out') }}" placeholder="Check-In / Check-Out" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label>Booking Number</label>
+                            <label>Booking Number <span class="text-danger">*</span></label>
                             <input type="text" name="akomodasi_booking_no" class="form-control"
                                 value="{{ old('akomodasi_booking_no') }}" required>
                         </div>
@@ -327,34 +327,34 @@
                     <h5>KONTAK PENTING</h5>
                     <div class="row">
                         <div class="col-md-5 mb-3">
-                            <label>Nama 1</label>
+                            <label>Nama 1 <span class="text-danger">*</span></label>
                             <input type="text" name="kontak[0][nama]" class="form-control"
                                 value="{{ old('kontak.0.nama') }}" required>
                         </div>
                         <div class="col-md-5 mb-3">
-                            <label>Telp</label>
+                            <label>Telp <span class="text-danger">*</span></label>
                             <input type="text" name="kontak[0][tel]" class="form-control"
                                 value="{{ old('kontak.0.tel') }}" required>
                         </div>
 
                         <div class="col-md-5 mb-3">
-                            <label>Nama 2</label>
+                            <label>Nama 2 <span class="text-danger">*</span></label>
                             <input type="text" name="kontak[1][nama]" class="form-control"
                                 value="{{ old('kontak.1.nama') }}" required>
                         </div>
                         <div class="col-md-5 mb-3">
-                            <label>Telp</label>
+                            <label>Telp <span class="text-danger">*</span></label>
                             <input type="text" name="kontak[1][tel]" class="form-control"
                                 value="{{ old('kontak.1.tel') }}" required>
                         </div>
 
                         <div class="col-md-5 mb-3">
-                            <label>Emergency</label>
+                            <label>Emergency <span class="text-danger">*</span></label>
                             <input type="text" name="kontak[2][nama]" class="form-control"
                                 value="{{ old('kontak.2.nama') }}" required>
                         </div>
                         <div class="col-md-5 mb-3">
-                            <label>Telp Emergency</label>
+                            <label>Telp Emergency <span class="text-danger">*</span></label>
                             <input type="text" name="kontak[2][tel]" class="form-control"
                                 value="{{ old('kontak.2.tel') }}" required>
                         </div>
@@ -365,7 +365,7 @@
                     <h5>RINCIAN BIAYA</h5>
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label>Transport</label>
+                            <label>Transport <span class="text-danger">*</span></label>
                             <input type="text" name="transport"
                                 class="form-control rupiah @error('transport') is-invalid @enderror"
                                 value="{{ old('transport', 0) }}" placeholder="0" required>
@@ -375,7 +375,7 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label>Akomodasi</label>
+                            <label>Akomodasi <span class="text-danger">*</span></label>
                             <input type="text" name="akomodasi"
                                 class="form-control rupiah @error('akomodasi') is-invalid @enderror"
                                 value="{{ old('akomodasi', 0) }}" placeholder="0" required>
@@ -385,7 +385,7 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label>Konsumsi</label>
+                            <label>Konsumsi <span class="text-danger">*</span></label>
                             <input type="text" name="konsumsi"
                                 class="form-control rupiah @error('konsumsi') is-invalid @enderror"
                                 value="{{ old('konsumsi', 0) }}" placeholder="0" required>
@@ -395,7 +395,7 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label>Lain-lain</label>
+                            <label>Lain-lain <span class="text-danger">*</span></label>
                             <input type="text" name="lain_lain"
                                 class="form-control rupiah @error('lain_lain') is-invalid @enderror"
                                 value="{{ old('lain_lain', 0) }}" placeholder="0" required>
@@ -418,25 +418,34 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Disiapkan Oleh</label>
+                            <label>Disiapkan Oleh <span class="text-danger">*</span></label>
                             <input type="text" name="disiapkan_oleh" class="form-control"
                                 value="{{ old('disiapkan_oleh') }}">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label>Tanggal Disiapkan</label>
+                            <label>Tanggal Disiapkan <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_disiapkan" class="form-control"
                                 value="{{ old('tanggal_disiapkan') }}">
                         </div>
-
+                        <div class="col-md-3 mb-3">
+                            <label>Tanda Tangan Disiapkan <span class="text-danger">*</span></label>
+                            <input type="file" name="tanda_tangan_disiapkan" class="form-control"
+                                value="{{ old('tanda_tangan_disiapkan') }}">
+                        </div>
                         <div class="col-md-6 mb-3">
-                            <label>Disetujui Oleh</label>
+                            <label>Disetujui Oleh <span class="text-danger">*</span></label>
                             <input type="text" name="disetujui_oleh" class="form-control"
                                 value="{{ old('disetujui_oleh') }}">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label>Tanggal Disetujui</label>
+                            <label>Tanggal Disetujui <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_disetujui" class="form-control"
                                 value="{{ old('tanggal_disetujui') }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Tanda Tangan Disetujui <span class="text-danger">*</span></label>
+                            <input type="file" name="tanda_tangan_disetujui" class="form-control"
+                                value="{{ old('tanda_tangan_disetujui') }}">
                         </div>
                     </div>
 

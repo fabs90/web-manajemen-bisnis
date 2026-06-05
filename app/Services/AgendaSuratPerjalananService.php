@@ -9,12 +9,17 @@ use App\Models\AgendaPerjalananDetail;
 use App\Models\AgendaPerjalananKontak;
 use App\Models\AgendaPerjalananTransportasi;
 use App\Models\JournalEntry;
+use App\Services\FileUploadService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class AgendaSuratPerjalananService
 {
+    public function __construct(public FileUploadService $fileUploadService)
+    {
+    }
+
     /**
      * Store new data.
      */
@@ -34,6 +39,24 @@ class AgendaSuratPerjalananService
             }
         }
 
+        $ttdDisiapkanPath = null;
+        if (isset($data['tanda_tangan_disiapkan']) && $data['tanda_tangan_disiapkan'] !== null) {
+            $ttdDisiapkanPath = $this->fileUploadService->upload(
+                $data['tanda_tangan_disiapkan'],
+                'agenda_perjalanan/ttd_disiapkan',
+                auth()->user()->email,
+            );
+        }
+
+        $ttdDisetujuiPath = null;
+        if (isset($data['tanda_tangan_disetujui']) && $data['tanda_tangan_disetujui'] !== null) {
+            $ttdDisetujuiPath = $this->fileUploadService->upload(
+                $data['tanda_tangan_disetujui'],
+                'agenda_perjalanan/ttd_disetujui',
+                auth()->user()->email,
+            );
+        }
+
         // agenda surat perjalanan master
         $agendaSuratPerjalanan = AgendaPerjalanan::create([
             'user_id' => auth()->user()->id,
@@ -47,6 +70,8 @@ class AgendaSuratPerjalananService
             'tanggal_disiapkan' => $data['tanggal_disiapkan'],
             'disetujui_oleh' => $data['disetujui_oleh'],
             'tanggal_disetujui' => $data['tanggal_disetujui'],
+            'tanda_tangan_disiapkan' => $ttdDisiapkanPath,
+            'tanda_tangan_disetujui' => $ttdDisetujuiPath,
             'transport' => $data['transport'],
             'akomodasi' => $data['akomodasi'],
             'konsumsi' => $data['konsumsi'],
@@ -143,6 +168,9 @@ class AgendaSuratPerjalananService
             'user_id',
             auth()->id(),
         )->findOrFail($agenda->id);
+
+        $this->fileUploadService->delete($agendaSuratPerjalanan->tanda_tangan_disiapkan);
+        $this->fileUploadService->delete($agendaSuratPerjalanan->tanda_tangan_disetujui);
 
         // hapus relasi
         $agendaSuratPerjalanan->agendaPerjalananDetail()->delete();

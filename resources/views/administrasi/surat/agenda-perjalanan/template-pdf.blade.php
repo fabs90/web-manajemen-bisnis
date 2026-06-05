@@ -266,6 +266,18 @@
                 <br>
                 <div class="fw-bold text-center">Disiapkan Oleh,</div>
                 <div style="height: 50px;">
+                    @if(isset($agendaPerjalanan->tanda_tangan_disiapkan) && $agendaPerjalanan->tanda_tangan_disiapkan)
+                        @php
+                            $ttdDisiapkanPath = storage_path('app/public/' . $agendaPerjalanan->tanda_tangan_disiapkan);
+                            if (file_exists($ttdDisiapkanPath)) {
+                                $ttdDisiapkanBase64 = base64_encode(file_get_contents($ttdDisiapkanPath));
+                                $ttdDisiapkanMime = mime_content_type($ttdDisiapkanPath);
+                            }
+                        @endphp
+                        @if(isset($ttdDisiapkanBase64))
+                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}" style="height:50px; object-fit:contain;">
+                        @endif
+                    @endif
                 </div>
                 <div class="text-center fw-bold">{{ $agendaPerjalanan->disiapkan_oleh ?? '-' }}</div>
                 <div>{{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->format('d M Y') : '-' }}</div>
@@ -275,6 +287,18 @@
                 <br>
                 <div class="fw-bold text-center">Disetujui Oleh,</div>
                 <div style="height: 50px;">
+                    @if(isset($agendaPerjalanan->tanda_tangan_disetujui) && $agendaPerjalanan->tanda_tangan_disetujui)
+                        @php
+                            $ttdDisetujuiPath = storage_path('app/public/' . $agendaPerjalanan->tanda_tangan_disetujui);
+                            if (file_exists($ttdDisetujuiPath)) {
+                                $ttdDisetujuiBase64 = base64_encode(file_get_contents($ttdDisetujuiPath));
+                                $ttdDisetujuiMime = mime_content_type($ttdDisetujuiPath);
+                            }
+                        @endphp
+                        @if(isset($ttdDisetujuiBase64))
+                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}" style="height:50px; object-fit:contain;">
+                        @endif
+                    @endif
                 </div>
                 <div class="text-center fw-bold">{{ $agendaPerjalanan->disetujui_oleh ?? '-' }}</div>
                 <div>{{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->format('d M Y') : '-' }}</div>

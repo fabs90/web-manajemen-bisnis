@@ -25,6 +25,8 @@ class AgendaPerjalanan extends Model
         "konsumsi",
         "lain_lain",
         "total_biaya",
+        "tanda_tangan_disiapkan",
+        "tanda_tangan_disetujui",
     ];
 
     public function user()
