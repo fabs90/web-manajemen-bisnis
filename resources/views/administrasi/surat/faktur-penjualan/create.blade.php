@@ -40,8 +40,8 @@
                                 @foreach ($dataSpb as $spb)
                                     @php
                                         $details = $spb['surat_pengiriman_barang_detail'];
-                                        $namaPihak = $spb['pesanan_pembelian']['pelanggan']['nama'];
-                                        $alamatPihak = $spb['pesanan_pembelian']['pelanggan']['alamat'] ?? '-';
+                                        $namaPihak = $spb['pesanan_penjualan']['pelanggan']['nama'] ?? '-';
+                                        $alamatPihak = $spb['pesanan_penjualan']['pelanggan']['alamat'] ?? '-';
                                     @endphp
                                     <option value="{{ $spb['id'] }}"
                                         data-pelanggan="{{ $namaPihak }}"
@@ -167,7 +167,7 @@
             let grandTotal = 0;
 
             details.forEach((item, i) => {
-                const itemDetails = item.pesanan_pembelian_detail;
+                const itemDetails = item.pesanan_penjualan_detail;
                 const total = itemDetails.harga * item.jumlah_dikirim;
                 grandTotal += total;
 

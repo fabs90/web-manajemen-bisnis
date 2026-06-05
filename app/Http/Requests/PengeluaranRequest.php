@@ -47,7 +47,7 @@ class PengeluaranRequest extends FormRequest
 
             // ✅ Membayar Hutang
             "hutang_id" =>
-                "required_if:jenis_keperluan,membayar_hutang|nullable|exists:buku_besar_hutang,id",
+                "required_if:jenis_keperluan,membayar_hutang|nullable|exists:journal_items,id",
 
             "potongan_pembelian" => "nullable|numeric|min:0",
             "biaya_lain" => "nullable|numeric|min:0",

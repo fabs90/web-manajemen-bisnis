@@ -84,7 +84,16 @@
                     </tr>
 
                     <tr>
-                        <td>h. Tempat pertemuan:</td>
+                        <td>h. Jabatan:</td>
+                        <td>
+                            <input type="text" name="jabatan_title"
+                                class="form-control @error('jabatan_title') is-invalid @enderror" value="{{$agendaJanjiTemu->jabatan_title}}">
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td>i. Tempat pertemuan:</td>
                         <td>
                             <input type="text" name="tempat_pertemuan"
                                 class="form-control @error('tempat_pertemuan') is-invalid @enderror" value="{{$agendaJanjiTemu->tempat_pertemuan}}">

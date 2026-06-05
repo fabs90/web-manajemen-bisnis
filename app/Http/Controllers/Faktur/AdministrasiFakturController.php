@@ -14,7 +14,7 @@ class AdministrasiFakturController extends Controller
     public function index()
     {
         $fakturPenjualan = FakturPenjualan::with([
-            'suratPengirimanBarang.pesananPembelian.pelanggan',
+            'suratPengirimanBarang.pesananPenjualan.pelanggan',
         ])
             ->where('user_id', auth()->id())
             ->latest()
@@ -25,14 +25,13 @@ class AdministrasiFakturController extends Controller
 
     public function create()
     {
-        $dataSpb = SuratPengirimanBarang::whereHas('pesananPembelian', function ($query) {
-            $query->where('jenis', 'transaksi_masuk')
-                ->whereNotNull('pelanggan_id');
+        $dataSpb = SuratPengirimanBarang::whereHas('pesananPenjualan', function ($query) {
+            $query->whereNotNull('pelanggan_id');
         })
             ->whereDoesntHave('fakturPenjualan')
             ->with([
-                'pesananPembelian.pelanggan',
-                'suratPengirimanBarangDetail.pesananPembelianDetail',
+                'pesananPenjualan.pelanggan',
+                'suratPengirimanBarangDetail.pesananPenjualanDetail',
             ])
             ->where("user_id", auth()->id())
             ->orderBy('id', 'DESC')
@@ -42,21 +41,20 @@ class AdministrasiFakturController extends Controller
                     'id' => $spb->id,
                     'nomor_pengiriman_barang' => $spb->nomor_pengiriman_barang,
                     'nama_pengirim' => $spb->nama_pengirim,
-                    'pesanan_pembelian' => [
-                        'jenis' => $spb->pesananPembelian->jenis,
+                    'pesanan_penjualan' => [
                         'pelanggan' => [
-                            'nama' => $spb->pesananPembelian->pelanggan->nama,
-                            'alamat' => $spb->pesananPembelian->pelanggan->alamat,
+                            'nama' => $spb->pesananPenjualan->pelanggan->nama ?? '',
+                            'alamat' => $spb->pesananPenjualan->pelanggan->alamat ?? '',
                         ],
                     ],
                     'surat_pengiriman_barang_detail' => $spb->suratPengirimanBarangDetail->map(function ($detail) {
                         return [
                             'id' => $detail->id,
                             'jumlah_dikirim' => $detail->jumlah_dikirim,
-                            'pesanan_pembelian_detail' => [
-                                'nama_barang' => $detail->pesananPembelianDetail->nama_barang,
-                                'kuantitas' => $detail->pesananPembelianDetail->kuantitas,
-                                'harga' => $detail->pesananPembelianDetail->harga,
+                            'pesanan_penjualan_detail' => [
+                                'nama_barang' => $detail->pesananPenjualanDetail->nama_barang ?? '',
+                                'kuantitas' => $detail->pesananPenjualanDetail->kuantitas ?? 0,
+                                'harga' => $detail->pesananPenjualanDetail->harga ?? 0,
                             ],
                         ];
                     }),

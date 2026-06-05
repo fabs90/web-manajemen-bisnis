@@ -49,8 +49,8 @@
                                 class="form-control mb-2 @error('perusahaan') is-invalid @enderror"
                                 placeholder="Nama Perusahaan">
 
-                            <input type="text" name="jabatan"
-                                class="form-control @error('jabatan') is-invalid @enderror"
+                            <input type="text" name="jabatan_title"
+                                class="form-control @error('jabatan_title') is-invalid @enderror"
                                 placeholder="Jabatan">
                         </td>
                     </tr>

@@ -51,8 +51,8 @@
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td>{{ $item->kode_faktur }}</td>
-                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->pelanggan->nama ?? '-' }}</td>
-                                    <td>{{ $item->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}
+                                    <td>{{ $item->suratPengirimanBarang->pesananPenjualan->pelanggan->nama ?? '-' }}</td>
+                                    <td>{{ $item->suratPengirimanBarang->pesananPenjualan->nomor_pesanan_penjualan ?? '-' }}
                                     </td>
                                     <td>{{ $item->suratPengirimanBarang->nomor_pengiriman_barang ?? '-' }}</td>
                                     <td class="text-center">

@@ -11,7 +11,7 @@ class AgendaJanjiTemu extends Model
         "user_id",
         "tgl_membuat",
         "nama_pembuat",
-        "jabatan",
+        "jabatan_title",
         "perusahaan",
         "nomor_telpon",
         "tgl_janji",

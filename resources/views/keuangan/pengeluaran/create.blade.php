@@ -99,7 +99,7 @@
             {{-- Hutang Aktif --}}
             <div id="hutang-aktif-section" class="d-none mb-3">
                 <label for="hutang_id" class="form-label">Pilih Hutang Aktif</label>
-                <select name="hutang_id" id="hutang_id" class="form-select">
+                <select name="hutang_id" id="hutang_id" class="form-select @error('hutang_id') is-invalid @enderror">
                     <option value="" disabled selected>-- Pilih Hutang --</option>
                     @foreach($listHutang as $hutang)
                         <option value="{{ $hutang->id }}">
@@ -107,6 +107,9 @@
                         </option>
                     @endforeach
                 </select>
+                @error('hutang_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             {{-- Barang Dibeli --}}
