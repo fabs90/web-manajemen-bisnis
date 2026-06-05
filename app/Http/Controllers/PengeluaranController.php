@@ -69,7 +69,27 @@ class PengeluaranController extends Controller
         $dataHutangFormatted = $dataHutang->map(function ($items) {
             $saldo = 0;
 
-            return $items->map(function ($item) use (&$saldo) {
+            return $items->sort(function ($a, $b) {
+                $dateA = $a->journalEntry->date;
+                $dateB = $b->journalEntry->date;
+                if ($dateA !== $dateB) {
+                    return $dateA <=> $dateB;
+                }
+
+                $isAwalA = $a->journalEntry->transaction_type === 'neraca_awal' ? 0 : 1;
+                $isAwalB = $b->journalEntry->transaction_type === 'neraca_awal' ? 0 : 1;
+                if ($isAwalA !== $isAwalB) {
+                    return $isAwalA <=> $isAwalB;
+                }
+
+                $createdA = $a->journalEntry->created_at;
+                $createdB = $b->journalEntry->created_at;
+                if ($createdA !== $createdB) {
+                    return $createdA <=> $createdB;
+                }
+
+                return $a->id <=> $b->id;
+            })->values()->map(function ($item) use (&$saldo) {
                 $saldo += ($item->credit - $item->debit);
 
                 return (object) [

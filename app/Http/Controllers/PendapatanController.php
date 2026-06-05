@@ -8,6 +8,7 @@ use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\KartuGudang;
 use App\Models\Pelanggan;
+use App\Services\PendapatanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,12 @@ use Illuminate\Support\Str;
 
 class PendapatanController extends Controller
 {
+    public function __construct(
+        protected PendapatanService $pendapatanService
+    ) {
+    }
+
+
     public function index()
     {
         $userId = auth()->id();
@@ -22,7 +29,7 @@ class PendapatanController extends Controller
         // Ambil semua akun untuk mapping kode -> id
         $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
 
-        if (! $accounts->has('1101') || ! $accounts->has('4101')) {
+        if (!$accounts->has('1101') || !$accounts->has('4101')) {
             return redirect()->route('dashboard')->with('error', 'Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) belum diatur.');
         }
 
@@ -36,22 +43,30 @@ class PendapatanController extends Controller
             ->whereHas('items', function ($q) use ($kasId, $pendapatanId) {
                 $q->whereIn('account_id', [$kasId, $pendapatanId]);
             })
+            ->where(function ($query) {
+                $query->where('transaction_type', '!=', 'neraca_awal')
+                    ->orWhereNull('transaction_type');
+            })
             ->with(['items.account'])
-            ->orderBy('date', 'desc')
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->get();
 
         $allDatas = $journalEntries->map(function ($entry) use ($kasId, $pendapatanId, $piutangId) {
             $uangDiterima = $entry->items->where('account_id', $kasId)->sum('debit');
-            $penjualanTunai = $entry->items->where('account_id', $pendapatanId)->sum('credit');
-            $piutangDagang = $piutangId ? $entry->items->where('account_id', $piutangId)->sum('debit') : 0;
+            $totalPenjualan = $entry->items->where('account_id', $pendapatanId)->sum('credit');
+
+            $penjualanTunai = $uangDiterima > 0 ? $totalPenjualan : 0;
+            $penjualanKredit = $uangDiterima == 0 ? $totalPenjualan : 0;
+
+            $piutangDagang = $piutangId ? ($entry->items->where('account_id', $piutangId)->sum('debit') + $entry->items->where('account_id', $piutangId)->sum('credit')) : 0;
 
             return (object) [
                 'id' => $entry->id,
-                'tanggal' => $entry->date,
+                'tanggal' => $entry->created_at,
                 'uraian' => $entry->description,
                 'piutang_dagang' => $piutangDagang,
                 'penjualan_tunai' => $penjualanTunai,
+                'penjualan_kredit' => $penjualanKredit,
                 'potongan_pembelian' => 0, // Placeholder
                 'lain_lain' => 0,
                 'uang_diterima' => $uangDiterima,
@@ -69,7 +84,27 @@ class PendapatanController extends Controller
             $dataPiutang = $piutangItems->groupBy('sub_ledger_id')->map(function ($items) {
                 $saldo = 0;
 
-                return $items->sortBy('journalEntry.date')->map(function ($item) use (&$saldo) {
+                return $items->sort(function ($a, $b) {
+                    $dateA = $a->journalEntry->date;
+                    $dateB = $b->journalEntry->date;
+                    if ($dateA !== $dateB) {
+                        return $dateA <=> $dateB;
+                    }
+
+                    $isAwalA = $a->journalEntry->transaction_type === 'neraca_awal' ? 0 : 1;
+                    $isAwalB = $b->journalEntry->transaction_type === 'neraca_awal' ? 0 : 1;
+                    if ($isAwalA !== $isAwalB) {
+                        return $isAwalA <=> $isAwalB;
+                    }
+
+                    $createdA = $a->journalEntry->created_at;
+                    $createdB = $b->journalEntry->created_at;
+                    if ($createdA !== $createdB) {
+                        return $createdA <=> $createdB;
+                    }
+
+                    return $a->id <=> $b->id;
+                })->values()->map(function ($item) use (&$saldo) {
                     $saldo += ($item->debit - $item->credit);
 
                     return (object) [
@@ -139,6 +174,7 @@ class PendapatanController extends Controller
         );
     }
 
+
     public function store(PendapatanRequest $request)
     {
         $userId = auth()->id();
@@ -146,150 +182,16 @@ class PendapatanController extends Controller
 
         DB::beginTransaction();
         try {
-            $prefix = 'PEND';
-            $date = \Carbon\Carbon::parse($request->tanggal)->format('Ymd');
-            $random = strtoupper(Str::random(6));
-            $referenceNumber = "{$prefix}-{$date}-{$random}";
-
-            // 1. Create Journal Entry
-            $entry = JournalEntry::create([
-                'user_id' => $userId,
-                'reference_number' => $referenceNumber,
-                'date' => $request->tanggal,
-                'description' => $request->uraian_pendapatan,
-                'transaction_type' => 'pendapatan_tunai',
-            ]);
-
-            $totalAmount = $request->jumlah + ($request->biaya_lain ?? 0);
-
-            // 2. Handle Jenis Pendapatan
-            switch ($request->jenis_pendapatan) {
-                case 'tunai':
-                    // Debit: Kas Utama (1101)
-                    $entry->items()->create([
-                        'user_id' => $userId,
-                        'journal_entry_id' => $entry->id,
-                        'account_id' => $accounts['1101']->id,
-                        'debit' => $totalAmount,
-                        'credit' => 0,
-                    ]);
-
-                    // Credit: Pendapatan Penjualan (4101)
-                    $entry->items()->create([
-                        'user_id' => $userId,
-                        'journal_entry_id' => $entry->id,
-                        'account_id' => $accounts['4101']->id,
-                        'debit' => 0,
-                        'credit' => $request->jumlah,
-                    ]);
-                    break;
-
-                case 'piutang':
-                    $piutangAmount = $request->jumlah + ($request->jumlah_piutang ?? 0);
-                    $subledgerId = $request->nama_pelanggan;
-
-                    // Debit: Piutang Usaha (1104)
-                    $entry->items()->create([
-                        'user_id' => $userId,
-                        'journal_entry_id' => $entry->id,
-                        'account_id' => $accounts['1104']->id,
-                        'debit' => $piutangAmount,
-                        'credit' => 0,
-                        'sub_ledger_type' => 'App\Models\Pelanggan',
-                        'sub_ledger_id' => $subledgerId,
-                    ]);
-
-                    // Credit: Pendapatan Penjualan (4101)
-                    $entry->items()->create([
-                        'user_id' => $userId,
-                        'journal_entry_id' => $entry->id,
-                        'account_id' => $accounts['4101']->id,
-                        'debit' => 0,
-                        'credit' => $request->jumlah,
-                    ]);
-                    break;
-
-                case 'kredit': // Pelunasan
-                    $kreditAmount = $request->jumlah + ($request->jumlah_kredit ?? 0);
-                    $subledgerId = $request->nama_pelanggan;
-
-                    // Debit: Kas Utama (1101)
-                    $entry->items()->create([
-                        'user_id' => $userId,
-                        'journal_entry_id' => $entry->id,
-                        'account_id' => $accounts['1101']->id,
-                        'debit' => $kreditAmount,
-                        'credit' => 0,
-                    ]);
-
-                    // Credit: Piutang Usaha (1104)
-                    $entry->items()->create([
-                        'user_id' => $userId,
-                        'journal_entry_id' => $entry->id,
-                        'account_id' => $accounts['1104']->id,
-                        'debit' => 0,
-                        'credit' => $kreditAmount,
-                        'sub_ledger_type' => 'App\Models\Pelanggan',
-                        'sub_ledger_id' => $subledgerId,
-                    ]);
-                    break;
-            }
-
-            // Handle Biaya Lain jika ada (Kredit Pendapatan Lain-lain)
-            if ($request->biaya_lain > 0) {
-                $entry->items()->create([
-                    'user_id' => $userId,
-                    'journal_entry_id' => $entry->id,
-                    'account_id' => $accounts['4101']->id, // Bisa diganti ke akun pendapatan lain jika ada
-                    'debit' => 0,
-                    'credit' => $request->biaya_lain,
-                ]);
-            }
-
-            // 3. Handle Barang Terjual & Inventory
-            if ($request->filled('barang_terjual') && is_array($request->barang_terjual)) {
-                foreach ($request->barang_terjual as $index => $barangId) {
-                    if (! $barangId) {
-                        continue;
-                    }
-
-                    $detailBarang = Barang::findOrFail($barangId);
-                    $jumlahDijual = $request->jumlah_barang_dijual[$index] ?? 0;
-
-                    $barangItem = KartuGudang::where('barang_id', $barangId)->where('user_id', $userId)->latest()->first();
-                    $saldoSatuanAwal = $barangItem ? $barangItem->saldo_persatuan : 0;
-                    $saldoKemasanAwal = $barangItem ? $barangItem->saldo_perkemasan : 0;
-                    $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
-
-                    if ($saldoSatuanAwal < $jumlahDijual) {
-                        throw new \Exception("Saldo barang '{$detailBarang->nama}' tidak mencukupi.");
-                    }
-
-                    $saldoPerKemasanBaru = $saldoKemasanAwal - ceil($jumlahDijual / $unitPerKemasan);
-                    $satuanBaru = $saldoSatuanAwal - $jumlahDijual;
-
-                    KartuGudang::create([
-                        'barang_id' => $barangId,
-                        'tanggal' => $request->tanggal,
-                        'diterima' => 0,
-                        'dikeluarkan' => $jumlahDijual,
-                        'uraian' => 'Penjualan: '.$request->uraian_pendapatan,
-                        'saldo_persatuan' => $satuanBaru,
-                        'saldo_perkemasan' => $saldoPerKemasanBaru,
-                        'journal_entry_id' => $entry->id,
-                        'user_id' => $userId,
-                    ]);
-                }
-            }
+            $this->pendapatanService->storePendapatan($request, $userId, $accounts);
 
             DB::commit();
 
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Penerimaan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan pendapatan: '.$e->getMessage());
+            Log::error('Gagal menyimpan pendapatan: ' . $e->getMessage());
 
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: '.$e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
     }
 
@@ -311,9 +213,9 @@ class PendapatanController extends Controller
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus pendapatan: '.$e->getMessage());
+            Log::error('Gagal menghapus pendapatan: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Gagal menghapus: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
         }
     }
 
@@ -374,9 +276,9 @@ class PendapatanController extends Controller
                 ->with('success', 'Data pendapatan lain berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan pendapatan lain: '.$e->getMessage());
+            Log::error('Gagal menyimpan pendapatan lain: ' . $e->getMessage());
 
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: '.$e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
     }
 
@@ -411,11 +313,11 @@ class PendapatanController extends Controller
                 );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus piutang: '.$e->getMessage());
+            Log::error('Gagal menghapus piutang: ' . $e->getMessage());
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus: '.$e->getMessage());
+                ->with('error', 'Gagal menghapus: ' . $e->getMessage());
         }
     }
 }

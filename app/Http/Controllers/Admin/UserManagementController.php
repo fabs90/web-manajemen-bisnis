@@ -15,6 +15,7 @@ class UserManagementController extends Controller
     public function index()
     {
         $users = DB::table('users')->get();
+
         return view('superadmin.dashboard.manage-user.index', compact('users'));
     }
 
@@ -25,7 +26,7 @@ class UserManagementController extends Controller
     {
         $user = DB::table('users')->where('id', $id)->first();
 
-        if (!$user) {
+        if (! $user) {
             abort(404);
         }
 
@@ -38,6 +39,7 @@ class UserManagementController extends Controller
     public function edit(string $id)
     {
         $user = User::findOrFail($id);
+
         return view('superadmin.dashboard.manage-user.edit', compact('user'));
     }
 
@@ -50,7 +52,7 @@ class UserManagementController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:superadmin,ukm,nelayan,koperasi',
             'is_verified' => 'required|boolean',
             'nomor_telepon' => 'nullable|string|max:25',
@@ -77,6 +79,52 @@ class UserManagementController extends Controller
         if (User::where('id', $id)->delete()) {
             return redirect()->route('superadmin.user-management.index')->with('success', 'User berhasil dihapus.');
         }
+
         return redirect()->route('superadmin.user-management.index')->with('error', 'Gagal menghapus user.');
+    }
+
+    /**
+     * Restore the financial of specified user
+     */
+    public function restoreUserNeracaAwal(string $id)
+    {
+        DB::beginTransaction();
+        try {
+            // Delete all operational documents
+            \App\Models\FakturPenjualan::where('user_id', $id)->delete();
+            \App\Models\SuratPengirimanBarang::where('user_id', $id)->delete();
+            \App\Models\SuratPesananPembelian::where('user_id', $id)->delete();
+            \App\Models\SuratPesananPenjualan::where('user_id', $id)->delete();
+            \App\Models\MemoKredit::where('user_id', $id)->delete();
+            \App\Models\KasKecilFormulir::where('user_id', $id)->delete();
+            \App\Models\KasKecilDetail::whereHas('kasKecil', function ($q) use ($id) {
+                $q->where('user_id', $id);
+            })->delete();
+            \App\Models\KasKecil::where('user_id', $id)->delete();
+            \App\Models\PengisianKasKecilLog::where('user_id', $id)->delete();
+            \App\Models\KasirTransactionLog::where('user_id', $id)->delete();
+
+            // Optional: delete administrasi surat
+            \App\Models\AgendaPerjalanan::where('user_id', $id)->delete();
+            \App\Models\SuratUndanganRapat::where('user_id', $id)->delete();
+            \App\Models\AgendaJanjiTemu::where('user_id', $id)->delete();
+
+            // Keep Neraca Awal, delete other journal entries
+            \App\Models\JournalEntry::where('user_id', $id)
+                ->where('transaction_type', '!=', 'neraca_awal')
+                ->delete();
+
+            // Note: JournalItem is cascade-deleted.
+            // KartuGudang might have its journal_entry_id set to null due to constraints,
+            // but we leave them or ideally delete operational ones if needed.
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Data finansial user berhasil di-restore ke Neraca Awal.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal merestore data finansial: '.$th->getMessage());
+        }
     }
 }

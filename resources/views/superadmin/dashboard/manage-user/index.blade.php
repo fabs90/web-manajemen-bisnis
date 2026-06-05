@@ -60,13 +60,19 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <a href="{{route('superadmin.user-management.show', ['id' => $user->id])}}" class="btn btn-xs btn-info text-white" style="border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; border-top-right-radius: 0; border-bottom-right-radius: 0; margin-right: 0;">
+                                    <a href="{{route('superadmin.user-management.show', ['id' => $user->id])}}" class="btn btn-xs btn-info text-white" style="border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; border-top-right-radius: 0; border-bottom-right-radius: 0; margin-right: 0;" title="Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    <form action="{{ route('superadmin.user-management.restore-neraca-awal', ['id'=>$user->id]) }}" method="POST" class="form-restore m-0">
+                                        @csrf
+                                        <button type="button" class="btn btn-xs btn-warning btn-restore" style="border-radius: 0; margin: 0;" title="Restore Neraca Awal">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </form>
                                     <form action="{{ route('superadmin.user-management.destroy', ['id'=>$user->id]) }}" method="POST" class="form-delete m-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" id="btn-delete" class="btn btn-xs btn-danger btn-delete" style="border-top-right-radius: 50rem; border-bottom-right-radius: 50rem; border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0;">
+                                        <button type="button" id="btn-delete" class="btn btn-xs btn-danger btn-delete" style="border-top-right-radius: 50rem; border-bottom-right-radius: 50rem; border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0;" title="Hapus User">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -101,6 +107,27 @@
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#3085d6',
                     confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
+            // SweetAlert for Restore Neraca Awal
+            $(document).on('click', '.btn-restore', function(e) {
+                e.preventDefault();
+                let form = $(this).closest('form');
+
+                Swal.fire({
+                    title: 'Restore Neraca Awal?',
+                    text: 'Semua data transaksi operasional user ini akan dihapus dan dikembalikan ke kondisi Neraca Awal!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f39c12',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Restore!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {

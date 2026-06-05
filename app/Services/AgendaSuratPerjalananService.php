@@ -9,16 +9,13 @@ use App\Models\AgendaPerjalananDetail;
 use App\Models\AgendaPerjalananKontak;
 use App\Models\AgendaPerjalananTransportasi;
 use App\Models\JournalEntry;
-use App\Services\FileUploadService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class AgendaSuratPerjalananService
 {
-    public function __construct(public FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(public FileUploadService $fileUploadService) {}
 
     /**
      * Store new data.

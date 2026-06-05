@@ -262,10 +262,10 @@
     {{-- FOOTER / TTD --}}
     <table style="margin-top: 20px; page-break-inside: avoid;">
         <tr>
-            <td width="50%" class="text-center" style="height:110px;">
+            <td width="50%" class="text-center" style="height:160px;">
                 <br>
                 <div class="fw-bold text-center">Disiapkan Oleh,</div>
-                <div style="height: 50px;">
+                <div style="height: 100px;">
                     @if(isset($agendaPerjalanan->tanda_tangan_disiapkan) && $agendaPerjalanan->tanda_tangan_disiapkan)
                         @php
                             $ttdDisiapkanPath = storage_path('app/public/' . $agendaPerjalanan->tanda_tangan_disiapkan);
@@ -275,7 +275,7 @@
                             }
                         @endphp
                         @if(isset($ttdDisiapkanBase64))
-                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}" style="height:50px; object-fit:contain;">
+                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}" style="height:100px; object-fit:contain;">
                         @endif
                     @endif
                 </div>
@@ -283,10 +283,10 @@
                 <div>{{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->format('d M Y') : '-' }}</div>
             </td>
 
-            <td width="50%" class="text-center" style="height: 110px;">
+            <td width="50%" class="text-center" style="height: 160px;">
                 <br>
                 <div class="fw-bold text-center">Disetujui Oleh,</div>
-                <div style="height: 50px;">
+                <div style="height: 100px;">
                     @if(isset($agendaPerjalanan->tanda_tangan_disetujui) && $agendaPerjalanan->tanda_tangan_disetujui)
                         @php
                             $ttdDisetujuiPath = storage_path('app/public/' . $agendaPerjalanan->tanda_tangan_disetujui);
@@ -296,7 +296,7 @@
                             }
                         @endphp
                         @if(isset($ttdDisetujuiBase64))
-                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}" style="height:50px; object-fit:contain;">
+                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}" style="height:100px; object-fit:contain;">
                         @endif
                     @endif
                 </div>

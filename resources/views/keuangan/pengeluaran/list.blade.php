@@ -32,11 +32,11 @@
                 <th>#</th>
                 <th>Tanggal</th>
                 <th>Uraian</th>
-                <th>Hutang Dagang</th>
-                <th>Pembelian Tunai</th>
-                <th>Pot. Pembelian</th>
-                <th>Lain-lain</th>
-                <th>Total Biaya</th>
+                <th>Hutang Dagang (Debit)</th>
+                <th>Pembelian Tunai (Debit)</th>
+                <th>Pot. Pembelian (Kredit)</th>
+                <th>Lain-lain (Debit)</th>
+                <th>Kas (Kredit)</th>
                 <th>Aksi</th>
             </tr>
         </thead>

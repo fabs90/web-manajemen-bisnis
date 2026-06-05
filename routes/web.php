@@ -756,13 +756,12 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
                     VerifyUserController::class,
                     'index',
                 ])->name('index');
-                
+
                 Route::post('/{id}/verify', [
                     VerifyUserController::class,
-                    'verify'
+                    'verify',
                 ])->name('verify');
             });
-
 
         Route::prefix('user-management')
             ->name('user-management.')
@@ -787,8 +786,12 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
                     UserManagementController::class,
                     'destroy',
                 ])->name('destroy');
+                Route::post('/{id}/restore-neraca-awal', [
+                    UserManagementController::class,
+                    'restoreUserNeracaAwal',
+                ])->name('restore-neraca-awal');
             });
 
     });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

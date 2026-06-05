@@ -31,11 +31,12 @@
                     <th>#</th>
                     <th>Tanggal</th>
                     <th>Uraian</th>
-                    <th>Piutang Dagang</th>
-                    <th>Penjualan Tunai</th>
-                    <th>Potongan Penjualan</th>
-                    <th>Lain-lain</th>
-                    <th>Uang Diterima</th>
+                    <th>Piutang Dagang (Kredit)</th>
+                    <th>Penjualan Tunai (Kredit)</th>
+                    <th>Penjualan Kredit (Kredit)</th>
+                    <th>Potongan Penjualan (Debit)</th>
+                    <th>Lain-lain (Kredit)</th>
+                    <th>Kas (Debit)</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -47,6 +48,7 @@
                         <td>{{ $data->uraian }}</td>
                         <td>Rp {{ number_format($data->piutang_dagang ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->penjualan_tunai ?? 0, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($data->penjualan_kredit ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->uang_diterima ?? 0, 0, ',', '.') }}</td>
@@ -67,13 +69,14 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5" class="text-center">Bunga Bank</td>
-                    <td colspan="2">Rp {{ number_format($bunga_bank->bunga_bank ?? 0, 0, ',', '.') }}</td>
-
+                    <td colspan="8" class="text-end pe-3">Bunga Bank</td>
+                    <td>Rp {{ number_format($bunga_bank->bunga_bank ?? 0, 0, ',', '.') }}</td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td colspan="5" class="text-center">Total</td>
-                    <td colspan="2"><b>Rp {{ number_format($totalPendapatan ?? 0, 0, ',', '.') }}</b></td>
+                    <td colspan="8" class="text-end pe-3">Total Kas Masuk</td>
+                    <td><b>Rp {{ number_format($totalPendapatan ?? 0, 0, ',', '.') }}</b></td>
+                    <td></td>
                 </tr>
             </tfoot>
         </table>
