@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SPB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuratPengirimanBarangRequest;
 use App\Models\SPB\SuratPengirimanBarang;
+use App\Models\SPP\SuratPesananPenjualan;
 use App\Services\SuratPengirimanBarangService;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -30,7 +31,7 @@ class SuratPengirimanBarangController extends Controller
 
     public function create()
     {
-        $newSpp = \App\Models\SPP\SuratPesananPenjualan::with([
+        $newSpp = SuratPesananPenjualan::with([
             'pelanggan',
             'details',
         ])
