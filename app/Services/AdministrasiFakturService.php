@@ -33,7 +33,7 @@ class AdministrasiFakturService
         try {
             $faktur = FakturPenjualan::with([
                 "suratPengirimanBarang",
-                "suratPengirimanBarang.pesananPembelian.pelanggan",
+                "suratPengirimanBarang.pesananPenjualan.pelanggan",
             ])
                 ->where("user_id", auth()->id())
                 ->findOrFail($id);

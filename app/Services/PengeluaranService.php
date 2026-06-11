@@ -141,7 +141,7 @@ class PengeluaranService
             'user_id' => $userId,
             'reference_number' => $this->generateReference('PAY', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pelunasan hutang - ' . $hutangItem->sub_ledger->nama . ': ' . $data['uraian_pengeluaran'],
+            'description' => 'Pelunasan hutang - ' . ($hutangItem->subLedger->nama ?? 'Unknown') . ': ' . $data['uraian_pengeluaran'],
             'transaction_type' => 'membayar_hutang',
         ]);
 

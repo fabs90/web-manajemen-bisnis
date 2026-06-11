@@ -139,14 +139,14 @@
         <table class="table-no-border">
             <tr>
                 <td width="12%" class="fw-bold">Kepada</td>
-                <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->nama }}</td>
+                <td width="43%">: {{ $faktur->suratPengirimanBarang->pesananPenjualan->pelanggan->nama }}</td>
                 <td width="18%" class="fw-bold">Nomor Pesanan</td>
                 <td width="27%">:
-                    {{ $faktur->suratPengirimanBarang->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}</td>
+                    {{ $faktur->suratPengirimanBarang->pesananPenjualan->nomor_pesanan_penjualan ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="fw-bold">Alamat</td>
-                <td>: {{ $faktur->suratPengirimanBarang->pesananPembelian->pelanggan->alamat }}</td>
+                <td>: {{ $faktur->suratPengirimanBarang->pesananPenjualan->pelanggan->alamat }}</td>
                 <td class="fw-bold">Nomor SPB</td>
                 <td>: {{ $faktur->suratPengirimanBarang->nomor_pengiriman_barang }}</td>
             </tr>
@@ -175,9 +175,9 @@
             @php $grandTotal = 0; @endphp
             @foreach ($faktur->suratPengirimanBarang->suratPengirimanBarangDetail as $index => $detail)
                 @php
-                    $qtyOrder = $detail->pesananPembelianDetail->kuantitas ?? 0;
+                    $qtyOrder = $detail->pesananPenjualanDetail->kuantitas ?? 0;
                     $qtyKirim = $detail->jumlah_dikirim ?? 0;
-                    $harga = $detail->pesananPembelianDetail->harga ?? 0;
+                    $harga = $detail->pesananPenjualanDetail->harga ?? 0;
                     $total = $qtyKirim * $harga;
                     $grandTotal += $total;
                 @endphp
@@ -185,7 +185,7 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td class="text-center">{{ $qtyOrder }}</td>
                     <td class="text-center">{{ $qtyKirim }}</td>
-                    <td style="padding-left: 10px;">{{ $detail->pesananPembelianDetail->nama_barang ?? '-' }}</td>
+                    <td style="padding-left: 10px;">{{ $detail->pesananPenjualanDetail->nama_barang ?? '-' }}</td>
                     <td class="text-right">{{ number_format($harga, 0, ',', '.') }}</td>
                     <td class="text-right fw-bold">{{ number_format($total, 0, ',', '.') }}</td>
                 </tr>

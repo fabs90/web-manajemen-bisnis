@@ -422,27 +422,34 @@
                             <input type="text" name="disiapkan_oleh" class="form-control"
                                 value="{{ old('disiapkan_oleh') }}">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label>Tanggal Disiapkan <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_disiapkan" class="form-control"
                                 value="{{ old('tanggal_disiapkan') }}">
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <label>Tanda Tangan Disiapkan <span class="text-danger">*</span></label>
-                            <input type="file" name="tanda_tangan_disiapkan" class="form-control"
-                                value="{{ old('tanda_tangan_disiapkan') }}">
-                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label>Disetujui Oleh <span class="text-danger">*</span></label>
                             <input type="text" name="disetujui_oleh" class="form-control"
                                 value="{{ old('disetujui_oleh') }}">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label>Tanggal Disetujui <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_disetujui" class="form-control"
                                 value="{{ old('tanggal_disetujui') }}">
                         </div>
-                        <div class="col-md-3 mb-3">
+
+                    </div>
+
+                    <hr>
+                    <h5>TANDA TANGAN</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Tanda Tangan Disiapkan <span class="text-danger">*</span></label>
+                            <input type="file" name="tanda_tangan_disiapkan" class="form-control"
+                                value="{{ old('tanda_tangan_disiapkan') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label>Tanda Tangan Disetujui <span class="text-danger">*</span></label>
                             <input type="file" name="tanda_tangan_disetujui" class="form-control"
                                 value="{{ old('tanda_tangan_disetujui') }}">
