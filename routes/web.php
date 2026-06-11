@@ -92,6 +92,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'create',
         ])->name('keuangan.pendapatan.create');
 
+        Route::get('/pendapatan/{id}/detail', [
+            PendapatanController::class,
+            'show',
+        ])->name('keuangan.pendapatan.show');
+
         Route::post('/pendapatan', [
             PendapatanController::class,
             'store',
@@ -127,6 +132,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             PengeluaranController::class,
             'create',
         ])->name('keuangan.pengeluaran.create');
+
+        Route::get('/pengeluaran/{id}/detail', [
+            PengeluaranController::class,
+            'show',
+        ])->name('keuangan.pengeluaran.show');
 
         Route::post('/pengeluaran', [
             PengeluaranController::class,

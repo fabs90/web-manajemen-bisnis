@@ -53,6 +53,9 @@
                         <td>Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->uang_diterima ?? 0, 0, ',', '.') }}</td>
                         <td>
+                            <a href="{{ route('keuangan.pendapatan.show', $data->id) }}" class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
                             <form id="deleteForm-{{ $data->id }}"
                                 action="{{ route('keuangan.pendapatan.destroy', $data->id) }}" method="POST"
                                 class="d-inline delete-btn">

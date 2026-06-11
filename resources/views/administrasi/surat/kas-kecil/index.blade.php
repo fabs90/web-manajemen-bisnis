@@ -111,6 +111,7 @@
         $('#kas-kecil-table').DataTable({
             responsive: true,
             pageLength: 10,
+            order: [],
             language: {
                 emptyTable: "Belum ada Data Kas Kecil📪"
             }

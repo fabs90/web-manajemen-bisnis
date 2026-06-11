@@ -16,12 +16,12 @@ class ManajemenKasKecilController extends Controller
 {
     public function index()
     {
-        $kasKecilLogs = PengisianKasKecilLog::where(
-            'user_id',
-            auth()->id(),
-        )->get();
+        $kasKecilLogs = PengisianKasKecilLog::where('user_id', auth()->id())
+            ->orderBy('tanggal_transaksi', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
 
-        $saldoAkhir = KasKecil::where('user_id', auth()->id())->latest()->value('saldo_akhir');
+        $saldoAkhir = KasKecil::where('user_id', auth()->id())->latest('id')->value('saldo_akhir');
 
         return view('keuangan.kas-kecil.index', compact('kasKecilLogs', 'saldoAkhir'));
     }
@@ -77,7 +77,7 @@ class ManajemenKasKecilController extends Controller
             ]);
 
             $latestSaldoKasKecil = KasKecil::where('user_id', auth()->id())
-                ->latest()
+                ->latest('id')
                 ->first();
             $saldoAkhir =
                 ($latestSaldoKasKecil->saldo_akhir ?? 0) + $request->jumlah;

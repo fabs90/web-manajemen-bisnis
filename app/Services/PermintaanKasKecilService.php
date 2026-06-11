@@ -28,7 +28,7 @@ class PermintaanKasKecilService
 
             // 1. Get current balance and validate
             $saldoLama = KasKecil::where('user_id', $userId)
-                ->latest()
+                ->latest('id')
                 ->value('saldo_akhir') ?? 0;
 
             $isPengeluaran = ($data['jenis'] === 'pengeluaran');
@@ -80,6 +80,7 @@ class PermintaanKasKecilService
             ]);
 
             if (! $isPengeluaran) {
+                // Pemasukan
                 $entry->items()->create([
                     'user_id' => $userId,
                     'account_id' => $kasKecilAccount->id,
@@ -93,6 +94,7 @@ class PermintaanKasKecilService
                     'credit' => $total,
                 ]);
             } else {
+                // Pengeluaran
                 $entry->items()->create([
                     'user_id' => $userId,
                     'account_id' => $expenseAccount->id,

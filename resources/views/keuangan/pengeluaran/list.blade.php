@@ -70,6 +70,9 @@
                             </form>
                         @else
                             {{-- Pengeluaran biasa --}}
+                            <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}" class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
                             <form
                                 action="{{ route('keuangan.pengeluaran.destroy', ['id' => $data->id]) }}"
                                 method="POST"

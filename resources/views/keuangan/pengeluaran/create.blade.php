@@ -135,15 +135,15 @@
 
             {{-- Potongan, Biaya Lain, Bunga --}}
             <div class="mb-3">
-                <label for="potongan_pembelian" class="form-label">Potongan</label>
+                <label for="potongan_pembelian" class="form-label">Potongan (Mengurangi Pengeluaran)</label>
                 <input type="text" name="potongan_pembelian" id="potongan_pembelian" class="form-control" value="0">
             </div>
             <div class="mb-3">
-                <label for="biaya_lain" class="form-label">Biaya Lain</label>
+                <label for="biaya_lain" class="form-label">Biaya Lain (Menambah Pengeluaran)</label>
                 <input type="text" name="biaya_lain" id="biaya_lain" class="form-control" value="0">
             </div>
             <div class="mb-3">
-                <label for="admin_bank" class="form-label">Admin Bank</label>
+                <label for="admin_bank" class="form-label">Admin Bank (Menambah Pengeluaran)</label>
                 <input type="text" name="admin_bank" id="admin_bank" class="form-control" value="0">
             </div>
 

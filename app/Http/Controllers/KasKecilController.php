@@ -24,9 +24,13 @@ class KasKecilController extends Controller
     public function index(): View
     {
         $userId = Auth::id();
-        $kasKecil = KasKecil::with(['kasKecilDetail', 'kasKecilFormulir', 'kasKecilLog'])->where('user_id', $userId)->get();
+        $kasKecil = KasKecil::with(['kasKecilDetail', 'kasKecilFormulir', 'kasKecilLog'])
+            ->where('user_id', $userId)
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
         $saldoAkhir = KasKecil::where('user_id', $userId)
-            ->latest()
+            ->latest('id')
             ->value('saldo_akhir');
 
         return view('administrasi.surat.kas-kecil.index', compact('kasKecil', 'saldoAkhir'));
@@ -99,7 +103,9 @@ class KasKecilController extends Controller
                 $formulir->delete();
             }
 
+            $deletedId = $kas->id;
             $kas->delete();
+            KasKecil::recalculateBalances((int) Auth::id(), $deletedId);
             DB::commit();
 
             return redirect()->back()->with('success', 'Data kas kecil berhasil dihapus.');

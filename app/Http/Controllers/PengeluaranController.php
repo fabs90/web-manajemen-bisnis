@@ -186,6 +186,17 @@ class PengeluaranController extends Controller
         }
     }
 
+    public function show(int $id): View
+    {
+        $userId = auth()->id();
+        $entry = JournalEntry::where('id', $id)
+            ->where('user_id', $userId)
+            ->with(['items.account', 'items.subLedger'])
+            ->firstOrFail();
+
+        return view('keuangan.pengeluaran.show', compact('entry'));
+    }
+
     public function destroyHutang(int $id): RedirectResponse
     {
         // Dalam sistem jurnal, menghapus satu item hutang berarti menghapus entry jurnalnya

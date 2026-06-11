@@ -126,7 +126,7 @@
                                 $data = file_get_contents($path);
                                 $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
                             @endphp
-                            <img src="{{ $base64 }}" alt="Tanda Tangan" style="max-height: 80px; display: block; margin: 0 auto;">
+                            <img src="{{ $base64 }}" alt="Tanda Tangan" style="max-width: 150px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;">
                         @endif
                     @else
                         {{-- Jarak jika tidak ada gambar --}}

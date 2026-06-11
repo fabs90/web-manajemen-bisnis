@@ -275,7 +275,7 @@
                             }
                         @endphp
                         @if(isset($ttdDisiapkanBase64))
-                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}" style="height:100px; object-fit:contain;">
+                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}" style="max-width: 150px; max-height: 80px; width: auto; height: auto;">
                         @endif
                     @endif
                 </div>
@@ -296,7 +296,7 @@
                             }
                         @endphp
                         @if(isset($ttdDisetujuiBase64))
-                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}" style="height:100px; object-fit:contain;">
+                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}" style="max-width: 150px; max-height: 80px; width: auto; height: auto;">
                         @endif
                     @endif
                 </div>

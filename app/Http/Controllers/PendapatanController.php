@@ -18,9 +18,7 @@ class PendapatanController extends Controller
 {
     public function __construct(
         protected PendapatanService $pendapatanService
-    ) {
-    }
-
+    ) {}
 
     public function index()
     {
@@ -29,7 +27,7 @@ class PendapatanController extends Controller
         // Ambil semua akun untuk mapping kode -> id
         $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
 
-        if (!$accounts->has('1101') || !$accounts->has('4101')) {
+        if (! $accounts->has('1101') || ! $accounts->has('4101')) {
             return redirect()->route('dashboard')->with('error', 'Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) belum diatur.');
         }
 
@@ -174,7 +172,6 @@ class PendapatanController extends Controller
         );
     }
 
-
     public function store(PendapatanRequest $request)
     {
         $userId = auth()->id();
@@ -189,9 +186,9 @@ class PendapatanController extends Controller
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Penerimaan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan pendapatan: ' . $e->getMessage());
+            Log::error('Gagal menyimpan pendapatan: '.$e->getMessage());
 
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: '.$e->getMessage());
         }
     }
 
@@ -213,10 +210,21 @@ class PendapatanController extends Controller
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus pendapatan: ' . $e->getMessage());
+            Log::error('Gagal menghapus pendapatan: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus: '.$e->getMessage());
         }
+    }
+
+    public function show(int $id)
+    {
+        $userId = auth()->id();
+        $entry = JournalEntry::where('id', $id)
+            ->where('user_id', $userId)
+            ->with(['items.account', 'items.subLedger'])
+            ->firstOrFail();
+
+        return view('keuangan.pendapatan.show', compact('entry'));
     }
 
     public function createLain()
@@ -276,9 +284,9 @@ class PendapatanController extends Controller
                 ->with('success', 'Data pendapatan lain berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan pendapatan lain: ' . $e->getMessage());
+            Log::error('Gagal menyimpan pendapatan lain: '.$e->getMessage());
 
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: '.$e->getMessage());
         }
     }
 
@@ -313,11 +321,11 @@ class PendapatanController extends Controller
                 );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus piutang: ' . $e->getMessage());
+            Log::error('Gagal menghapus piutang: '.$e->getMessage());
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus: '.$e->getMessage());
         }
     }
 }

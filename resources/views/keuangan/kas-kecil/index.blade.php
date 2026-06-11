@@ -51,7 +51,7 @@
                         @foreach ($kasKecilLogs as $item)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ date('d-m-Y', strtotime($item->tanggal)) }}</td>
+                                <td>{{ date('d-m-Y', strtotime($item->tanggal_transaksi)) }}</td>
 
                                 <td>
                                     {{ $item->journalEntry->reference_number }}
