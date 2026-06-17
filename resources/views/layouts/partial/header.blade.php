@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-store">
 
     <title>@yield('page-title') | {{ config('app.name', 'TRANSDIGITAL') }}</title>
-    <link rel="shortcut icon" href="{{ asset('dist/assets/static/images/logo_web.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('dist/assets/static/images/logo_web_new.png') }}" type="image/x-icon">
 
     <link rel="stylesheet" href="{{ asset('dist/assets/compiled/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/assets/compiled/css/app-dark.css') }}">
