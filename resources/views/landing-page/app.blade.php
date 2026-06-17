@@ -17,7 +17,7 @@
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center fw-bold text-decoration-none" href="#">
                     <img src="{{ asset('dist/assets/static/images/logo_web_new.png') }}" alt="Logo" width="60"
-                        height="60">
+                        height="60" style="object-fit: contain;">
                     <div>
                         <span class="tagline small d-none d-lg-block">Administrasi Efektif & Otomatisasi Laporan
                             Keuangan</span>
