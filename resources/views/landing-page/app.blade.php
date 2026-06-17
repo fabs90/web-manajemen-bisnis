@@ -7,7 +7,7 @@
     <title>@yield('title', 'Home | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!--page icon-->
-    <link rel="icon" href="{{ asset('dist/assets/static/images/logo_web_new.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('dist/assets/static/images/logo_square.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('dist/landing-page/landing-page.css') }}">
 </head>
 
@@ -16,8 +16,8 @@
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center fw-bold text-decoration-none" href="#">
-                    <img src="{{ asset('dist/assets/static/images/logo_web_new.png') }}" alt="Logo" height="60"
-                        style="width: auto;">
+                    <img src="{{ asset('dist/assets/static/images/logo_square.png') }}" alt="Logo" 
+                        style="width: 60px !important; height: 60px !important; object-fit: contain !important;">
                     <div>
                         <span class="tagline small d-none d-lg-block">Administrasi Efektif & Otomatisasi Laporan
                             Keuangan</span>
