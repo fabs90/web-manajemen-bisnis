@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Buat Agenda Perjalanan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Buat Agenda Perjalanan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container mt-4">

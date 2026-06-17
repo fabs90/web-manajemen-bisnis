@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Kasir | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Kasir | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Kasir Penjualan')
 @section('section-row')
 

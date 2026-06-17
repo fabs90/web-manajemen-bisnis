@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Debitur & Kreditur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Debitur & Kreditur | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Manajemen Debitur dan Kreditur')
 
 @section('section-row')

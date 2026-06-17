@@ -1,6 +1,6 @@
 @extends('layouts.superadmin-partial.layouts')
 
-@section('page-title', 'Verify Account | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Verify Account | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Verify Account')
 @section('section-row')
 

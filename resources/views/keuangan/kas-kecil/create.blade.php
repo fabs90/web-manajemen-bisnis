@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Form Pengisian Kas Kecil | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Form Pengisian Kas Kecil | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Form Pengisian Kas Kecil')
 
 @section('section-row')

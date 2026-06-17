@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Administrasi Surat | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Administrasi Surat | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Administrasi Surat')
 @section('section-row')
 

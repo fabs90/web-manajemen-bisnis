@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Agenda Surat Undangan Rapat | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Agenda Surat Undangan Rapat | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container mt-4">

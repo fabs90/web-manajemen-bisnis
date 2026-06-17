@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Agenda Perjalanan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Agenda Perjalanan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
 {{-- Alert sukses --}}

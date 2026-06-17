@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'List Faktur Penjualan | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'List Faktur Penjualan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container mt-4">

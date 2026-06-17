@@ -1,6 +1,6 @@
 @extends('layouts.superadmin-partial.layouts')
 
-@section('page-title', 'Detail User | Digitrans')
+@section('page-title', 'Detail User | TRANSDIGITAL')
 @section('section-heading', 'Detail User')
 @section('section-row')
 

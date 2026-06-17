@@ -1,6 +1,6 @@
 @extends('landing-page.app')
 
-@section('title', 'Home | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('title', 'Home | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('content')
     <section id="home" class="hero text-white text-center py-5"

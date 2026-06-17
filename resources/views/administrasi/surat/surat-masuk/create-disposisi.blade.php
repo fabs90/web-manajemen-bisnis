@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Disposisi Surat Masuk | Digitrans - Administrasi Surat')
+@section('page-title', 'Disposisi Surat Masuk | TRANSDIGITAL - Administrasi Surat')
 @section('section-heading', 'Lembar Disposisi')
 
 @section('section-row')

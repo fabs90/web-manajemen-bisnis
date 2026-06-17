@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Edit Barang | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Edit Barang | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Form Edit Barang')
 @section('section-row')
     <p>

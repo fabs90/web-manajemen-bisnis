@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Get Started | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Get Started | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container py-5">
@@ -9,7 +9,7 @@
                 Selamat Datang, {{ Auth::user()->name ?? 'Pengguna Baru' }}! 🎉
             </h1>
             <p class="lead text-secondary mt-3">
-                Akun Anda telah berhasil dibuat. Langkah selanjutnya, mari pelajari cara menggunakan <strong>Digitrans</strong>
+                Akun Anda telah berhasil dibuat. Langkah selanjutnya, mari pelajari cara menggunakan <strong>TRANSDIGITAL</strong>
                 untuk mengelola administrasi dan transaksi bisnis Anda secara efisien.
             </p>
         </div>
@@ -20,7 +20,7 @@
                 <iframe
                     id="video-player"
                     src="https://www.youtube.com/embed/-xuUehefw7Y?enablejsapi=1&rel=0&version=3"
-                    title="Panduan Singkat Digitrans"
+                    title="Panduan Singkat TRANSDIGITAL"
                     allowfullscreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
                 </iframe>
@@ -31,7 +31,7 @@
         <div class="mb-5">
             <h4 class="fw-semibold text-primary text-center mb-4">Sebelum Memulai, Lengkapi Profil Anda</h4>
             <p class="text-secondary text-center mb-4 fs-5">
-                Untuk menyesuaikan pengaturan bisnis dan memaksimalkan fitur Digitrans,
+                Untuk menyesuaikan pengaturan bisnis dan memaksimalkan fitur TRANSDIGITAL,
                 silakan lengkapi data perusahaan terlebih dahulu.
             </p>
 

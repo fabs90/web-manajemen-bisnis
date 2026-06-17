@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Edit Surat Pengiriman Barang (SPB) | Digitrans')
+@section('page-title', 'Edit Surat Pengiriman Barang (SPB) | TRANSDIGITAL')
 
 @section('section-row')
     <div class="container mt-4">

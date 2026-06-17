@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Data Notulen Rapat | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Input Data Notulen Rapat | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container mt-4">

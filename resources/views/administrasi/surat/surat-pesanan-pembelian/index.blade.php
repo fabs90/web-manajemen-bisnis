@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Surat Pesanan Pembelian | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Surat Pesanan Pembelian | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-row')
     <div class="container mt-4">
         {{-- Alert sukses --}}

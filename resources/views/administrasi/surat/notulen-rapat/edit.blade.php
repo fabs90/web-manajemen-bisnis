@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Edit Data Agenda Rapat - ' . $rapat->judul_rapat . ' | Digitrans')
+@section('page-title', 'Edit Data Agenda Rapat - ' . $rapat->judul_rapat . ' | TRANSDIGITAL')
 
 @section('section-row')
     <div class="container mt-4">

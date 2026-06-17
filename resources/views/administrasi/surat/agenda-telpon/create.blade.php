@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Tambah Agenda Telpon | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Tambah Agenda Telpon | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Form Agenda Janji Telpon')
 
 @section('section-row')

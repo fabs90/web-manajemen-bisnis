@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Tambah Memo Kredit | Digitrans')
+@section('page-title', 'Tambah Memo Kredit | TRANSDIGITAL')
 
 @section('section-row')
     <div class="container mt-4">

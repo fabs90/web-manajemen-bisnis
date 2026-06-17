@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tutup Buku Tahun | Digitrans')
+@section('page-title', 'Tutup Buku Tahun | TRANSDIGITAL')
 
 @section('section-heading', 'Tutup Buku Tahunan')
 @section('section-row')

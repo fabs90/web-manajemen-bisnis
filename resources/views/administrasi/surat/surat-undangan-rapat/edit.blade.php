@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Edit Surat Undangan Rapat | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Edit Surat Undangan Rapat | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Edit Surat Undangan Rapat')
 
 @section('section-row')

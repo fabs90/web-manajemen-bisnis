@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Memo Kredit | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Memo Kredit | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-row')
     {{-- Alert sukses --}}
     @if (session('success'))

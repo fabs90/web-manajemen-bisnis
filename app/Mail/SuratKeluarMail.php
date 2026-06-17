@@ -33,8 +33,8 @@ class SuratKeluarMail extends Mailable implements ShouldQueue
         ])->output();
 
         $email = $this->from(
-            'no-reply@digitrans.co.id',
-            "Digitrans | {$this->user->email}",
+            'no-reply@transdigital.co.id',
+            "TRANSDIGITAL | {$this->user->email}",
         )
             ->subject(
                 "Surat | {$this->surat->nomor_surat} | {$this->user->name}",

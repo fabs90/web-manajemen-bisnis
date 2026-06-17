@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Janji Temu | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Input Janji Temu | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-row')
 <div class="container mt-4">
     @if(session('error'))

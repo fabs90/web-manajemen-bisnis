@@ -3,7 +3,7 @@
         <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="logo">
-                    <a href="{{ route('dashboard') }}"><p class="h4 fw-bold mb-0">Digitrans</p></a>
+                    <a href="{{ route('dashboard') }}"><p class="h4 fw-bold mb-0">TRANSDIGITAL</p></a>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <div class="theme-toggle d-flex gap-2 align-items-center mt-1">

@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Surat Pengiriman Barang (SPB) | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Surat Pengiriman Barang (SPB) | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-row')
     <div class="container mt-4">

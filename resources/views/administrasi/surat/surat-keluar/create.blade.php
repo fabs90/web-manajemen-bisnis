@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Surat Keluar | Digitrans - Administrasi Surat')
+@section('page-title', 'Surat Keluar | TRANSDIGITAL - Administrasi Surat')
 @section('section-heading', 'Form Surat Keluar')
 
 @section('section-row')

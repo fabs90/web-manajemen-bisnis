@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Surat Pesanan Pembelian dari Pelanggan | Digitrans')
+@section('page-title', 'Input Surat Pesanan Pembelian dari Pelanggan | TRANSDIGITAL')
 @section('section-row')
     <div class="container mt-4">
         {{-- DAFTAR SPP PELANGGAN --}}

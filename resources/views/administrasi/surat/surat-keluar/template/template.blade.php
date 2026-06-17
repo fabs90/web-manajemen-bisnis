@@ -73,7 +73,7 @@
                 {{ $user->name }}
             </p>
             <hr>
-            <p><em>Email ini dikirimkan secara otomatis melalui sistem Digitrans. Mohon tidak membalas langsung jika
+            <p><em>Email ini dikirimkan secara otomatis melalui sistem TRANSDIGITAL. Mohon tidak membalas langsung jika
                     tidak diperlukan.</em></p>
         </div>
     </div>

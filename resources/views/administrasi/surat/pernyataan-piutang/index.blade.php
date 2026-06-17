@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Pernyataan Piutang | Digitrans - Administrasi & Transaksi')
+@section('page-title', 'Pernyataan Piutang | TRANSDIGITAL - Administrasi & Transaksi')
 @section('section-heading', 'Daftar Pernyataan Piutang')
 
 @section('section-row')

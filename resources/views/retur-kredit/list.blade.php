@@ -1,5 +1,5 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Retur | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Retur | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
 @section('section-heading', 'List Retur Penjualan & Pengeluaran')
 @section('section-row')

@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Pengisian Kas Kecil | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Pengisian Kas Kecil | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Pengisian Kas Kecil')
 
 @section('section-row')

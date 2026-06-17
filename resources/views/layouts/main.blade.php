@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Dashboard | Digitrans - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Dashboard | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Dashboard')
 
 @push('styles')

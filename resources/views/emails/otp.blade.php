@@ -11,7 +11,7 @@
         style="max-width: 500px; margin: auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <h2 style="color: #111827;">Halo, {{ $name }} - {{ $email }}👋</h2>
 
-        <p>Terima kasih telah mendaftar di website Digitrans. Berikut adalah kode verifikasi (OTP) untuk akun Anda:</p>
+        <p>Terima kasih telah mendaftar di website TRANSDIGITAL. Berikut adalah kode verifikasi (OTP) untuk akun Anda:</p>
 
         <div style="text-align: center; margin: 30px 0;">
             <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #2563eb;">
@@ -25,7 +25,7 @@
 
         <br>
         <p>Salam,</p>
-        <p><strong>Web Manajemen Bisnis (Digitrans)💖</strong></p>
+        <p><strong>Web Manajemen Bisnis (TRANSDIGITAL)💖</strong></p>
     </div>
 </body>
 

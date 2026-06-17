@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Input Surat Pesanan Pembelian ke Supplier/Pemasok | Digitrans')
+@section('page-title', 'Input Surat Pesanan Pembelian ke Supplier/Pemasok | TRANSDIGITAL')
 @section('section-row')
     <div class="container mt-4">
         <form action="{{ route('administrasi.spp.store') }}" method="POST" enctype="multipart/form-data">
