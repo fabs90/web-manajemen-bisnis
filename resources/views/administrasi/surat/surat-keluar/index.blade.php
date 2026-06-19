@@ -110,7 +110,7 @@
                 title: 'Sukses!',
                 text: '{{ session('success') }}',
                 showConfirmButton: true,
-                timer: 2500,
+                timer: 3000,
                 showClass: {
                     popup: 'animate__animated animate__fadeInDown'
                 },
@@ -125,7 +125,7 @@
                 title: 'Oops!',
                 text: '{{ session('error') }}',
                 showConfirmButton: true,
-                timer: 2500,
+                timer: 3000,
                 showClass: {
                     popup: 'animate__animated animate__fadeInDown'
                 },

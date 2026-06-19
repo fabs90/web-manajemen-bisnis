@@ -8,6 +8,7 @@ use App\Models\SuratKeluarEmailLog;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -21,6 +22,11 @@ class SuratKeluarService
     {
         $lampiranPath = null;
         $ttdPath = null;
+
+        // Validate email
+        if (!$this->validateEmail((string) $data['email_penerima'])) {
+            throw new \Exception('Maaf, Email yang dimasukan tidak valid. Coba ulangi dengan email yang valid.');
+        }
 
         if ($fileLampiran) {
             $lampiranPath = $this->fileUploadService->upload($fileLampiran, 'surat-keluar/lampiran', $user->email);
@@ -99,5 +105,14 @@ class SuratKeluarService
         ]);
 
         return $pdf->download($fileName);
+    }
+
+    private function validateEmail(string $email): bool
+    {
+        $response = Http::get("https://rapid-email-verifier.fly.dev/api/validate?email={$email}");
+        if ($response->json()['status'] !== 'VALID') {
+            return false;
+        }
+        return true;
     }
 }
