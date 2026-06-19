@@ -25,7 +25,8 @@
                                 <th>Waktu</th>
                                 <th>Pemimpin Rapat</th>
                                 <th>Nama Notulis</th>
-                                <th width="13%">Aksi</th>
+                                <th width="15%">Unduh PDF</th>
+                                <th width="10%">Aksi</th>
                             </tr>
                         </thead>
 
@@ -45,19 +46,34 @@
                                     <td class="text-center text-nowrap">
                                         <div class="d-flex justify-content-center gap-1 flex-nowrap">
 
-                                            <a href="{{ route('administrasi.rapat.edit', ['rapatId' => $item->id]) }}"
-                                                class="btn btn-info btn-sm">
-                                                <i class="bi bi-pencil text-white"></i>
-                                            </a>
-
                                             <form
                                                 action="{{ route('administrasi.rapat.generatePdf', ['rapatId' => $item->id]) }}"
                                                 method="GET" target="_blank" class="d-inline formGenerateAgendaRapatPdf">
-                                                <button class="btn btn-warning btn-sm generateAgendaRapatBtn"
-                                                    type="submit">
-                                                    <i class="bi bi-file-pdf text-white"></i>
+                                                <button class="btn btn-warning btn-sm generateAgendaRapatBtn text-white"
+                                                    type="submit" title="Download Notulen Rapat">
+                                                    <i class="bi bi-file-pdf text-white"></i> Notulen
                                                 </button>
                                             </form>
+
+                                            <form
+                                                action="{{ route('administrasi.rapat.hasil-keputusan.generatePdf', ['hasilKeputusanId' => $item->id]) }}"
+                                                method="GET" target="_blank" class="d-inline formGenerateHasilKeputusanPdf">
+                                                <button class="btn btn-success btn-sm generateHasilKeputusanBtn"
+                                                    type="submit" title="Download Hasil Keputusan">
+                                                    <i class="bi bi-file-earmark-pdf text-white"></i> Keputusan
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+
+                                    <td class="text-center text-nowrap">
+                                        <div class="d-flex justify-content-center gap-1 flex-nowrap">
+
+                                            <a href="{{ route('administrasi.rapat.edit', ['rapatId' => $item->id]) }}"
+                                                class="btn btn-info btn-sm" title="Edit Agenda Rapat">
+                                                <i class="bi bi-pencil text-white"></i>
+                                            </a>
 
                                             <form
                                                 action="{{ route('administrasi.rapat.destroy', ['rapatId' => $item->id]) }}"
@@ -94,6 +110,7 @@
                     icon: 'success',
                     title: 'Sukses!',
                     text: "{{ session('success') }}",
+                    timer: 3000
                 });
             @endif
 
@@ -102,6 +119,7 @@
                     icon: 'error',
                     title: 'Gagal!',
                     text: "{{ session('error') }}",
+                    timer: 3000
                 });
             @endif
 
@@ -113,16 +131,32 @@
                 }
             });
 
-            $('#formGenerateAgendaRapatPdf').on('submit', function(e) {
-                const $btn = $('#generateAgendaRapatBtn');
+            $('.formGenerateAgendaRapatPdf').on('submit', function(e) {
+                const $btn = $(this).find('.generateAgendaRapatBtn');
+                const originalHtml = $btn.html();
                 $btn.prop('disabled', true)
                     .html(
                         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
                     );
+                setTimeout(() => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                }, 2000);
             });
 
-            $('#formDeleteAgendaRapat').on('submit', function(e) {
-                const $btn = $('#deleteAgendaRapatBtn');
+            $('.formGenerateHasilKeputusanPdf').on('submit', function(e) {
+                const $btn = $(this).find('.generateHasilKeputusanBtn');
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true)
+                    .html(
+                        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
+                    );
+                setTimeout(() => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                }, 2000);
+            });
+
+            $('.formDeleteAgendaRapat').on('submit', function(e) {
+                const $btn = $(this).find('.deleteAgendaRapatBtn');
                 $btn.prop('disabled', true)
                     .html(
                         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'

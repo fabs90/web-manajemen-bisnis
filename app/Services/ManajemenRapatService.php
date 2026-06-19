@@ -21,10 +21,9 @@ class ManajemenRapatService
         protected FileUploadService $fileUploadService,
     ) {}
 
-    public function store($data)
+    public function store(array $data)
     {
         DB::beginTransaction();
-
         try {
             // 1. Upload TTD Pimpinan jika ada
             $ttdPath = null;
@@ -117,7 +116,7 @@ class ManajemenRapatService
 
             DB::commit();
 
-            return $rapat;
+            return true;
         } catch (Throwable $th) {
             DB::rollBack();
             throw $th;

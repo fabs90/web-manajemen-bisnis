@@ -68,7 +68,6 @@
                                 <label class="form-label fw-semibold">Email Penerima</label>
                                 <input type="text" name="email_penerima" class="form-control"
                                     placeholder="email@example.com" value="{{ old('email_penerima') }}" required>
-                                <small class="text-muted">Gunakan koma (,) untuk memisahkan beberapa email</small>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">

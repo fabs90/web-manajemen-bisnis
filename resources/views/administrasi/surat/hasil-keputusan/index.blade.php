@@ -23,7 +23,7 @@
 
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <strong>DATA HASIL KEPUTUSAN RAPAT</strong>
+                <strong>HASIL KEPUTUSAN RAPAT</strong>
             </div>
             <div class="card-body">
 
