@@ -87,6 +87,8 @@ class KasirController extends Controller
                 'credit' => $request->grand_total,
             ]);
 
+            $receiptItems = [];
+
             // Insert barang
             if ($request->filled('id_barang_terjual')) {
                 foreach ($request->id_barang_terjual as $index => $barangId) {
@@ -141,6 +143,13 @@ class KasirController extends Controller
                         'journal_entry_id' => $entry->id,
                         'user_id' => auth()->id(),
                     ]);
+
+                    $receiptItems[] = [
+                        'nama' => $detailBarang->nama,
+                        'qty' => $jumlahDijual,
+                        'harga' => $detailBarang->harga_jual_per_unit,
+                        'subtotal' => $jumlahDijual * $detailBarang->harga_jual_per_unit,
+                    ];
                 }
             }
 
@@ -154,6 +163,19 @@ class KasirController extends Controller
             ]);
 
             DB::commit();
+
+            $receiptData = [
+                'toko' => auth()->user()->printer_store_name ?: config('app.name', 'Kasir Store'),
+                'kode_transaksi' => $kodeTransaksi,
+                'tanggal' => Carbon::now('Asia/Jakarta')->format('d/m/Y H:i'),
+                'kasir' => auth()->user()->name,
+                'jenis_pembayaran' => $namaPembayaran,
+                'items' => $receiptItems,
+                'total' => $request->grand_total,
+                'bayar' => $request->uang_bayar,
+                'kembali' => $request->uang_kembalian,
+            ];
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error occurred while processing request', [
@@ -165,7 +187,7 @@ class KasirController extends Controller
                 ->with('error', 'Terjadi Error: '.$e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Transaksi berhasil');
+        return redirect()->back()->with('success', 'Transaksi berhasil')->with('receipt', $receiptData);
     }
 
     public function destroy($id)

@@ -29,6 +29,8 @@ class User extends Authenticatable
         'ttd_pemimpin',
         'otp',
         'otp_expires_at',
+        'is_printer_enabled',
+        'printer_store_name',
     ];
 
     /**

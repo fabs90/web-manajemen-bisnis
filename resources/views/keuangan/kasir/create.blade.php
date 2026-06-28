@@ -98,7 +98,7 @@
                                 Stok tersedia: <span id="stok-value" class="text-primary">-</span>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-2">
                             <label><strong>Jumlah</strong></label>
                             <input type="number" id="qty" class="form-control mb-1" value="1" min="1">
@@ -200,14 +200,37 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Tambahkan script printer
+    const printerScript = document.createElement('script');
+    printerScript.src = "{{ asset('js/pos-printer.js') }}";
+    document.head.appendChild(printerScript);
+
     @if (session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Sukses!',
-            text: "{{ session('success') }}",
-            timer: 2800,
-            showConfirmButton: true
-        });
+        @if (session('receipt') && auth()->user()->is_printer_enabled)
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses!',
+                text: "{{ session('success') }}",
+                showCancelButton: true,
+                confirmButtonText: '🖨️ Cetak Struk',
+                cancelButtonText: 'Tutup',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const receiptData = @json(session('receipt'));
+                    const printer = new PosPrinter();
+                    printer.printReceipt(receiptData);
+                }
+            });
+        @else
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses!',
+                text: "{{ session('success') }}",
+                timer: 2800,
+                showConfirmButton: true
+            });
+        @endif
     @endif
 
     @if (session('error'))

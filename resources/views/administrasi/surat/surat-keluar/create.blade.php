@@ -155,7 +155,7 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header  py-3">
                             <h5 class="card-title mb-0 text-primary fw-bold">
-                                <i class="bi bi-cloud-upload me-2"></i>File Lampirank
+                                <i class="bi bi-cloud-upload me-2"></i>File Lampiran
                             </h5>
                         </div>
                         <div class="card-body">

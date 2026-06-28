@@ -60,6 +60,47 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                @php
+                                    $receiptItems = [];
+                                    if ($item->journalEntry && $item->journalEntry->kartuGudang) {
+                                        foreach($item->journalEntry->kartuGudang as $kg) {
+                                            $harga = $kg->barang ? $kg->barang->harga_jual_per_unit : 0;
+                                            $qty = $kg->dikeluarkan;
+                                            $receiptItems[] = [
+                                                'nama' => $kg->barang ? $kg->barang->nama : 'Unknown',
+                                                'qty' => $qty,
+                                                'harga' => $harga,
+                                                'subtotal' => $qty * $harga
+                                            ];
+                                        }
+                                    }
+                                    
+                                    // Extract jenis pembayaran dari uraian (e.g., "Penjualan Kasir - Pembayaran: Tunai")
+                                    $jenisPembayaran = 'TUNAI';
+                                    if (strpos($item->uraian, 'Pembayaran: ') !== false) {
+                                        $parts = explode('Pembayaran: ', $item->uraian);
+                                        if (count($parts) > 1) {
+                                            $jenisPembayaran = strtoupper(trim($parts[1]));
+                                        }
+                                    }
+
+                                    $receiptData = [
+                                        'toko' => auth()->user()->printer_store_name ?: config('app.name', 'Kasir Store'),
+                                        'kode_transaksi' => $item->journalEntry ? $item->journalEntry->reference_number : '-',
+                                        'tanggal' => \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i'),
+                                        'kasir' => auth()->user()->name,
+                                        'jenis_pembayaran' => $jenisPembayaran,
+                                        'items' => $receiptItems,
+                                        'total' => $item->jumlah,
+                                        'bayar' => $item->jumlah, // Since bayar is not saved in db, default to total for reprints
+                                        'kembali' => 0 // Default to 0 for reprints
+                                    ];
+                                @endphp
+                                @if (auth()->user()->is_printer_enabled)
+                                    <button class="btn btn-primary btn-sm btn-print" data-receipt="{{ json_encode($receiptData) }}" title="Cetak Struk">
+                                        <i class="bi bi-printer"></i>
+                                    </button>
+                                @endif
 
                                 <!-- Modal Detail -->
                                 <div class="modal fade" id="detailModal{{ $item->id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ $item->id }}" aria-hidden="true">
@@ -123,6 +164,18 @@ $(document).ready(function() {
             emptyTable: "Tidak ada data kasir untuk ditampilkan",
         }
     });
+
+    // Tambahkan event listener untuk tombol print
+    $(document).on('click', '.btn-print', function() {
+        const receiptData = $(this).data('receipt');
+        if (typeof PosPrinter !== 'undefined') {
+            const printer = new PosPrinter();
+            printer.printReceipt(receiptData);
+        } else {
+            alert('Script printer belum dimuat. Pastikan Anda memiliki koneksi internet atau memuat pos-printer.js');
+        }
+    });
 });
 </script>
+<script src="{{ asset('js/pos-printer.js') }}"></script>
 @endpush
