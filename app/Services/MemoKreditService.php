@@ -86,7 +86,7 @@ class MemoKreditService
                         'tanggal' => $request->tanggal,
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Memo Kredit - '.$memo->nomor_memo,
+                        'uraian' => 'Memo Kredit - ' . $memo->nomor_memo,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -105,9 +105,9 @@ class MemoKreditService
             if ($receivableAccount && $revenueAccount && $hppAccount && $inventoryAccount) {
                 $journalEntry = JournalEntry::create([
                     'user_id' => auth()->id(),
-                    'reference_number' => 'MK-'.date('Ymd', strtotime($request->tanggal)).'-'.strtoupper(Str::random(6)),
+                    'reference_number' => 'MK-' . date('Ymd', strtotime($request->tanggal)) . '-' . strtoupper(Str::random(6)),
                     'date' => $request->tanggal,
-                    'description' => 'Memo Kredit - '.$memo->nomor_memo,
+                    'description' => 'Memo Kredit - ' . $memo->nomor_memo,
                     'transaction_type' => 'penjualan_retur',
                 ]);
 
@@ -200,7 +200,7 @@ class MemoKreditService
                         'tanggal' => now(),
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pembatalan Memo Kredit - '.$memo->nomor_memo,
+                        'uraian' => 'Pembatalan Memo Kredit - ' . $memo->nomor_memo,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -210,7 +210,7 @@ class MemoKreditService
 
             // Hapus Journal Entry terkait
             JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Memo Kredit - '.$memo->nomor_memo)
+                ->where('description', 'Memo Kredit - ' . $memo->nomor_memo)
                 ->delete();
 
             // Hapus detail memo
@@ -250,7 +250,7 @@ class MemoKreditService
         )->setPaper('A4', 'portrait');
 
         return $pdf->download(
-            Str::slug('memo_kredit_'.$memo->nomor_memo).'.pdf',
+            Str::slug('memo_kredit_' . $memo->nomor_memo) . '.pdf',
         );
     }
 
@@ -263,7 +263,6 @@ class MemoKreditService
     {
         $userId = auth()->id();
         $now = now();
-        $tahunBulan = $now->format('Ym');
 
         // 1. Cari nomor terakhir untuk user ini di bulan & tahun yang sama
         $lastMemo = MemoKredit::where('user_id', $userId)
@@ -273,7 +272,7 @@ class MemoKreditService
             ->first();
 
         // 2. Tentukan nomor urut
-        if (! $lastMemo) {
+        if (!$lastMemo) {
             $nextNumber = 1;
         } else {
             // Asumsi format: MK/001/202405/0001
@@ -284,9 +283,8 @@ class MemoKreditService
 
         // 3. Format string (MK / ID User / YYYYMM / 0001)
         return sprintf(
-            'MK/%s/%s/%s',
+            'MK/%s/%s',
             str_pad($userId, 3, '0', STR_PAD_LEFT),
-            $tahunBulan,
             str_pad($nextNumber, 4, '0', STR_PAD_LEFT),
         );
     }

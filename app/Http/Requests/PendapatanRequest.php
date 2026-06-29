@@ -99,7 +99,7 @@ class PendapatanRequest extends FormRequest
             'ada_debitur_check' => ['nullable', 'boolean'],
 
             'nama_pelanggan' => [
-                Rule::requiredIf(fn () => $this->ada_debitur_check === true),
+                Rule::requiredIf(fn () => in_array($jenis, ['piutang', 'kredit', 'pelunasan_piutang']) || $this->ada_debitur_check === true),
                 'nullable',
                 'integer',
                 'exists:pelanggan,id',

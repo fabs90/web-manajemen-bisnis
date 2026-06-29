@@ -281,10 +281,14 @@ document.addEventListener('DOMContentLoaded', function() {
         hutangSelect.setAttribute('disabled', 'disabled');
 
         if (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang') {
+            adaDebiturCheck.checked = true;
+            adaDebitur = true;
+            // debiturCheckContainer stays hidden because it's forced
+        } else if (jenis === 'tunai') {
             debiturCheckContainer.classList.remove('d-none');
         }
 
-        if (adaDebitur && (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang')) {
+        if (adaDebitur && (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang' || jenis === 'tunai')) {
             debiturSection.classList.remove('d-none');
             namaPelanggan.removeAttribute('disabled');
             namaPelanggan.setAttribute('required', 'required');

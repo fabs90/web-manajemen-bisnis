@@ -103,9 +103,8 @@
     <h3 class="text-center fw-bold uppercase mb-3">MEMO KREDIT</h3>
 
     @php
-        $po = $faktur->suratPengirimanBarang?->pesananPembelian;
-        $isMasuk = $po?->jenis == 'transaksi_masuk';
-        $pihak = $isMasuk ? $po?->pelanggan : $po?->supplier;
+        $po = $faktur->suratPengirimanBarang?->pesananPenjualan;
+        $pihak = $po?->pelanggan;
     @endphp
 
     {{-- Info Header --}}
@@ -129,8 +128,8 @@
                 <strong>Tanggal Faktur</strong> :
                 {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d/m/Y') }}<br>
 
-                <strong>No. PO</strong> :
-                {{ $po?->nomor_pesanan_pembelian ?? '-' }}
+                <strong>No. Pesanan</strong> :
+                {{ $po?->nomor_pesanan_penjualan ?? '-' }}
             </td>
         </tr>
     </table>
