@@ -12,11 +12,11 @@ class MemoKreditController extends Controller
 {
     public function index()
     {
-        $memoKredit = MemoKredit::with('fakturPenjualan.suratPengirimanBarang.pesananPembelian')
+        $memoKredit = MemoKredit::with('fakturPenjualan.suratPengirimanBarang.pesananPenjualan')
             ->where('user_id', auth()->id())
             ->get();
         $fakturPenjualan = FakturPenjualan::with([
-            'suratPengirimanBarang.pesananPembelian.pelanggan',
+            'suratPengirimanBarang.pesananPenjualan.pelanggan',
         ])
             ->where('user_id', auth()->id())
             ->whereDoesntHave('memoKredit')
@@ -32,8 +32,8 @@ class MemoKreditController extends Controller
     {
         $faktur = FakturPenjualan::with(
             'suratPengirimanBarang',
-            'suratPengirimanBarang.pesananPembelian',
-            'suratPengirimanBarang.pesananPembelian.pesananPembelianDetail'
+            'suratPengirimanBarang.pesananPenjualan',
+            'suratPengirimanBarang.suratPengirimanBarangDetail.pesananPenjualanDetail'
         )->findOrFail($fakturId);
 
         return view('administrasi.surat.memo-kredit.create', compact('faktur'));

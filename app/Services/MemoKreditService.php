@@ -10,7 +10,7 @@ use App\Models\KartuGudang;
 use App\Models\MemoKredit\MemoKredit;
 use App\Models\MemoKredit\MemoKreditDetail;
 use App\Models\Pelanggan;
-use App\Models\SPP\PesananPembelianDetail;
+use App\Models\SPP\SuratPesananPenjualanDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +44,7 @@ class MemoKreditService
                 $hargaSatuan = $this->cleanRupiah($request->harga[$index]);
                 $jumlah = $this->cleanRupiah($request->total[$index]);
 
-                $sppDetail = PesananPembelianDetail::findOrFail($barangDetailId);
+                $sppDetail = SuratPesananPenjualanDetail::findOrFail($barangDetailId);
 
                 MemoKreditDetail::create([
                     'memo_kredit_id' => $memo->id,

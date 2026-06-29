@@ -33,7 +33,7 @@
                             <div class="col-4 text-muted">Kepada:</div>
                             <div class="col-8 fw-bold">
                                 @php
-                                    $po = $faktur->suratPengirimanBarang?->pesananPembelian;
+                                    $po = $faktur->suratPengirimanBarang?->pesananPenjualan;
                                 @endphp
                                 <span class="text-primary">{{ $po->pelanggan?->nama ?? '-' }}</span>
                                 <input type="hidden" name="pelanggan_id" value="{{ $po->pelanggan_id }}">
@@ -61,7 +61,7 @@
                         <div class="row mb-2">
                             <div class="col-5 text-muted">No. Pesanan:</div>
                             <div class="col-7">
-                                {{ $faktur->suratPengirimanBarang?->pesananPembelian?->nomor_pesanan_pembelian ?? '-' }}
+                                {{ $faktur->suratPengirimanBarang?->pesananPenjualan?->nomor_pesanan_penjualan ?? '-' }}
                             </div>
                         </div>
                         <div class="row mb-2">
@@ -99,10 +99,10 @@
                             <td>
                                 <select class="form-select" name="barang_id[]" required>
                                     @foreach ($faktur->suratPengirimanBarang->suratPengirimanBarangDetail as $detail)
-                                        <option value="{{ $detail->pesananPembelianDetail->id }}"
-                                            data-harga="{{ $detail->pesananPembelianDetail->harga }}"
+                                        <option value="{{ $detail->pesananPenjualanDetail->id }}"
+                                            data-harga="{{ $detail->pesananPenjualanDetail->harga }}"
                                             data-maxqty="{{ $detail->jumlah_dikirim }}">
-                                            {{ $detail->pesananPembelianDetail->nama_barang }}
+                                            {{ $detail->pesananPenjualanDetail->nama_barang }}
                                         </option>
                                     @endforeach
                                 </select>
