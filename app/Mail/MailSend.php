@@ -13,7 +13,9 @@ class MailSend extends Mailable
     use Queueable, SerializesModels;
 
     public $otp;
+
     public $name;
+
     public $email;
 
     /**
@@ -31,7 +33,7 @@ class MailSend extends Mailable
      */
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Kode Verifikasi Akun Anda");
+        return new Envelope(subject: 'Kode Verifikasi Akun Anda');
     }
 
     /**
@@ -40,11 +42,11 @@ class MailSend extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: "emails.otp",
+            view: 'emails.otp',
             with: [
-                "otp" => $this->otp,
-                "name" => $this->name,
-                "email" => $this->email,
+                'otp' => $this->otp,
+                'name' => $this->name,
+                'email' => $this->email,
             ],
         );
     }

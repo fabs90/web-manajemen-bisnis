@@ -20,7 +20,7 @@ class SuratPesananPelangganController extends Controller
         // From index we can see 'user_id' filter
         $pelanggan = Pelanggan::where('user_id', auth()->id())->get();
         $barang = Barang::where('user_id', auth()->id())->get();
-        $sppList = SuratPesananPenjualan::where('user_id', auth()->id())->orderBy('created_at', 'desc')->get();
+        $sppList = SuratPesananPenjualan::where('user_id', auth()->id())->get();
 
         return view('administrasi.surat.surat-pengiriman-barang.create-spp-pelanggan', compact('pelanggan', 'barang', 'sppList'));
     }
@@ -39,7 +39,7 @@ class SuratPesananPelangganController extends Controller
                 );
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal menambahkan SPP Pelanggan: ' .
+                'Gagal menambahkan SPP Pelanggan: '.
                 $th->getMessage(),
             );
 
@@ -47,7 +47,7 @@ class SuratPesananPelangganController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menambahkan Pesanan Pembelian dari Pelanggan: ' .
+                    'Gagal menambahkan Pesanan Pembelian dari Pelanggan: '.
                     $th->getMessage(),
                 );
         }
@@ -60,9 +60,9 @@ class SuratPesananPelangganController extends Controller
 
             return back()->with('success', 'Surat Pesanan Penjualan berhasil dihapus.');
         } catch (\Throwable $th) {
-            Log::error('Gagal menghapus SPP Pelanggan: ' . $th->getMessage());
+            Log::error('Gagal menghapus SPP Pelanggan: '.$th->getMessage());
 
-            return back()->with('error', 'Gagal menghapus Pesanan Pembelian dari Pelanggan: ' . $th->getMessage());
+            return back()->with('error', 'Gagal menghapus Pesanan Pembelian dari Pelanggan: '.$th->getMessage());
         }
     }
 }

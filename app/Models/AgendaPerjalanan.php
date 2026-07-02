@@ -6,27 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class AgendaPerjalanan extends Model
 {
-    public $table = "agenda_perjalanan";
+    public $table = 'agenda_perjalanan';
 
     protected $fillable = [
-        "user_id",
-        "nama_pelaksana",
-        "jabatan",
-        "tujuan",
-        "tanggal_mulai",
-        "tanggal_selesai",
-        "keperluan",
-        "disiapkan_oleh",
-        "tanggal_disiapkan",
-        "disetujui_oleh",
-        "tanggal_disetujui",
-        "transport",
-        "akomodasi",
-        "konsumsi",
-        "lain_lain",
-        "total_biaya",
-        "tanda_tangan_disiapkan",
-        "tanda_tangan_disetujui",
+        'user_id',
+        'nama_pelaksana',
+        'jabatan',
+        'tujuan',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'keperluan',
+        'disiapkan_oleh',
+        'tanggal_disiapkan',
+        'disetujui_oleh',
+        'tanggal_disetujui',
+        'transport',
+        'akomodasi',
+        'konsumsi',
+        'lain_lain',
+        'total_biaya',
+        'tanda_tangan_disiapkan',
+        'tanda_tangan_disetujui',
     ];
 
     public function user()

@@ -65,7 +65,7 @@ class PengeluaranService
             'user_id' => $userId,
             'reference_number' => $this->generateReference('EXP', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pengeluaran lain-lain: '.$data['uraian_pengeluaran'],
+            'description' => 'Pengeluaran lain-lain: ' . $data['uraian_pengeluaran'],
             'transaction_type' => 'lain_lain',
         ]);
 
@@ -141,7 +141,7 @@ class PengeluaranService
             'user_id' => $userId,
             'reference_number' => $this->generateReference('PAY', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pelunasan hutang - '.($hutangItem->subLedger->nama ?? 'Unknown').': '.$data['uraian_pengeluaran'],
+            'description' => 'Pelunasan hutang - ' . ($hutangItem->subLedger->nama ?? 'Unknown') . ': ' . $data['uraian_pengeluaran'],
             'transaction_type' => 'membayar_hutang',
         ]);
 
@@ -192,7 +192,7 @@ class PengeluaranService
 
         // Hitung total harga barang dari database untuk akurasi
         $baseAmount = 0;
-        if (! empty($data['barang_dibeli'])) {
+        if (!empty($data['barang_dibeli'])) {
             foreach ($data['barang_dibeli'] as $index => $barangId) {
                 $qty = $data['jumlah_barang_dibeli'][$index] ?? 0;
                 $barang = Barang::find($barangId);
@@ -206,7 +206,7 @@ class PengeluaranService
             'user_id' => $userId,
             'reference_number' => $this->generateReference('PUR', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pembelian barang: '.$data['uraian_pengeluaran'],
+            'description' => 'Pembelian barang: ' . $data['uraian_pengeluaran'],
             'transaction_type' => 'membeli_barang',
         ]);
 
@@ -272,7 +272,7 @@ class PengeluaranService
             'user_id' => $userId,
             'reference_number' => $this->generateReference('PET', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pengisian Kas Kecil: '.$data['uraian_pengeluaran'],
+            'description' => 'Pengisian Kas Kecil: ' . $data['uraian_pengeluaran'],
             'transaction_type' => 'kas_kecil',
         ]);
 
@@ -328,7 +328,7 @@ class PengeluaranService
         PengisianKasKecilLog::create([
             'journal_entry_id' => $entry->id,
             'kas_kecil_id' => $kasKecil->id,
-            'uraian' => 'Pengisian kas kecil: '.$data['uraian_pengeluaran'],
+            'uraian' => 'Pengisian kas kecil: ' . $data['uraian_pengeluaran'],
             'jumlah' => $baseAmount,
             'tanggal_transaksi' => $data['tanggal'],
             'user_id' => $userId,

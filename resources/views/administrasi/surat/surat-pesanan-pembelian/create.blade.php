@@ -14,24 +14,27 @@
                     <h6 class="fw-bold">Data Supplier/Pemasok</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Pilih Supplier/Pemasok</label>
+                            <label class="form-label">Pilih Perusahaan</label>
                             <select name="supplier_id" id="supplierSelect" class="form-select" required>
-                                <option value="">-- Pilih Supplier/Pemasok --</option>
+                                <option value="">-- Pilih Perusahaan --</option>
                                 @foreach ($suppliers as $s)
-                                    <option value="{{ $s->id }}" data-alamat="{{ $s->alamat }}" data-email="{{ $s->email }}">
+                                    <option value="{{ $s->id }}" data-alamat="{{ $s->alamat }}"
+                                        data-email="{{ $s->email }}">
                                         {{ $s->nama }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Alamat Supplier/Pemasok</label>
+                            <label class="form-label">Alamat Perusahaan</label>
                             <input type="text" name="alamat_supplier" id="alamatSupplier" class="form-control" readonly>
                         </div>
                         <div class="col-md-6 mt-3">
-                            <label class="form-label">Email Supplier/Pemasok (Dapat diubah)<span class="text-danger">*</span></label>
+                            <label class="form-label">Email Perusahaan (Dapat diubah)<span
+                                    class="text-danger">*</span></label>
                             <input type="email" name="email_supplier" id="emailSupplier" class="form-control" required>
-                            <small class="form-text text-muted">Email digunakan untuk mengirimkan surat pesanan pembelian kepada Supplier/Pemasok</small>
+                            <small class="form-text text-muted">Email digunakan untuk mengirimkan surat pesanan pembelian
+                                kepada Supplier/Pemasok</small>
                         </div>
                     </div>
 
@@ -54,13 +57,8 @@
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label class="form-label">Nama Pimpinan Perusahaan Supplier/Pemasok<span class="text-danger">*</span></label>
+                            <label class="form-label">Nama Pimpinan Perusahaan<span class="text-danger">*</span></label>
                             <input type="text" name="nama_pimpinan_supplier" class="form-control" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">TTD Pemimpin Perusahaan Supplier/Pemasok</label>
-                            <input type="file" accept="image/*" name="ttd_pimpinan_supplier" class="form-control">
                         </div>
                     </div>
 
@@ -89,7 +87,7 @@
                                         @foreach ($barang as $b)
                                             <option value="{{ $b->id }}"
                                                 data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
-                                                data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
+                                                data-harga="{{ number_format($b->harga_beli_per_unit, 0, '.', '') }}"
                                                 data-nama="{{ $b->nama }}">
                                                 {{ $b->nama }}
                                             </option>
@@ -175,7 +173,7 @@
                         @foreach ($barang as $b)
                             <option value="{{ $b->id }}"
                                 data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
-                                data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
+                                data-harga="{{ number_format($b->harga_beli_per_unit, 0, '.', '') }}"
                                 data-nama="{{ $b->nama }}">
                                 {{ $b->nama }}
                             </option>

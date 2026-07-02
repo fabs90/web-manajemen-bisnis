@@ -40,13 +40,15 @@
         .table th,
         .table td {
             border: 1px solid #000;
-            padding: 8px; /* Menambah sedikit ruang agar teks tidak menempel ke garis */
+            padding: 8px;
+            /* Menambah sedikit ruang agar teks tidak menempel ke garis */
             vertical-align: middle;
         }
 
         .table thead {
             background-color: #f0f0f0;
         }
+
         .table-no-border {
             width: 100%;
             border-collapse: collapse;
@@ -131,7 +133,8 @@
 
     <p class="mb-4">
         Dengan hormat,<br>
-        Melalui surat ini, kami bermaksud melakukan pemesanan barang kepada perusahaan Bapak/Ibu. Berikut adalah rincian barang yang kami pesan dan kami harapkan pengirimannya paling lambat pada tanggal
+        Melalui surat ini, kami bermaksud melakukan pemesanan barang kepada perusahaan Bapak/Ibu. Berikut adalah rincian
+        barang yang kami pesan dan kami harapkan pengirimannya paling lambat pada tanggal
         <strong>{{ $data->tanggal_kirim_pesanan_pembelian ?? '(tanggal/bulan/tahun)' }}</strong>:
     </p>
 
@@ -233,7 +236,7 @@
                 @endif
                 <br>
                 <strong><u>({{ $data->nama_bagian_pembelian ?? '_________' }})</u></strong><br>
-                Pemimpin Perusahaan Supplier/Pemasok
+                Pemimpin Perusahaan {{ $data->supplier->nama ?? '-' }}
             </td>
         </tr>
     </table>

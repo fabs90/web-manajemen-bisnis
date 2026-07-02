@@ -13,14 +13,14 @@ class DeleteOldLogs extends Command
      *
      * @var string
      */
-    protected $signature = "logs:delete-old";
+    protected $signature = 'logs:delete-old';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Menghapus file log yang sudah lebih dari 2 minggu.";
+    protected $description = 'Menghapus file log yang sudah lebih dari 2 minggu.';
 
     /**
      * Execute the console command.
@@ -28,7 +28,7 @@ class DeleteOldLogs extends Command
     public function handle()
     {
         $days = 14;
-        $logPath = storage_path("logs");
+        $logPath = storage_path('logs');
         $cutoff = Carbon::now()->subDays($days);
         $deleted = 0;
         $files = File::files($logPath);
@@ -41,6 +41,7 @@ class DeleteOldLogs extends Command
             }
         }
         $this->info("Total deleted  {$deleted} file(s)");
+
         return Command::SUCCESS;
     }
 }

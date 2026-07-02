@@ -17,22 +17,22 @@ class EnsureUserIsVerified
     public function handle(Request $request, Closure $next): Response
     {
         // Jika belum login
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()
-                ->route("login")
-                ->with("errors", "Silakan login terlebih dahulu");
+                ->route('login')
+                ->with('errors', 'Silakan login terlebih dahulu');
         }
 
         // Abaikan pengecekan jika sedang di halaman verifikasi
-        if ($request->routeIs("account-verification.*")) {
+        if ($request->routeIs('account-verification.*')) {
             return $next($request);
         }
 
         // Jika belum diverifikasi
-        if (!Auth::user()->is_verified) {
+        if (! Auth::user()->is_verified) {
             return redirect()
-                ->route("account-verification.show")
-                ->with("status", "Silakan verifikasi akun Anda");
+                ->route('account-verification.show')
+                ->with('status', 'Silakan verifikasi akun Anda');
         }
 
         return $next($request);

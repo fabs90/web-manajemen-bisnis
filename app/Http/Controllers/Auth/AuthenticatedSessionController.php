@@ -18,7 +18,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view("auth.login");
+        return view('auth.login');
     }
 
     /**
@@ -33,16 +33,16 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
 
         switch ($user->role) {
-            case "superadmin":
+            case 'superadmin':
                 return redirect()->intended(
-                    route("superadmin.dashboard", absolute: false),
+                    route('superadmin.dashboard', absolute: false),
                 );
-            case "ukm":
-            case "nelayan":
-            case "koperasi":
+            case 'ukm':
+            case 'nelayan':
+            case 'koperasi':
                 if ($user->is_verified) {
                     return redirect()->intended(
-                        route("dashboard", absolute: false),
+                        route('dashboard', absolute: false),
                     );
                 } else {
                     // Auth::guard("web")->logout();
@@ -53,19 +53,19 @@ class AuthenticatedSessionController extends Controller
                     );
 
                     return redirect()
-                        ->route("account-verification.show")
-                        ->with("verification_email", $user->email)
+                        ->route('account-verification.show')
+                        ->with('verification_email', $user->email)
                         ->with(
-                            "status",
-                            "Silakan masukkan kode OTP yang telah kami kirim ke email Anda.",
+                            'status',
+                            'Silakan masukkan kode OTP yang telah kami kirim ke email Anda.',
                         );
                 }
-            // return redirect()->intended(
-            //     route("dashboard", absolute: false),
-            // );
+                // return redirect()->intended(
+                //     route("dashboard", absolute: false),
+                // );
             default:
                 return redirect()->intended(
-                    route("dashboard", absolute: false),
+                    route('dashboard', absolute: false),
                 );
         }
     }
@@ -75,12 +75,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard("web")->logout();
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect("/")->with("success", "Anda berhasil logout!");
+        return redirect('/')->with('success', 'Anda berhasil logout!');
     }
 }

@@ -92,7 +92,7 @@ class ProfileController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Profile update error: ' . $e->getMessage());
+            Log::error('Profile update error: '.$e->getMessage());
 
             return back()->with(
                 'error',

@@ -8,10 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-
-Schedule::command("logs:delete-old")
-->weekly()
-->sundays()
-->at('02:00')
-->withoutOverlapping()
-->runInBackground();
+Schedule::command('logs:delete-old')
+    ->weekly()
+    ->sundays()
+    ->at('02:00')
+    ->withoutOverlapping()
+    ->runInBackground();

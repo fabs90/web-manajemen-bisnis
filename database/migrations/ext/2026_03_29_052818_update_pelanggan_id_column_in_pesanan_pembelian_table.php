@@ -4,14 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::table('pesanan_pembelian', function (Blueprint $table) {
-            $table->unsignedBigInteger("pelanggan_id")->nullable()->change();
+            $table->unsignedBigInteger('pelanggan_id')->nullable()->change();
         });
     }
 
@@ -21,7 +22,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('pesanan_pembelian', function (Blueprint $table) {
-            $table->unsignedBigInteger("pelanggan_id")->change();
+            $table->unsignedBigInteger('pelanggan_id')->change();
         });
     }
 };

@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class AgendaPerjalananKontak extends Model
 {
-    public $table = "agenda_perjalanan_kontak";
+    public $table = 'agenda_perjalanan_kontak';
 
     protected $fillable = [
-        "user_id",
-        "agenda_perjalanan_id",
-        "nama",
-        "telepon",
-        "jenis",
+        'user_id',
+        'agenda_perjalanan_id',
+        'nama',
+        'telepon',
+        'jenis',
     ];
 
     public function user()

@@ -106,7 +106,7 @@
                         <select name="piutang_aktif" id="piutang_aktif" class="form-control" disabled>
                             <option value="" disabled selected>-- Pilih Piutang Aktif --</option>
                             @foreach ($listPiutang as $piutang)
-                                <option value="{{ $piutang->kode }}" data-debitur="{{ $piutang->pelanggan_id }}"
+                                <option value="{{ $piutang->kode }}" data-debitur="{{ $piutang->pelanggan_id }}" data-nominal="{{ $piutang->saldo }}"
                                     class="piutang-option">
                                     {{ $piutang->pelanggan->nama }} - Rp {{ number_format($piutang->saldo, 0, ',', '.') }}
                                 </option>
@@ -120,7 +120,7 @@
                         <select name="hutang_aktif" id="hutang_aktif" class="form-control" disabled>
                             <option value="" disabled selected>-- Pilih Hutang Aktif --</option>
                             @foreach ($listPiutang as $piutang)
-                                <option value="{{ $piutang->kode }}" data-debitur="{{ $piutang->pelanggan_id }}"
+                                <option value="{{ $piutang->kode }}" data-debitur="{{ $piutang->pelanggan_id }}" data-nominal="{{ $piutang->saldo }}"
                                     class="hutang-option">
                                     {{ $piutang->pelanggan->nama }} -
                                     Rp {{ number_format($piutang->saldo, 0, ',', '.') }}
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateForm() {
         const jenis = jenisSelect.value;
-        const adaDebitur = adaDebiturCheck.checked;
+        let adaDebitur = adaDebiturCheck.checked;
 
         // Reset semua
         debiturCheckContainer.classList.add('d-none');

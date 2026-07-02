@@ -70,7 +70,8 @@
                     {{-- Left Side --}}
                     <div>
                         <h4 class="fw-bold mb-1 text-white">Selamat Datang, {{ Auth::user()->name }}! 👋</h4>
-                        <p class="mb-0 opacity-75">Anda masuk sebagai <span class="badge bg-white text-primary fw-bold">{{ strtoupper(Auth::user()->role) }}</span></p>
+                        <p class="mb-0 opacity-75">Anda masuk sebagai <span
+                                class="badge bg-white text-primary fw-bold">{{ strtoupper(Auth::user()->role) }}</span></p>
                     </div>
                     {{-- Right Side --}}
                     <div class="d-none d-md-block text-end">
@@ -154,7 +155,7 @@
 
     <div class="row mb-4 g-4">
         <!-- LABA BERSIH -->
-        <div class="col">
+        <div class="col-md-6">
             <div class="card text-white shadow-lg laba-card h-100">
                 <div class="card-body position-relative d-flex flex-column justify-content-between p-4">
                     <div>
@@ -166,6 +167,23 @@
                         </p>
                     </div>
                     <i class="bi bi-graph-up icon-bg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- KAS KECIL -->
+        <div class="col-md-6">
+            <div class="card text-white shadow-lg h-100" style="background-color: #17a2b8; border:none;">
+                <div class="card-body position-relative d-flex flex-column justify-content-between p-4">
+                    <div>
+                        <h5 class="card-title fw-bold mb-0">
+                            <i class="bi bi-wallet2 me-2"></i> Kas Kecil
+                        </h5>
+                        <p class="card-text fs-3 fw-bold mt-3 mb-0">
+                            Rp {{ number_format($totalKasKecil, 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <i class="bi bi-cash icon-bg"></i>
                 </div>
             </div>
         </div>
@@ -190,7 +208,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($detailKas as $kas)
+                            @foreach ($detailKas as $kas)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($kas->created_at)->isoFormat('dddd, D MMMM YYYY') }}</td>
                                     <td>{{ $kas->uraian }}</td>
@@ -206,6 +224,53 @@
         </div>
     </div>
 
+    {{-- Transaksi Kas Kecil --}}
+    <div class="mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Buku Kas Kecil</h5>
+                <a href="{{ route('administrasi.kas-kecil.index') }}" class="btn btn-sm btn-primary">Lihat Selengkapnya</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="table-kas-kecil">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>No. Referensi</th>
+                                <th>Uraian</th>
+                                <th>Nama Pemohon</th>
+                                <th>Penerimaan</th>
+                                <th>Pengeluaran</th>
+                                <th>Saldo Akhir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($kasKecilData as $item)
+                                <tr>
+                                    <td>{{ date('d-m-Y', strtotime($item->tanggal)) }}</td>
+                                    <td>{{ $item->nomor_referensi }}</td>
+                                    <td>
+                                        @if ($item->kasKecilLog->isEmpty())
+                                            {{ $item->kasKecilDetail->pluck('keterangan')->join(', ') }}
+                                        @else
+                                            {{ $item->kasKecilLog->pluck('uraian')->join(', ') }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        {{ $item->kasKecilFormulir->pluck('nama_pemohon')->join(', ') ?? '-' }}
+                                    </td>
+                                    <td>Rp {{ number_format($item->penerimaan, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->pengeluaran, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->saldo_akhir, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Chart Pendapatan vs Pengeluaran -->
     <div class="mb-4">
@@ -330,24 +395,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($listPiutang as $subLedgerId => $items)
-                            <tr class="table-secondary fw-bold">
-                                <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            @foreach ($items as $item)
-                                <tr>
-                                    <td>{{ $item->tanggal }}</td>
-                                    <td>{{ $item->uraian }}</td>
-                                    <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                            @foreach ($listPiutang as $subLedgerId => $items)
+                                <tr class="table-secondary fw-bold">
+                                    <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
                                 </tr>
+                                @foreach ($items as $item)
+                                    <tr>
+                                        <td>{{ $item->tanggal }}</td>
+                                        <td>{{ $item->uraian }}</td>
+                                        <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
                             @endforeach
-                        @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -374,24 +439,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach ($listHutang as $subLedgerId => $items)
-                            <tr class="table-secondary fw-bold">
-                                <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            @foreach ($items as $item)
-                                <tr>
-                                    <td>{{ $item->tanggal }}</td>
-                                    <td>{{ $item->uraian }}</td>
-                                    <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                            @foreach ($listHutang as $subLedgerId => $items)
+                                <tr class="table-secondary fw-bold">
+                                    <td>{{ $items->first()->sub_ledger->nama ?? 'Tidak diketahui' }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
                                 </tr>
+                                @foreach ($items as $item)
+                                    <tr>
+                                        <td>{{ $item->tanggal }}</td>
+                                        <td>{{ $item->uraian }}</td>
+                                        <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
                             @endforeach
-                        @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -412,6 +477,7 @@
             $('#table-transaksi').DataTable(tableOptions);
             $('#table-piutang').DataTable(tableOptions);
             $('#table-hutang').DataTable(tableOptions);
+            $('#table-kas-kecil').DataTable(tableOptions);
         });
 
         let chartInstance = null;

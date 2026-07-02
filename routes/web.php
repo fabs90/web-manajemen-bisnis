@@ -274,7 +274,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
     // 💳 GROUP: DEBITUR
     // =============================
     Route::prefix('dashboard/debitur-kreditur')->group(function () {
-        Route::get('/list', [DebiturController::class, 'list'])->name(
+        Route::get('/', [DebiturController::class, 'list'])->name(
             'debitur-kreditur.list',
         );
         Route::post('/', [DebiturController::class, 'store'])->name(
@@ -812,4 +812,4 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
 
     });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

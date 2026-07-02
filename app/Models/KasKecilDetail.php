@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class KasKecilDetail extends Model
 {
-    protected $table = "kas_kecil_detail";
+    protected $table = 'kas_kecil_detail';
+
     protected $fillable = [
-        "user_id",
-        "kas_kecil_id",
-        "keterangan",
-        "kategori",
-        "jumlah",
+        'user_id',
+        'kas_kecil_id',
+        'keterangan',
+        'kategori',
+        'jumlah',
     ];
 
     public $timestamps = false;

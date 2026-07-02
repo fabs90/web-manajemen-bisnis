@@ -227,43 +227,22 @@ class PendapatanRequest extends FormRequest
             $accounts = \App\Models\Account::where('user_id', $userId)->get()->keyBy('code');
             $piutangId = $accounts->has('1104') ? $accounts['1104']->id : null;
 
-            // ---- piutang aktif ----
-            if ($jenis === 'piutang' && $this->filled('piutang_aktif') && $piutangId) {
+            // Validasi saldo piutang untuk pelanggan
+            if (in_array($jenis, ['piutang', 'kredit']) && $this->filled('nama_pelanggan') && $piutangId) {
                 $balance = \App\Models\JournalItem::where('user_id', $userId)
                     ->where('account_id', $piutangId)
-                    ->whereHas('journalEntry', function ($q) {
-                        $q->where('reference_number', $this->piutang_aktif);
-                    })
+                    ->where('sub_ledger_id', $this->nama_pelanggan)
                     ->selectRaw('SUM(debit - credit) as saldo')
                     ->value('saldo');
 
-                if ($balance === null || $balance <= 0) {
-                    // Cek apakah ini reference_number yang valid
-                    $exists = \App\Models\JournalEntry::where('user_id', $userId)
-                        ->where('reference_number', $this->piutang_aktif)
-                        ->exists();
-                    if (! $exists) {
-                        $validator->errors()->add('piutang_aktif', 'Referensi piutang tidak valid.');
-                    }
-                }
-            }
-
-            // ---- hutang aktif ----
-            if ($jenis === 'kredit' && $this->filled('hutang_aktif') && $piutangId) {
-                $balance = \App\Models\JournalItem::where('user_id', $userId)
-                    ->where('account_id', $piutangId)
-                    ->whereHas('journalEntry', function ($q) {
-                        $q->where('reference_number', $this->hutang_aktif);
-                    })
-                    ->selectRaw('SUM(debit - credit) as saldo')
-                    ->value('saldo');
-
-                if ($balance === null || $balance <= 0) {
-                    $exists = \App\Models\JournalEntry::where('user_id', $userId)
-                        ->where('reference_number', $this->hutang_aktif)
-                        ->exists();
-                    if (! $exists) {
-                        $validator->errors()->add('hutang_aktif', 'Referensi hutang tidak valid.');
+                if ($jenis === 'kredit') {
+                    if ($balance === null || $balance <= 0) {
+                        $validator->errors()->add('hutang_aktif', 'Pelanggan ini tidak memiliki piutang aktif yang bisa dilunasi.');
+                    } else {
+                        $kreditAmount = floatval($this->jumlah) + floatval($this->jumlah_kredit ?? 0);
+                        if ($kreditAmount > $balance) {
+                            $validator->errors()->add('jumlah_kredit', 'Jumlah pelunasan (Rp ' . number_format($kreditAmount, 0, ',', '.') . ') melebihi total piutang pelanggan (Rp ' . number_format($balance, 0, ',', '.') . ').');
+                        }
                     }
                 }
             }

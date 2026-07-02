@@ -13,9 +13,7 @@ use Illuminate\Support\Str;
 
 class SuratPengirimanBarangService
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(protected FileUploadService $fileUploadService) {}
 
     public function store($data)
     {
@@ -42,7 +40,6 @@ class SuratPengirimanBarangService
                     $userEmail
                 );
             }
-
 
             // Simpan header SPB
             $spb = SuratPengirimanBarang::create([
@@ -106,9 +103,9 @@ class SuratPengirimanBarangService
             )->setPaper('A4', 'portrait');
 
             return $pdf->download(
-                Str::slug('Surat Pengiriman Barang-' .
+                Str::slug('Surat Pengiriman Barang-'.
                     $data->nomor_pengiriman_barang)
-                . '.pdf',
+                .'.pdf',
             );
         } catch (Exception $e) {
             Log::error('Error generate SPB PDF', [

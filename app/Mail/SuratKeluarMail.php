@@ -37,20 +37,20 @@ class SuratKeluarMail extends Mailable implements ShouldQueue
             "TRANSDIGITAL | {$this->user->email}",
         )
             ->subject(
-                "Surat Keluar | {$this->surat->perihal}" . " [{$this->surat->nomor_surat}]",
+                "Surat Keluar | {$this->surat->perihal}"." [{$this->surat->nomor_surat}]",
             )
             ->view('administrasi.surat.surat-keluar.template.template')
             ->with([
                 'surat' => $this->surat,
             ]);
 
-        $namaFileSurat = str_replace('/', '-', $this->surat->nomor_surat) . '.pdf';
+        $namaFileSurat = str_replace('/', '-', $this->surat->nomor_surat).'.pdf';
         $email->attachData($pdfContent, $namaFileSurat, [
             'mime' => 'application/pdf',
         ]);
 
         if ($this->surat->file_lampiran) {
-            $pathFile = storage_path('app/public/' . $this->surat->file_lampiran);
+            $pathFile = storage_path('app/public/'.$this->surat->file_lampiran);
 
             if (file_exists($pathFile)) {
                 $email->attach(

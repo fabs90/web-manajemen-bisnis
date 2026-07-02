@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class RoleCheck
 {
@@ -22,8 +21,9 @@ class RoleCheck
             }
         }
         Auth::logout();
+
         return redirect()
-            ->route("login")
-            ->with("status", "You are not authorized to access this page.");
+            ->route('login')
+            ->with('status', 'You are not authorized to access this page.');
     }
 }

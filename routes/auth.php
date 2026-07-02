@@ -54,10 +54,7 @@ Route::middleware('guest')->group(function () {
         'store',
     ])->name('superadmin.store');
 
-    Route::post('logout/superadmin', [
-        RegisteredAdminController::class,
-        'logout',
-    ])->name('superadmin.logout');
+
 
 });
 

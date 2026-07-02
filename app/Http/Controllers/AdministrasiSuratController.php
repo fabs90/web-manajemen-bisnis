@@ -25,12 +25,10 @@ class AdministrasiSuratController extends Controller
     {
         $agendaBelum = AgendaTelpon::where('user_id', auth()->id())
             ->where('is_done', false)
-            ->orderBy('tgl_panggilan', 'desc')
             ->get();
 
         $agendaSelesai = AgendaTelpon::where('user_id', auth()->id())
             ->where('is_done', true)
-            ->orderBy('tgl_panggilan', 'desc')
             ->get();
 
         return view(

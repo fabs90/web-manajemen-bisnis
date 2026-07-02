@@ -4,34 +4,35 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table("buku_besar_pendapatan_tunai", function (
+        Schema::table('buku_besar_pendapatan_tunai', function (
             Blueprint $table,
         ) {
             if (
-                !Schema::hasColumn(
-                    "buku_besar_pendapatan_tunai",
-                    "jumlah_retur_penjualan",
+                ! Schema::hasColumn(
+                    'buku_besar_pendapatan_tunai',
+                    'jumlah_retur_penjualan',
                 )
             ) {
                 $table
-                    ->decimal("jumlah_retur_penjualan", 15, 2)
+                    ->decimal('jumlah_retur_penjualan', 15, 2)
                     ->default(0)
-                    ->after("bunga_bank");
+                    ->after('bunga_bank');
             }
 
             if (
-                !Schema::hasColumn("buku_besar_pendapatan_tunai", "jenis_retur")
+                ! Schema::hasColumn('buku_besar_pendapatan_tunai', 'jenis_retur')
             ) {
                 $table
-                    ->enum("jenis_retur", ["kurangi_piutang", "tunai_kembali"])
+                    ->enum('jenis_retur', ['kurangi_piutang', 'tunai_kembali'])
                     ->nullable()
-                    ->after("jumlah_retur_penjualan");
+                    ->after('jumlah_retur_penjualan');
             }
         });
     }
@@ -41,21 +42,21 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table("buku_besar_pendapatan_tunai", function (
+        Schema::table('buku_besar_pendapatan_tunai', function (
             Blueprint $table,
         ) {
             if (
                 Schema::hasColumn(
-                    "buku_besar_pendapatan_tunai",
-                    "jumlah_retur_penjualan",
+                    'buku_besar_pendapatan_tunai',
+                    'jumlah_retur_penjualan',
                 )
             ) {
-                $table->dropColumn("jumlah_retur_penjualan");
+                $table->dropColumn('jumlah_retur_penjualan');
             }
             if (
-                Schema::hasColumn("buku_besar_pendapatan_tunai", "jenis_retur")
+                Schema::hasColumn('buku_besar_pendapatan_tunai', 'jenis_retur')
             ) {
-                $table->dropColumn("jenis_retur");
+                $table->dropColumn('jenis_retur');
             }
         });
     }

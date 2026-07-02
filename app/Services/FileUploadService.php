@@ -12,8 +12,9 @@ class FileUploadService
     {
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $slugName = Str::slug($originalName);
-        $fileName = $slugName . '-' . time() . '-' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs($folder . '/' . $email, $fileName, 'public');
+        $fileName = $slugName.'-'.time().'-'.Str::random(10).'.'.$file->getClientOriginalExtension();
+        $path = $file->storeAs($folder.'/'.$email, $fileName, 'public');
+
         return $path;
     }
 

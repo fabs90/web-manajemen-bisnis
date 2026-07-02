@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AgendaJanjiTemu;
 use Barryvdh\DomPDF\Facade\Pdf;
+
 class AgendaJanjiTemuService
 {
     /**
@@ -30,12 +31,13 @@ class AgendaJanjiTemuService
 
     public function show($id)
     {
-        $agendaJanjiTemu = AgendaJanjiTemu::where("user_id", auth()->user()->id)
-            ->where("id", $id)
+        $agendaJanjiTemu = AgendaJanjiTemu::where('user_id', auth()->user()->id)
+            ->where('id', $id)
             ->first();
         if ($agendaJanjiTemu) {
             return $agendaJanjiTemu;
         }
+
         return null;
     }
 
@@ -43,12 +45,12 @@ class AgendaJanjiTemuService
     {
         $agendaJanjiTemu = AgendaJanjiTemu::findOrFail($id);
 
-        $pdf = Pdf::loadView("administrasi.surat.janji-temu.template-pdf", [
-            "agendaJanjiTemu" => $agendaJanjiTemu,
-        ])->setPaper("a4", "portrait");
+        $pdf = Pdf::loadView('administrasi.surat.janji-temu.template-pdf', [
+            'agendaJanjiTemu' => $agendaJanjiTemu,
+        ])->setPaper('a4', 'portrait');
 
         return $pdf->download(
-            "agenda-janji-temu-" . $agendaJanjiTemu->id . ".pdf",
+            'agenda-janji-temu-'.$agendaJanjiTemu->id.'.pdf',
         );
     }
 }

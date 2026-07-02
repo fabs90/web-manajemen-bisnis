@@ -28,7 +28,7 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-8">
                             <label class="form-label fw-bold">
-                                Pilih Pesanan Pembelian (SPP) <span class="text-danger">*</span>
+                                Pilih Pesanan Penjualan (SPP) <span class="text-danger">*</span>
                             </label>
                             <select name="spp_id" id="spp_id" class="form-select @error('spp_id') is-invalid @enderror"
                                 required>

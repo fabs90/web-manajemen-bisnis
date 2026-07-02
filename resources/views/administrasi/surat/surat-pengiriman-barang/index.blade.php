@@ -27,7 +27,8 @@
                         <div>
                             <h5 class="fw-bold">Buat Surat Pengiriman Barang (SPB)</h5>
                             <p class="text-muted mb-3">
-                                Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan untuk memudahkan pelacakan progress pengiriman.
+                                Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan untuk memudahkan
+                                pelacakan progress pengiriman.
                             </p>
                         </div>
 
@@ -35,7 +36,8 @@
                             <a href="{{ route('administrasi.spb.create') }}" class="btn btn-success flex-fill text-center">
                                 + Buat SPB Baru
                             </a>
-                            <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}" class="btn btn-outline-success flex-fill text-center">
+                            <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}"
+                                class="btn btn-outline-success flex-fill text-center">
                                 + Tambah Pesanan Pelanggan (SPP Masuk)
                             </a>
                         </div>
@@ -54,6 +56,7 @@
                         <thead class="table-primary text-center">
                             <tr>
                                 <th width="5%">No</th>
+                                <th>Nomor SPP</th>
                                 <th>Nomor SPB</th>
                                 <th>Tanggal Dikirim</th>
                                 <th>Status</th>
@@ -67,25 +70,29 @@
                             @foreach ($suratPengirimanBarang as $spb)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td class="fw-bold">{{ $spb->pesananPenjualan->nomor_pesanan_penjualan ?? '-' }}</td>
                                     <td class="fw-bold">{{ $spb->nomor_pengiriman_barang }}</td>
                                     <td class="text-center">
                                         {{ \Carbon\Carbon::parse($spb->created_at)->format('d-m-Y') }}
                                     </td>
                                     <td>
                                         @php
-                                                $statusConfig = [
-                                                    'diproses'     => ['bg-secondary', 'Diproses'],
-                                                    'dikirim'      => ['bg-primary', 'Dikirim'],
-                                                    'diterima'     => ['bg-success', 'Diterima'],
-                                                    'dibatalkan'   => ['bg-danger', 'Dibatalkan'],
-                                                    'dikembalikan' => ['bg-warning', 'Dikembalikan'],
-                                                ];
-                                           $config = $statusConfig[$spb->status_pengiriman] ?? ['bg-dark', 'Tidak Diketahui'];
-@endphp
-<span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
+                                            $statusConfig = [
+                                                'diproses' => ['bg-secondary', 'Diproses'],
+                                                'dikirim' => ['bg-primary', 'Dikirim'],
+                                                'diterima' => ['bg-success', 'Diterima'],
+                                                'dibatalkan' => ['bg-danger', 'Dibatalkan'],
+                                                'dikembalikan' => ['bg-warning', 'Dikembalikan'],
+                                            ];
+                                            $config = $statusConfig[$spb->status_pengiriman] ?? [
+                                                'bg-dark',
+                                                'Tidak Diketahui',
+                                            ];
+                                        @endphp
+                                        <span class="badge {{ $config[0] }}">{{ $config[1] }}</span>
                                     </td>
                                     <td>
-                                        {{ $spb->pesananPenjualan->pelanggan->nama ?? $spb->pesananPembelian->pelanggan->nama ?? $spb->pesananPembelian->supplier->nama ?? '-' }}
+                                        {{ $spb->pesananPenjualan->pelanggan->nama ?? ($spb->pesananPembelian->pelanggan->nama ?? ($spb->pesananPembelian->supplier->nama ?? '-')) }}
                                     </td>
                                     <td class="text-center">
                                         @php
@@ -167,7 +174,7 @@
                                                                         @foreach ($spb->suratPengirimanBarangDetail as $detail)
                                                                             <tr>
                                                                                 <td>{{ $loop->iteration }}</td>
-                                                                                <td>{{ $detail->pesananPenjualanDetail?->nama_barang ?? $detail->pesananPembelianDetail?->nama_barang ?? '-' }}
+                                                                                <td>{{ $detail->pesananPenjualanDetail?->nama_barang ?? ($detail->pesananPembelianDetail?->nama_barang ?? '-') }}
                                                                                 </td>
                                                                                 <td>{{ $detail->jumlah_dikirim }}</td>
                                                                             </tr>

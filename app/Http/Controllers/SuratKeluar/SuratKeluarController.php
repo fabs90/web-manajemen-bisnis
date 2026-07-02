@@ -13,9 +13,7 @@ use Throwable;
 
 final class SuratKeluarController extends Controller
 {
-    public function __construct(protected SuratKeluarService $suratKeluarService)
-    {
-    }
+    public function __construct(protected SuratKeluarService $suratKeluarService) {}
 
     public function index()
     {
@@ -53,7 +51,8 @@ final class SuratKeluarController extends Controller
                 ->with('success', 'Surat keluar berhasil dikirim ke penerima.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Store surat keluar error: ' . $e->getMessage());
+            Log::error('Store surat keluar error: '.$e->getMessage());
+
             return back()->with(
                 'error',
                 $e->getMessage(),
@@ -76,7 +75,7 @@ final class SuratKeluarController extends Controller
                 ->with('success', 'Surat keluar berhasil dihapus.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus Surat Keluar: ' . $e->getMessage());
+            Log::error('Gagal menghapus Surat Keluar: '.$e->getMessage());
 
             return back()->with(
                 'error',

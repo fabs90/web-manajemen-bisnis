@@ -19,18 +19,36 @@
 </head>
 <body>
 
+    @php
+        $formulir = $data->kasKecilFormulir->last();
+
+        $getImgBase64 = function($path) {
+            if (!$path) return null;
+            $fullPath = storage_path('app/public/' . $path);
+            if (file_exists($fullPath)) {
+                $mime = mime_content_type($fullPath);
+                $base64 = base64_encode(file_get_contents($fullPath));
+                return 'data:' . $mime . ';base64,' . $base64;
+            }
+            return null;
+        };
+
+        $logoSrc = $getImgBase64($userProfile->logo_perusahaan);
+        $ttdPemohonSrc = $getImgBase64($formulir->ttd_nama_pemohon ?? '');
+        $ttdAtasanSrc = $getImgBase64($formulir->ttd_atasan_langsung ?? '');
+        $ttdKeuanganSrc = $getImgBase64($formulir->ttd_bagian_keuangan ?? '');
+    @endphp
+
     {{-- HEADER --}}
     <div style="text-align:center;">
-        @if($userProfile->logo_perusahaan)
-            <img src="{{ public_path('storage/'.$userProfile->logo_perusahaan) }}" width="90" style="margin-bottom:8px;">
+        @if($logoSrc)
+            <img src="{{ $logoSrc }}" style="height:70px; margin-bottom:8px;">
         @endif
         <div class="header-title">FORM PERMINTAAN KAS KECIL</div>
     </div>
     <hr>
 
-    @php
-        $formulir = $data->kasKecilFormulir->last();
-    @endphp
+
 
     {{-- DATA PEMOHON --}}
     <table class="no-border">
@@ -90,24 +108,24 @@
         <tr>
             <td class="signature-box">
                 Pemohon,<br>
-                @if($formulir->ttd_nama_pemohon)
-                    <img src="{{ public_path('storage/'.$formulir->ttd_nama_pemohon) }}">
+                @if($ttdPemohonSrc)
+                    <img src="{{ $ttdPemohonSrc }}" style="height:60px;">
                 @else <br><br><br> @endif
                 <strong>{{ $formulir->nama_pemohon }}</strong>
             </td>
 
             <td class="signature-box">
                 Mengetahui,<br>
-                @if($formulir->ttd_atasan_langsung)
-                    <img src="{{ public_path('storage/'.$formulir->ttd_atasan_langsung) }}">
+                @if($ttdAtasanSrc)
+                    <img src="{{ $ttdAtasanSrc }}" style="height:60px;">
                 @else <br><br><br> @endif
                 <strong>{{ $formulir->nama_atasan_langsung }}</strong>
             </td>
 
             <td class="signature-box">
                 Bagian Keuangan,<br>
-                @if($formulir->ttd_bagian_keuangan)
-                    <img src="{{ public_path('storage/'.$formulir->ttd_bagian_keuangan) }}">
+                @if($ttdKeuanganSrc)
+                    <img src="{{ $ttdKeuanganSrc }}" style="height:60px;">
                 @else <br><br><br> @endif
                 <strong>{{ $formulir->nama_bagian_keuangan }}</strong>
             </td>

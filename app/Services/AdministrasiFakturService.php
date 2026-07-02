@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\{Auth, DB, Log};
 use App\Models\Faktur\FakturPenjualan;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AdministrasiFakturService
@@ -15,12 +17,13 @@ class AdministrasiFakturService
         DB::beginTransaction();
         try {
             $faktur = FakturPenjualan::create([
-                "spb_id" => $data["spb_id"],
-                "kode_faktur" => $data["kode_faktur"],
-                "tanggal_faktur" => $data["tanggal_faktur"],
-                "user_id" => auth()->user()->id,
+                'spb_id' => $data['spb_id'],
+                'kode_faktur' => $data['kode_faktur'],
+                'tanggal_faktur' => $data['tanggal_faktur'],
+                'user_id' => auth()->user()->id,
             ]);
             DB::commit();
+
             return $faktur;
         } catch (\Exception $e) {
             DB::rollBack();
@@ -32,26 +35,26 @@ class AdministrasiFakturService
     {
         try {
             $faktur = FakturPenjualan::with([
-                "suratPengirimanBarang",
-                "suratPengirimanBarang.pesananPenjualan.pelanggan",
+                'suratPengirimanBarang',
+                'suratPengirimanBarang.pesananPenjualan.pelanggan',
             ])
-                ->where("user_id", auth()->id())
+                ->where('user_id', auth()->id())
                 ->findOrFail($id);
 
             $profileUser = Auth::user();
 
             $pdf = Pdf::loadView(
-                "administrasi.surat.faktur-penjualan.template-pdf",
-                compact("faktur", "profileUser"),
-            )->setPaper("A4", "portrait");
+                'administrasi.surat.faktur-penjualan.template-pdf',
+                compact('faktur', 'profileUser'),
+            )->setPaper('A4', 'portrait');
 
             return $pdf->download(
-                Str::slug("Faktur Penjualan-" .
+                Str::slug('Faktur Penjualan-'.
                     $faktur->kode_faktur)
-                . ".pdf",
+                .'.pdf',
             );
         } catch (\Exception $e) {
-            Log::error("Error generate PDF faktur: " . $e->getMessage());
+            Log::error('Error generate PDF faktur: '.$e->getMessage());
             throw $e;
         }
     }
@@ -60,22 +63,25 @@ class AdministrasiFakturService
     {
         DB::beginTransaction();
         try {
-            $faktur = FakturPenjualan::where("user_id", auth()->id())
+            $faktur = FakturPenjualan::where('user_id', auth()->id())
                 ->findOrFail($id);
             $faktur->delete();
 
             DB::commit();
+
             return true;
         } catch (ModelNotFoundException $e) {
             DB::rollBack();
             Log::warning(
-                "Faktur tidak ditemukan saat destroy: ID $id | User: " .
+                "Faktur tidak ditemukan saat destroy: ID $id | User: ".
                 auth()->id(),
             );
+
             return false;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Gagal menghapus faktur: " . $e->getMessage());
+            Log::error('Gagal menghapus faktur: '.$e->getMessage());
+
             return false;
         }
     }

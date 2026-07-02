@@ -29,17 +29,17 @@
             </div>
             <div class="mb-3">
                 <label for="jumlah_max" class="form-label">Jumlah Stok Maksimum per-Kemasan</label>
-                <input type="number" class="form-control" id="jumlah_max" name="jumlah_max" placeholder="Jumlah Max"
+                <input type="text" class="form-control" id="jumlah_max" name="jumlah_max" placeholder="Jumlah Max"
                     required value="{{ old('jumlah_max') }}" autocomplete="off">
             </div>
             <div class="mb-3">
                 <label for="jumlah_min" class="form-label">Jumlah Stok Minimum per-Kemasan</label>
-                <input type="number" class="form-control" id="jumlah_min" name="jumlah_min" placeholder="Jumlah Min"
+                <input type="text" class="form-control" id="jumlah_min" name="jumlah_min" placeholder="Jumlah Min"
                     required value="{{ old('jumlah_min') }}" autocomplete="off">
             </div>
             <div class="mb-3">
                 <label for="jumlah_unit_per_kemasan" class="form-label">Jumlah Unit per-Kemasan</label>
-                <input type="number" class="form-control " id="jumlah_unit_per_kemasan" name="jumlah_unit_per_kemasan" placeholder="Jumlah Unit Per Kemasan"
+                <input type="text" class="form-control " id="jumlah_unit_per_kemasan" name="jumlah_unit_per_kemasan" placeholder="Jumlah Unit Per Kemasan"
                     required value="{{ old('jumlah_unit_per_kemasan') }}" autocomplete="off">
 
             </div>

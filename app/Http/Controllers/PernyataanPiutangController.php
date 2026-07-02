@@ -8,9 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PernyataanPiutangController extends Controller
 {
-    public function __construct(protected PernyataanPiutangService $service)
-    {
-    }
+    public function __construct(protected PernyataanPiutangService $service) {}
 
     public function index()
     {
@@ -25,7 +23,7 @@ class PernyataanPiutangController extends Controller
     public function generatePdf($pelangganId)
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 

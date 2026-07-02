@@ -7,9 +7,15 @@
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
                 <span>Daftar Surat Pesanan Penjualan (SPP)</span>
-                <button type="button" class="btn btn-light btn-sm fw-bold" id="btn-toggle-form">
-                    <i class="bi bi-plus-circle"></i> Buat SPP Baru
-                </button>
+
+                <div>
+                    <a href="{{ route('administrasi.spb.index') }}" class="btn btn-light btn-sm fw-bold me-2">
+                        <i class="bi bi-arrow-left"></i> Kembali
+                    </a>
+                    <button type="button" class="btn btn-light btn-sm fw-bold" id="btn-toggle-form">
+                        <i class="bi bi-plus-circle"></i> Buat SPP Baru
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -31,7 +37,8 @@
                                     <td>{{ $spp->pelanggan->nama ?? '-' }}</td>
                                     <td>{{ \Carbon\Carbon::parse($spp->tanggal_pesanan_penjualan)->format('d-m-Y') }}</td>
                                     <td>
-                                        <form action="{{ route('administrasi.spb.spp-pelanggan.destroy', $spp->id) }}" method="POST" class="d-inline form-delete">
+                                        <form action="{{ route('administrasi.spb.spp-pelanggan.destroy', $spp->id) }}"
+                                            method="POST" class="d-inline form-delete">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" class="btn btn-danger btn-sm btn-delete">
@@ -47,7 +54,8 @@
             </div>
         </div>
 
-        <form action="{{ route('administrasi.spb.spp-pelanggan.store') }}" method="POST" enctype="multipart/form-data" id="spp-pelanggan-form" style="display: none;">
+        <form action="{{ route('administrasi.spb.spp-pelanggan.store') }}" method="POST" enctype="multipart/form-data"
+            id="spp-pelanggan-form" style="display: none;">
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
@@ -70,7 +78,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Alamat Pelanggan</label>
-                            <input type="text" name="alamat_pelanggan" id="alamatPelanggan" class="form-control" readonly>
+                            <input type="text" name="alamat_pelanggan" id="alamatPelanggan" class="form-control"
+                                readonly>
                         </div>
                     </div>
 
@@ -79,7 +88,8 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Nomor Pesanan<span class="text-danger">*</span></label>
-                            <input type="text" name="nomor_pesanan_pembelian" class="form-control" placeholder="Contoh: PO-001" required>
+                            <input type="text" name="nomor_pesanan_pembelian" class="form-control"
+                                placeholder="Contoh: PO-001" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tanggal Pesanan<span class="text-danger">*</span></label>
@@ -94,7 +104,8 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Nama Pihak Pemesan<span class="text-danger">*</span></label>
-                            <input type="text" name="nama_pelanggan" class="form-control" placeholder="Nama orang yang memesan" required>
+                            <input type="text" name="nama_pelanggan" class="form-control"
+                                placeholder="Nama orang yang memesan" required>
                         </div>
 
                         <div class="col-md-6">
@@ -139,8 +150,10 @@
                                 <td><input type="text" class="form-control stok" readonly></td>
                                 <td><input type="text" name="detail[0][kuantitas]" class="form-control qty" required>
                                 </td>
-                                <td><input type="text" name="detail[0][harga]" class="form-control harga" required></td>
-                                <td><input type="text" name="detail[0][total]" class="form-control total" readonly></td>
+                                <td><input type="text" name="detail[0][harga]" class="form-control harga" required>
+                                </td>
+                                <td><input type="text" name="detail[0][total]" class="form-control total" readonly>
+                                </td>
                                 <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button></td>
                             </tr>
                         </tbody>
@@ -215,7 +228,8 @@
 
         // Loading Button
         $('#submit-btn').click(function() {
-            $(this).prop('disabled', true).html('<i class="bi bi-spinner spinner-border spinner-border-sm"></i> Loading...');
+            $(this).prop('disabled', true).html(
+                '<i class="bi bi-spinner spinner-border spinner-border-sm"></i> Loading...');
             $('#spp-pelanggan-form').submit();
         });
 

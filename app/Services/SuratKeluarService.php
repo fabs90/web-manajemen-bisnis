@@ -14,9 +14,7 @@ use Illuminate\Support\Str;
 
 class SuratKeluarService
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(protected FileUploadService $fileUploadService) {}
 
     public function store(array $data, User $user, ?UploadedFile $fileLampiran, ?UploadedFile $ttdFile)
     {
@@ -24,7 +22,7 @@ class SuratKeluarService
         $ttdPath = null;
 
         // Validate email
-        if (!$this->validateEmail((string) $data['email_penerima'])) {
+        if (! $this->validateEmail((string) $data['email_penerima'])) {
             throw new \Exception('Maaf, Email yang dimasukan tidak valid. Coba ulangi dengan email yang valid.');
         }
 
@@ -97,7 +95,7 @@ class SuratKeluarService
     {
         $suratKeluar = AgendaSuratKeluar::findOrFail($id);
 
-        $fileName = 'surat-keluar-' . Str::slug($suratKeluar->nomor_surat ?? 'dokumen') . '.pdf';
+        $fileName = 'surat-keluar-'.Str::slug($suratKeluar->nomor_surat ?? 'dokumen').'.pdf';
 
         $pdf = Pdf::loadView('administrasi.surat.surat-keluar.template.surat-keluar-pdf', [
             'surat' => $suratKeluar,
@@ -113,6 +111,7 @@ class SuratKeluarService
         if ($response->json()['status'] !== 'VALID') {
             return false;
         }
+
         return true;
     }
 }

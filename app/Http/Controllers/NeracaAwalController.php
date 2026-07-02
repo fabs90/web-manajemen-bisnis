@@ -87,6 +87,7 @@ class NeracaAwalController extends Controller
 
             // A. Kas Utama (1101)
             if ($validated['kas'] > 0) {
+                $accounts['1101']->update(['opening_balance' => $validated['kas']]);
                 JournalItem::create([
                     'user_id' => $userId,
                     'journal_entry_id' => $entry->id,
@@ -98,6 +99,7 @@ class NeracaAwalController extends Controller
 
             // B. Piutang Usaha (1104) - Per Pelanggan
             if (! empty($validated['piutang']) && ! $request->has('tidak_ada_piutang')) {
+                $accounts['1104']->update(['opening_balance' => $totalPiutang]);
                 foreach ($validated['piutang'] as $p) {
                     if ($p['jumlah'] > 0) {
                         JournalItem::create([
@@ -115,6 +117,7 @@ class NeracaAwalController extends Controller
 
             // C. Persediaan Barang Dagang (1105)
             if (($validated['total_persediaan'] ?? 0) > 0) {
+                $accounts['1105']->update(['opening_balance' => $validated['total_persediaan']]);
                 JournalItem::create([
                     'user_id' => $userId,
                     'journal_entry_id' => $entry->id,
@@ -140,6 +143,7 @@ class NeracaAwalController extends Controller
 
             foreach ($fixedAssets as $code => $field) {
                 if (($validated[$field] ?? 0) > 0) {
+                    $accounts[$code]->update(['opening_balance' => $validated[$field]]);
                     JournalItem::create([
                         'user_id' => $userId,
                         'journal_entry_id' => $entry->id,
@@ -152,6 +156,7 @@ class NeracaAwalController extends Controller
 
             // E. Utang Usaha (2101) - Per Pelanggan/Supplier
             if (! empty($validated['hutang']) && ! $request->has('tidak_ada_hutang')) {
+                $accounts['2101']->update(['opening_balance' => $totalHutang]);
                 foreach ($validated['hutang'] as $h) {
                     if ($h['jumlah'] > 0) {
                         JournalItem::create([
@@ -169,6 +174,7 @@ class NeracaAwalController extends Controller
 
             // F. Modal Pemilik (3100)
             if ($modal > 0) {
+                $accounts['3100']->update(['opening_balance' => $modal]);
                 JournalItem::create([
                     'user_id' => $userId,
                     'journal_entry_id' => $entry->id,

@@ -233,6 +233,9 @@ class SuratPesananPenjualanService
             // Hapus detail
             $suratPesananPenjualan->details()->delete();
 
+            // Hapus SPB
+            $suratPesananPenjualan->suratPengirimanBarang()->delete();
+
             // Hapus Journal Entry terkait
             JournalEntry::where('user_id', auth()->id())
                 ->where('description', 'Pesanan Penjualan - '.$suratPesananPenjualan->nomor_pesanan_penjualan)

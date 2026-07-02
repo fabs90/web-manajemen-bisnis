@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Pelanggan;
-use Illuminate\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DebiturRequest extends FormRequest
@@ -24,11 +22,11 @@ class DebiturRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "nama" => "required|string|max:200",
-            "kontak" => "nullable|string|max:255",
-            "alamat" => "nullable|string|max:255",
-            "email" => "nullable|email|max:255",
-            "jenis" => "required",
+            'nama' => 'required|string|max:200',
+            'kontak' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'jenis' => 'required',
         ];
     }
 
@@ -38,20 +36,20 @@ class DebiturRequest extends FormRequest
     public function messages(): array
     {
         return [
-            "nama.required" => "Nama debitur wajib diisi.",
-            "nama.string" => "Nama debitur harus berupa teks.",
-            "nama.max" => "Nama debitur tidak boleh lebih dari 200 karakter.",
+            'nama.required' => 'Nama debitur wajib diisi.',
+            'nama.string' => 'Nama debitur harus berupa teks.',
+            'nama.max' => 'Nama debitur tidak boleh lebih dari 200 karakter.',
 
-            "kontak.string" => "Kontak harus berupa teks atau angka.",
-            "kontak.max" => "Kontak tidak boleh lebih dari 255 karakter.",
+            'kontak.string' => 'Kontak harus berupa teks atau angka.',
+            'kontak.max' => 'Kontak tidak boleh lebih dari 255 karakter.',
 
-            "alamat.string" => "Alamat harus berupa teks.",
-            "alamat.max" => "Alamat tidak boleh lebih dari 255 karakter.",
+            'alamat.string' => 'Alamat harus berupa teks.',
+            'alamat.max' => 'Alamat tidak boleh lebih dari 255 karakter.',
 
-            "email.email" => "Format email tidak valid.",
-            "email.max" => "Email tidak boleh lebih dari 255 karakter.",
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email tidak boleh lebih dari 255 karakter.',
 
-            "jenis.required" => "Jenis debitur/kreditur wajib diisi.",
+            'jenis.required' => 'Jenis debitur/kreditur wajib diisi.',
         ];
     }
 }

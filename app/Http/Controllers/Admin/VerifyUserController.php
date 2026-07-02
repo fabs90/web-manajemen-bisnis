@@ -12,6 +12,7 @@ class VerifyUserController extends Controller
     public function index()
     {
         $users = User::where('role', '!=', 'superadmin')->get();
+
         return view('superadmin.dashboard.verify-account.index', compact('users'));
     }
 
@@ -26,8 +27,8 @@ class VerifyUserController extends Controller
             'updated_at' => now(),
         ]);
 
-        Log::info("Verify User Success: ", [
-            'submitted by' => $request->user()->name . '-' . $request->user()->email,
+        Log::info('Verify User Success: ', [
+            'submitted by' => $request->user()->name.'-'.$request->user()->email,
             'user_id' => $user->id,
             'email' => $user->email,
             'name' => $user->name,

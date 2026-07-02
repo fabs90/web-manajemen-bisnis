@@ -3,20 +3,20 @@
 
 @section('section-heading', 'Penerimaan ')
 @section('section-row')
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Sukses!</strong> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Sukses!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-{{-- Alert error --}}
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Gagal!</strong> {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
+    {{-- Alert error --}}
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Gagal!</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Daftar Penerimaan Perusahaan</h5>
         <a href="{{ route('keuangan.pendapatan.create') }}" class="btn btn-primary">
@@ -31,12 +31,12 @@
                     <th>#</th>
                     <th>Tanggal</th>
                     <th>Uraian</th>
-                    <th>Piutang Dagang (Kredit)</th>
-                    <th>Penjualan Tunai (Kredit)</th>
-                    <th>Penjualan Kredit (Kredit)</th>
-                    <th>Potongan Penjualan (Debit)</th>
-                    <th>Lain-lain (Kredit)</th>
-                    <th>Kas (Debit)</th>
+                    <th>Piutang Dagang</th>
+                    <th>Penjualan Tunai</th>
+                    <th>Penjualan Kredit</th>
+                    <th>Potongan Penjualan</th>
+                    <th>Lain-lain</th>
+                    <th>Masuk ke Kas Besar</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -53,7 +53,8 @@
                         <td>Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->uang_diterima ?? 0, 0, ',', '.') }}</td>
                         <td>
-                            <a href="{{ route('keuangan.pendapatan.show', $data->id) }}" class="btn btn-info btn-sm text-white">
+                            <a href="{{ route('keuangan.pendapatan.show', $data->id) }}"
+                                class="btn btn-info btn-sm text-white">
                                 <i class="bi bi-eye"></i> Detail
                             </a>
                             <form id="deleteForm-{{ $data->id }}"
@@ -117,8 +118,8 @@
                             <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                             <td>
                                 <form id="deletePiutang-{{ $item->id }}"
-                                      action="{{route('keuangan.piutang.destroy', $item->id)}}"
-                                      method="POST" class="d-inline">
+                                    action="{{ route('keuangan.piutang.destroy', $item->id) }}" method="POST"
+                                    class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" class="btn btn-danger delete-btn">
@@ -155,7 +156,7 @@
                 }
             });
 
-            $('.delete-btn').on('click', function () {
+            $('.delete-btn').on('click', function() {
                 let form = $(this).closest('form');
 
                 Swal.fire({

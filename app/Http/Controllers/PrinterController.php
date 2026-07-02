@@ -10,6 +10,7 @@ class PrinterController extends Controller
     public function index()
     {
         $user = Auth::user();
+
         return view('pengaturan.printer.index', compact('user'));
     }
 

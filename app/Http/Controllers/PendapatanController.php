@@ -41,10 +41,15 @@ class PendapatanController extends Controller
             ->whereHas('items', function ($q) use ($kasId, $pendapatanId) {
                 $q->whereIn('account_id', [$kasId, $pendapatanId]);
             })
-            ->where(function ($query) {
-                $query->where('transaction_type', '!=', 'neraca_awal')
-                    ->orWhereNull('transaction_type');
-            })
+            ->whereNotIn('transaction_type', [
+                'neraca_awal', 
+                'membeli_barang', 
+                'lain_lain', 
+                'membayar_hutang', 
+                'kas_kecil', 
+                'agenda_perjalanan',
+                'pemesanan-barang'
+            ])
             ->with(['items.account'])
             ->latest()
             ->get();
@@ -150,15 +155,15 @@ class PendapatanController extends Controller
                 ->where('account_id', $piutangId)
                 ->with(['journalEntry', 'subLedger'])
                 ->get()
-                ->groupBy('journalEntry.reference_number');
+                ->groupBy('sub_ledger_id');
 
-            foreach ($activePiutang as $ref => $items) {
+            foreach ($activePiutang as $pelangganId => $items) {
                 $saldo = $items->sum('debit') - $items->sum('credit');
                 if ($saldo > 0) {
                     $firstItem = $items->first();
                     $listPiutang->push((object) [
-                        'kode' => $ref,
-                        'pelanggan_id' => $firstItem->sub_ledger_id,
+                        'kode' => $firstItem->id,
+                        'pelanggan_id' => $pelangganId,
                         'pelanggan' => $firstItem->subLedger,
                         'saldo' => $saldo,
                     ]);

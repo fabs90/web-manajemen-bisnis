@@ -25,7 +25,7 @@ class PengeluaranController extends Controller
 
         // Ambil semua JournalEntry yang merupakan pengeluaran
         $journalEntries = JournalEntry::where('user_id', $userId)
-            ->whereIn('transaction_type', ['membeli_barang', 'lain_lain', 'membayar_hutang', 'kas_kecil'])
+            ->whereIn('transaction_type', ['membeli_barang', 'lain_lain', 'membayar_hutang', 'kas_kecil', 'agenda_perjalanan'])
             ->with(['items.account'])
             ->latest()
             ->get();
@@ -49,14 +49,16 @@ class PengeluaranController extends Controller
                 'jumlah_hutang' => $entry->transaction_type === 'membeli_barang' ? ($hutangItem->credit ?? 0) : 0,
                 'jumlah_pembelian_tunai' => $entry->transaction_type === 'membeli_barang' ? ($kasItem->credit ?? 0) : 0,
                 'potongan_pembelian' => $potonganAmount,
-                'lain_lain' => $entry->transaction_type === 'lain_lain' ? $biayaKotor : 0,
-                'jumlah_pengeluaran' => $entry->items->where('account.code', '1101')->sum('credit') + $entry->items->where('account.code', '2101')->sum('credit'),
+                'lain_lain' => in_array($entry->transaction_type, ['lain_lain', 'agenda_perjalanan']) ? $biayaKotor : 0,
+                'keluar_kas_kecil' => $entry->items->where('account.code', '1102')->sum('credit'),
+                'jumlah_pengeluaran' => $entry->items->where('account.code', '1101')->sum('credit') + $entry->items->where('account.code', '1103')->sum('credit') + $entry->items->where('account.code', '2101')->sum('credit'),
                 'transaction_type' => $entry->transaction_type,
                 'hutang' => collect($entry->transaction_type === 'membayar_hutang' ? [$entry] : []), // Untuk deteksi pelunasan di view
             ];
         });
 
         $totalPengeluaran = $allDatas->sum('jumlah_pengeluaran');
+        $totalKeluarKasKecil = $allDatas->sum('keluar_kas_kecil');
 
         // Data Hutang: Group by pelanggan dari JournalItem akun Utang Usaha (2101)
         $dataHutang = JournalItem::where('user_id', $userId)

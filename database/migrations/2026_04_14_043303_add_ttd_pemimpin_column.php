@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up()
-  {
-      Schema::table('agenda_rapat', function (Blueprint $table) {
-          $table->string('ttd_pemimpin')->nullable();
-      });
-  }
+    {
+        Schema::table('agenda_rapat', function (Blueprint $table) {
+            $table->string('ttd_pemimpin')->nullable();
+        });
+    }
 
-  public function down()
-  {
-      Schema::table('agenda_rapat', function (Blueprint $table) {
-          $table->dropColumn('ttd_pemimpin');
-      });
-  }
+    public function down()
+    {
+        Schema::table('agenda_rapat', function (Blueprint $table) {
+            $table->dropColumn('ttd_pemimpin');
+        });
+    }
 };

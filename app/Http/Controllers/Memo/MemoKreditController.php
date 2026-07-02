@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Memo;
 use App\Http\Controllers\Controller;
 use App\Models\Faktur\FakturPenjualan;
 use App\Models\MemoKredit\MemoKredit;
+use App\Models\SPP\SuratPesananPenjualanDetail;
 use App\Services\MemoKreditService;
 use Illuminate\Http\Request;
 
@@ -41,6 +42,22 @@ class MemoKreditController extends Controller
 
     public function store(Request $request, MemoKreditService $services)
     {
+        $request->validate([
+            'barang_id' => 'required|array',
+            'jumlah_dikembalikan' => 'required|array',
+        ]);
+
+        foreach ($request->barang_id as $index => $barangDetailId) {
+            $qty = $request->jumlah_dikembalikan[$index] ?? 0;
+            $sppDetail = SuratPesananPenjualanDetail::find($barangDetailId);
+
+            if ($sppDetail && $qty > $sppDetail->kuantitas) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', "Jumlah dikembalikan untuk barang {$sppDetail->nama_barang} tidak boleh melebihi jumlah pesanan ({$sppDetail->kuantitas}).");
+            }
+        }
+
         $serviceApp = $services->store($request);
         if ($serviceApp) {
             return redirect()

@@ -42,7 +42,7 @@ class PageController extends Controller
             $sumDebit = JournalItem::where('account_id', $account->id)->sum('debit');
             $sumCredit = JournalItem::where('account_id', $account->id)->sum('credit');
 
-            return $account->opening_balance + $sumDebit - $sumCredit;
+            return $sumDebit - $sumCredit;
         });
 
         // Detail Kas untuk tabel dashboard
@@ -90,7 +90,7 @@ class PageController extends Controller
         if ($piutangAccount) {
             $sumDebit = JournalItem::where('account_id', $piutangAccount->id)->sum('debit');
             $sumCredit = JournalItem::where('account_id', $piutangAccount->id)->sum('credit');
-            $totalPiutang = $piutangAccount->opening_balance + $sumDebit - $sumCredit;
+            $totalPiutang = $sumDebit - $sumCredit;
         }
 
         // Total Hutang (Account code: 2101)
@@ -99,7 +99,7 @@ class PageController extends Controller
         if ($hutangAccount) {
             $sumDebit = JournalItem::where('account_id', $hutangAccount->id)->sum('debit');
             $sumCredit = JournalItem::where('account_id', $hutangAccount->id)->sum('credit');
-            $totalHutang = $hutangAccount->opening_balance + $sumCredit - $sumDebit; // Kredit normal
+            $totalHutang = $sumCredit - $sumDebit; // Kredit normal
         }
 
         // Total Persediaan (Account code: 1105)
@@ -108,7 +108,18 @@ class PageController extends Controller
         if ($persediaanAccount) {
             $sumDebit = JournalItem::where('account_id', $persediaanAccount->id)->sum('debit');
             $sumCredit = JournalItem::where('account_id', $persediaanAccount->id)->sum('credit');
-            $totalPersediaan = $persediaanAccount->opening_balance + $sumDebit - $sumCredit;
+            $totalPersediaan = $sumDebit - $sumCredit;
+        }
+
+        // Total Kas Kecil (Account code: 1102)
+        $kasKecilAccount = Account::where('user_id', $userId)->where('code', '1102')->first();
+        $totalKasKecil = 0;
+        $pengeluaranKasKecil = 0;
+        if ($kasKecilAccount) {
+            $sumDebit = JournalItem::where('account_id', $kasKecilAccount->id)->sum('debit');
+            $sumCredit = JournalItem::where('account_id', $kasKecilAccount->id)->sum('credit');
+            $totalKasKecil = $sumDebit - $sumCredit;
+            $pengeluaranKasKecil = $sumCredit;
         }
 
         // Laba Bersih (Revenue - Expense)
@@ -251,6 +262,13 @@ class PageController extends Controller
             });
         }
 
+        // Data Buku Kas Kecil
+        $kasKecilData = \App\Models\KasKecil::with(['kasKecilDetail', 'kasKecilFormulir', 'kasKecilLog'])
+            ->where('user_id', $userId)
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
         return view(
             'layouts.main',
             compact(
@@ -259,6 +277,8 @@ class PageController extends Controller
                 'totalPiutang',
                 'totalHutang',
                 'totalPersediaan',
+                'totalKasKecil',
+                'pengeluaranKasKecil',
                 'labaBersih',
                 'months',
                 'pendapatanPerBulan',
@@ -266,7 +286,8 @@ class PageController extends Controller
                 'transaksiTerbaru',
                 'detailKas',
                 'listPiutang',
-                'listHutang'
+                'listHutang',
+                'kasKecilData'
             )
         );
     }

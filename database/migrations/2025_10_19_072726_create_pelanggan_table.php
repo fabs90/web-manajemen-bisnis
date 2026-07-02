@@ -4,25 +4,26 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create("pelanggan", function (Blueprint $table) {
+        Schema::create('pelanggan', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger("user_id");
+            $table->unsignedBigInteger('user_id');
             $table
-                ->foreign("user_id")
-                ->references("id")
-                ->on("users")
-                ->onDelete("cascade");
-            $table->string("nama");
-            $table->string("kontak");
-            $table->string("alamat")->nullable();
-            $table->string("email")->nullable();
-            $table->enum("jenis", ["debitur", "kreditur"]);
+                ->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+            $table->string('nama');
+            $table->string('kontak');
+            $table->string('alamat')->nullable();
+            $table->string('email')->nullable();
+            $table->enum('jenis', ['debitur', 'kreditur']);
             $table->timestamps();
         });
     }
@@ -32,6 +33,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists("pelanggan");
+        Schema::dropIfExists('pelanggan');
     }
 };

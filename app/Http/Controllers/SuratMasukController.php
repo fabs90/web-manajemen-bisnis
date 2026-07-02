@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{DB, Log};
 use App\Http\Requests\SuratMasukRequest;
 use App\Models\AgendaSuratMasuk;
 use App\Services\FileUploadService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SuratMasukController extends Controller
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-    }
-
+    public function __construct(protected FileUploadService $fileUploadService) {}
 
     public function index()
     {
@@ -65,7 +63,7 @@ class SuratMasukController extends Controller
                 ->with('success', 'Surat masuk berhasil ditambahkan.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Gagal simpan surat masuk: ' . $e->getMessage(), [
+            Log::error('Gagal simpan surat masuk: '.$e->getMessage(), [
                 'user_id' => auth()->id(),
                 'payload' => $request->all(),
             ]);
@@ -100,7 +98,7 @@ class SuratMasukController extends Controller
         DB::beginTransaction();
         try {
             $surat = DB::table('agenda_surat_masuk')->where('user_id', auth()->id())->where('id', $id)->first();
-            if (!$surat) {
+            if (! $surat) {
                 return redirect()
                     ->route('administrasi.surat-masuk.index')
                     ->with('error', 'Surat masuk tidak ditemukan.');
@@ -161,7 +159,7 @@ class SuratMasukController extends Controller
                 ->with('success', 'Disposisi berhasil disimpan.');
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error('Disposisi store error: ' . $e->getMessage());
+            Log::error('Disposisi store error: '.$e->getMessage());
 
             return back()->with(
                 'error',
@@ -190,7 +188,7 @@ class SuratMasukController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error(
-                "Error deleting agenda surat masuk ID $id: " . $e->getMessage(),
+                "Error deleting agenda surat masuk ID $id: ".$e->getMessage(),
             );
 
             return redirect()

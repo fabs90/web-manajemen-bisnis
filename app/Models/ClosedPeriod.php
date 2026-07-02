@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ClosedPeriod extends Model
 {
     use HasFactory;
+
     protected $fillable = ['user_id', 'year', 'closed_at'];
 
     protected $casts = [
