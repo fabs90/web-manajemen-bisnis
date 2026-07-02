@@ -57,8 +57,11 @@ class PengeluaranController extends Controller
             ];
         });
 
-        $totalPengeluaran = $allDatas->sum('jumlah_pengeluaran');
-        $totalKeluarKasKecil = $allDatas->sum('keluar_kas_kecil');
+        $dataPengeluaran = $allDatas->where('transaction_type', '!=', 'kas_kecil')->values();
+        $dataKasKecil = $allDatas->where('transaction_type', 'kas_kecil')->values();
+
+        $totalPengeluaran = $dataPengeluaran->sum('jumlah_pengeluaran');
+        $totalKeluarKasKecil = $dataKasKecil->sum('keluar_kas_kecil');
 
         // Data Hutang: Group by pelanggan dari JournalItem akun Utang Usaha (2101)
         $dataHutang = JournalItem::where('user_id', $userId)
@@ -107,8 +110,10 @@ class PengeluaranController extends Controller
         });
 
         return view('keuangan.pengeluaran.list', [
-            'allDatas' => $allDatas,
+            'dataPengeluaran' => $dataPengeluaran,
+            'dataKasKecil' => $dataKasKecil,
             'totalPengeluaran' => $totalPengeluaran,
+            'totalKeluarKasKecil' => $totalKeluarKasKecil,
             'dataHutang' => $dataHutangFormatted,
         ]);
     }

@@ -40,13 +40,25 @@
     @endphp
 
     {{-- HEADER --}}
-    <div style="text-align:center;">
-        @if($logoSrc)
-            <img src="{{ $logoSrc }}" style="height:70px; margin-bottom:8px;">
-        @endif
-        <div class="header-title">FORM PERMINTAAN KAS KECIL</div>
-    </div>
+    <table class="no-border" style="width: 100%; margin-bottom: 10px;">
+        <tr>
+            <td width="15%" style="text-align: left; vertical-align: middle;">
+                @if($logoSrc)
+                    <img src="{{ $logoSrc }}" style="height:70px;">
+                @endif
+            </td>
+            <td width="70%" style="text-align: center; vertical-align: middle;">
+                <div style="font-size:16px; font-weight:bold; text-transform:uppercase;">
+                    {{ $userProfile->name ?? 'NAMA PERUSAHAAN' }}
+                </div>
+                <div style="font-size:11px;">{{ $userProfile->alamat ?? 'Alamat Lengkap Perusahaan' }}</div>
+                <div style="font-size:11px;">Telp: {{ $userProfile->nomor_telepon ?? '-' }} | Email: {{ $userProfile->email ?? '-' }}</div>
+            </td>
+            <td width="15%"></td>
+        </tr>
+    </table>
     <hr>
+    <div class="header-title" style="margin-top: 15px; margin-bottom: 15px;">FORM PERMINTAAN KAS KECIL</div>
 
 
 

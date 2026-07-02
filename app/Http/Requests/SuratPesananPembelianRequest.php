@@ -31,7 +31,14 @@ class SuratPesananPembelianRequest extends FormRequest
             ],
             'alamat_supplier' => 'required|string',
             'email_supplier' => 'required|email|max:255',
-            'nomor_pesanan_pembelian' => 'required|string|max:255',
+            'nomor_pesanan_pembelian' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('surat_pesanan_pembelian')->where(function ($query) {
+                    return $query->where('user_id', auth()->id());
+                }),
+            ],
             'tanggal_pesanan_pembelian' => 'required|date',
             'tanggal_kirim_pesanan_pembelian' => 'required|date',
             'nama_pimpinan_supplier' => 'required|string|max:255',
@@ -90,6 +97,7 @@ class SuratPesananPembelianRequest extends FormRequest
             'date' => ':attribute harus berupa tanggal yang valid.',
             'array' => ':attribute harus berupa array.',
             'min' => ':attribute minimal memiliki :min item.',
+            'unique' => ':attribute sudah digunakan, silakan gunakan nomor yang lain.',
         ];
     }
 }

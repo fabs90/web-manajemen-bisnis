@@ -36,13 +36,12 @@
                     <th>Pembelian Tunai</th>
                     <th>Pot. Pembelian</th>
                     <th>Lain-lain</th>
-                    <th>Keluar dari Kas Kecil</th>
                     <th>Keluar dari Kas Besar</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($allDatas as $data)
+                @foreach ($dataPengeluaran as $data)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
@@ -53,7 +52,6 @@
                         <td>
                             Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}
                         </td>
-                        <td>Rp {{ number_format($data->keluar_kas_kecil ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->jumlah_pengeluaran ?? 0, 0, ',', '.') }}</td>
                         <td>
                             @if ($data->hutang->isNotEmpty())
@@ -89,9 +87,53 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="7" class="text-center"><b>Total Pengeluaran</b></td>
-                    <td><b>Rp {{ number_format($totalKeluarKasKecil ?? 0, 0, ',', '.') }}</b></td>
+                    <td colspan="7" class="text-center"><b>Total Pengeluaran Kas Besar</b></td>
                     <td><b>Rp {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</b></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    {{-- ===================== TABEL Kas Kecil ===================== --}}
+    <h5 class="mt-5 mb-3">Semua Pengeluaran Kas Kecil</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle kas-kecil-table">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tanggal</th>
+                    <th>Uraian</th>
+                    <th>Jumlah Pengeluaran Kas Kecil</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($dataKasKecil as $data)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
+                        <td>{{ $data->uraian }}</td>
+                        <td>Rp {{ number_format($data->keluar_kas_kecil ?? 0, 0, ',', '.') }}</td>
+                        <td>
+                            <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}" class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
+                            <form action="{{ route('keuangan.pengeluaran.destroy', ['id' => $data->id]) }}" method="POST" class="d-inline delete-btn">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-center"><b>Total Pengeluaran Kas Kecil</b></td>
+                    <td><b>Rp {{ number_format($totalKeluarKasKecil ?? 0, 0, ',', '.') }}</b></td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -172,6 +214,18 @@
                 info: false,
                 language: {
                     emptyTable: "Tidak ada data untuk ditampilkan",
+                    search: "Cari:"
+                }
+            });
+
+            $('.kas-kecil-table').DataTable({
+                paging: true,
+                pageLength: 10,
+                ordering: true,
+                responsive: true,
+                info: false,
+                language: {
+                    emptyTable: "Tidak ada data kas kecil untuk ditampilkan",
                     search: "Cari:"
                 }
             });

@@ -333,8 +333,10 @@ class ManajemenRapatService
                 ],
             )->setPaper('a4', 'portrait');
 
+            $tanggal = str_replace(['/', '\\'], '_', $rapat->tanggal);
+
             return $pdf->download(
-                'Notulen Rapat - '.$rapat->tanggal.'.pdf',
+                'Notulen Rapat - '.$tanggal.'.pdf',
             );
         } catch (Exception $e) {
             // Simpan error ke log Laravel
@@ -374,8 +376,10 @@ class ManajemenRapatService
                 ])
                 ->setPaper('A4');
 
+            $nomorSurat = str_replace(['/', '\\'], '_', $result->nomor_surat ?? $result->id);
+
             return $pdf->download(
-                'Surat Keputusan Rapat-'.($result->nomor_surat ?? $result->id).'.pdf',
+                'Surat Keputusan Rapat-'.$nomorSurat.'.pdf',
             );
         } catch (\Exception $e) {
             Log::error('Hasil Keputusan PDF Generation Error: '.$e->getMessage());
