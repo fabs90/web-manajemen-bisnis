@@ -111,6 +111,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Tanda Tangan Pelanggan (Opsional)</label>
                             <input type="file" accept="image/*" name="ttd_pelanggan" class="form-control">
+                            <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                         </div>
                     </div>
 

@@ -73,11 +73,6 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8" class="text-end pe-3">Bunga Bank</td>
-                    <td>Rp {{ number_format($bunga_bank->bunga_bank ?? 0, 0, ',', '.') }}</td>
-                    <td></td>
-                </tr>
-                <tr>
                     <td colspan="8" class="text-end pe-3">Total Kas Masuk</td>
                     <td><b>Rp {{ number_format($totalPendapatan ?? 0, 0, ',', '.') }}</b></td>
                     <td></td>
@@ -86,7 +81,54 @@
         </table>
     </div>
 
-    <h5 class="mb-3">Semua Data Piutang</h5>
+    {{-- ===================== TABEL Kas Kecil ===================== --}}
+    <h5 class="mt-2 mb-3">Semua Penerimaan Kas Kecil</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle kas-kecil-table">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tanggal</th>
+                    <th>Uraian</th>
+                    <th>Jumlah Penerimaan Kas Kecil</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($dataKasKecil as $data)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
+                        <td>{{ $data->uraian }}</td>
+                        <td>Rp {{ number_format($data->masuk_kas_kecil ?? 0, 0, ',', '.') }}</td>
+                        <td>
+                            <a href="{{ route('keuangan.pendapatan.show', $data->id) }}"
+                                class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Detail
+                            </a>
+                            <form action="{{ route('keuangan.pendapatan.destroy', $data->id) }}" method="POST"
+                                class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-danger btn-sm delete-btn">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-center"><b>Total Penerimaan Kas Kecil</b></td>
+                    <td><b>Rp {{ number_format($totalMasukKasKecil ?? 0, 0, ',', '.') }}</b></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <h5 class="mt-5 mb-3">Semua Data Piutang</h5>
     <div class="table-responsive">
         <table class="table table-sm" id="dataPiutangTable">
             <thead>
@@ -152,6 +194,18 @@
                 info: false,
                 language: {
                     emptyTable: "Tidak ada data untuk ditampilkan",
+                    search: "Cari:"
+                }
+            });
+
+            $('.kas-kecil-table').DataTable({
+                paging: true,
+                pageLength: 10,
+                ordering: true,
+                responsive: true,
+                info: false,
+                language: {
+                    emptyTable: "Tidak ada data kas kecil untuk ditampilkan",
                     search: "Cari:"
                 }
             });

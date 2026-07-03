@@ -94,6 +94,7 @@
                                         @endif
                                         <input type="file" name="peserta_ttd[]" class="form-control">
                                         <input type="hidden" name="peserta_ttd_old[]" value="{{ $p->tanda_tangan }}">
+                                        <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                                     </td>
                                     <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                                 </tr>
@@ -201,7 +202,10 @@
         <td>#</td>
         <td><input name="peserta_nama[]" class="form-control"></td>
         <td><input name="peserta_jabatan[]" class="form-control"></td>
-        <td><input type="file" name="peserta_ttd[]" class="form-control"></td>
+        <td>
+            <input type="file" name="peserta_ttd[]" class="form-control">
+            <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
+        </td>
         <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
     </tr>`);
         };

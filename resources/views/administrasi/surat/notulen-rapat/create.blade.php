@@ -66,6 +66,7 @@
                                         </p>
                                     </div>
                                 </div>
+                                <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                             </td>
                         </tr>
                         <tr>
@@ -93,6 +94,7 @@
                                         </p>
                                     </div>
                                 </div>
+                                <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                             </td>
                         </tr>
                     </table>
@@ -116,7 +118,10 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td><input type="text" name="peserta_nama[]" class="form-control" value="{{ $nama }}" required></td>
                                     <td><input type="text" name="peserta_jabatan[]" class="form-control" value="{{ old('peserta_jabatan.'.$index) }}" required></td>
-                                    <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*"></td>
+                                    <td>
+                                        <input type="file" name="peserta_ttd[]" class="form-control" accept="image/*">
+                                        <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
+                                    </td>
                                     <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                                 </tr>
                                 @endforeach
@@ -125,7 +130,10 @@
                                     <td>1</td>
                                     <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
                                     <td><input type="text" name="peserta_jabatan[]" class="form-control" required></td>
-                                    <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*"></td>
+                                    <td>
+                                        <input type="file" name="peserta_ttd[]" class="form-control" accept="image/*">
+                                        <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
+                                    </td>
                                     <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                                 </tr>
                             @endif
@@ -333,7 +341,10 @@
             <td>${rowCount}</td>
             <td><input type="text" name="peserta_nama[]" class="form-control" required></td>
             <td><input type="text" name="peserta_jabatan[]" class="form-control" required></td>
-            <td><input type="file" name="peserta_ttd[]" class="form-control" accept="image/*"></td>
+            <td>
+                <input type="file" name="peserta_ttd[]" class="form-control" accept="image/*">
+                <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
+            </td>
             <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
         </tr>`;
             table.insertAdjacentHTML('beforeend', row);

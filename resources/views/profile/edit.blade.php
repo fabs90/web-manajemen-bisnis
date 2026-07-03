@@ -90,7 +90,8 @@
                         @endif
 
                         <input id="ttd_pemimpin" type="file" name="ttd_pemimpin" class="form-control">
-                        <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
+                        <small class="text-muted d-block">Kosongkan jika tidak ingin mengubah gambar.</small>
+                        <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                     </div>
 
                 </div>

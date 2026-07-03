@@ -448,11 +448,13 @@
                             <label>Tanda Tangan Disiapkan <span class="text-danger">*</span></label>
                             <input type="file" name="tanda_tangan_disiapkan" class="form-control"
                                 value="{{ old('tanda_tangan_disiapkan') }}">
+                            <small class="text-danger">* Tanda tangan yang diupload harus transparan</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Tanda Tangan Disetujui <span class="text-danger">*</span></label>
                             <input type="file" name="tanda_tangan_disetujui" class="form-control"
                                 value="{{ old('tanda_tangan_disetujui') }}">
+                            <small class="text-danger">* Tanda tangan yang diupload harus transparan</small>
                         </div>
                     </div>
 

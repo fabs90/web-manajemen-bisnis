@@ -10,8 +10,11 @@ class AdminController extends Controller
     public function index()
     {
         $users = User::all();
+        $totalUsers = User::where('role', '!=', 'superadmin')->count();
+        $verifiedUsers = User::where('role', '!=', 'superadmin')->where('is_verified', true)->count();
+        $unverifiedUsers = User::where('role', '!=', 'superadmin')->where('is_verified', false)->count();
 
-        return view('superadmin.dashboard.superadmin', compact('users'));
+        return view('superadmin.dashboard.superadmin', compact('users', 'totalUsers', 'verifiedUsers', 'unverifiedUsers'));
     }
 
     public function logout(\Illuminate\Http\Request $request)

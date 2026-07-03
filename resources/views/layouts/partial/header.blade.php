@@ -19,6 +19,22 @@
     @stack('styles')
 
     <script src="{{ asset('dist/assets/static/js/initTheme.js') }}"></script>
+    <style>
+        @media (min-width: 1200px) {
+            #sidebar:not(.active) .sidebar-wrapper {
+                left: -300px !important;
+            }
+            #sidebar:not(.active) ~ #main {
+                margin-left: 0 !important;
+            }
+            #main {
+                transition: margin-left 0.3s ease-out;
+            }
+            .sidebar-wrapper {
+                transition: left 0.3s ease-out;
+            }
+        }
+    </style>
 </head>
 
 <body>

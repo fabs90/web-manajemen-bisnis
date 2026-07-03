@@ -181,16 +181,6 @@
                     @enderror
                 </div>
 
-                <!--Bunga bank-->
-                <div class="mb-3">
-                    <label for="bunga_bank" class="form-label">Bunga Bank</label>
-                    <input type="text" name="bunga_bank" id="bunga_bank"
-                        class="form-control rupiah @error('bunga_bank') is-invalid @enderror"
-                        value="{{ old('bunga_bank') }}" placeholder="Bunga Bank (Opsional)">
-                    @error('bunga_bank')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
 
                 <div class="mt-4 text-end">
                     <a href="{{ route('keuangan.pendapatan.list') }}" class="btn btn-secondary">

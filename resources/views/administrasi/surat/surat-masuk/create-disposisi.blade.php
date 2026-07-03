@@ -120,6 +120,7 @@
                         <input type="file" name="file_ttd_pimpinan" class="form-control">
                         <small class="text-muted">Format file: jpg/png,</small>
                         <small class="text-muted">Ukuran file: max 2MB</small>
+                        <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                     </div>
                     @if ($surat->ttd_pimpinan)
                         <div class="mt-3">

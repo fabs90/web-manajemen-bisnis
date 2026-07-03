@@ -173,7 +173,7 @@
 
         <!-- KAS KECIL -->
         <div class="col-md-6">
-            <div class="card text-white shadow-lg h-100" style="background-color: #17a2b8; border:none;">
+            <div class="card text-white shadow-lg kas-kecil-card h-100" style="background-color: #17a2b8; border:none;">
                 <div class="card-body position-relative d-flex flex-column justify-content-between p-4">
                     <div>
                         <h5 class="card-title fw-bold mb-0">
@@ -202,9 +202,9 @@
                             <tr>
                                 <th>Tanggal</th>
                                 <th>Uraian</th>
-                                <th>Debit</th>
-                                <th>Kredit</th>
-                                <th>Sisa Saldo</th>
+                                <th>Penerimaan</th>
+                                <th>Pengeluaran</th>
+                                <th>Saldo Akhir</th>
                             </tr>
                         </thead>
                         <tbody>

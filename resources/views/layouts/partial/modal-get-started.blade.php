@@ -1,5 +1,6 @@
 <!-- Floating Button -->
-<button type="button" class="btn btn-primary rounded-circle shadow fab-btn" data-bs-toggle="modal" data-bs-target="#getStartedModal">
+<button type="button" class="btn btn-primary rounded-circle shadow fab-btn" data-bs-toggle="modal"
+    data-bs-target="#getStartedModal">
     <i class="bi bi-question-lg fs-4 mb-4"></i>
 </button>
 
@@ -12,19 +13,30 @@
                     <i class="bi bi-lightbulb fs-5"></i>
                     <h5 class="modal-title text-white mb-0 mt-1" id="getStartedLabel">Panduan Penggunaan</h5>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <h6 class="fw-bold mb-3">Selamat datang {{ Auth::user()->name ?? 'Pengguna' }}👋</h6>
                 <p>Berikut langkah singkat untuk memulai penggunaan sistem ini:</p>
 
                 <ol class="mb-4">
-                    <li>Buka menu di sidebar untuk mengakses fitur utama seperti <strong>Barang</strong>, <strong>Debitur-Kreditur</strong>, <strong>Pendapatan</strong>, <strong>Pengeluaran</strong>, dan <strong>Neraca</strong>.</li>
-                    <li>Tambahkan terlebih dahulu <a href="{{ route('barang.create') }}"><strong>Data Barang</strong></a> dan <a href="{{ route('debitur-kreditur.list') }}"><strong>Kreditur-Debitur</strong></a>.</li>
-                    <li>Isi <a href="{{ route('laporan-keuangan.neraca-awal.create') }}"><strong>Hutang/Neraca Awal</strong></a> pada menu <strong>Aset Hutang</strong>.</li>
-                    <li>Masukan data pendapatan penjualan melalui menu <a href="{{ route('keuangan.pendapatan.create') }}"><strong>Pendapatan</strong></a>.</li>
-                    <li>Masukan data pengeluaran pembelian melalui menu <a href="{{ route('keuangan.pengeluaran.create') }}"><strong>Pengeluaran</strong></a>.</li>
-                    <li>Untuk melihat hasil <a href="{{ route('laporan-keuangan.rugi-laba') }}"><strong>Rugi Laba</strong></a> dan <a href="{{ route('laporan-keuangan.neraca-akhir') }}"><strong>Neraca Akhir</strong></a> dapat diakses melalui menu <strong>Transaksi Bisnis</strong>.</li>
+                    <li>Buka menu di sidebar untuk mengakses fitur utama seperti <strong>Barang</strong>,
+                        <strong>Debitur-Kreditur</strong>, <strong>Pendapatan</strong>, <strong>Pengeluaran</strong>,
+                        dan <strong>Neraca</strong>.</li>
+                    <li>Tambahkan terlebih dahulu <a href="{{ route('barang.create') }}"><strong>Data
+                                Barang</strong></a> dan <a
+                            href="{{ route('debitur-kreditur.list') }}"><strong>Kreditur-Debitur</strong></a>.</li>
+                    <li>Isi <a href="{{ route('laporan-keuangan.neraca-awal.create') }}"><strong>Hutang/Neraca
+                                Awal</strong></a> pada menu <strong>Aset Hutang</strong>.</li>
+                    <li>Masukan data pendapatan penjualan melalui menu <a
+                            href="{{ route('keuangan.pendapatan.create') }}"><strong>Pendapatan</strong></a>.</li>
+                    <li>Masukan data pengeluaran pembelian melalui menu <a
+                            href="{{ route('keuangan.pengeluaran.create') }}"><strong>Pengeluaran</strong></a>.</li>
+                    <li>Untuk melihat hasil <a href="{{ route('laporan-keuangan.rugi-laba') }}"><strong>Rugi
+                                Laba</strong></a> dan <a
+                            href="{{ route('laporan-keuangan.neraca-akhir') }}"><strong>Neraca Akhir</strong></a> dapat
+                        diakses melalui menu <strong>Transaksi Bisnis</strong>.</li>
                     <li>Setiap perubahan otomatis tercatat di Buku Besar dan laporan keuangan.</li>
                 </ol>
 

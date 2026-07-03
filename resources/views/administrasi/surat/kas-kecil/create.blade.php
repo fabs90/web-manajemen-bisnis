@@ -146,6 +146,7 @@
 
                     <input type="file" name="ttd_nama_pemohon"
                         class="form-control mt-2 @error('ttd_nama_pemohon') is-invalid @enderror" accept="image/*">
+                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus transparan</small>
                     @error('ttd_nama_pemohon')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
@@ -166,6 +167,7 @@
                     <input type="file" name="ttd_nama_atasan_langsung"
                         class="form-control mt-2 @error('ttd_nama_atasan_langsung') is-invalid @enderror"
                         accept="image/*">
+                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus transparan</small>
                     @error('ttd_nama_atasan_langsung')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
@@ -186,6 +188,7 @@
                     <input type="file" name="ttd_nama_bagian_keuangan"
                         class="form-control mt-2 @error('ttd_nama_bagian_keuangan') is-invalid @enderror"
                         accept="image/*">
+                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus transparan</small>
                     @error('ttd_nama_bagian_keuangan')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror

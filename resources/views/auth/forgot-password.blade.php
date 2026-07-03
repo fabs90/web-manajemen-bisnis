@@ -165,6 +165,11 @@
                 transform: translateY(0);
             }
         }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .opacity-25 { opacity: 0.25; }
+        .opacity-75 { opacity: 0.75; }
     </style>
 </head>
 
@@ -194,18 +199,35 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('password.email') }}">
+            <form method="POST" action="{{ route('password.email') }}" onsubmit="showLoading()">
                 @csrf
                 <div class="form-group">
                     <label for="email">Alamat Email</label>
                     <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" required autofocus placeholder="Masukkan email Anda">
                 </div>
 
-                <button type="submit" class="btn-primary">Kirim Tautan Reset</button>
+                <button type="submit" class="btn-primary" id="btn-submit">
+                    <span id="btn-text">Kirim Tautan Reset</span>
+                    <svg id="btn-spinner" style="display: none; width: 20px; height: 20px; margin-left: 8px; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
                 <a href="{{ route('login') }}" class="btn-secondary">Kembali ke Login</a>
             </form>
         </div>
     </div>
+    
+    <script>
+        function showLoading() {
+            var btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+            document.getElementById('btn-text').innerText = 'Memproses...';
+            document.getElementById('btn-spinner').style.display = 'block';
+        }
+    </script>
 </body>
 
 </html>

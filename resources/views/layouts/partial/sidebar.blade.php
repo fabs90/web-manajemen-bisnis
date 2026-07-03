@@ -1,11 +1,11 @@
 <div id="sidebar">
     <div class="sidebar-wrapper active">
         <div class="sidebar-header position-relative">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="logo">
-                    <a href="{{ route('dashboard') }}"><p class="h4 fw-bold mb-0">TRANSDIGITAL</p></a>
+                    <a href="{{ route('dashboard') }}"><p class="h5 fw-bold mb-0 text-primary">TRANSDIGITAL</p></a>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-3">
                     <div class="theme-toggle d-flex gap-2 align-items-center mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 21 21">
                             <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
@@ -47,27 +47,27 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <li class="sidebar-item {{ Request::is('administrasi*') ? 'active' : '' }}">
+                <li class="sidebar-item {{ Request::is('dashboard/administrasi*') ? 'active' : '' }}">
                     <a href="{{ route('administrasi.surat.index') }}" class="sidebar-link">
                         <i class="bi bi-stack"></i>
                         <span>Administrasi</span>
                     </a>
                 </li>
 
-                <li class="sidebar-item has-sub {{ Request::is('laporan-keuangan*') ? 'active' : '' }}">
+                <li class="sidebar-item has-sub {{ Request::is('dashboard/laporan-keuangan*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-file-bar-graph"></i>
                         <span>Laporan Keuangan</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('laporan-keuangan/neraca-awal*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-awal*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.neraca-awal.index') }}" class="submenu-link">Neraca
                                 Awal</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('laporan-keuangan/rugi-laba*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/laporan-keuangan/rugi-laba*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.rugi-laba') }}" class="submenu-link">Rugi Laba</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('laporan-keuangan/neraca-akhir*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-akhir*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.neraca-akhir') }}" class="submenu-link">Neraca
                                 Akhir</a>
                         </li>
@@ -75,36 +75,36 @@
                 </li>
 
                 <li
-                    class="sidebar-item has-sub {{ Request::is('transaksi-bisnis*') || Request::is('keuangan*') ? 'active' : '' }}">
+                    class="sidebar-item has-sub {{ Request::is('dashboard/transaksi-bisnis*') || Request::is('dashboard/keuangan*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-collection-fill"></i>
                         <span>Transaksi Bisnis</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('keuangan/kasir*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/keuangan/kasir*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.kasir.index') }}" class="submenu-link">Kasir</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('keuangan/pendapatan*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/keuangan/pendapatan*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.pendapatan.list') }}"
                                 class="submenu-link">Penerimaan/Penjualan</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('keuangan/pengeluaran*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/keuangan/pengeluaran*') || Request::is('dashboard/keuangan/pengeluaran-kas-kecil*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.pengeluaran.list') }}"
                                 class="submenu-link">Pengeluaran/Pembelian</a>
                         </li>
                     </ul>
                 </li>
 
-                <li class="sidebar-item has-sub {{ Request::is('barang*') ? 'active' : '' }}">
+                <li class="sidebar-item has-sub {{ Request::is('dashboard/barang*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-archive-fill"></i>
                         <span>Barang</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('barang') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/barang') || Request::is('dashboard/barang/list*') || Request::is('dashboard/barang/create*') || Request::is('dashboard/barang/detail*') ? 'active' : '' }}">
                             <a href="{{ route('barang.index') }}" class="submenu-link">List Barang</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('barang/kartu-gudang*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/barang/kartu-gudang*') ? 'active' : '' }}">
                             <a href="{{ route('kartu-gudang.index') }}" class="submenu-link">Atur Kartu Gudang</a>
                         </li>
                     </ul>
@@ -115,19 +115,19 @@
         <span>Debitur & Kreditur</span>
     </a>
 </li>
-                <li class="sidebar-item has-sub {{ Request::is('retur*') ? 'active' : '' }}">
+                <li class="sidebar-item has-sub {{ Request::is('dashboard/retur*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-truck"></i>
                         <span>Retur</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('retur/list') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/retur') ? 'active' : '' }}">
                             <a href="{{ route('retur.list') }}" class="submenu-link">List Retur</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('retur/penjualan*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/retur/*penjualan*') ? 'active' : '' }}">
                             <a href="{{ route('retur.create-penjualan') }}" class="submenu-link">Retur Penjualan</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('retur/pembelian*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ Request::is('dashboard/retur/*pembelian*') ? 'active' : '' }}">
                             <a href="{{ route('retur.create-pembelian') }}" class="submenu-link">Retur Pembelian</a>
                         </li>
                     </ul>

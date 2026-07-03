@@ -122,6 +122,7 @@
                             <label class="form-label fw-bold small">Tanda Tangan Pengirim (Opsional)</label>
                             <input type="file" name="ttd_pengirim"
                                 class="form-control @error('ttd_pengirim') is-invalid @enderror" accept="image/*">
+                            <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                             @if($dataSpb->ttd_pengirim)
                                 <div class="mt-2 mb-1">
                                     <img src="{{ Storage::url($dataSpb->ttd_pengirim) }}" alt="TTD Pengirim" class="img-thumbnail" style="max-height: 100px;">
@@ -230,6 +231,7 @@
                                     <label class="form-label fw-bold small">Tanda Tangan Penerima (Opsional)</label>
                                     <input type="file" name="ttd_penerima" id="ttd_penerima"
                                         class="form-control @error('ttd_penerima') is-invalid @enderror" accept="image/*">
+                                    <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                                     @if($dataSpb->ttd_penerima)
                                         <div class="mt-2 mb-1">
                                             <img src="{{ Storage::url($dataSpb->ttd_penerima) }}" alt="TTD Penerima" class="img-thumbnail" style="max-height: 100px;">

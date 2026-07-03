@@ -155,6 +155,7 @@
                             <label class="form-label fw-bold small">Tanda Tangan Pengirim Brang</label>
                             <input type="file" name="ttd_pengirim"
                                 class="form-control @error('ttd_pengirim') is-invalid @enderror" accept="image/*">
+                            <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                             @error('ttd_pengirim')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
@@ -230,6 +231,7 @@
                                     <label class="form-label fw-bold small">Tanda Tangan Penerima</label>
                                     <input type="file" name="ttd_penerima" id="ttd_penerima"
                                         class="form-control @error('ttd_penerima') is-invalid @enderror" accept="image/*">
+                                    <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
                                     @error('ttd_penerima')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror

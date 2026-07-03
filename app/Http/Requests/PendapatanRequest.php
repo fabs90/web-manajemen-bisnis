@@ -47,9 +47,7 @@ class PendapatanRequest extends FormRequest
 
         $this->merge([
             'jumlah' => $this->filled('jumlah') ? $clean($this->jumlah) : null,
-            'bunga_bank' => $this->filled('bunga_bank')
-                ? $clean($this->bunga_bank)
-                : null,
+
             'biaya_lain' => $this->filled('biaya_lain')
                 ? $clean($this->biaya_lain)
                 : null,
@@ -90,7 +88,7 @@ class PendapatanRequest extends FormRequest
             // -------------------------------------------------
             // BIAYA TAMBAHAN LAINNYA
             // -------------------------------------------------
-            'bunga_bank' => ['nullable', 'integer', 'min:0'],
+
             'biaya_lain' => ['nullable', 'integer', 'min:0'],
 
             // -------------------------------------------------

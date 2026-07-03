@@ -123,10 +123,34 @@ class PendapatanController extends Controller
             });
         }
 
-        $totalPendapatan = $allDatas->sum('uang_diterima');
-        $bunga_bank = (object) ['bunga_bank' => 0];
+        $kasKecilId = $accounts->has('1102') ? $accounts['1102']->id : null;
+        $dataKasKecil = collect();
+        if ($kasKecilId) {
+            $kasKecilEntriesRaw = JournalEntry::where('user_id', $userId)
+                ->where('transaction_type', 'kas_kecil')
+                ->whereHas('items', function ($q) use ($kasKecilId) {
+                    $q->where('account_id', $kasKecilId)->where('debit', '>', 0);
+                })
+                ->with(['items.account'])
+                ->latest()
+                ->get();
 
-        return view('keuangan.pendapatan.list', compact('allDatas', 'dataPiutang', 'totalPendapatan', 'bunga_bank'));
+            $dataKasKecil = $kasKecilEntriesRaw->map(function ($entry) use ($kasKecilId) {
+                $masukKasKecil = $entry->items->where('account_id', $kasKecilId)->sum('debit');
+                return (object) [
+                    'id' => $entry->id,
+                    'tanggal' => $entry->date ?? $entry->created_at,
+                    'uraian' => $entry->description,
+                    'masuk_kas_kecil' => $masukKasKecil,
+                ];
+            });
+        }
+        $totalMasukKasKecil = $dataKasKecil->sum('masuk_kas_kecil');
+
+        $totalPendapatan = $allDatas->sum('uang_diterima');
+        $totalPendapatan = $allDatas->sum('uang_diterima');
+
+        return view('keuangan.pendapatan.list', compact('allDatas', 'dataPiutang', 'totalPendapatan', 'dataKasKecil', 'totalMasukKasKecil'));
     }
 
     public function create()
