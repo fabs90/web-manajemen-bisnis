@@ -11,7 +11,8 @@
                     </h6>
                     <small class="text-muted">
                         Harga Beli Unit: Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} |
-                        Harga Jual Unit: Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
+                        Harga Jual Unit: Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }} |
+                        Jumlah Unit Per-Kemasan: {{ $item->jumlah_unit_per_kemasan }}
                     </small>
                 </div>
                 <div>
@@ -79,14 +80,11 @@
         $(document).ready(function() {
             $('.kartu-gudang-table').each(function() {
                 $(this).DataTable({
-                    searching: false,
-                    paging: false,
-                    info: false,
-                    ordering: false,
-                    responsive: false,
-                    order: [
-                        [0, 'desc']
-                    ],
+                    searching: true,
+                    paging: true,
+                    info: true,
+                    ordering: true,
+                    responsive: true,
                     columnDefs: [{
                         targets: "_all",
                         defaultContent: ""

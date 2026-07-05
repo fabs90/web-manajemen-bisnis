@@ -78,7 +78,11 @@ class KeuanganService
         $items = JournalItem::where('user_id', $userId)
             ->whereIn('account_id', $revenueAccounts)
             ->whereHas('journalEntry', function ($q) use ($dateRange) {
-                $q->whereBetween('date', $dateRange);
+                $q->whereBetween('date', $dateRange)
+                  ->where(function ($subQ) {
+                      $subQ->where('transaction_type', '!=', 'pendapatan_lain')
+                           ->orWhereNull('transaction_type');
+                  });
             })
             ->get();
 
@@ -151,7 +155,17 @@ class KeuanganService
         // Normal balance for expense is Debit
         $biayaOperasional = $items->sum('debit') - $items->sum('credit');
 
-        $pendapatanLain = 0;
+        // Get pendapatan_lain from revenue accounts
+        $pendapatanLainItems = JournalItem::where('user_id', $userId)
+            ->whereIn('account_id', Account::where('user_id', $userId)->where('category', 'revenue')->pluck('id'))
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange)
+                  ->where('transaction_type', 'pendapatan_lain');
+            })
+            ->get();
+        
+        $pendapatanLain = $pendapatanLainItems->sum('credit') - $pendapatanLainItems->sum('debit');
+
         $biayaAdministrasiBank = 0; // If specific account exists, use it.
 
         return compact(

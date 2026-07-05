@@ -77,12 +77,13 @@ class PageController extends Controller
 
             return (object) [
                 'created_at' => $item->journalEntry->date,
+                'time' => $item->journalEntry->created_at ? $item->journalEntry->created_at->format('H:i') : '-',
                 'uraian' => $item->journalEntry->description,
                 'debit' => $item->debit,
                 'kredit' => $item->credit,
                 'saldo' => $runningBalance,
             ];
-        });
+        })->reverse();
 
         // Total Piutang (Account code: 1104)
         $piutangAccount = Account::where('user_id', $userId)->where('code', '1104')->first();

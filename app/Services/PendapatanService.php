@@ -16,13 +16,15 @@ class PendapatanService
         $random = strtoupper(Str::random(6));
         $referenceNumber = "{$prefix}-{$date}-{$random}";
 
+        $transactionType = $request->jenis_pendapatan === 'lain_lain' ? 'pendapatan_lain' : 'pendapatan_tunai';
+
         // 1. Create Journal Entry
         $entry = JournalEntry::create([
             'user_id' => $userId,
             'reference_number' => $referenceNumber,
             'date' => $request->tanggal,
             'description' => $request->uraian_pendapatan,
-            'transaction_type' => 'pendapatan_tunai',
+            'transaction_type' => $transactionType,
         ]);
 
         $totalAmount = $request->jumlah + ($request->biaya_lain ?? 0);
@@ -30,6 +32,7 @@ class PendapatanService
         // 2. Handle Jenis Pendapatan
         switch ($request->jenis_pendapatan) {
             case 'tunai':
+            case 'lain_lain':
                 $this->storeTunai($request, $userId, $accounts, $entry, $totalAmount);
                 break;
             case 'piutang':

@@ -211,7 +211,11 @@
                             @foreach ($detailKas as $kas)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($kas->created_at)->isoFormat('dddd, D MMMM YYYY') }}</td>
-                                    <td>{{ $kas->uraian }}</td>
+                                    <td>
+                                        {{ $kas->uraian }}<br>
+                                        <small class="text-muted"><i class="bi bi-clock"></i> Pukul
+                                            {{ $kas->time ?? '-' }}</small>
+                                    </td>
                                     <td>{{ number_format($kas->debit, 0, ',', '.') }}</td>
                                     <td>{{ number_format($kas->kredit, 0, ',', '.') }}</td>
                                     <td>{{ number_format($kas->saldo, 0, ',', '.') }}</td>

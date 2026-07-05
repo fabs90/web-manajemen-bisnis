@@ -18,7 +18,8 @@ class PendapatanController extends Controller
 {
     public function __construct(
         protected PendapatanService $pendapatanService
-    ) {}
+    ) {
+    }
 
     public function index()
     {
@@ -27,7 +28,7 @@ class PendapatanController extends Controller
         // Ambil semua akun untuk mapping kode -> id
         $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
 
-        if (! $accounts->has('1101') || ! $accounts->has('4101')) {
+        if (!$accounts->has('1101') || !$accounts->has('4101')) {
             return redirect()->route('dashboard')->with('error', 'Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) belum diatur.');
         }
 
@@ -42,11 +43,11 @@ class PendapatanController extends Controller
                 $q->whereIn('account_id', [$kasId, $pendapatanId]);
             })
             ->whereNotIn('transaction_type', [
-                'neraca_awal', 
-                'membeli_barang', 
-                'lain_lain', 
-                'membayar_hutang', 
-                'kas_kecil', 
+                'neraca_awal',
+                'membeli_barang',
+                'lain_lain',
+                'membayar_hutang',
+                'kas_kecil',
                 'agenda_perjalanan',
                 'pemesanan-barang'
             ])
@@ -58,8 +59,10 @@ class PendapatanController extends Controller
             $uangDiterima = $entry->items->where('account_id', $kasId)->sum('debit');
             $totalPenjualan = $entry->items->where('account_id', $pendapatanId)->sum('credit');
 
-            $penjualanTunai = $uangDiterima > 0 ? $totalPenjualan : 0;
-            $penjualanKredit = $uangDiterima == 0 ? $totalPenjualan : 0;
+            $isPendapatanLain = $entry->transaction_type === 'pendapatan_lain';
+
+            $penjualanTunai = (!$isPendapatanLain && $uangDiterima > 0) ? $totalPenjualan : 0;
+            $penjualanKredit = (!$isPendapatanLain && $uangDiterima == 0) ? $totalPenjualan : 0;
 
             $piutangDagang = $piutangId ? ($entry->items->where('account_id', $piutangId)->sum('debit') + $entry->items->where('account_id', $piutangId)->sum('credit')) : 0;
 
@@ -71,7 +74,7 @@ class PendapatanController extends Controller
                 'penjualan_tunai' => $penjualanTunai,
                 'penjualan_kredit' => $penjualanKredit,
                 'potongan_pembelian' => 0, // Placeholder
-                'lain_lain' => 0,
+                'lain_lain' => $isPendapatanLain ? $totalPenjualan : 0,
                 'uang_diterima' => $uangDiterima,
             ];
         });
@@ -215,9 +218,9 @@ class PendapatanController extends Controller
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Penerimaan berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan pendapatan: '.$e->getMessage());
+            Log::error('Gagal menyimpan pendapatan: ' . $e->getMessage());
 
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: '.$e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
     }
 
@@ -239,9 +242,9 @@ class PendapatanController extends Controller
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus pendapatan: '.$e->getMessage());
+            Log::error('Gagal menghapus pendapatan: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Gagal menghapus: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
         }
     }
 
@@ -285,7 +288,7 @@ class PendapatanController extends Controller
                 'reference_number' => $referenceNumber,
                 'date' => $request->tanggal,
                 'description' => $request->uraian_pendapatan,
-                'transaction_type' => 'pendapatan_tunai',
+                'transaction_type' => 'pendapatan_lain',
             ]);
 
             // Debit: Kas Utama (1101)
@@ -313,9 +316,9 @@ class PendapatanController extends Controller
                 ->with('success', 'Data pendapatan lain berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan pendapatan lain: '.$e->getMessage());
+            Log::error('Gagal menyimpan pendapatan lain: ' . $e->getMessage());
 
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: '.$e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
     }
 
@@ -350,11 +353,11 @@ class PendapatanController extends Controller
                 );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus piutang: '.$e->getMessage());
+            Log::error('Gagal menghapus piutang: ' . $e->getMessage());
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus: '.$e->getMessage());
+                ->with('error', 'Gagal menghapus: ' . $e->getMessage());
         }
     }
 }
