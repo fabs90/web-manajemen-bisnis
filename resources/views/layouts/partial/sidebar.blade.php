@@ -86,11 +86,11 @@
                         </li>
                         <li class="submenu-item {{ Request::is('dashboard/keuangan/pendapatan*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.pendapatan.list') }}"
-                                class="submenu-link">Penerimaan/Penjualan</a>
+                                class="submenu-link">Penerimaan Kas Perusahaan/Penjualan</a>
                         </li>
                         <li class="submenu-item {{ Request::is('dashboard/keuangan/pengeluaran*') || Request::is('dashboard/keuangan/pengeluaran-kas-kecil*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.pengeluaran.list') }}"
-                                class="submenu-link">Pengeluaran/Pembelian</a>
+                                class="submenu-link">Pengeluaran Kas Perusahaan/Pembelian</a>
                         </li>
                     </ul>
                 </li>

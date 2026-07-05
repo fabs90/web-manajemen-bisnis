@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Detail Penerimaan | TRANSDIGITAL')
+@section('page-title', 'Detail Penerimaan Kas Perusahaan | TRANSDIGITAL')
 
-@section('section-heading', 'Detail Penerimaan')
+@section('section-heading', 'Detail Penerimaan Kas Perusahaan')
 @section('section-row')
 
 <div class="card shadow-sm mb-4">
@@ -35,8 +35,20 @@
                     @php
                         $totalDebit = 0;
                         $totalCredit = 0;
+                        
+                        $groupedItems = collect($entry->items)->groupBy(function($item) {
+                            return $item->account_id . '-' . $item->sub_ledger_id;
+                        })->map(function($items) {
+                            $first = $items->first();
+                            return (object) [
+                                'account' => $first->account,
+                                'subLedger' => $first->subLedger,
+                                'debit' => $items->sum('debit'),
+                                'credit' => $items->sum('credit'),
+                            ];
+                        })->values();
                     @endphp
-                    @foreach($entry->items as $item)
+                    @foreach($groupedItems as $item)
                         @php
                             $totalDebit += $item->debit;
                             $totalCredit += $item->credit;
@@ -59,6 +71,32 @@
                 </tfoot>
             </table>
         </div>
+        
+        @if($entry->kartuGudang->count() > 0)
+        <h6 class="mt-4 fw-bold">Detail Barang Terjual</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kode Barang</th>
+                        <th>Nama Barang</th>
+                        <th class="text-center">Jumlah Dikeluarkan</th>
+                        <th>Uraian Kartu Gudang</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($entry->kartuGudang as $kg)
+                    <tr>
+                        <td>{{ $kg->barang->kode_barang ?? '-' }}</td>
+                        <td>{{ $kg->barang->nama ?? 'Barang Dihapus' }}</td>
+                        <td class="text-center">{{ $kg->dikeluarkan }} pcs</td>
+                        <td>{{ $kg->uraian }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
         
         <div class="mt-3">
             <a href="{{ route('keuangan.pendapatan.list') }}" class="btn btn-secondary">

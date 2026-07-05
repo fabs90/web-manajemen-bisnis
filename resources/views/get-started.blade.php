@@ -56,7 +56,7 @@
                 </li>
                 <li>
                     Catat transaksi pengeluaran pembelian pada menu
-                    <a href="{{ url('/keuangan/pengeluaran/create') }}"><strong>Pengeluaran</strong></a>.
+                    <a href="{{ url('/keuangan/pengeluaran/create') }}"><strong>Pengeluaran Kas Perusahaan</strong></a>.
                 </li>
                 <li>
                     Lihat laporan

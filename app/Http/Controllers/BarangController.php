@@ -178,9 +178,9 @@ class BarangController extends Controller
                 $diterima -
                 $dikeluarkan;
 
-            // Hitung saldo per kemasan secara otomatis (pembulatan ke bawah)
+            // Hitung saldo per kemasan secara otomatis (pembulatan ke atas)
             $saldoPerKemasanBaru = $barang->jumlah_unit_per_kemasan > 0
-                ? floor($saldoPersatuanBaru / $barang->jumlah_unit_per_kemasan)
+                ? ceil($saldoPersatuanBaru / $barang->jumlah_unit_per_kemasan)
                 : 0;
 
             $data = KartuGudang::create([

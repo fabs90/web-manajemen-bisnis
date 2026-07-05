@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\KasirRequest;
 use App\Models\Account;
 use App\Models\Barang;
 use App\Models\JenisPembayaran;
@@ -9,7 +10,6 @@ use App\Models\JournalEntry;
 use App\Models\KartuGudang;
 use App\Models\KasirTransactionLog;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -41,7 +41,7 @@ class KasirController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(KasirRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -96,15 +96,18 @@ class KasirController extends Controller
                         continue;
                     }
 
-                    $detailBarang = Barang::where('id', $barangId)->first();
+                    $detailBarang = Barang::where('id', $barangId)
+                        ->where('user_id', auth()->id())
+                        ->first();
                     if (! $detailBarang) {
                         throw new \Exception(
-                            "Barang dengan ID {$barangId} tidak ditemukan.",
+                            "Barang dengan ID {$barangId} tidak valid atau bukan milik Anda.",
                         );
                     }
 
                     $barangItem = KartuGudang::where('barang_id', $barangId)
-                        ->latest()
+                        ->where('user_id', auth()->id())
+                        ->latest('id')
                         ->first();
 
                     if (! $barangItem) {
@@ -113,9 +116,9 @@ class KasirController extends Controller
                         );
                     }
 
-                    $saldoSatuanAwal = $barangItem->saldo_persatuan;
-                    $saldoKemasanAwal = $barangItem->saldo_perkemasan;
-                    $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
+                    $saldoSatuanAwal = $barangItem->saldo_persatuan; // 240
+                    $saldoKemasanAwal = $barangItem->saldo_perkemasan; // 10
+                    $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan; // 24
                     $jumlahDijual = $request->jumlah_barang_dijual[$index] ?? 0;
                     if ($saldoSatuanAwal < $jumlahDijual) {
                         throw new \Exception(
@@ -123,11 +126,11 @@ class KasirController extends Controller
                         );
                     }
 
-                    $saldoPerKemasanBaru =
-                        $saldoKemasanAwal -
-                        ceil($jumlahDijual / $unitPerKemasan);
-
                     $saldoSatuanBaru = $saldoSatuanAwal - $jumlahDijual;
+
+                    $saldoPerKemasanBaru = $unitPerKemasan > 0
+                        ? ceil($saldoSatuanBaru / $unitPerKemasan)
+                        : 0;
 
                     KartuGudang::create([
                         'barang_id' => $barangId,

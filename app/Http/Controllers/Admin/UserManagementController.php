@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AgendaJanjiTemu;
 use App\Models\AgendaPerjalanan;
+use App\Models\Barang;
 use App\Models\Faktur\FakturPenjualan;
 use App\Models\JournalEntry;
+use App\Models\JournalItem;
+use App\Models\KartuGudang;
 use App\Models\KasirTransactionLog;
 use App\Models\KasKecil;
 use App\Models\KasKecilDetail;
@@ -40,7 +43,7 @@ class UserManagementController extends Controller
     {
         $user = DB::table('users')->where('id', $id)->first();
 
-        if (!$user) {
+        if (! $user) {
             abort(404);
         }
 
@@ -66,7 +69,7 @@ class UserManagementController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:superadmin,ukm,nelayan,koperasi',
             'is_verified' => 'required|boolean',
             'nomor_telepon' => 'nullable|string|max:25',
@@ -93,17 +96,19 @@ class UserManagementController extends Controller
         DB::beginTransaction();
         try {
             // Hapus data journal_items terlebih dahulu agar tidak terkena constraint foreign key dari accounts
-            \App\Models\JournalItem::where('user_id', $id)->delete();
-            \App\Models\JournalEntry::where('user_id', $id)->delete();
+            JournalItem::where('user_id', $id)->delete();
+            JournalEntry::where('user_id', $id)->delete();
 
             // Setelah itu baru hapus user (sebagian besar tabel lain sudah diset cascade untuk user_id)
             User::where('id', $id)->delete();
 
             DB::commit();
+
             return redirect()->route('superadmin.user-management.index')->with('success', 'User berhasil dihapus.');
         } catch (\Throwable $th) {
             DB::rollBack();
-            return redirect()->route('superadmin.user-management.index')->with('error', 'Gagal menghapus user: ' . $th->getMessage());
+
+            return redirect()->route('superadmin.user-management.index')->with('error', 'Gagal menghapus user: '.$th->getMessage());
         }
     }
 
@@ -138,9 +143,9 @@ class UserManagementController extends Controller
                 ->where('transaction_type', '!=', 'neraca_awal')
                 ->delete();
 
-            // Note: JournalItem is cascade-deleted.
-            // KartuGudang might have its journal_entry_id set to null due to constraints,
-            // but we leave them or ideally delete operational ones if needed.
+            // Delete KartuGudang and Barang
+            KartuGudang::where('user_id', $id)->delete();
+            Barang::where('user_id', $id)->delete();
 
             DB::commit();
 
@@ -148,7 +153,7 @@ class UserManagementController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Gagal merestore data finansial: ' . $th->getMessage());
+            return redirect()->back()->with('error', 'Gagal merestore data finansial: '.$th->getMessage());
         }
     }
 }

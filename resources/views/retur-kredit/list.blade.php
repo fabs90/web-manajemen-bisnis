@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
 @section('page-title', 'Retur | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'List Retur Penjualan & Pengeluaran')
+@section('section-heading', 'List Retur Penjualan & Pengeluaran Kas Perusahaan')
 @section('section-row')
 
 <div class="card shadow-sm mb-4">

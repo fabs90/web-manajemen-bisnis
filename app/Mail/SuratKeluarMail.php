@@ -33,7 +33,7 @@ class SuratKeluarMail extends Mailable implements ShouldQueue
         ])->output();
 
         $email = $this->from(
-            env('MAIL_FROM_ADDRESS', 'noreply-TRANSDIGITAL@gmail.com'),
+            config('mail.from.address'),
             "TRANSDIGITAL | {$this->user->email}",
         )
             ->subject(

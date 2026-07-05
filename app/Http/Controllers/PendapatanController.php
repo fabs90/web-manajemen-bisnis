@@ -250,7 +250,7 @@ class PendapatanController extends Controller
         $userId = auth()->id();
         $entry = JournalEntry::where('id', $id)
             ->where('user_id', $userId)
-            ->with(['items.account', 'items.subLedger'])
+            ->with(['items.account', 'items.subLedger', 'kartuGudang.barang'])
             ->firstOrFail();
 
         return view('keuangan.pendapatan.show', compact('entry'));

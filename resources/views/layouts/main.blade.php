@@ -202,8 +202,8 @@
                             <tr>
                                 <th>Tanggal</th>
                                 <th>Uraian</th>
-                                <th>Penerimaan</th>
-                                <th>Pengeluaran</th>
+                                <th>Penerimaan Kas Perusahaan</th>
+                                <th>Pengeluaran Kas Perusahaan</th>
                                 <th>Saldo Akhir</th>
                             </tr>
                         </thead>
@@ -240,8 +240,8 @@
                                 <th>No. Referensi</th>
                                 <th>Uraian</th>
                                 <th>Nama Pemohon</th>
-                                <th>Penerimaan</th>
-                                <th>Pengeluaran</th>
+                                <th>Penerimaan Kas Perusahaan</th>
+                                <th>Pengeluaran Kas Perusahaan</th>
                                 <th>Saldo Akhir</th>
                             </tr>
                         </thead>
@@ -272,11 +272,11 @@
         </div>
     </div>
 
-    <!-- Chart Pendapatan vs Pengeluaran -->
+    <!-- Chart Pendapatan vs Pengeluaran Kas Perusahaan -->
     <div class="mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Chart Pendapatan vs Pengeluaran</h5>
+                <h5 class="mb-0">Chart Pendapatan vs Pengeluaran Kas Perusahaan</h5>
                 <div>
                     <select id="filterPeriode" class="form-select form-select-sm w-auto d-inline-block">
                         <option value="1">1 Bulan Terakhir</option>
@@ -498,7 +498,7 @@
                             borderWidth: 1
                         },
                         {
-                            label: 'Pengeluaran',
+                            label: 'Pengeluaran Kas Perusahaan',
                             data: pengeluaran,
                             backgroundColor: 'rgba(255, 99, 132, 0.7)',
                             borderColor: 'rgba(255, 99, 132, 1)',
@@ -511,7 +511,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Pendapatan vs Pengeluaran'
+                            text: 'Pendapatan vs Pengeluaran Kas Perusahaan'
                         },
                         tooltip: {
                             callbacks: {

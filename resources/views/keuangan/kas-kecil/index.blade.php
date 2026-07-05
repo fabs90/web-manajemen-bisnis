@@ -34,7 +34,7 @@
                         <th>Tanggal</th>
                         <th>No.Referensi</th>
                         <th>Uraian</th>
-                        <th>Penerimaan</th>
+                        <th>Penerimaan Kas Perusahaan</th>
                         <th>Saldo Akhir</th>
                         <th style="width: 120px">Aksi</th>
                     </tr>

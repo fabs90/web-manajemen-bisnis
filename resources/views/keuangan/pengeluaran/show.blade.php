@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Detail Pengeluaran | TRANSDIGITAL')
+@section('page-title', 'Detail Pengeluaran Kas Perusahaan | TRANSDIGITAL')
 
-@section('section-heading', 'Detail Pengeluaran')
+@section('section-heading', 'Detail Pengeluaran Kas Perusahaan')
 @section('section-row')
 
 <div class="card shadow-sm mb-4">

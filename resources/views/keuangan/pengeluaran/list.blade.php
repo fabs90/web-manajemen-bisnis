@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Pengeluaran | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Pengeluaran Kas Perusahaan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Pengeluaran')
+@section('section-heading', 'Pengeluaran Kas Perusahaan')
 @section('section-row')
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -19,9 +19,9 @@
     @endif
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Semua Pengeluaran Perusahaan</h5>
+        <h5 class="mb-0">Semua Pengeluaran Kas Perusahaan</h5>
         <a href="{{ route('keuangan.pengeluaran.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Data Pengeluaran
+            <i class="bi bi-plus-circle me-1"></i> Tambah Data Pengeluaran Kas Perusahaan
         </a>
     </div>
 
@@ -66,7 +66,7 @@
                                     </button>
                                 </form>
                             @else
-                                {{-- Pengeluaran biasa --}}
+                                {{-- Pengeluaran Kas Perusahaan biasa --}}
                                 <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}"
                                     class="btn btn-info btn-sm text-white">
                                     <i class="bi bi-eye"></i> Detail
@@ -87,7 +87,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="7" class="text-center"><b>Total Pengeluaran Kas Besar</b></td>
+                    <td colspan="7" class="text-center"><b>Total Pengeluaran Kas Perusahaan Kas Besar</b></td>
                     <td><b>Rp {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</b></td>
                     <td></td>
                 </tr>
@@ -96,7 +96,7 @@
     </div>
 
     {{-- ===================== TABEL Kas Kecil ===================== --}}
-    <h5 class="mt-5 mb-3">Semua Pengeluaran Kas Kecil</h5>
+    <h5 class="mt-5 mb-3">Semua Pengeluaran Kas Perusahaan Kas Kecil</h5>
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover align-middle kas-kecil-table">
             <thead class="table-light">
@@ -104,7 +104,7 @@
                     <th>#</th>
                     <th>Tanggal</th>
                     <th>Uraian</th>
-                    <th>Jumlah Pengeluaran Kas Kecil</th>
+                    <th>Jumlah Pengeluaran Kas Perusahaan Kas Kecil</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -132,7 +132,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="3" class="text-center"><b>Total Pengeluaran Kas Kecil</b></td>
+                    <td colspan="3" class="text-center"><b>Total Pengeluaran Kas Perusahaan Kas Kecil</b></td>
                     <td><b>Rp {{ number_format($totalKeluarKasKecil ?? 0, 0, ',', '.') }}</b></td>
                     <td></td>
                 </tr>

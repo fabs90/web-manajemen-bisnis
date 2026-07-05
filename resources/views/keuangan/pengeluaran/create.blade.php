@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tambah Pengeluaran | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Tambah Pengeluaran Kas Perusahaan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Pengeluaran')
+@section('section-heading', 'Pengeluaran Kas Perusahaan')
 @section('section-row')
     <div class="card shadow-sm">
         <div class="card-body">
@@ -19,9 +19,9 @@
             <form action="{{ route('keuangan.pengeluaran.store') }}" method="POST" id="pengeluaran-form">
                 @csrf
 
-                {{-- Uraian Pengeluaran --}}
+                {{-- Uraian Pengeluaran Kas Perusahaan --}}
                 <div class="mb-3">
-                    <label for="uraian_pengeluaran" class="form-label">Uraian Pengeluaran<span
+                    <label for="uraian_pengeluaran" class="form-label">Uraian Pengeluaran Kas Perusahaan<span
                             class="text-danger">*</span></label>
                     <input type="text" name="uraian_pengeluaran" id="uraian_pengeluaran"
                         class="form-control @error('uraian_pengeluaran') is-invalid @enderror"
@@ -42,9 +42,9 @@
                     @enderror
                 </div>
 
-                {{-- Jenis Pengeluaran --}}
+                {{-- Jenis Pengeluaran Kas Perusahaan --}}
                 <div class="mb-3">
-                    <label class="form-label">Jenis Pengeluaran<span class="text-danger">*</span></label>
+                    <label class="form-label">Jenis Pengeluaran Kas Perusahaan<span class="text-danger">*</span></label>
                     <select name="jenis_pengeluaran" id="jenis_pengeluaran"
                         class="form-select @error('jenis_pengeluaran') is-invalid @enderror" required>
                         <option value="" disabled {{ old('jenis_pengeluaran') ? '' : 'selected' }}>-- Pilih Jenis --
@@ -129,28 +129,28 @@
 
                 {{-- Jumlah Manual --}}
                 <div id="jumlah_manual_container" class="mb-3 d-none">
-                    <label for="jumlah_manual" class="form-label">Isi Jumlah Pengeluaran Disini</label>
+                    <label for="jumlah_manual" class="form-label">Isi Jumlah Pengeluaran Kas Perusahaan Disini</label>
                     <input type="text" id="jumlah_manual" name="jumlah_manual" class="form-control" value="0">
                 </div>
 
-                {{-- Jumlah Pengeluaran Total --}}
+                {{-- Jumlah Pengeluaran Kas Perusahaan Total --}}
                 <div class="mb-3">
-                    <label for="jumlah_pengeluaran" class="form-label">Total Pengeluaran (Otomatis)</label>
+                    <label for="jumlah_pengeluaran" class="form-label">Total Pengeluaran Kas Perusahaan (Otomatis)</label>
                     <input type="number" name="jumlah" id="jumlah_pengeluaran" class="form-control" readonly required>
                 </div>
 
                 {{-- Potongan, Biaya Lain, Bunga --}}
                 <div class="mb-3">
-                    <label for="potongan_pembelian" class="form-label">Potongan (Mengurangi Pengeluaran)</label>
+                    <label for="potongan_pembelian" class="form-label">Potongan (Mengurangi Pengeluaran Kas Perusahaan)</label>
                     <input type="text" name="potongan_pembelian" id="potongan_pembelian" class="form-control"
                         value="0">
                 </div>
                 <div class="mb-3">
-                    <label for="biaya_lain" class="form-label">Biaya Lain (Menambah Pengeluaran)</label>
+                    <label for="biaya_lain" class="form-label">Biaya Lain (Menambah Pengeluaran Kas Perusahaan)</label>
                     <input type="text" name="biaya_lain" id="biaya_lain" class="form-control" value="0">
                 </div>
                 <div class="mb-3">
-                    <label for="admin_bank" class="form-label">Admin Bank (Menambah Pengeluaran)</label>
+                    <label for="admin_bank" class="form-label">Admin Bank (Menambah Pengeluaran Kas Perusahaan)</label>
                     <input type="text" name="admin_bank" id="admin_bank" class="form-control" value="0">
                 </div>
 
@@ -158,7 +158,7 @@
                     <a href="{{ route('keuangan.pengeluaran.list') }}" class="btn btn-secondary">
                         Kembali
                     </a>
-                    <button type="submit" class="btn btn-primary">Simpan Pengeluaran</button>
+                    <button type="submit" class="btn btn-primary">Simpan Pengeluaran Kas Perusahaan</button>
                 </div>
             </form>
             <div id="loading-overlay"

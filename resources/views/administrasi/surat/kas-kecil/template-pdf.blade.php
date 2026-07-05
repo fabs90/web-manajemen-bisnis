@@ -82,7 +82,7 @@
         </tr>
         <tr>
             <td><strong>Jenis</strong></td>
-            <td>: {{ $data->pengeluaran > 0 ? 'Pengeluaran' : 'Penerimaan' }}</td>
+            <td>: {{ $data->pengeluaran > 0 ? 'Pengeluaran Kas Perusahaan' : 'Penerimaan Kas Perusahaan' }}</td>
         </tr>
     </table>
 

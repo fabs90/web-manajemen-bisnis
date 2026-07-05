@@ -147,17 +147,16 @@ class PendapatanService
             $detailBarang = Barang::findOrFail($barangId);
             $jumlahDijual = $request->jumlah_barang_dijual[$index] ?? 0;
 
-            $barangItem = KartuGudang::where('barang_id', $barangId)->where('user_id', $userId)->latest()->first();
+            $barangItem = KartuGudang::where('barang_id', $barangId)->where('user_id', $userId)->latest('id')->first();
             $saldoSatuanAwal = $barangItem ? $barangItem->saldo_persatuan : 0;
-            $saldoKemasanAwal = $barangItem ? $barangItem->saldo_perkemasan : 0;
             $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
 
             if ($saldoSatuanAwal < $jumlahDijual) {
                 throw new \Exception("Saldo barang '{$detailBarang->nama}' tidak mencukupi.");
             }
 
-            $saldoPerKemasanBaru = $saldoKemasanAwal - ceil($jumlahDijual / $unitPerKemasan);
             $satuanBaru = $saldoSatuanAwal - $jumlahDijual;
+            $saldoPerKemasanBaru = $unitPerKemasan > 0 ? ceil($satuanBaru / $unitPerKemasan) : 0;
 
             KartuGudang::create([
                 'barang_id' => $barangId,

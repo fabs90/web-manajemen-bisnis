@@ -38,8 +38,8 @@
                     <th>Uraian</th>
                     <th>Nama Pemohon</th>
                     <th>Departemen</th>
-                    <th>Penerimaan</th>
-                    <th>Pengeluaran</th>
+                    <th>Penerimaan Kas Perusahaan</th>
+                    <th>Pengeluaran Kas Perusahaan</th>
                     <th>Saldo Akhir</th>
                     <th style="width: 120px">Aksi</th>
                 </tr>

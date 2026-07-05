@@ -62,7 +62,7 @@
                     <select name="jenis" class="form-control @error('jenis') is-invalid @enderror">
                         <option value="">-- Pilih Jenis --</option>
                         <option value="penambahan">Penambahan</option>
-                        <option value="pengeluaran">Pengeluaran</option>
+                        <option value="pengeluaran">Pengeluaran Kas Perusahaan</option>
                     </select>
                     @error('jenis')
                         <small class="text-danger">{{ $message }}</small>

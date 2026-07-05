@@ -1,7 +1,7 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Penerimaan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Penerimaan Kas Perusahaan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 
-@section('section-heading', 'Penerimaan ')
+@section('section-heading', 'Penerimaan Kas Perusahaan ')
 @section('section-row')
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -18,9 +18,9 @@
         </div>
     @endif
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Daftar Penerimaan Perusahaan</h5>
+        <h5 class="mb-0">Daftar Penerimaan Kas Perusahaan</h5>
         <a href="{{ route('keuangan.pendapatan.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Data Penerimaan
+            <i class="bi bi-plus-circle me-1"></i> Tambah Data Penerimaan Kas Perusahaan
         </a>
     </div>
 
@@ -33,7 +33,6 @@
                     <th>Uraian</th>
                     <th>Piutang Dagang</th>
                     <th>Penjualan Tunai</th>
-                    <th>Penjualan Kredit</th>
                     <th>Potongan Penjualan</th>
                     <th>Lain-lain</th>
                     <th>Masuk ke Kas Besar</th>
@@ -48,7 +47,6 @@
                         <td>{{ $data->uraian }}</td>
                         <td>Rp {{ number_format($data->piutang_dagang ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->penjualan_tunai ?? 0, 0, ',', '.') }}</td>
-                        <td>Rp {{ number_format($data->penjualan_kredit ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($data->uang_diterima ?? 0, 0, ',', '.') }}</td>
@@ -73,7 +71,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8" class="text-end pe-3">Total Kas Masuk</td>
+                    <td colspan="7" class="text-end pe-3">Total Kas Masuk</td>
                     <td><b>Rp {{ number_format($totalPendapatan ?? 0, 0, ',', '.') }}</b></td>
                     <td></td>
                 </tr>
@@ -81,54 +79,7 @@
         </table>
     </div>
 
-    {{-- ===================== TABEL Kas Kecil ===================== --}}
-    <h5 class="mt-2 mb-3">Semua Penerimaan Kas Kecil</h5>
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped table-hover align-middle kas-kecil-table">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Tanggal</th>
-                    <th>Uraian</th>
-                    <th>Jumlah Penerimaan Kas Kecil</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($dataKasKecil as $data)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
-                        <td>{{ $data->uraian }}</td>
-                        <td>Rp {{ number_format($data->masuk_kas_kecil ?? 0, 0, ',', '.') }}</td>
-                        <td>
-                            <a href="{{ route('keuangan.pendapatan.show', $data->id) }}"
-                                class="btn btn-info btn-sm text-white">
-                                <i class="bi bi-eye"></i> Detail
-                            </a>
-                            <form action="{{ route('keuangan.pendapatan.destroy', $data->id) }}" method="POST"
-                                class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" class="btn btn-danger btn-sm delete-btn">
-                                    <i class="bi bi-trash"></i> Hapus
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" class="text-center"><b>Total Penerimaan Kas Kecil</b></td>
-                    <td><b>Rp {{ number_format($totalMasukKasKecil ?? 0, 0, ',', '.') }}</b></td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-
-    <h5 class="mt-5 mb-3">Semua Data Piutang</h5>
+    <h5 class="mt-2 mb-3">Semua Data Piutang</h5>
     <div class="table-responsive">
         <table class="table table-sm" id="dataPiutangTable">
             <thead>
