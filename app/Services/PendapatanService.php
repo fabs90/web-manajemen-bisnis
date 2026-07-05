@@ -32,8 +32,10 @@ class PendapatanService
         // 2. Handle Jenis Pendapatan
         switch ($request->jenis_pendapatan) {
             case 'tunai':
-            case 'lain_lain':
                 $this->storeTunai($request, $userId, $accounts, $entry, $totalAmount);
+                break;
+            case 'lain_lain':
+                $this->storeLainLain($request, $userId, $accounts, $entry, $totalAmount);
                 break;
             case 'piutang':
                 $this->storePiutang($request, $userId, $accounts, $entry);
@@ -57,6 +59,27 @@ class PendapatanService
     }
 
     protected function storeTunai($request, $userId, $accounts, $entry, $totalAmount)
+    {
+        // Debit: Kas Utama (1101)
+        $entry->items()->create([
+            'user_id' => $userId,
+            'journal_entry_id' => $entry->id,
+            'account_id' => $accounts['1101']->id,
+            'debit' => $totalAmount,
+            'credit' => 0,
+        ]);
+
+        // Credit: Pendapatan Penjualan (4101)
+        $entry->items()->create([
+            'user_id' => $userId,
+            'journal_entry_id' => $entry->id,
+            'account_id' => $accounts['4101']->id,
+            'debit' => 0,
+            'credit' => $request->jumlah,
+        ]);
+    }
+
+    protected function storeLainLain($request, $userId, $accounts, $entry, $totalAmount)
     {
         // Debit: Kas Utama (1101)
         $entry->items()->create([

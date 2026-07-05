@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="{{ route('keuangan.pendapatan.create_lain') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Tambahkan Penerimaan Lain-Lain Contoh: Sewa & Pemasukan.
-            Tambahan Klik Disini!
+            Klik Disini!
         </a>
     </div>
 
@@ -59,6 +59,7 @@
                         <option value="" disabled {{ old('jenis_pendapatan') ? '' : 'selected' }}>-- Pilih Jenis --
                         </option>
                         <option value="tunai" {{ old('jenis_pendapatan') == 'tunai' ? 'selected' : '' }}>Tunai</option>
+                        <option value="lain_lain" {{ old('jenis_pendapatan') == 'lain_lain' ? 'selected' : '' }}>Penjualan Tunai (Pendapatan Lain-Lain)</option>
                         <option value="piutang" {{ old('jenis_pendapatan') == 'piutang' ? 'selected' : '' }}>Piutang
                             (Menambah/Membuat Baru)
                         </option>
@@ -171,7 +172,7 @@
                 {{-- Jumlah Penjualan --}}
                 <div class="mb-3">
                     <label for="jumlah_penjualan" class="form-label">Jumlah Penjualan (Otomatis)</label>
-                    <input type="number" id="jumlah_penjualan" name="jumlah" class="form-control" value="0"
+                    <input type="text" id="jumlah_penjualan" name="jumlah" class="form-control rupiah" value="0"
                         readonly required>
                     @error('jumlah')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -282,12 +283,12 @@
                     adaDebiturCheck.checked = true;
                     adaDebitur = true;
                     // debiturCheckContainer stays hidden because it's forced
-                } else if (jenis === 'tunai') {
+                } else if (jenis === 'tunai' || jenis === 'lain_lain') {
                     debiturCheckContainer.classList.remove('d-none');
                 }
 
                 if (adaDebitur && (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang' ||
-                        jenis === 'tunai')) {
+                        jenis === 'tunai' || jenis === 'lain_lain')) {
                     debiturSection.classList.remove('d-none');
                     namaPelanggan.removeAttribute('disabled');
                     namaPelanggan.setAttribute('required', 'required');
@@ -346,9 +347,18 @@
                 if (barangCheck.checked) {
                     barangSection.classList.add('d-none');
                     barangList.innerHTML = '';
-                    jumlahPenjualan.value = 0;
+                    let anInstance = AutoNumeric.getAutoNumericElement(jumlahPenjualan);
+                    if (anInstance) {
+                        anInstance.set(0);
+                    } else {
+                        jumlahPenjualan.value = 0;
+                    }
+                    jumlahPenjualan.removeAttribute('readonly');
+                    document.querySelector('label[for="jumlah_penjualan"]').innerText = 'Jumlah Penjualan';
                 } else {
                     barangSection.classList.remove('d-none');
+                    jumlahPenjualan.setAttribute('readonly', 'readonly');
+                    document.querySelector('label[for="jumlah_penjualan"]').innerText = 'Jumlah Penjualan (Otomatis)';
                     if (barangList.children.length === 0) {
                         tambahBarang();
                     }
@@ -394,7 +404,12 @@
                 document.querySelectorAll('.subtotal-input').forEach(input => {
                     total += parseFloat(input.value) || 0;
                 });
-                jumlahPenjualan.value = total;
+                let anInstance = AutoNumeric.getAutoNumericElement(jumlahPenjualan);
+                if (anInstance) {
+                    anInstance.set(total);
+                } else {
+                    jumlahPenjualan.value = total;
+                }
 
             }
 

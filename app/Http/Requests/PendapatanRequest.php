@@ -75,7 +75,7 @@ class PendapatanRequest extends FormRequest
             'tanggal' => ['required', 'date'],
             'jenis_pendapatan' => [
                 'required',
-                Rule::in(['tunai', 'piutang', 'kredit']),
+                Rule::in(['tunai', 'piutang', 'kredit', 'lain_lain']),
             ],
 
             // -------------------------------------------------
