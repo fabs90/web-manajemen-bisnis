@@ -13,6 +13,8 @@ class KasirTransactionLog extends Model
         'uraian',
         'tanggal_transaksi',
         'jumlah',
+        'bayar',
+        'kembalian',
         'user_id',
     ];
 
