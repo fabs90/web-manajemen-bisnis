@@ -64,7 +64,7 @@
 @endsection
 
 @push('script')
-    <script src="{{ asset('dist/assets/pos-printer.js') }}?v={{ file_exists(public_path('dist/assets/pos-printer.js')) ? filemtime(public_path('dist/assets/pos-printer.js')) : time() }}"></script>
+    <script src="{{ asset('dist/assets/pos-printer.js') }}"></script>
     <script>
         document.getElementById('btn-test-print').addEventListener('click', function() {
             const testData = {
