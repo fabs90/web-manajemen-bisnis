@@ -112,18 +112,20 @@
                         </div>
                     </div>
 
-                    <table class="table keranjang-table table-bordered table-striped" id="keranjang-table">
-                        <thead class="table-dark text-center">
-                            <tr>
-                                <th>Barang</th>
-                                <th width="80px">Qty</th>
-                                <th>Harga</th>
-                                <th>Subtotal</th>
-                                <th width="50px">Hapus</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table keranjang-table table-bordered table-striped" id="keranjang-table">
+                            <thead class="table-dark text-center">
+                                <tr>
+                                    <th style="min-width: 150px;">Barang</th>
+                                    <th style="min-width: 80px;">Qty</th>
+                                    <th style="min-width: 120px;">Harga</th>
+                                    <th style="min-width: 120px;">Subtotal</th>
+                                    <th style="min-width: 60px;">Hapus</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 {{-- 🔹 Area Pembayaran --}}
@@ -285,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${nama}
                     <input type="hidden" name="id_barang_terjual[]" value="${opt.value}">
                 </td>
-                <td><input class="form-control qty" name="jumlah_barang_dijual[]" type="number" min="1" value="${qty}"></td>
+                <td><input class="form-control qty text-center px-1" name="jumlah_barang_dijual[]" type="number" min="1" value="${qty}"></td>
                 <td>Rp ${harga.toLocaleString('id-ID')}</td>
                 <td class="subtotal" data-sub="${subtotal}">
                     Rp ${subtotal.toLocaleString('id-ID')}
@@ -351,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     function hitungKembalian() {
-        const total = parseFloat(grandTotalEl.innerText.replace(/[Rp .]/g, '')) || 0;
+        const total = parseFloat(document.getElementById('grand-total-value').value) || 0;
         const bayar = parseFloat(bayarAN.getNumber()) || 0;
         const selisih = bayar - total;
 

@@ -20,30 +20,76 @@ class PosPrinter {
 
         try {
             console.log('Meminta akses Bluetooth...');
-            this.device = await navigator.bluetooth.requestDevice({
-                filters: [
-                    { services: [this.serviceUuid] }
-                ],
-                optionalServices: ['e7810a71-73ae-499d-8c15-faa9aef0c3f2'] // Alternative common service
-            });
+            
+            // We only request device once per session if not already requested
+            if (!this.device) {
+                this.device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: [
+                        this.serviceUuid, // '000018f0-0000-1000-8000-00805f9b34fb'
+                        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+                        '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+                        '0000ff00-0000-1000-8000-00805f9b34fb', // HS6632M common service
+                        '00001814-0000-1000-8000-00805f9b34fb',
+                        '0000af30-0000-1000-8000-00805f9b34fb'
+                    ]
+                });
+
+                this.device.addEventListener('gattserverdisconnected', () => {
+                    console.log('Printer terputus');
+                    this.server = null;
+                    this.service = null;
+                    this.characteristic = null;
+                });
+            }
 
             console.log('Menghubungkan ke GATT Server...');
             this.server = await this.device.gatt.connect();
 
-            console.log('Mencari Bluetooth Service...');
+            // Beri jeda sedikit agar perangkat siap setelah terhubung (menghindari error GATT Server disconnected)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            console.log('Mendapatkan daftar layanan (services)...');
+            let services = [];
             try {
-                this.service = await this.server.getPrimaryService(this.serviceUuid);
-            } catch (e) {
-                // Try alternative if first fails
-                this.service = await this.server.getPrimaryService('e7810a71-73ae-499d-8c15-faa9aef0c3f2');
+                if (!this.device.gatt.connected) {
+                    this.server = await this.device.gatt.connect();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                services = await this.server.getPrimaryServices();
+            } catch (error) {
+                console.error('Gagal mendapatkan services:', error);
+                throw new Error('Gagal membaca layanan dari printer.');
             }
 
-            console.log('Mencari Characteristic...');
-            try {
-                this.characteristic = await this.service.getCharacteristic(this.characteristicUuid);
-            } catch (e) {
-                // Try alternative characteristic if first fails
-                this.characteristic = await this.service.getCharacteristic('bef8d6c9-9c21-4c9e-b632-bd58c1009f9f');
+            this.service = null;
+            this.characteristic = null;
+
+            // Cari service yang memiliki characteristic dengan akses 'write'
+            for (let svc of services) {
+                console.log('Memeriksa service:', svc.uuid);
+                try {
+                    const characteristics = await svc.getCharacteristics();
+                    for (let char of characteristics) {
+                        console.log('  - Characteristic:', char.uuid, ' properties:', 
+                                    'write:', char.properties.write, 
+                                    'writeWithoutResponse:', char.properties.writeWithoutResponse);
+                        
+                        if (char.properties.write || char.properties.writeWithoutResponse) {
+                            this.service = svc;
+                            this.characteristic = char;
+                            console.log('Kandidat cocok ditemukan!');
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Gagal membaca characteristics untuk service', svc.uuid);
+                }
+                if (this.characteristic) break; // Berhenti jika sudah ketemu
+            }
+
+            if (!this.service || !this.characteristic) {
+                throw new Error('Tidak dapat menemukan layanan Bluetooth yang cocok di printer ini.');
             }
 
             console.log('Printer berhasil terhubung!');
@@ -51,13 +97,17 @@ class PosPrinter {
 
         } catch (error) {
             console.error('Koneksi Bluetooth gagal:', error);
+            // Reset state if connection failed so we can prompt again next time
+            if (this.device && !this.device.gatt.connected) {
+                this.device = null;
+            }
             alert('Gagal terhubung ke printer: ' + error.message);
             return false;
         }
     }
 
     async printReceipt(receiptData) {
-        if (!this.characteristic) {
+        if (!this.device || !this.device.gatt.connected || !this.characteristic) {
             const connected = await this.connect();
             if (!connected) return;
         }
