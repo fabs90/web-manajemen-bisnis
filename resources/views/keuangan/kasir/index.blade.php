@@ -191,5 +191,5 @@
             });
         });
     </script>
-    <script src="{{ asset('js/pos-printer.js') }}?v={{ file_exists(public_path('js/pos-printer.js')) ? filemtime(public_path('js/pos-printer.js')) : time() }}"></script>
+    <script src="{{ asset('dist/assets/pos-printer.js') }}?v={{ file_exists(public_path('dist/assets/pos-printer.js')) ? filemtime(public_path('dist/assets/pos-printer.js')) : time() }}"></script>
 @endpush
