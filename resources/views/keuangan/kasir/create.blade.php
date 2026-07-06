@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Tambahkan script printer
     const printerScript = document.createElement('script');
-    printerScript.src = "{{ asset('js/pos-printer.js') }}";
+    printerScript.src = "{{ asset('js/pos-printer.js') }}?v={{ file_exists(public_path('js/pos-printer.js')) ? filemtime(public_path('js/pos-printer.js')) : time() }}";
     document.head.appendChild(printerScript);
 
     @if (session('success'))
