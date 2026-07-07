@@ -232,7 +232,7 @@
                     <td>{{ $tl->tindakan }}</td>
                     <td>{{ $tl->pelaksana }}</td>
                     <td class="text-center">
-                        {{ $tl->target_selesai ? \Carbon\Carbon::parse($tl->target_selesai)->format('d-m-Y') : '-' }}
+                        {{ $tl->target_selesai ? \Carbon\Carbon::parse($tl->target_selesai)->translatedFormat('d F Y') : '-' }}
                     </td>
                     <td class="text-center">{{ $tl->status }}</td>
                 </tr>

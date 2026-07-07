@@ -1,29 +1,69 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Permintaan Kas Kecil</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        .table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        .table th, .table td {
-            border: 1px solid #000; padding: 6px;
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
         }
-        .text-center { text-align: center; }
-        .no-border td, .no-border th { border: none; }
-        .signature-box { width: 33%; text-align: center; font-size: 12px; }
-        .signature-box img { width: 80px; margin-top: 6px; }
-        .header-title { text-align: center; font-size: 16px; font-weight: bold; }
-        hr { border: 1px solid #000; margin: 10px 0; }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .no-border td,
+        .no-border th {
+            border: none;
+        }
+
+        .signature-box {
+            width: 33%;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .signature-box img {
+            width: 80px;
+            margin-top: 6px;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        hr {
+            border: 1px solid #000;
+            margin: 10px 0;
+        }
     </style>
 </head>
+
 <body>
 
     @php
         $formulir = $data->kasKecilFormulir->last();
 
-        $getImgBase64 = function($path) {
-            if (!$path) return null;
+        $getImgBase64 = function ($path) {
+            if (!$path) {
+                return null;
+            }
             $fullPath = storage_path('app/public/' . $path);
             if (file_exists($fullPath)) {
                 $mime = mime_content_type($fullPath);
@@ -43,7 +83,7 @@
     <table class="no-border" style="width: 100%; margin-bottom: 10px;">
         <tr>
             <td width="15%" style="text-align: left; vertical-align: middle;">
-                @if($logoSrc)
+                @if ($logoSrc)
                     <img src="{{ $logoSrc }}" style="height:70px;">
                 @endif
             </td>
@@ -52,7 +92,8 @@
                     {{ $userProfile->name ?? 'NAMA PERUSAHAAN' }}
                 </div>
                 <div style="font-size:11px;">{{ $userProfile->alamat ?? 'Alamat Lengkap Perusahaan' }}</div>
-                <div style="font-size:11px;">Telp: {{ $userProfile->nomor_telepon ?? '-' }} | Email: {{ $userProfile->email ?? '-' }}</div>
+                <div style="font-size:11px;">Telp: {{ $userProfile->nomor_telepon ?? '-' }} | Email:
+                    {{ $userProfile->email ?? '-' }}</div>
             </td>
             <td width="15%"></td>
         </tr>
@@ -74,7 +115,7 @@
         </tr>
         <tr>
             <td><strong>Tanggal</strong></td>
-            <td>: {{ \Carbon\Carbon::parse($data->tanggal)->format('d/m/Y') }}</td>
+            <td>: {{ \Carbon\Carbon::parse($data->tanggal)->translatedFormat('d F Y') }}</td>
         </tr>
         <tr>
             <td><strong>Nomor Referensi</strong></td>
@@ -99,18 +140,18 @@
         </thead>
         <tbody>
             @foreach ($data->kasKecilDetail as $i => $detail)
-            <tr>
-                <td class="text-center">{{ $i+1 }}</td>
-                <td>{{ $detail->keterangan }}</td>
-                <td>{{ $detail->kategori ?? '-' }}</td>
-                <td>Rp {{ number_format($detail->jumlah, 0, ',', '.') }}</td>
-            </tr>
+                <tr>
+                    <td class="text-center">{{ $i + 1 }}</td>
+                    <td>{{ $detail->keterangan }}</td>
+                    <td>{{ $detail->kategori ?? '-' }}</td>
+                    <td>Rp {{ number_format($detail->jumlah, 0, ',', '.') }}</td>
+                </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
                 <th colspan="3" class="text-center">Total</th>
-                <th>Rp {{ number_format(($data->penerimaan + $data->pengeluaran), 0, ',', '.') }}</th>
+                <th>Rp {{ number_format($data->penerimaan + $data->pengeluaran, 0, ',', '.') }}</th>
             </tr>
         </tfoot>
     </table>
@@ -120,29 +161,36 @@
         <tr>
             <td class="signature-box">
                 Pemohon,<br>
-                @if($ttdPemohonSrc)
+                @if ($ttdPemohonSrc)
                     <img src="{{ $ttdPemohonSrc }}" style="height:60px;">
-                @else <br><br><br> @endif
+                @else
+                    <br><br><br>
+                @endif
                 <strong>{{ $formulir->nama_pemohon }}</strong>
             </td>
 
             <td class="signature-box">
                 Mengetahui,<br>
-                @if($ttdAtasanSrc)
+                @if ($ttdAtasanSrc)
                     <img src="{{ $ttdAtasanSrc }}" style="height:60px;">
-                @else <br><br><br> @endif
+                @else
+                    <br><br><br>
+                @endif
                 <strong>{{ $formulir->nama_atasan_langsung }}</strong>
             </td>
 
             <td class="signature-box">
                 Bagian Keuangan,<br>
-                @if($ttdKeuanganSrc)
+                @if ($ttdKeuanganSrc)
                     <img src="{{ $ttdKeuanganSrc }}" style="height:60px;">
-                @else <br><br><br> @endif
+                @else
+                    <br><br><br>
+                @endif
                 <strong>{{ $formulir->nama_bagian_keuangan }}</strong>
             </td>
         </tr>
     </table>
 
 </body>
+
 </html>

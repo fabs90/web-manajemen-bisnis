@@ -113,7 +113,8 @@
 
     <h3 class="text-center fw-bold uppercase mb-1">AGENDA JANJI TEMU</h3>
     <div class="text-center mb-3">
-        <strong>Tanggal Pencatatan:</strong> {{ \Carbon\Carbon::parse($agendaJanjiTemu->created_at)->translatedFormat('d F Y') }}<br>
+        <strong>Tanggal Pencatatan:</strong>
+        {{ \Carbon\Carbon::parse($agendaJanjiTemu->created_at)->translatedFormat('d F Y') }}<br>
     </div>
 
     <table class="table-no-border mb-3">
@@ -171,7 +172,7 @@
                 Pencatat,<br>
                 <div style="height:70px;"></div>
                 <strong>( {{ $profileUser->name ?? 'Admin' }} )</strong><br>
-                <span>Tanggal Cetak: {{ \Carbon\Carbon::now()->format('d/m/Y') }}</span>
+                <span>Tanggal Cetak: {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
             </td>
         </tr>
     </table>

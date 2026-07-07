@@ -120,13 +120,13 @@
                 {{ $memo->nomor_memo ?? '-' }}<br>
 
                 <strong>Tanggal Memo</strong> :
-                {{ \Carbon\Carbon::parse($memo->tanggal)->format('d/m/Y') }}<br>
+                {{ \Carbon\Carbon::parse($memo->tanggal)->translatedFormat('d F Y') }}<br>
 
                 <strong>Nomor Faktur</strong> :
                 {{ $faktur->kode_faktur ?? '-' }}<br>
 
                 <strong>Tanggal Faktur</strong> :
-                {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d/m/Y') }}<br>
+                {{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->translatedFormat('d F Y') }}<br>
 
                 <strong>No. Pesanan</strong> :
                 {{ $po?->nomor_pesanan_penjualan ?? '-' }}
@@ -198,7 +198,7 @@
             <td width="50%" class="text-center">
             </td>
             <td width="50%" class="text-center">
-                {{ \Carbon\Carbon::parse($memo->tanggal)->format('d/m/Y') }}<br>
+                {{ \Carbon\Carbon::parse($memo->tanggal)->translatedFormat('d F Y') }}<br>
                 Bagian Penjualan<br><br><br><br><br>
                 <strong>( {{ $faktur->nama_bagian_penjualan ?? '_________' }} )</strong>
             </td>

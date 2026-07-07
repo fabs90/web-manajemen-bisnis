@@ -108,8 +108,8 @@ class AgendaSuratPerjalananService
         }
 
         // insert into agenda_surat_perjalanan_detail
-        foreach ($data['jadwal'] as $index => $jadwal) {
-            $hariKe = $index + 1;
+        $hariKe = 1;
+        foreach ($data['jadwal'] as $jadwal) {
             foreach ($jadwal['items'] as $item) {
                 AgendaPerjalananDetail::create([
                     'user_id' => auth()->user()->id,
@@ -121,6 +121,7 @@ class AgendaSuratPerjalananService
                     'lokasi' => $item['lokasi'],
                 ]);
             }
+            $hariKe++;
         }
 
         // agenda transportasi
@@ -146,8 +147,8 @@ class AgendaSuratPerjalananService
         ]);
 
         // agenda kontak
+        $index = 1;
         foreach ($data['kontak'] as $item) {
-            $index = 1;
             $agendaPerjalananKontak = AgendaPerjalananKontak::create([
                 'user_id' => auth()->user()->id,
                 'agenda_perjalanan_id' => $agendaSuratPerjalanan->id,
@@ -155,7 +156,7 @@ class AgendaSuratPerjalananService
                 'telepon' => $item['tel'],
                 'jenis' => "Kontak-$index",
             ]);
-            $index += 1;
+            $index++;
         }
 
         return $agendaSuratPerjalanan;

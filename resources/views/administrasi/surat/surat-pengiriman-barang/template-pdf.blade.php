@@ -117,7 +117,9 @@
         $nomorFormatted = str_pad($data->id, 3, '0', STR_PAD_LEFT);
         $bulan = date('m', strtotime($data->created_at ?? now()));
         $tahun = date('Y', strtotime($data->created_at ?? now()));
-        $tanggalKirim = $data->tanggal_terima ? \Carbon\Carbon::parse($data->tanggal_terima)->format('d/m/Y') : '-';
+        $tanggalKirim = $data->tanggal_terima
+            ? \Carbon\Carbon::parse($data->tanggal_terima)->translatedFormat('d F Y')
+            : '-';
     @endphp
 
     <table class="table-no-border mb-5">
@@ -127,8 +129,10 @@
                 @if ($data->fakturPenjualan && $data->fakturPenjualan->kode_faktur)
                     <strong>Kode Faktur:</strong> {{ $data->fakturPenjualan->kode_faktur ?? '___' }}<br>
                 @endif
-                <strong>Nomor SPP:</strong> {{ $data->pesananPenjualan->nomor_pesanan_penjualan ?? $data->pesananPembelian->nomor_pesanan_pembelian ?? '___' }}<br>
-                <strong>Tanggal Pesan:</strong> {{ \Carbon\Carbon::parse($data->pesananPenjualan->tanggal_pesanan_penjualan ?? now())->format('d/m/Y') }}
+                <strong>Nomor SPP:</strong>
+                {{ $data->pesananPenjualan->nomor_pesanan_penjualan ?? ($data->pesananPembelian->nomor_pesanan_pembelian ?? '___') }}<br>
+                <strong>Tanggal Pesan:</strong>
+                {{ \Carbon\Carbon::parse($data->pesananPenjualan->tanggal_pesanan_penjualan ?? ($data->pesananPembelian->tanggal_pesanan_pembelian ?? now()))->translatedFormat('d F Y') }}
             </td>
         </tr>
     </table>
@@ -241,7 +245,8 @@
                             }
                         @endphp
                         @if ($ttdPenerimaBase64)
-                            <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}" style="height:60px;">
+                            <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}"
+                                style="height:60px;">
                         @else
                             <div style="height:60px;"></div>
                         @endif
@@ -252,7 +257,7 @@
                     <strong>( {{ $data->nama_penerima ?? '_________' }} )</strong>
                 </td>
             @else
-            <td width="50%"></td>
+                <td width="50%"></td>
             @endif
 
             <td width="50%" class="text-center">
@@ -276,7 +281,7 @@
                 @endif
                 <br>
                 <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong><br>
-                <span>Tanggal: {{ \Carbon\Carbon::now()->format('d/m/Y') }}</span>
+                <span>Tanggal: {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
             </td>
         </tr>
     </table>

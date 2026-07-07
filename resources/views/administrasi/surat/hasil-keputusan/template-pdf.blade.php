@@ -37,6 +37,7 @@
             margin-top: 50px;
             text-align: center;
         }
+
         .line {
             border-bottom: 3px solid #000;
             margin: 10px 0 15px;
@@ -77,7 +78,7 @@
             <td style="width:70px;"></td>
         </tr>
     </table>
-     <div class="line"></div>
+    <div class="line"></div>
     {{-- Judul --}}
     <div class="content center title-block">
         <span class="bold" style="text-decoration: underline;">KEPUTUSAN RAPAT</span><br>
@@ -110,7 +111,7 @@
 
 
             <td style="width: 40%; text-align: center;">
-                {{ $result->nama_kota }}, {{ \Carbon\Carbon::parse($result->tanggal)->format('d-m-Y') }}<br>
+                {{ $result->nama_kota }}, {{ \Carbon\Carbon::parse($result->tanggal)->translatedFormat('d F Y') }}<br>
                 <span class="bold">Pemimpin Rapat</span>
 
                 <div class="signature" style="margin-top: 10px;">
@@ -126,7 +127,8 @@
                                 $data = file_get_contents($path);
                                 $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
                             @endphp
-                            <img src="{{ $base64 }}" alt="Tanda Tangan" style="max-width: 150px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;">
+                            <img src="{{ $base64 }}" alt="Tanda Tangan"
+                                style="max-width: 150px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;">
                         @endif
                     @else
                         {{-- Jarak jika tidak ada gambar --}}

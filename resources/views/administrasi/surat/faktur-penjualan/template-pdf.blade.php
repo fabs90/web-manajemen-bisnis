@@ -130,7 +130,7 @@
         {{-- Format: (Nomor Urut)/F/(Nama Perusahaan)/(Bulan)/(Tahun) --}}
         <div style="font-size: 12px; color: #000;">
             Nomor: <span
-                class="fw-bold">{{ $faktur->kode_faktur }}/F/{{ str_replace(' ', '', strtoupper($profileUser->name ?? 'TRANSDIGITAL')) }}/{{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('m/Y') }}</span>
+                class="fw-bold">{{ $faktur->kode_faktur }}/F/{{ str_replace(' ', '', strtoupper($profileUser->name ?? 'TRANSDIGITAL')) }}/{{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->translatedFormat('d F Y') }}</span>
         </div>
     </div>
 
@@ -248,8 +248,7 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong
-                    style="text-decoration: underline;">({{ $profileUser->name ?? '_________' }})</strong><br>
+                <strong style="text-decoration: underline;">({{ $profileUser->name ?? '_________' }})</strong><br>
                 Bagian Penjualan
             </td>
         </tr>

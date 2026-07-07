@@ -115,9 +115,10 @@
             <td width="70%"></td>
             <td width="30%">
                 <strong>Nomor:</strong>
-                ({{ $data->nomor_pesanan_pembelian ?? '___' }})/PP/{{ $profileUser->name ?? 'PERUSAHAAN' }}/{{ date('m/Y') }}
+                ({{ $data->nomor_pesanan_pembelian ?? '___' }})
                 <br>
-                <strong>Tanggal:</strong> {{ $data->tanggal_pesanan_pembelian ?? date('d/m/Y') }}
+                <strong>Tanggal:</strong>
+                {{ \Carbon\Carbon::parse($data->tanggal_pesanan_pembelian ?? now())->translatedFormat('d F Y') ?? ($data->tanggal_pesanan_pembelian ?? date('d/m/Y')) }}
             </td>
         </tr>
     </table>

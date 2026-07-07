@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Agenda Perjalanan - {{ $agendaPerjalanan->nama_pelaksana ?? '' }}</title>
@@ -36,7 +37,7 @@
         .text-center {
             text-align: center;
         }
-        
+
         .text-right {
             text-align: right;
         }
@@ -55,6 +56,7 @@
         }
     </style>
 </head>
+
 <body>
 
     {{-- KOP SURAT --}}
@@ -90,7 +92,8 @@
     {{-- HEADER TABEL --}}
     <table>
         <tr class="bg-light">
-            <td class="text-center fw-bold" style="font-size: 13px; padding: 8px;">AGENDA PERJALANAN / TRAVEL ITINERARY</td>
+            <td class="text-center fw-bold" style="font-size: 13px; padding: 8px;">AGENDA PERJALANAN / TRAVEL ITINERARY
+            </td>
         </tr>
     </table>
 
@@ -106,7 +109,9 @@
             <td style="border-right: none;">Jabatan</td>
             <td style="border-left: none;">: {{ $agendaPerjalanan->jabatan ?? '-' }}</td>
             <td style="border-right: none;">Tgl Disiapkan</td>
-            <td style="border-left: none;">: {{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->format('d M Y') : '-' }}</td>
+            <td style="border-left: none;">:
+                {{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->translatedFormat('d F Y') : '-' }}
+            </td>
         </tr>
         <tr>
             <td style="border-right: none;">Tujuan</td>
@@ -118,11 +123,15 @@
             <td style="border-right: none;">Keperluan</td>
             <td style="border-left: none;">: {{ $agendaPerjalanan->keperluan ?? '-' }}</td>
             <td style="border-right: none;">Tgl Disetujui</td>
-            <td style="border-left: none;">: {{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->format('d M Y') : '-' }}</td>
+            <td style="border-left: none;">:
+                {{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->translatedFormat('d F Y') : '-' }}
+            </td>
         </tr>
         <tr>
             <td style="border-right: none;">Tanggal Perjalanan</td>
-            <td style="border-left: none;">: {{ optional($agendaPerjalanan)->tanggal_mulai ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_mulai)->format('d M Y') . ' s/d ' . \Carbon\Carbon::parse($agendaPerjalanan->tanggal_selesai)->format('d M Y') : '-' }}</td>
+            <td style="border-left: none;">:
+                {{ optional($agendaPerjalanan)->tanggal_mulai ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_mulai)->translatedFormat('d F Y') . ' s/d ' . \Carbon\Carbon::parse($agendaPerjalanan->tanggal_selesai)->translatedFormat('d F Y') : '-' }}
+            </td>
             <td style="border-right: none;"></td>
             <td style="border-left: none;"></td>
         </tr>
@@ -140,15 +149,25 @@
             <td>Kegiatan</td>
             <td width="20%">Lokasi / PIC</td>
         </tr>
-        @if($agendaPerjalanan->agendaPerjalananDetail && $agendaPerjalanan->agendaPerjalananDetail->count())
-            @foreach($agendaPerjalanan->agendaPerjalananDetail as $dIndex => $detail)
-                <tr>
-                    <td class="text-center">{{ $dIndex + 1 }}</td>
-                    <td class="text-center">{{ optional($detail->tanggal) ? \Carbon\Carbon::parse($detail->tanggal)->format('d M Y') : '-' }}</td>
-                    <td class="text-center">{{ $detail->waktu ?? '-' }}</td>
-                    <td>{{ $detail->kegiatan ?? '-' }}</td>
-                    <td>{{ $detail->lokasi ?? '-' }}</td>
-                </tr>
+        @if ($agendaPerjalanan->agendaPerjalananDetail && $agendaPerjalanan->agendaPerjalananDetail->count())
+            @php
+                $groupedDetails = $agendaPerjalanan->agendaPerjalananDetail->groupBy('hari');
+            @endphp
+            @foreach ($groupedDetails as $hari => $details)
+                @php $rowspan = $details->count(); @endphp
+                @foreach ($details as $index => $detail)
+                    <tr>
+                        @if ($index === 0)
+                            <td class="text-center" rowspan="{{ $rowspan }}">{{ $hari }}</td>
+                            <td class="text-center" rowspan="{{ $rowspan }}">
+                                {{ optional($detail->tanggal) ? \Carbon\Carbon::parse($detail->tanggal)->translatedFormat('d F Y') : '-' }}
+                            </td>
+                        @endif
+                        <td class="text-center">{{ $detail->waktu ?? '-' }}</td>
+                        <td>{{ $detail->kegiatan ?? '-' }}</td>
+                        <td>{{ $detail->lokasi ?? '-' }}</td>
+                    </tr>
+                @endforeach
             @endforeach
         @else
             <tr>
@@ -195,8 +214,10 @@
             <td class="text-center">{{ $akom?->hotel ?? '-' }}</td>
             <td class="text-center">{{ $akom?->alamat ?? '-' }}</td>
             <td class="text-center">{{ $akom?->telepon ?? '-' }}</td>
-            <td class="text-center">{{ optional($akom?->check_in) ? \Carbon\Carbon::parse($akom->check_in)->format('d M Y') : '-' }}</td>
-            <td class="text-center">{{ optional($akom?->check_out) ? \Carbon\Carbon::parse($akom->check_out)->format('d M Y') : '-' }}</td>
+            <td class="text-center">
+                {{ optional($akom?->check_in) ? \Carbon\Carbon::parse($akom->check_in)->translatedFormat('d F Y') : '-' }}</td>
+            <td class="text-center">
+                {{ optional($akom?->check_out) ? \Carbon\Carbon::parse($akom->check_out)->translatedFormat('d F Y') : '-' }}</td>
             <td class="text-center">{{ $akom?->booking_number ?? '-' }}</td>
         </tr>
     </table>
@@ -218,7 +239,9 @@
                 <td class="text-center">{{ $kontak->jenis ?? '-' }}</td>
             </tr>
         @empty
-            <tr><td colspan="3" class="text-center">Tidak ada data kontak.</td></tr>
+            <tr>
+                <td colspan="3" class="text-center">Tidak ada data kontak.</td>
+            </tr>
         @endforelse
     </table>
 
@@ -245,7 +268,9 @@
         </tr>
         <tr>
             <td class="fw-bold">Total Biaya</td>
-            <td class="fw-bold text-right">Rp {{ number_format($agendaPerjalanan->total_biaya ?? ($agendaPerjalanan->transport + $agendaPerjalanan->akomodasi + $agendaPerjalanan->konsumsi + $agendaPerjalanan->lain_lain ?? 0), 2, ',', '.') }}</td>
+            <td class="fw-bold text-right">Rp
+                {{ number_format($agendaPerjalanan->total_biaya ?? ($agendaPerjalanan->transport + $agendaPerjalanan->akomodasi + $agendaPerjalanan->konsumsi + $agendaPerjalanan->lain_lain ?? 0), 2, ',', '.') }}
+            </td>
         </tr>
     </table>
 
@@ -266,7 +291,7 @@
                 <br>
                 <div class="fw-bold text-center">Disiapkan Oleh,</div>
                 <div style="height: 100px;">
-                    @if(isset($agendaPerjalanan->tanda_tangan_disiapkan) && $agendaPerjalanan->tanda_tangan_disiapkan)
+                    @if (isset($agendaPerjalanan->tanda_tangan_disiapkan) && $agendaPerjalanan->tanda_tangan_disiapkan)
                         @php
                             $ttdDisiapkanPath = storage_path('app/public/' . $agendaPerjalanan->tanda_tangan_disiapkan);
                             if (file_exists($ttdDisiapkanPath)) {
@@ -274,20 +299,23 @@
                                 $ttdDisiapkanMime = mime_content_type($ttdDisiapkanPath);
                             }
                         @endphp
-                        @if(isset($ttdDisiapkanBase64))
-                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}" style="max-width: 150px; max-height: 80px; width: auto; height: auto;">
+                        @if (isset($ttdDisiapkanBase64))
+                            <img src="data:{{ $ttdDisiapkanMime }};base64,{{ $ttdDisiapkanBase64 }}"
+                                style="max-width: 150px; max-height: 80px; width: auto; height: auto;">
                         @endif
                     @endif
                 </div>
                 <div class="text-center fw-bold">{{ $agendaPerjalanan->disiapkan_oleh ?? '-' }}</div>
-                <div>{{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->format('d M Y') : '-' }}</div>
+                <div>
+                    {{ optional($agendaPerjalanan->tanggal_disiapkan) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disiapkan)->translatedFormat('d F Y') : '-' }}
+                </div>
             </td>
 
             <td width="50%" class="text-center" style="height: 160px;">
                 <br>
                 <div class="fw-bold text-center">Disetujui Oleh,</div>
                 <div style="height: 100px;">
-                    @if(isset($agendaPerjalanan->tanda_tangan_disetujui) && $agendaPerjalanan->tanda_tangan_disetujui)
+                    @if (isset($agendaPerjalanan->tanda_tangan_disetujui) && $agendaPerjalanan->tanda_tangan_disetujui)
                         @php
                             $ttdDisetujuiPath = storage_path('app/public/' . $agendaPerjalanan->tanda_tangan_disetujui);
                             if (file_exists($ttdDisetujuiPath)) {
@@ -295,16 +323,20 @@
                                 $ttdDisetujuiMime = mime_content_type($ttdDisetujuiPath);
                             }
                         @endphp
-                        @if(isset($ttdDisetujuiBase64))
-                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}" style="max-width: 150px; max-height: 80px; width: auto; height: auto;">
+                        @if (isset($ttdDisetujuiBase64))
+                            <img src="data:{{ $ttdDisetujuiMime }};base64,{{ $ttdDisetujuiBase64 }}"
+                                style="max-width: 150px; max-height: 80px; width: auto; height: auto;">
                         @endif
                     @endif
                 </div>
                 <div class="text-center fw-bold">{{ $agendaPerjalanan->disetujui_oleh ?? '-' }}</div>
-                <div>{{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->format('d M Y') : '-' }}</div>
+                <div>
+                    {{ optional($agendaPerjalanan->tanggal_disetujui) ? \Carbon\Carbon::parse($agendaPerjalanan->tanggal_disetujui)->translatedFormat('d F Y') : '-' }}
+                </div>
             </td>
         </tr>
     </table>
 
 </body>
+
 </html>

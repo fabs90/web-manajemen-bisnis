@@ -142,7 +142,7 @@
             <td width="60%"></td>
             <td width="40%" class="text-center">
                 {{ $profileUser->kota ?? 'Kota' }},
-                {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+                {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
                 <br><br>
                 Yang Menyatakan,
                 <br>
