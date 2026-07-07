@@ -38,7 +38,7 @@
         </div>
 
         <div class="sidebar-menu">
-            <ul class="menu">
+            <ul class="menu" style="padding-bottom: 120px;">
                 <li class="sidebar-title">Menu Utama</li>
 
                 <li class="sidebar-item {{ Request::is('dashboard') ? 'active' : '' }}">
