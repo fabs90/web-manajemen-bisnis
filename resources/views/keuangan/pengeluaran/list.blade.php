@@ -96,7 +96,7 @@
     </div>
 
     {{-- ===================== TABEL Kas Kecil ===================== --}}
-    <h5 class="mt-5 mb-3">Semua Pengeluaran Kas Perusahaan Kas Kecil</h5>
+    <h5 class="mt-5 mb-3">Pengeluaran Kas Kecil</h5>
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover align-middle kas-kecil-table">
             <thead class="table-light">
@@ -116,10 +116,12 @@
                         <td>{{ $data->uraian }}</td>
                         <td>Rp {{ number_format($data->keluar_kas_kecil ?? 0, 0, ',', '.') }}</td>
                         <td>
-                            <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}" class="btn btn-info btn-sm text-white">
+                            <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}"
+                                class="btn btn-info btn-sm text-white">
                                 <i class="bi bi-eye"></i> Detail
                             </a>
-                            <form action="{{ route('keuangan.pengeluaran.destroy', ['id' => $data->id]) }}" method="POST" class="d-inline delete-btn">
+                            <form action="{{ route('keuangan.pengeluaran.destroy', ['id' => $data->id]) }}" method="POST"
+                                class="d-inline delete-btn">
                                 @csrf
                                 @method('DELETE')
                                 <button type="button" class="btn btn-danger btn-sm">
