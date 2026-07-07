@@ -11,6 +11,7 @@ class SuratPesananPenjualanDetail extends Model
 
     protected $fillable = [
         'pesanan_penjualan_id',
+        'barang_id',
         'nama_barang',
         'kuantitas',
         'harga',
@@ -31,5 +32,10 @@ class SuratPesananPenjualanDetail extends Model
     public function pesananPenjualan(): BelongsTo
     {
         return $this->belongsTo(SuratPesananPenjualan::class, 'pesanan_penjualan_id');
+    }
+
+    public function barang(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Barang::class, 'barang_id');
     }
 }

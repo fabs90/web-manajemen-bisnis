@@ -72,6 +72,7 @@ class SuratPesananPenjualanService
 
                     SuratPesananPenjualanDetail::create([
                         'pesanan_penjualan_id' => $suratPesananPenjualan->id,
+                        'barang_id' => $item['barang_id'] ?? null,
                         'nama_barang' => $item['nama_barang'],
                         'kuantitas' => $kuantitas,
                         'harga' => $harga,
@@ -80,9 +81,11 @@ class SuratPesananPenjualanService
                     ]);
 
                     // Update Stok & Kartu Gudang (Pengurangan Stok)
-                    $barang = Barang::where('nama', $item['nama_barang'])
-                        ->where('user_id', auth()->id())
-                        ->first();
+                    if (isset($item['barang_id'])) {
+                        $barang = Barang::where('id', $item['barang_id'])->where('user_id', auth()->id())->first();
+                    } else {
+                        $barang = Barang::where('nama', $item['nama_barang'])->where('user_id', auth()->id())->first();
+                    }
 
                     if ($barang) {
                         $totalHppAmount += $kuantitas * $barang->harga_beli_per_unit;
@@ -193,10 +196,11 @@ class SuratPesananPenjualanService
                 ->findOrFail($sppId);
 
             foreach ($suratPesananPenjualan->details as $detail) {
-                // Cari Barang berdasarkan nama
-                $barang = Barang::where('nama', $detail->nama_barang)
-                    ->where('user_id', auth()->id())
-                    ->first();
+                if ($detail->barang_id) {
+                    $barang = Barang::where('id', $detail->barang_id)->where('user_id', auth()->id())->first();
+                } else {
+                    $barang = Barang::where('nama', $detail->nama_barang)->where('user_id', auth()->id())->first();
+                }
 
                 if ($barang) {
                     $lastKartu = KartuGudang::where('barang_id', $barang->id)

@@ -10,6 +10,7 @@ class PesananPembelianDetail extends Model
 
     protected $fillable = [
         'spp_id',
+        'barang_id',
         'nama_barang',
         'kuantitas',
         'harga',
@@ -20,5 +21,10 @@ class PesananPembelianDetail extends Model
     public function pesananPembelian()
     {
         return $this->belongsTo(PesananPembelian::class, 'spp_id');
+    }
+
+    public function barang()
+    {
+        return $this->belongsTo(\App\Models\Barang::class, 'barang_id');
     }
 }
