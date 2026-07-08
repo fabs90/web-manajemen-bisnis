@@ -122,7 +122,7 @@ class PendapatanService
             'journal_entry_id' => $entry->id,
             'account_id' => $accounts['4101']->id,
             'debit' => 0,
-            'credit' => $request->jumlah,
+            'credit' => $piutangAmount,
         ]);
     }
 

@@ -40,9 +40,9 @@
                         <td>Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}</td>
                         <td>
-                            {{-- <a href="{{ route('barang.show', $item->id) }}" class="btn btn-sm btn-warning">
-                            <i class="bi bi-pencil-square"></i>
-                        </a> --}}
+                            <a href="{{ route('barang.show', $item->id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
                             <form action="{{ route('barang.destroy', $item->id) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
                                 @csrf

@@ -196,16 +196,27 @@ class KeuanganService
         $totalAktiva = $totalKas + $saldoPiutang + $nilaiPersediaan + $tanah + $kendaraan + $peralatan;
 
         // === PASIVA ===
-        $saldoHutang = $this->getAccountBalance($userId, '2101', $date);
+        $hutangUsaha = $this->getAccountBalance($userId, '2101', $date);
+        $hutangBank = $this->getAccountBalance($userId, '2201', $date);
+        $saldoHutang = $hutangUsaha + $hutangBank;
 
         // Modal & Retained Earnings
         $modal = $this->getAccountBalance($userId, '3100', $date);
-        $labaDitahan = $this->getAccountBalance($userId, '3200', $date);
+        $labaDitahanAkun = $this->getAccountBalance($userId, '3200', $date);
 
-        // Current period profit
+        // Laba all time (to ensure balance sheet balances correctly)
+        // If there's no closing entry system, past year profits must be included in Laba Ditahan.
+        $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date);
+        
+        // Current period profit for display
         $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date);
-        $pajak = $dataLabaRugi['pajak'];
+        
+        // Display taxes accumulated over all time
+        $pajak = $allTimeLabaRugi['pajak'];
         $labaBersih = $dataLabaRugi['labaSetelahPajak'];
+        
+        // Past years profit not yet closed to retained earnings
+        $labaDitahan = $labaDitahanAkun + ($allTimeLabaRugi['labaSetelahPajak'] - $labaBersih);
 
         $totalPasiva = $saldoHutang + $pajak + $labaBersih + $modal + $labaDitahan;
 
