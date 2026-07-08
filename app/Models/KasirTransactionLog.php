@@ -16,6 +16,8 @@ class KasirTransactionLog extends Model
         'bayar',
         'kembalian',
         'user_id',
+        'diskon',
+        'paket_diskon_id',
     ];
 
     public function journalEntry()

@@ -133,15 +133,23 @@ class BarangController extends Controller
 
     public function indexKartuGudang()
     {
-        $barang = Barang::where('user_id', auth()->id())->get();
-        $kartuGudang = KartuGudang::where('user_id', auth()->id())->get();
+        // Eager load kartuGudang to optimize queries
+        $barang = Barang::where('user_id', auth()->id())->with('kartuGudang')->get();
+        
+        $totalNilaiPersediaan = 0;
+        foreach($barang as $b) {
+            // Sort by created_at or id to get the absolute latest entry
+            $lastKartu = $b->kartuGudang->sortByDesc('id')->first();
+            $saldoAkhir = $lastKartu ? $lastKartu->saldo_persatuan : 0;
+            
+            // Simpan nilai persediaan per barang ke property temporary untuk ditampilkan
+            $b->saldo_akhir = $saldoAkhir;
+            $b->nilai_persediaan = $saldoAkhir * $b->harga_beli_per_unit;
+            
+            $totalNilaiPersediaan += $b->nilai_persediaan;
+        }
 
-        // $saldoMinimumUnit = $barang->jumlah_min * $barang->jumlah_unit_per_kemasan;
-        // if($saldoPersatuan <= $saldoMinimumUnit) {
-        //     muncul warning
-        // }
-
-        return view('kartu-gudang.index', compact('barang', 'kartuGudang'));
+        return view('kartu-gudang.index', compact('barang', 'totalNilaiPersediaan'));
     }
 
     public function createKartuGudang($barang_id)

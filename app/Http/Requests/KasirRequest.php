@@ -17,6 +17,30 @@ class KasirRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('uang_bayar')) {
+            $this->merge([
+                'uang_bayar' => (float) str_replace(['Rp', '.', ' '], '', $this->uang_bayar),
+            ]);
+        }
+
+        if ($this->has('uang_kembalian')) {
+            $this->merge([
+                'uang_kembalian' => (float) str_replace(['Rp', '.', ' '], '', $this->uang_kembalian),
+            ]);
+        }
+
+        if ($this->has('grand_total')) {
+            $this->merge([
+                'grand_total' => (float) str_replace(['Rp', '.', ' '], '', $this->grand_total),
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
@@ -30,8 +54,10 @@ class KasirRequest extends FormRequest
             'id_barang_terjual.*' => ['required', 'exists:barang,id'],
             'jumlah_barang_dijual' => ['required', 'array'],
             'jumlah_barang_dijual.*' => ['required', 'numeric', 'min:1'],
-            'uang_bayar' => ['required', 'numeric', 'gte:grand_total'],
-            'uang_kembalian' => ['required', 'numeric', 'min:0'],
+            'uang_bayar' => ['required', 'gte:grand_total'],
+            'uang_kembalian' => ['required', 'min:0'],
+            'diskon_total' => ['nullable', 'numeric', 'min:0'],
+            'paket_diskon_id' => ['nullable', 'exists:paket_diskons,id'],
         ];
     }
 

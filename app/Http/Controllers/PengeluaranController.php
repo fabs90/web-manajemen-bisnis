@@ -25,7 +25,7 @@ class PengeluaranController extends Controller
 
         // Ambil semua JournalEntry yang merupakan pengeluaran
         $journalEntries = JournalEntry::where('user_id', $userId)
-            ->whereIn('transaction_type', ['membeli_barang', 'lain_lain', 'membayar_hutang', 'kas_kecil', 'agenda_perjalanan'])
+            ->whereIn('transaction_type', ['membeli_barang', 'lain_lain', 'membayar_hutang', 'kas_kecil', 'agenda_perjalanan', 'pemesanan-barang'])
             ->with(['items.account'])
             ->latest()
             ->get();
@@ -46,22 +46,22 @@ class PengeluaranController extends Controller
                 'id' => $entry->id,
                 'tanggal' => $entry->date,
                 'uraian' => $entry->description,
-                'jumlah_hutang' => $entry->transaction_type === 'membeli_barang' ? ($hutangItem->credit ?? 0) : 0,
+                'jumlah_hutang' => $hutangItem->credit ?? 0,
                 'jumlah_pembelian_tunai' => $entry->transaction_type === 'membeli_barang' ? ($kasItem->credit ?? 0) : 0,
                 'potongan_pembelian' => $potonganAmount,
-                'lain_lain' => in_array($entry->transaction_type, ['lain_lain', 'agenda_perjalanan']) ? $biayaKotor : 0,
+                'lain_lain' => in_array($entry->transaction_type, ['lain_lain', 'agenda_perjalanan', 'kas_kecil']) ? $biayaKotor : 0,
                 'keluar_kas_kecil' => $entry->items->where('account.code', '1102')->sum('credit'),
-                'jumlah_pengeluaran' => $entry->items->where('account.code', '1101')->sum('credit') + $entry->items->where('account.code', '1103')->sum('credit') + $entry->items->where('account.code', '2101')->sum('credit'),
+                'jumlah_pengeluaran' => $entry->items->where('account.code', '1101')->sum('credit') + $entry->items->where('account.code', '1103')->sum('credit'),
                 'transaction_type' => $entry->transaction_type,
                 'hutang' => collect($entry->transaction_type === 'membayar_hutang' ? [$entry] : []), // Untuk deteksi pelunasan di view
             ];
         });
 
-        $dataPengeluaran = $allDatas->where('transaction_type', '!=', 'kas_kecil')->values();
-        $dataKasKecil = $allDatas->where('transaction_type', 'kas_kecil')->values();
+        $dataPengeluaran = $allDatas->values();
+        $dataKasKecil = collect();
 
         $totalPengeluaran = $dataPengeluaran->sum('jumlah_pengeluaran');
-        $totalKeluarKasKecil = $dataKasKecil->sum('keluar_kas_kecil');
+        $totalKeluarKasKecil = 0;
 
         // Data Hutang: Group by pelanggan dari JournalItem akun Utang Usaha (2101)
         $dataHutang = JournalItem::where('user_id', $userId)
@@ -201,7 +201,24 @@ class PengeluaranController extends Controller
             ->with(['items.account', 'items.subLedger'])
             ->firstOrFail();
 
-        return view('keuangan.pengeluaran.show', compact('entry'));
+        $barangDibeli = collect();
+        if (in_array($entry->transaction_type, ['membeli_barang', 'pemesanan-barang'])) {
+            $uraianKartuGudang = '';
+            if ($entry->transaction_type === 'membeli_barang') {
+                $uraianKartuGudang = str_replace('Pembelian barang: ', '', $entry->description);
+            } elseif ($entry->transaction_type === 'pemesanan-barang') {
+                $uraianKartuGudang = str_replace('Pesanan Pembelian - ', 'Pesanan Pembelian Barang - ', $entry->description);
+            }
+
+            $barangDibeli = \App\Models\KartuGudang::with('barang')
+                ->where('user_id', $userId)
+                ->where('tanggal', $entry->date)
+                ->where('uraian', $uraianKartuGudang)
+                ->where('diterima', '>', 0)
+                ->get();
+        }
+
+        return view('keuangan.pengeluaran.show', compact('entry', 'barangDibeli'));
     }
 
     public function destroyHutang(int $id): RedirectResponse

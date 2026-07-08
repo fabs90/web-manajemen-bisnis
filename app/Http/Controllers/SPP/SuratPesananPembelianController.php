@@ -26,7 +26,7 @@ class SuratPesananPembelianController extends Controller
 
     public function create()
     {
-        $suppliers = Pelanggan::where('user_id', auth()->id())->get();
+        $suppliers = Pelanggan::where('user_id', auth()->id())->where('jenis', 'kreditur')->get();
         $barang = Barang::where('user_id', auth()->id())->get();
 
         return view('administrasi.surat.surat-pesanan-pembelian.create', compact('suppliers', 'barang'));
@@ -47,7 +47,7 @@ class SuratPesananPembelianController extends Controller
                 );
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal menambahkan Surat Pesanan Pembelian (SPP): '.
+                'Gagal menambahkan Surat Pesanan Pembelian (SPP): ' .
                 $th->getMessage(),
             );
 
@@ -55,7 +55,7 @@ class SuratPesananPembelianController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menambahkan Surat Pesanan Pembelian (SPP): '.
+                    'Gagal menambahkan Surat Pesanan Pembelian (SPP): ' .
                     $th->getMessage(),
                 );
         }
@@ -74,7 +74,7 @@ class SuratPesananPembelianController extends Controller
                 );
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal menghapus Surat Pesanan Pembelian (SPP): '.
+                'Gagal menghapus Surat Pesanan Pembelian (SPP): ' .
                 $th->getMessage(),
             );
 
@@ -82,7 +82,7 @@ class SuratPesananPembelianController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menghapus Surat Pesanan Pembelian (SPP): '.
+                    'Gagal menghapus Surat Pesanan Pembelian (SPP): ' .
                     $th->getMessage(),
                 );
         }
@@ -94,7 +94,7 @@ class SuratPesananPembelianController extends Controller
             return $service->generatePdf($sppId);
         } catch (\Throwable $th) {
             Log::error(
-                'Gagal generate PDF Surat Pesanan Pembelian (SPP): '.
+                'Gagal generate PDF Surat Pesanan Pembelian (SPP): ' .
                 $th->getMessage(),
             );
 

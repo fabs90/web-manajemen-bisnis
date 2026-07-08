@@ -60,6 +60,30 @@
             </table>
         </div>
         
+        @if(isset($barangDibeli) && $barangDibeli->isNotEmpty())
+            <h5 class="mt-4 mb-3">Daftar Barang Dibeli</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Nama Barang</th>
+                            <th class="text-end">Jumlah (Qty)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($barangDibeli as $item)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $item->barang->nama ?? 'Barang Dihapus' }}</td>
+                                <td class="text-end">{{ $item->diterima }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+        
         <div class="mt-3">
             <a href="{{ route('keuangan.pengeluaran.list') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali

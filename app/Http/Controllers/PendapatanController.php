@@ -35,6 +35,7 @@ class PendapatanController extends Controller
         $kasId = $accounts['1101']->id;
         $pendapatanId = $accounts['4101']->id;
         $piutangId = $accounts->has('1104') ? $accounts['1104']->id : null;
+        $potonganId = $accounts->has('4102') ? $accounts['4102']->id : null;
 
         // 1. Data Utama (Penerimaan/Pendapatan)
         // Ambil JournalEntry yang menyentuh akun Kas atau Pendapatan
@@ -55,7 +56,7 @@ class PendapatanController extends Controller
             ->latest()
             ->get();
 
-        $allDatas = $journalEntries->map(function ($entry) use ($kasId, $pendapatanId, $piutangId) {
+        $allDatas = $journalEntries->map(function ($entry) use ($kasId, $pendapatanId, $piutangId, $potonganId) {
             $uangDiterima = $entry->items->where('account_id', $kasId)->sum('debit');
             $totalPenjualan = $entry->items->where('account_id', $pendapatanId)->sum('credit');
 
@@ -65,6 +66,7 @@ class PendapatanController extends Controller
             $penjualanKredit = (!$isPendapatanLain && $uangDiterima == 0) ? $totalPenjualan : 0;
 
             $piutangDagang = $piutangId ? ($entry->items->where('account_id', $piutangId)->sum('debit') + $entry->items->where('account_id', $piutangId)->sum('credit')) : 0;
+            $potonganPenjualan = $potonganId ? $entry->items->where('account_id', $potonganId)->sum('debit') : 0;
 
             return (object) [
                 'id' => $entry->id,
@@ -73,11 +75,16 @@ class PendapatanController extends Controller
                 'piutang_dagang' => $piutangDagang,
                 'penjualan_tunai' => $penjualanTunai,
                 'penjualan_kredit' => $penjualanKredit,
-                'potongan_pembelian' => 0, // Placeholder
+                'potongan_penjualan' => $potonganPenjualan,
                 'lain_lain' => $isPendapatanLain ? $totalPenjualan : 0,
                 'uang_diterima' => $uangDiterima,
             ];
         });
+
+        // Filter out non-cash additions (e.g., Penambahan Piutang)
+        $allDatas = $allDatas->reject(function ($data) {
+            return $data->uang_diterima == 0 && $data->lain_lain == 0;
+        })->values();
 
         // 2. Data Piutang (Sub-ledger Pelanggan)
         $dataPiutang = collect();

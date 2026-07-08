@@ -36,6 +36,12 @@
                             <small class="form-text text-muted">Email digunakan untuk mengirimkan surat pesanan pembelian
                                 kepada Supplier/Pemasok</small>
                         </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label class="form-label">Nama Perwakilan Supplier/Pemasok<span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="nama_pimpinan_supplier" class="form-control" required>
+                        </div>
                     </div>
 
                     {{-- DATA SPP --}}
@@ -52,13 +58,6 @@
                         <div class="col-md-4">
                             <label class="form-label">Rencana Tanggal Kirim<span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_kirim_pesanan_pembelian" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Nama Pimpinan Perusahaan<span class="text-danger">*</span></label>
-                            <input type="text" name="nama_pimpinan_supplier" class="form-control" required>
                         </div>
                     </div>
 

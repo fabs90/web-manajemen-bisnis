@@ -31,16 +31,13 @@ class PendapatanService
 
         // 2. Handle Jenis Pendapatan
         switch ($request->jenis_pendapatan) {
-            case 'tunai':
-                $this->storeTunai($request, $userId, $accounts, $entry, $totalAmount);
-                break;
             case 'lain_lain':
                 $this->storeLainLain($request, $userId, $accounts, $entry, $totalAmount);
                 break;
             case 'piutang':
                 $this->storePiutang($request, $userId, $accounts, $entry);
                 break;
-            case 'kredit': // Pelunasan
+            case 'pelunasan': // Pelunasan
                 $this->storeKredit($request, $userId, $accounts, $entry);
                 break;
         }
@@ -56,27 +53,6 @@ class PendapatanService
         }
 
         return $entry;
-    }
-
-    protected function storeTunai($request, $userId, $accounts, $entry, $totalAmount)
-    {
-        // Debit: Kas Utama (1101)
-        $entry->items()->create([
-            'user_id' => $userId,
-            'journal_entry_id' => $entry->id,
-            'account_id' => $accounts['1101']->id,
-            'debit' => $totalAmount,
-            'credit' => 0,
-        ]);
-
-        // Credit: Pendapatan Penjualan (4101)
-        $entry->items()->create([
-            'user_id' => $userId,
-            'journal_entry_id' => $entry->id,
-            'account_id' => $accounts['4101']->id,
-            'debit' => 0,
-            'credit' => $request->jumlah,
-        ]);
     }
 
     protected function storeLainLain($request, $userId, $accounts, $entry, $totalAmount)
@@ -166,7 +142,7 @@ class PendapatanService
     protected function handleBarangTerjual($request, $userId, $entry)
     {
         foreach ($request->barang_terjual as $index => $barangId) {
-            if (! $barangId) {
+            if (!$barangId) {
                 continue;
             }
 
@@ -189,7 +165,7 @@ class PendapatanService
                 'tanggal' => $request->tanggal,
                 'diterima' => 0,
                 'dikeluarkan' => $jumlahDijual,
-                'uraian' => 'Penjualan: '.$request->uraian_pendapatan,
+                'uraian' => 'Penjualan: ' . $request->uraian_pendapatan,
                 'saldo_persatuan' => $satuanBaru,
                 'saldo_perkemasan' => $saldoPerKemasanBaru,
                 'journal_entry_id' => $entry->id,

@@ -35,9 +35,13 @@ class KasirController extends Controller
             ->orderBy('nama')
             ->get();
 
+        $paketDiskons = \App\Models\PaketDiskon::where('user_id', auth()->id())
+            ->where('is_active', true)
+            ->get();
+
         return view(
             'keuangan.kasir.create',
-            compact('barang', 'jenisPembayaran'),
+            compact('barang', 'jenisPembayaran', 'paketDiskons'),
         );
     }
 
@@ -60,6 +64,10 @@ class KasirController extends Controller
                 throw new \Exception('Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) tidak ditemukan.');
             }
 
+            if ($request->diskon_total > 0 && !isset($accounts['4102'])) {
+                throw new \Exception('Akun Potongan Penjualan (4102) tidak ditemukan.');
+            }
+
             // Jurnal Entri
             $entry = JournalEntry::create([
                 'user_id' => $userId,
@@ -78,13 +86,25 @@ class KasirController extends Controller
                 'credit' => 0,
             ]);
 
+            // Potongan Penjualan (Debit) jika ada
+            if ($request->diskon_total > 0) {
+                $entry->items()->create([
+                    'user_id' => $userId,
+                    'journal_entry_id' => $entry->id,
+                    'account_id' => $accounts['4102']->id,
+                    'debit' => $request->diskon_total,
+                    'credit' => 0,
+                ]);
+            }
+
             // Jurnal Item Credit Pendapatan Penjualan
+            $pendapatanTotal = $request->grand_total + ($request->diskon_total ?? 0);
             $entry->items()->create([
                 'user_id' => $userId,
                 'journal_entry_id' => $entry->id,
                 'account_id' => $accounts['4101']->id,
                 'debit' => 0,
-                'credit' => $request->grand_total,
+                'credit' => $pendapatanTotal,
             ]);
 
             $receiptItems = [];
@@ -165,6 +185,8 @@ class KasirController extends Controller
                 'bayar' => $request->uang_bayar,
                 'kembalian' => $request->uang_kembalian,
                 'jumlah' => $request->grand_total,
+                'diskon' => $request->diskon_total ?? 0,
+                'paket_diskon_id' => $request->paket_diskon_id,
             ]);
 
             DB::commit();
@@ -177,6 +199,8 @@ class KasirController extends Controller
                 'kode_transaksi' => $kodeTransaksi,
                 'jenis_pembayaran' => $namaPembayaran,
                 'items' => $receiptItems,
+                'subtotal_keseluruhan' => $pendapatanTotal,
+                'diskon' => $request->diskon_total ?? 0,
                 'total' => $request->grand_total,
                 'bayar' => $request->uang_bayar,
                 'kembali' => $request->uang_kembalian,

@@ -2,6 +2,17 @@
 @section('page-title', 'Kartu Gudang | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'List Kartu Gudang')
 @section('section-row')
+
+    <div class="alert alert-success d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+        <div>
+            <h5 class="alert-heading mb-1">Total Nilai Persediaan Barang Dagang Akhir: <strong>Rp {{ number_format($totalNilaiPersediaan ?? 0, 0, ',', '.') }}</strong></h5>
+            <small>
+                Nilai ini didapatkan dari akumulasi seluruh barang dagang. Rumus per barang: <br>
+                <em>(Saldo Persatuan Terakhir di Kartu Gudang) × (Harga Beli Per Unit Barang)</em>
+            </small>
+        </div>
+    </div>
     @forelse ($barang as $item)
         <div class="card shadow-sm mb-4">
             <div class="card-header d-flex justify-content-between align-items-center pb-0 flex-wrap">
@@ -9,11 +20,18 @@
                     <h6 class="mb-0">
                         <strong>{{ $item->kode_barang }}</strong> — {{ $item->nama }}
                     </h6>
-                    <small class="text-muted">
+                    <small class="text-muted d-block mt-1">
                         Harga Beli Unit: Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} |
                         Harga Jual Unit: Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }} |
                         Jumlah Unit Per-Kemasan: {{ $item->jumlah_unit_per_kemasan }}
                     </small>
+                    <div class="mt-2 text-primary">
+                        <small>
+                            <strong>Kalkulasi Persediaan:</strong> 
+                            {{ $item->saldo_akhir }} unit (Saldo Akhir) × Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} (Harga Beli) 
+                            = <strong>Rp {{ number_format($item->nilai_persediaan, 0, ',', '.') }}</strong>
+                        </small>
+                    </div>
                 </div>
                 <div>
                     <a href="{{ route('kartu-gudang.create', ['barang_id' => $item->id]) }}" class="btn btn-sm btn-primary">

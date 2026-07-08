@@ -61,11 +61,19 @@ class PengeluaranService
         $adminBank = $data['admin_bank'] ?? 0;
         $totalKeluar = $data['jumlah'] ?? ($baseAmount - $potongan + $biayaLain + $adminBank);
 
+        $description = 'Pengeluaran lain-lain: ' . $data['uraian_pengeluaran'];
+        if (($data['jenis_pengeluaran'] ?? 'tunai') !== 'tunai' && !empty($data['nama_kreditur'])) {
+            $kreditur = Pelanggan::find($data['nama_kreditur']);
+            if ($kreditur) {
+                $description .= ' (berhutang kepada ' . $kreditur->nama . ')';
+            }
+        }
+
         $entry = JournalEntry::create([
             'user_id' => $userId,
             'reference_number' => $this->generateReference('EXP', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pengeluaran lain-lain: ' . $data['uraian_pengeluaran'],
+            'description' => $description,
             'transaction_type' => 'lain_lain',
         ]);
 
@@ -202,11 +210,19 @@ class PengeluaranService
 
         $totalKeluar = $data['jumlah'] ?? ($baseAmount - $potongan + $biayaLain + $adminBank);
 
+        $description = 'Pembelian barang: ' . $data['uraian_pengeluaran'];
+        if (($data['jenis_pengeluaran'] ?? 'tunai') !== 'tunai' && !empty($data['nama_kreditur'])) {
+            $kreditur = Pelanggan::find($data['nama_kreditur']);
+            if ($kreditur) {
+                $description .= ' (berhutang kepada ' . $kreditur->nama . ')';
+            }
+        }
+
         $entry = JournalEntry::create([
             'user_id' => $userId,
             'reference_number' => $this->generateReference('PUR', $data['tanggal']),
             'date' => $data['tanggal'],
-            'description' => 'Pembelian barang: ' . $data['uraian_pengeluaran'],
+            'description' => $description,
             'transaction_type' => 'membeli_barang',
         ]);
 

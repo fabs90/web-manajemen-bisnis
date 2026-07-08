@@ -52,13 +52,35 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    new AutoNumeric.multiple('.rupiah', {
-        digitGroupSeparator: '.',
-        decimalCharacter: ',',
-        decimalPlaces: 0,
-        unformatOnSubmit: true,
-        currencySymbol: 'Rp ',
-        minimumValue: '0'
+    const form = document.querySelector('form');
+    const rupiahInputs = document.querySelectorAll('.rupiah');
+
+    function parseRupiah(value) {
+        if (!value) return 0;
+        return parseFloat(value.toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+    }
+
+    function formatRupiah(angka) {
+        if (isNaN(angka)) return '0';
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    rupiahInputs.forEach(input => {
+        input.addEventListener('input', (e) => {
+            let angka = parseRupiah(e.target.value);
+            e.target.value = formatRupiah(angka);
+        });
+
+        if (input.value) {
+            let angka = parseRupiah(input.value);
+            input.value = formatRupiah(angka);
+        }
+    });
+
+    form.addEventListener('submit', function() {
+        rupiahInputs.forEach(input => {
+            input.value = parseRupiah(input.value);
+        });
     });
 
     @if (session('success'))

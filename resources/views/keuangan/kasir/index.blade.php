@@ -34,7 +34,9 @@
                         <th>Kode Transaksi</th>
                         <th>Tanggal Transaksi</th>
                         <th>Uraian</th>
-                        <th>Jumlah</th>
+                        <th>Subtotal</th>
+                        <th>Diskon</th>
+                        <th>Total Bayar</th>
                         <th style="width: 120px">Aksi</th>
                     </tr>
                 </thead>
@@ -46,7 +48,9 @@
                             <td>{{ $item->journalEntry->reference_number }}</td>
                             <td>{{ $item->created_at }}</td>
                             <td>{{ $item->uraian }}</td>
-                            <td>Rp {{ number_format($item->jumlah ?? 0, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format(($item->jumlah ?? 0) + ($item->diskon ?? 0), 0, ',', '.') }}</td>
+                            <td class="text-warning">Rp {{ number_format($item->diskon ?? 0, 0, ',', '.') }}</td>
+                            <td class="fw-bold">Rp {{ number_format($item->jumlah ?? 0, 0, ',', '.') }}</td>
 
                             <td class="text-center">
                                 <button class="btn btn-info btn-sm text-white" data-bs-toggle="modal"

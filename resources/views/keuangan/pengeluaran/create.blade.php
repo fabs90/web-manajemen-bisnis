@@ -1,5 +1,6 @@
 @extends('layouts.partial.layouts')
-@section('page-title', 'Tambah Pengeluaran Kas Perusahaan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Tambah Pengeluaran Kas Perusahaan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi
+    Bisnis')
 
 @section('section-heading', 'Pengeluaran Kas Perusahaan')
 @section('section-row')
@@ -64,30 +65,34 @@
                         <input class="form-check-input" type="radio" name="jenis_keperluan" id="membeli_barang"
                             value="membeli_barang" {{ old('jenis_keperluan') == 'membeli_barang' ? 'checked' : '' }}
                             required>
-                        <label class="form-check-label" for="membeli_barang">Membeli Barang / Menambah Hutang</label>
+                        <label class="form-check-label" for="membeli_barang" id="label_membeli_barang">Membeli
+                            Barang</label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="jenis_keperluan" id="membayar_hutang"
                             value="membayar_hutang" {{ old('jenis_keperluan') == 'membayar_hutang' ? 'checked' : '' }}
                             required>
-                        <label class="form-check-label" for="membayar_hutang">Membayar Hutang</label>
+                        <label class="form-check-label" for="membayar_hutang" id="label_membayar_hutang">Membayar
+                            Hutang</label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="jenis_keperluan" id="lain_lain"
                             value="lain_lain" {{ old('jenis_keperluan') == 'lain_lain' ? 'checked' : '' }} required>
-                        <label class="form-check-label" for="lain_lain">Lain-lain (Diluar Kas Kecil)</label>
+                        <label class="form-check-label" for="lain_lain" id="label_lain_lain">Lain-lain (Diluar Kas
+                            Kecil)</label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="jenis_keperluan" id="kas_kecil"
                             value="kas_kecil" {{ old('jenis_keperluan') == 'kas_kecil' ? 'checked' : '' }} required>
-                        <label class="form-check-label" for="kas_kecil">Pengisian Kas Kecil</label>
+                        <label class="form-check-label" for="kas_kecil" id="label_kas_kecil">Pengisian Kas Kecil</label>
                     </div>
                 </div>
 
                 {{-- Kreditur --}}
                 <div id="kreditur-section" class="d-none mb-3">
                     <hr>
-                    <h5 class="mb-3">Detail Kreditur</h5>
+                    <label for="nama_kreditur" class="form-label h5 mb-3">Detail Kreditur<span
+                            class="text-danger">*</span></label>
                     <select name="nama_kreditur" id="nama_kreditur" class="form-select" disabled>
                         <option value="" disabled selected>-- Pilih Kreditur --</option>
                         @isset($kreditur)
@@ -103,7 +108,7 @@
 
                 {{-- Hutang Aktif --}}
                 <div id="hutang-aktif-section" class="d-none mb-3">
-                    <label for="hutang_id" class="form-label">Pilih Hutang Aktif</label>
+                    <label for="hutang_id" class="form-label">Pilih Hutang Aktif<span class="text-danger">*</span></label>
                     <select name="hutang_id" id="hutang_id" class="form-select @error('hutang_id') is-invalid @enderror">
                         <option value="" disabled selected>-- Pilih Hutang --</option>
                         @foreach ($listHutang as $hutang)
@@ -120,7 +125,7 @@
 
                 {{-- Barang Dibeli --}}
                 <div id="barang-section" class="d-none mb-3">
-                    <label class="form-label">Barang Dibeli</label>
+                    <label class="form-label">Barang Dibeli<span class="text-danger">*</span></label>
                     <div id="barang-list"></div>
                     <button type="button" class="btn btn-secondary btn-sm mt-2" id="tambah-barang">
                         <i class="bi bi-plus"></i> Tambah Barang
@@ -129,19 +134,22 @@
 
                 {{-- Jumlah Manual --}}
                 <div id="jumlah_manual_container" class="mb-3 d-none">
-                    <label for="jumlah_manual" class="form-label">Isi Jumlah Pengeluaran Kas Perusahaan Disini</label>
+                    <label for="jumlah_manual" class="form-label">Isi Jumlah Pengeluaran Kas Perusahaan Disini<span
+                            class="text-danger">*</span></label>
                     <input type="text" id="jumlah_manual" name="jumlah_manual" class="form-control" value="0">
                 </div>
 
                 {{-- Jumlah Pengeluaran Kas Perusahaan Total --}}
                 <div class="mb-3">
-                    <label for="jumlah_pengeluaran" class="form-label">Total Pengeluaran Kas Perusahaan (Otomatis)</label>
+                    <label for="jumlah_pengeluaran" class="form-label">Total Pengeluaran Kas Perusahaan (Otomatis)<span
+                            class="text-danger">*</span></label>
                     <input type="number" name="jumlah" id="jumlah_pengeluaran" class="form-control" readonly required>
                 </div>
 
                 {{-- Potongan, Biaya Lain, Bunga --}}
                 <div class="mb-3">
-                    <label for="potongan_pembelian" class="form-label">Potongan (Mengurangi Pengeluaran Kas Perusahaan)</label>
+                    <label for="potongan_pembelian" class="form-label">Potongan (Mengurangi Pengeluaran Kas
+                        Perusahaan)</label>
                     <input type="text" name="potongan_pembelian" id="potongan_pembelian" class="form-control"
                         value="0">
                 </div>
@@ -158,18 +166,13 @@
                     <a href="{{ route('keuangan.pengeluaran.list') }}" class="btn btn-secondary">
                         Kembali
                     </a>
-                    <button type="submit" class="btn btn-primary">Simpan Pengeluaran Kas Perusahaan</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit">
+                        <span class="spinner-border spinner-border-sm d-none" id="submit-spinner" role="status"
+                            aria-hidden="true"></span>
+                        <span id="submit-text">Simpan Pengeluaran Kas Perusahaan</span>
+                    </button>
                 </div>
             </form>
-            <div id="loading-overlay"
-                style="position: fixed; top:0; left:0; width:100%; height:100%;
-                   background: rgba(255,255,255,0.7); z-index:9999;
-                   display:none; justify-content:center; align-items:center;">
-                <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-
         </div>
     </div>
 @endsection
@@ -237,6 +240,7 @@
 
             // ======== Fungsi Section ========
             function toggleKrediturSection() {
+                updateJenisKeperluanLabels();
                 if (jenisPengeluaran.value === 'kredit') {
                     krediturSection.classList.remove('d-none');
                     namaKreditur.removeAttribute('disabled');
@@ -245,6 +249,41 @@
                     krediturSection.classList.add('d-none');
                     namaKreditur.setAttribute('disabled', 'disabled');
                     namaKreditur.removeAttribute('required');
+                }
+            }
+
+            function updateJenisKeperluanLabels() {
+                const val = jenisPengeluaran.value;
+                const labelBarang = document.getElementById('label_membeli_barang');
+                const labelLain = document.getElementById('label_lain_lain');
+                
+                const radioMembayarHutang = document.getElementById('membayar_hutang');
+                const containerMembayarHutang = radioMembayarHutang.closest('.form-check');
+                
+                const radioKasKecil = document.getElementById('kas_kecil');
+                const containerKasKecil = radioKasKecil.closest('.form-check');
+                
+                if (val === 'tunai') {
+                    labelBarang.innerText = 'Membeli Barang (Tunai)';
+                    labelLain.innerText = 'Lain-lain (Tunai - Diluar Kas Kecil)';
+                    containerMembayarHutang.classList.remove('d-none');
+                    containerKasKecil.classList.remove('d-none');
+                } else if (val === 'kredit') {
+                    labelBarang.innerText = 'Membeli Barang (Kredit / Menambah Hutang)';
+                    labelLain.innerText = 'Lain-lain (Kredit / Menambah Hutang)';
+                    containerMembayarHutang.classList.add('d-none');
+                    containerKasKecil.classList.add('d-none');
+                    
+                    if (radioMembayarHutang.checked || radioKasKecil.checked) {
+                        radioMembayarHutang.checked = false;
+                        radioKasKecil.checked = false;
+                        toggleKeperluanSection();
+                    }
+                } else {
+                    labelBarang.innerText = 'Membeli Barang / Menambah Hutang';
+                    labelLain.innerText = 'Lain-lain (Diluar Kas Kecil)';
+                    containerMembayarHutang.classList.remove('d-none');
+                    containerKasKecil.classList.remove('d-none');
                 }
             }
 
@@ -384,10 +423,15 @@
             @endif
 
             // ======== Loading Setelah Submit ========
-            const loadingOverlay = document.getElementById('loading-overlay');
+            const btnSubmit = document.getElementById('btn-submit');
+            const submitSpinner = document.getElementById('submit-spinner');
+            const submitText = document.getElementById('submit-text');
 
             form.addEventListener('submit', function(e) {
-                loadingOverlay.style.display = 'flex';
+                if (btnSubmit) {
+                    if (submitSpinner) submitSpinner.classList.remove('d-none');
+                    if (submitText) submitText.innerText = 'Menyimpan...';
+                }
 
                 // disable semua button untuk mencegah double submit
                 form.querySelectorAll('button').forEach(btn => btn.disabled = true);

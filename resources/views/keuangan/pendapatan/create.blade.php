@@ -5,13 +5,6 @@
 
 @section('section-heading', 'Penerimaan Kas Perusahaan')
 @section('section-row')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ route('keuangan.pendapatan.create_lain') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambahkan Penerimaan Lain-Lain Contoh: Sewa & Pemasukan.
-            Klik Disini!
-        </a>
-    </div>
-
     <div class="card shadow-sm">
         <div class="card-body">
             @if ($errors->any())
@@ -25,7 +18,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('keuangan.pendapatan.store') }}" method="POST">
+            <form action="{{ route('keuangan.pendapatan.store') }}" method="POST" id="pendapatan-form">
                 @csrf
 
                 {{-- Uraian Pendapatan --}}
@@ -58,13 +51,14 @@
                         class="form-select @error('jenis_pendapatan') is-invalid @enderror" required>
                         <option value="" disabled {{ old('jenis_pendapatan') ? '' : 'selected' }}>-- Pilih Jenis --
                         </option>
-                        <option value="tunai" {{ old('jenis_pendapatan') == 'tunai' ? 'selected' : '' }}>Tunai</option>
-                        <option value="lain_lain" {{ old('jenis_pendapatan') == 'lain_lain' ? 'selected' : '' }}>Penjualan Tunai (Pendapatan Lain-Lain)</option>
+                        <option value="lain_lain" {{ old('jenis_pendapatan') == 'lain_lain' ? 'selected' : '' }}>
+                            Pendapatan Lain-Lain</option>
                         <option value="piutang" {{ old('jenis_pendapatan') == 'piutang' ? 'selected' : '' }}>Piutang
                             (Menambah/Membuat Baru)
                         </option>
-                        <option value="kredit" {{ old('jenis_pendapatan') == 'kredit' ? 'selected' : '' }}>Kredit
-                            (Pelunasan)</option>
+                        <option value="kredit" {{ old('jenis_pendapatan') == 'pelunasan' ? 'selected' : '' }}>Pelunasan
+                            Hutang
+                            dari Debitur</option>
                     </select>
                     @error('jenis_pendapatan')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -169,11 +163,12 @@
                     </div>
                 </div>
 
-                {{-- Jumlah Penjualan --}}
+                {{-- Jumlah Pendapatan --}}
                 <div class="mb-3">
-                    <label for="jumlah_penjualan" class="form-label">Jumlah Penjualan (Otomatis)</label>
-                    <input type="text" id="jumlah_penjualan" name="jumlah" class="form-control rupiah" value="0"
-                        readonly required>
+                    <label for="jumlah_penjualan" class="form-label">Jumlah Pendapatan (Otomatis)<span
+                            class="text-danger">*</span></label>
+                    <input type="text" id="jumlah_penjualan" name="jumlah" class="form-control rupiah"
+                        value="0" readonly required>
                     @error('jumlah')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -195,7 +190,11 @@
                     <a href="{{ route('keuangan.pendapatan.list') }}" class="btn btn-secondary">
                         Kembali
                     </a>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit">
+                        <span class="spinner-border spinner-border-sm d-none" id="submit-spinner" role="status"
+                            aria-hidden="true"></span>
+                        <span id="submit-text">Simpan</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -231,7 +230,7 @@
             const barangTemplate = `
         <div class="barang-row row mb-2 align-items-end" data-index="{index}">
             <div class="col-md-4">
-                <label class="form-label">Barang</label>
+                <label class="form-label">Barang<span class="text-danger">*</span></label>
                 <select name="barang_terjual[{index}]" class="form-control barang-select" required>
                     <option value="" disabled selected>-- Pilih Barang --</option>
                     @foreach ($barang as $item)
@@ -244,7 +243,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Jumlah</label>
+                <label class="form-label">Jumlah<span class="text-danger">*</span></label>
                 <input type="number" name="jumlah_barang_dijual[{index}]" class="form-control jumlah-input" min="1" required>
             </div>
             <div class="col-md-3">
@@ -354,11 +353,12 @@
                         jumlahPenjualan.value = 0;
                     }
                     jumlahPenjualan.removeAttribute('readonly');
-                    document.querySelector('label[for="jumlah_penjualan"]').innerText = 'Jumlah Penjualan';
+                    document.querySelector('label[for="jumlah_penjualan"]').innerText = 'Jumlah Pendapatan';
                 } else {
                     barangSection.classList.remove('d-none');
                     jumlahPenjualan.setAttribute('readonly', 'readonly');
-                    document.querySelector('label[for="jumlah_penjualan"]').innerText = 'Jumlah Penjualan (Otomatis)';
+                    document.querySelector('label[for="jumlah_penjualan"]').innerText =
+                        'Jumlah Pendapatan (Otomatis)';
                     if (barangList.children.length === 0) {
                         tambahBarang();
                     }
@@ -485,6 +485,22 @@
                     position: 'top-end',
                 });
             @endif
+
+            // ======== Loading Setelah Submit ========
+            const form = document.getElementById('pendapatan-form');
+            const btnSubmit = document.getElementById('btn-submit');
+            const submitSpinner = document.getElementById('submit-spinner');
+            const submitText = document.getElementById('submit-text');
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (btnSubmit) {
+                        if (submitSpinner) submitSpinner.classList.remove('d-none');
+                        if (submitText) submitText.innerText = 'Menyimpan...';
+                    }
+                    form.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                });
+            }
         });
     </script>
 @endpush

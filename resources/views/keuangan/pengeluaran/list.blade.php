@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">Semua Pengeluaran Kas Perusahaan</h5>
         <a href="{{ route('keuangan.pengeluaran.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Data Pengeluaran Kas Perusahaan
+            <i class="bi bi-plus-circle me-1"></i> Tambah Pengeluaran Kas
         </a>
     </div>
 
@@ -54,7 +54,13 @@
                         </td>
                         <td>Rp {{ number_format($data->jumlah_pengeluaran ?? 0, 0, ',', '.') }}</td>
                         <td>
-                            @if ($data->hutang->isNotEmpty())
+                            @if ($data->transaction_type === 'pemesanan-barang')
+                                <span class="badge bg-secondary mb-1">Dari SPP</span>
+                                <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}"
+                                    class="btn btn-info btn-sm text-white">
+                                    <i class="bi bi-eye"></i> Detail
+                                </a>
+                            @elseif ($data->hutang->isNotEmpty())
                                 {{-- Pelunasan hutang --}}
                                 <form action="{{ route('keuangan.pengeluaran.pelunasan-hutang.destroy', $data->id) }}"
                                     method="POST" class="d-inline delete-btn">
@@ -89,53 +95,6 @@
                 <tr>
                     <td colspan="7" class="text-center"><b>Total Pengeluaran Kas Perusahaan Kas Besar</b></td>
                     <td><b>Rp {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</b></td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-
-    {{-- ===================== TABEL Kas Kecil ===================== --}}
-    <h5 class="mt-5 mb-3">Pengeluaran Kas Kecil</h5>
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped table-hover align-middle kas-kecil-table">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Tanggal</th>
-                    <th>Uraian</th>
-                    <th>Jumlah Pengeluaran Kas Perusahaan Kas Kecil</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($dataKasKecil as $data)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
-                        <td>{{ $data->uraian }}</td>
-                        <td>Rp {{ number_format($data->keluar_kas_kecil ?? 0, 0, ',', '.') }}</td>
-                        <td>
-                            <a href="{{ route('keuangan.pengeluaran.show', $data->id) }}"
-                                class="btn btn-info btn-sm text-white">
-                                <i class="bi bi-eye"></i> Detail
-                            </a>
-                            <form action="{{ route('keuangan.pengeluaran.destroy', ['id' => $data->id]) }}" method="POST"
-                                class="d-inline delete-btn">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash"></i> Hapus
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" class="text-center"><b>Total Pengeluaran Kas Perusahaan Kas Kecil</b></td>
-                    <td><b>Rp {{ number_format($totalKeluarKasKecil ?? 0, 0, ',', '.') }}</b></td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -220,17 +179,7 @@
                 }
             });
 
-            $('.kas-kecil-table').DataTable({
-                paging: true,
-                pageLength: 10,
-                ordering: true,
-                responsive: true,
-                info: false,
-                language: {
-                    emptyTable: "Tidak ada data kas kecil untuk ditampilkan",
-                    search: "Cari:"
-                }
-            });
+
 
             $('.delete-btn').on('click', function() {
                 let form = $(this).closest('form');

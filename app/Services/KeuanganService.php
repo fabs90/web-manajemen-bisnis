@@ -28,13 +28,16 @@ class KeuanganService
             $sales['returPenjualan'] -
             $sales['potonganPenjualan'];
 
-        // In perpetual inventory system:
-        // HPP is recorded directly.
-        $hpp = $this->getHppTotal($userId, $dateRange);
+        // In periodic inventory system:
+        // Pembelian = total of 'membeli_barang' debit to 1105
+        $pembelianBersih = $this->getPembelianTotal($userId, $dateRange);
 
-        // Purchases (for report detail)
-        // Purchases = Ending Inventory - Beginning Inventory + HPP
-        $pembelianBersih = $inventory['persediaanAkhir'] - $inventory['persediaanAwal'] + $hpp;
+        // HPP = Awal + Pembelian - Akhir
+        $hpp = $inventory['persediaanAwal'] + $pembelianBersih - $inventory['persediaanAkhir'];
+
+        // If there's any manual HPP (5101) entry, we might want to add it, but standard periodic ignores it or adds to it.
+        $hppManual = $this->getHppTotal($userId, $dateRange);
+        $hpp += $hppManual;
 
         // Split into components for report consistency if possible
         $pembelianKredit = $pembelianBersih;
@@ -74,6 +77,7 @@ class KeuanganService
     {
         // Revenue accounts are category 'revenue'
         $revenueAccounts = Account::where('user_id', $userId)->where('category', 'revenue')->pluck('id');
+        $potonganPenjualanId = Account::where('user_id', $userId)->where('code', '4102')->value('id');
 
         $items = JournalItem::where('user_id', $userId)
             ->whereIn('account_id', $revenueAccounts)
@@ -86,14 +90,19 @@ class KeuanganService
             })
             ->get();
 
+        // Separate Potongan Penjualan from other revenues
+        $potonganItems = $potonganPenjualanId ? $items->where('account_id', $potonganPenjualanId) : collect();
+        $otherRevenueItems = $potonganPenjualanId ? $items->where('account_id', '!=', $potonganPenjualanId) : $items;
+
         // Normal balance for revenue is Credit.
-        // totalPenjualan = sum of credit
-        $totalPenjualan = $items->sum('credit');
+        $totalPenjualan = $otherRevenueItems->sum('credit');
 
-        // returPenjualan = sum of debit
-        $returPenjualan = $items->sum('debit');
+        // returPenjualan = sum of debit on normal revenue accounts
+        $returPenjualan = $otherRevenueItems->sum('debit');
 
-        $potonganPenjualan = 0;
+        // potonganPenjualan = sum of debit on 4102 (normal balance is debit)
+        $potonganPenjualan = $potonganItems->sum('debit') - $potonganItems->sum('credit');
+
         $penjualanKredit = $totalPenjualan; // For display
         $penjualanTunai = 0;
         $bungaPenjualan = 0;
@@ -112,11 +121,52 @@ class KeuanganService
     {
         $startDate = $dateRange[0];
         $endDate = $dateRange[1];
+        
+        $barang = \App\Models\Barang::where('user_id', $userId)->get();
 
-        $persediaanAwal = $this->getAccountBalance($userId, '1105', date('Y-m-d', strtotime($startDate.' -1 day')));
-        $persediaanAkhir = $this->getAccountBalance($userId, '1105', $endDate);
+        $persediaanAwal = 0;
+        $prevDate = date('Y-m-d', strtotime($startDate.' -1 day'));
+        foreach ($barang as $b) {
+            $lastKartu = \App\Models\KartuGudang::where('barang_id', $b->id)
+                ->where('tanggal', '<=', $prevDate)
+                ->latest('id')
+                ->first();
+            if ($lastKartu) {
+                $persediaanAwal += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
+            }
+        }
+
+        $persediaanAkhir = 0;
+        foreach ($barang as $b) {
+            $lastKartu = \App\Models\KartuGudang::where('barang_id', $b->id)
+                ->where('tanggal', '<=', $endDate)
+                ->latest('id')
+                ->first();
+            if ($lastKartu) {
+                $persediaanAkhir += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
+            }
+        }
 
         return compact('persediaanAwal', 'persediaanAkhir');
+    }
+    
+    private function getPembelianTotal(int $userId, array $dateRange): float
+    {
+        $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
+        if (! $persediaanAccount) {
+            return 0;
+        }
+
+        // Pembelian = Debit ke akun persediaan dari transaksi membeli_barang
+        $items = JournalItem::where('user_id', $userId)
+            ->where('account_id', $persediaanAccount->id)
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange)
+                  ->where('transaction_type', 'membeli_barang');
+            })
+            ->get();
+
+        return (float) $items->sum('debit');
     }
 
     private function getHppTotal(int $userId, array $dateRange): float
@@ -187,7 +237,19 @@ class KeuanganService
         $totalKas = $kas + $kasKecil + $bank;
 
         $saldoPiutang = $this->getAccountBalance($userId, '1104', $date);
-        $nilaiPersediaan = $this->getAccountBalance($userId, '1105', $date);
+        
+        // Gunakan saldo persediaan dari KartuGudang agar akurat dengan fisik gudang
+        $barang = \App\Models\Barang::where('user_id', $userId)->get();
+        $nilaiPersediaan = 0;
+        foreach ($barang as $b) {
+            $lastKartu = \App\Models\KartuGudang::where('barang_id', $b->id)
+                ->where('tanggal', '<=', $date)
+                ->latest('id')
+                ->first();
+            if ($lastKartu) {
+                $nilaiPersediaan += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
+            }
+        }
 
         $tanah = $this->getAccountBalance($userId, '1203', $date);
         $kendaraan = $this->getAccountBalance($userId, '1202', $date);

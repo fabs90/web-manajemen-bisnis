@@ -84,6 +84,9 @@
                         <li class="submenu-item {{ Request::is('dashboard/keuangan/kasir*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.kasir.index') }}" class="submenu-link">Kasir</a>
                         </li>
+                        <li class="submenu-item {{ Request::is('dashboard/keuangan/paket-diskon*') ? 'active' : '' }}">
+                            <a href="{{ route('keuangan.paket-diskon.index') }}" class="submenu-link">Paket Diskon</a>
+                        </li>
                         <li class="submenu-item {{ Request::is('dashboard/keuangan/pendapatan*') ? 'active' : '' }}">
                             <a href="{{ route('keuangan.pendapatan.list') }}"
                                 class="submenu-link">Penerimaan Kas Perusahaan/Penjualan</a>

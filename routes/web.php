@@ -182,6 +182,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'store',
         ])->name('keuangan.pengeluaran-kas-kecil.store');
 
+        // Paket Diskon
+        Route::resource('/paket-diskon', \App\Http\Controllers\PaketDiskonController::class)
+            ->names('keuangan.paket-diskon')
+            ->except(['show']);
+
         // Kasir
         Route::get('/kasir', [KasirController::class, 'index'])->name(
             'keuangan.kasir.index',

@@ -3,285 +3,333 @@
 @section('section-heading', 'Kasir Penjualan')
 @section('section-row')
 
-<style>
-    .kasir-card { border-radius: 14px; }
-    .total-box {
-        background: #222;
-        color: #0f0;
-        font-size: 24px;
-        font-weight: bold;
-        padding: 10px;
-        border-radius: 12px;
-        text-align: right;
-    }
-    #kembalian {
-        font-size: 18px;
-        font-weight: bold;
-        text-align: right;
-    }
-    #bayar {
-        font-size: 18px;
-        font-weight: bold;
-        text-align: right;
-        border: 2px solid #007bff;
-    }
-    .btn-action {
-        font-size: 16px;
-        font-weight: bold;
-        padding: 10px;
-        border-radius: 8px;
-    }
-    .keranjang-table td, .keranjang-table th {
-        font-size: 14px;
-        vertical-align: middle;
-    }
-    .status-kurang {
-        color: #b30000 !important;
-    }
-    .status-cukup {
-        color: #008000 !important;
-    }
-    /* Loading Overlay */
-    #page-loader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.9);
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-</style>
+    <style>
+        .kasir-card {
+            border-radius: 14px;
+        }
 
-<!-- Loading Overlay -->
-<div id="page-loader">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">Loading...</span>
+        .total-box {
+            background: #222;
+            color: #0f0;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: right;
+        }
+
+        #kembalian {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        #bayar {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            border: 2px solid #007bff;
+        }
+
+        .btn-action {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .keranjang-table td,
+        .keranjang-table th {
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .status-kurang {
+            color: #b30000 !important;
+        }
+
+        .status-cukup {
+            color: #008000 !important;
+        }
+
+        /* Loading Overlay */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+
+    <!-- Loading Overlay -->
+    <div id="page-loader">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="mt-3 fw-bold text-secondary">Memuat Kasir...</h5>
     </div>
-    <h5 class="mt-3 fw-bold text-secondary">Memuat Kasir...</h5>
-</div>
 
-<div class="card shadow-sm kasir-card">
-    <div class="card-body">
-        {{-- Tombol Back --}}
-              <div class="mb-3">
-                  <a href="{{ route('keuangan.kasir.index') }}" class="btn btn-secondary btn-sm">
-                      ⬅ Kembali
-                  </a>
-              </div>
-
-        <form action="{{ route('keuangan.kasir.store') }}" method="POST">
-            @csrf
-
-            <div class="row">
-                {{-- 🔹 Area Barang --}}
-                <div class="col-lg-8">
-                    <div class="row align-items-start mb-3">
-                        <div class="col-md-7">
-                            <label><strong>Pilih Barang</strong></label>
-                            <select class="form-select mb-1" id="select-barang" onchange="updateStokInfo(this)">
-                                <option disabled selected>-- Pilih barang --</option>
-                                @foreach ($barang as $item)
-                                <option value="{{ $item->id }}"
-                                    data-nama="{{ $item->nama }}"
-                                    data-stok="{{ $item->latestKartuGudang ? number_format($item->latestKartuGudang->saldo_persatuan, 0, '.', '') : '0' }}"
-                                    data-harga="{{ $item->harga_jual_per_unit }}">
-                                    {{ $item->nama }} - Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <div id="stok-info" class="text-muted fw-bold">
-                                Stok tersedia: <span id="stok-value" class="text-primary">-</span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-2">
-                            <label><strong>Jumlah</strong></label>
-                            <input type="number" id="qty" class="form-control mb-1" value="1" min="1">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="d-none d-md-block">&nbsp;</label>
-                            <button type="button" id="btn-tambah" class="btn btn-success w-100 btn-action mb-1">
-                                ➕ Tambah
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table keranjang-table table-bordered table-striped" id="keranjang-table">
-                            <thead class="table-dark text-center">
-                                <tr>
-                                    <th style="min-width: 150px;">Barang</th>
-                                    <th style="min-width: 80px;">Qty</th>
-                                    <th style="min-width: 120px;">Harga</th>
-                                    <th style="min-width: 120px;">Subtotal</th>
-                                    <th style="min-width: 60px;">Hapus</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {{-- 🔹 Area Pembayaran --}}
-                <div class="col-lg-4">
-
-                    <label><strong>Jenis Pembayaran</strong></label>
-                    <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="form-select mb-3" required>
-                        <option value="" disabled selected>-- Pilih Jenis Pembayaran --</option>
-                        @if (!$jenisPembayaran)
-                            <option value="1">Tunai</option>
-                            <option value="2">Transfer Bank</option>
-                            <option value="3">QRIS</option>
-                        @else
-                            @foreach ($jenisPembayaran as $jp)
-                                <option value="{{ $jp->id }}" data-nama="{{ strtolower($jp->nama) }}">{{ $jp->nama }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-
-                    <div id="qris-container" class="mt-2 mb-3 text-center d-none">
-                        <label class="fw-bold d-block mb-1">Pindai QRIS untuk Pembayaran</label>
-                        @if(auth()->user()->qris_image)
-                            <img src="{{ asset('storage/' . auth()->user()->qris_image) }}" alt="QRIS" class="img-fluid border p-2" style="max-height: 250px;">
-                        @else
-                            <div class="alert alert-warning py-2 small">
-                                <i class="fas fa-exclamation-circle me-1"></i> QRIS belum diatur. <a href="{{ route('qris.index') }}" class="fw-bold">Atur di sini</a>.
-                            </div>
-                        @endif
-                    </div>
-
-                    <label><strong>Total Bayar</strong></label>
-                    <div class="total-box mb-3" id="grand-total">Rp 0</div>
-                    <input type="hidden" name="grand_total" id="grand-total-value">
-                    <label class="fw-bold">Uang Dibayar</label>
-                    <input type="text" name="uang_bayar" id="bayar"
-                        class="form-control rupiah mb-3" placeholder="Masukkan uang" autocomplete="off">
-
-                    <label class="fw-bold">Kembalian</label>
-                    <input type="text" id="kembalian"
-                        class="form-control mb-3" readonly>
-                    <input type="hidden" name="uang_kembalian" id="kembalian-value">
-
-
-                    <button type="submit" class="btn btn-primary w-100 btn-action" id="btn-simpan" disabled>
-                        💾 Simpan Transaksi
-                    </button>
-
-                </div>
+    <div class="card shadow-sm kasir-card">
+        <div class="card-body">
+            {{-- Tombol Back --}}
+            <div class="mb-3">
+                <a href="{{ route('keuangan.kasir.index') }}" class="btn btn-secondary btn-sm">
+                    ⬅ Kembali
+                </a>
             </div>
 
-        </form>
+            <form action="{{ route('keuangan.kasir.store') }}" method="POST">
+                @csrf
+
+                <div class="row">
+                    {{-- 🔹 Area Barang --}}
+                    <div class="col-lg-8">
+                        <div class="row align-items-start mb-3">
+                            <div class="col-md-7">
+                                <label><strong>Pilih Barang</strong></label>
+                                <select class="form-select mb-1" id="select-barang" onchange="updateStokInfo(this)">
+                                    <option disabled selected>-- Pilih barang --</option>
+                                    @foreach ($barang as $item)
+                                        <option value="{{ $item->id }}" data-nama="{{ $item->nama }}"
+                                            data-stok="{{ $item->latestKartuGudang ? number_format($item->latestKartuGudang->saldo_persatuan, 0, '.', '') : '0' }}"
+                                            data-harga="{{ $item->harga_jual_per_unit }}">
+                                            {{ $item->nama }} - Rp
+                                            {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="stok-info" class="text-muted fw-bold">
+                                    Stok tersedia: <span id="stok-value" class="text-primary">-</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label><strong>Jumlah</strong></label>
+                                <input type="number" id="qty" class="form-control mb-1" value="1"
+                                    min="1">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="d-none d-md-block">&nbsp;</label>
+                                <button type="button" id="btn-tambah" class="btn btn-success w-100 btn-action mb-1">
+                                    ➕ Tambah
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table keranjang-table table-bordered table-striped" id="keranjang-table">
+                                <thead class="table-dark text-center">
+                                    <tr>
+                                        <th style="min-width: 150px;">Barang</th>
+                                        <th style="min-width: 80px;">Qty</th>
+                                        <th style="min-width: 120px;">Harga</th>
+                                        <th style="min-width: 120px;">Subtotal</th>
+                                        <th style="min-width: 60px;">Hapus</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- 🔹 Area Pembayaran --}}
+                    <div class="col-lg-4">
+
+                        <label><strong>Jenis Pembayaran</strong></label>
+                        <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="form-select mb-3" required>
+                            <option value="" disabled selected>-- Pilih Jenis Pembayaran --</option>
+                            @if (!$jenisPembayaran)
+                                <option value="1">Tunai</option>
+                                <option value="2">Transfer Bank</option>
+                                <option value="3">QRIS</option>
+                            @else
+                                @foreach ($jenisPembayaran as $jp)
+                                    <option value="{{ $jp->id }}" data-nama="{{ strtolower($jp->nama) }}">
+                                        {{ $jp->nama }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+
+                        <div id="qris-container" class="mt-2 mb-3 text-center d-none">
+                            <label class="fw-bold d-block mb-1">Pindai QRIS untuk Pembayaran</label>
+                            @if (auth()->user()->qris_image)
+                                <img src="{{ asset('storage/' . auth()->user()->qris_image) }}" alt="QRIS"
+                                    class="img-fluid border p-2" style="max-height: 250px;">
+                            @else
+                                <div class="alert alert-warning py-2 small">
+                                    <i class="fas fa-exclamation-circle me-1"></i> QRIS belum diatur. <a
+                                        href="{{ route('qris.index') }}" class="fw-bold">Atur di sini</a>.
+                                </div>
+                            @endif
+                        </div>
+
+                        <label><strong>Pilih Paket Diskon</strong> <span class="text-muted">(Opsional)</span></label>
+                        <select name="paket_diskon_id" id="paket_diskon_id" class="form-select mb-3">
+                            <option value="">-- Tanpa Diskon --</option>
+                            @foreach ($paketDiskons as $pd)
+                                <option value="{{ $pd->id }}" 
+                                    data-jenis="{{ $pd->jenis_diskon }}" 
+                                    data-nilai="{{ $pd->nilai_diskon }}" 
+                                    data-minimal="{{ $pd->minimal_pembelian }}" 
+                                    data-barang="{{ $pd->barang_id }}">
+                                    {{ $pd->nama_paket }} 
+                                    ({{ $pd->jenis_diskon == 'persentase' ? round($pd->nilai_diskon).'%' : 'Rp '.number_format($pd->nilai_diskon,0,',','.') }})
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <label><strong>Total Diskon</strong></label>
+                        <div class="total-box mb-3" id="diskon-box" style="color: #ff9800; font-size: 20px;">- Rp 0</div>
+                        <input type="hidden" name="diskon_total" id="diskon-total-value" value="0">
+
+                        <label><strong>Total Bayar</strong></label>
+                        <div class="total-box mb-3" id="grand-total">Rp 0</div>
+                        <input type="hidden" name="grand_total" id="grand-total-value">
+                        <label class="fw-bold">Uang Dibayar</label>
+                        <input type="text" name="uang_bayar" id="bayar" class="form-control rupiah mb-3"
+                            placeholder="Masukkan uang" autocomplete="off">
+
+                        <label class="fw-bold">Kembalian</label>
+                        <input type="text" id="kembalian" class="form-control mb-3" readonly>
+                        <input type="hidden" name="uang_kembalian" id="kembalian-value">
+
+
+                        <button type="submit" class="btn btn-primary w-100 btn-action" id="btn-simpan" disabled>
+                            💾 Simpan Transaksi
+                        </button>
+
+                    </div>
+                </div>
+
+            </form>
+        </div>
     </div>
-</div>
 @endsection
 @push('script')
-<script>
-function updateStokInfo(selectElement) {
-    const opt = selectElement.options[selectElement.selectedIndex];
-    const stokValue = document.getElementById('stok-value');
-    if (opt && opt.value) {
-        stokValue.innerText = opt.dataset.stok || '0';
-    } else {
-        stokValue.innerText = '-';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    // Sembunyikan loading overlay setelah semua ter-load
-    window.addEventListener('load', function() {
-        const loader = document.getElementById('page-loader');
-        if (loader) {
-            loader.style.display = 'none';
+    <script>
+        function updateStokInfo(selectElement) {
+            const opt = selectElement.options[selectElement.selectedIndex];
+            const stokValue = document.getElementById('stok-value');
+            if (opt && opt.value) {
+                stokValue.innerText = opt.dataset.stok || '0';
+            } else {
+                stokValue.innerText = '-';
+            }
         }
-    });
 
-    // Tambahkan script printer
-    const printerScript = document.createElement('script');
-    printerScript.src = "{{ asset('dist/assets/pos-printer.js') }}";
-    document.head.appendChild(printerScript);
+        document.addEventListener('DOMContentLoaded', function() {
 
-    @if (session('success'))
-        @if (session('receipt') && auth()->user()->is_printer_enabled)
-            Swal.fire({
-                icon: 'success',
-                title: 'Sukses!',
-                text: "{{ session('success') }}",
-                showCancelButton: true,
-                confirmButtonText: '🖨️ Cetak Struk',
-                cancelButtonText: 'Tutup',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const receiptData = @json(session('receipt'));
-                    const printer = new PosPrinter();
-                    printer.printReceipt(receiptData);
+            // Sembunyikan loading overlay setelah semua ter-load
+            window.addEventListener('load', function() {
+                const loader = document.getElementById('page-loader');
+                if (loader) {
+                    loader.style.display = 'none';
                 }
             });
-        @else
-            Swal.fire({
-                icon: 'success',
-                title: 'Sukses!',
-                text: "{{ session('success') }}",
-                timer: 2800,
-                showConfirmButton: true
+
+            // Tambahkan script printer
+            const printerScript = document.createElement('script');
+            printerScript.src = "{{ asset('dist/assets/pos-printer.js') }}";
+            document.head.appendChild(printerScript);
+
+            @if (session('success'))
+                @if (session('receipt') && auth()->user()->is_printer_enabled)
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sukses!',
+                        text: "{{ session('success') }}",
+                        showCancelButton: true,
+                        confirmButtonText: '🖨️ Cetak Struk',
+                        cancelButtonText: 'Tutup',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const receiptData = @json(session('receipt'));
+                            const printer = new PosPrinter();
+                            printer.printReceipt(receiptData);
+                        }
+                    });
+                @else
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sukses!',
+                        text: "{{ session('success') }}",
+                        timer: 2800,
+                        showConfirmButton: true
+                    });
+                @endif
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: "{{ session('error') }}",
+                    showConfirmButton: true
+                });
+            @endif
+
+            function parseRupiah(value) {
+                if (!value) return 0;
+                return parseFloat(value.toString().replace(/[^,\d]/g, '').replace(/,/g, '.')) || 0;
+            }
+
+            function formatRupiah(angka) {
+                if (isNaN(angka)) return '';
+                return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            const rupiahInputs = document.querySelectorAll('.rupiah');
+            rupiahInputs.forEach(input => {
+                input.addEventListener('input', (e) => {
+                    let angka = parseRupiah(e.target.value);
+                    e.target.value = angka === 0 ? '' : formatRupiah(angka);
+                });
+
+                if (input.value) {
+                    let angka = parseRupiah(input.value);
+                    input.value = angka === 0 ? '' : formatRupiah(angka);
+                }
             });
-        @endif
-    @endif
 
-    @if (session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: "{{ session('error') }}",
-            showConfirmButton: true
-        });
-    @endif
+            document.querySelector('form').addEventListener('submit', function() {
+                rupiahInputs.forEach(input => {
+                    input.value = parseRupiah(input.value);
+                });
+            });
 
-    // Init AutoNumeric untuk semua input rupiah
-    AutoNumeric.multiple('.rupiah', {
-        digitGroupSeparator: '.',
-        decimalCharacter: ',',
-        decimalPlaces: 0,
-        currencySymbol: 'Rp ',
-        currencySymbolPlacement: 'p',
-        minimumValue: '0',
-        unformatOnSubmit: true
-    });
+            const keranjangTable = document.querySelector('#keranjang-table tbody');
+            const selectBarang = document.getElementById('select-barang');
+            const qtyInput = document.getElementById('qty');
 
-    // Khusus ambil nilai Bayar tanpa format
-    const bayarAN = AutoNumeric.getAutoNumericElement('#bayar');
+            const grandTotalEl = document.getElementById('grand-total');
+            const inputKembalian = document.getElementById('kembalian');
+            const btnSimpan = document.getElementById('btn-simpan');
 
-    const keranjangTable = document.querySelector('#keranjang-table tbody');
-    const selectBarang = document.getElementById('select-barang');
-    const qtyInput = document.getElementById('qty');
+            // updateStokInfo() dipanggil via inline onchange atribut di select
+            const initialOpt = document.getElementById('select-barang');
+            if (initialOpt && initialOpt.value) {
+                updateStokInfo(initialOpt);
+            }
 
-    const grandTotalEl = document.getElementById('grand-total');
-    const inputKembalian = document.getElementById('kembalian');
-    const btnSimpan = document.getElementById('btn-simpan');
+            document.getElementById('btn-tambah').addEventListener('click', () => {
+                const opt = selectBarang.selectedOptions[0];
+                if (!opt) return;
 
-    // updateStokInfo() dipanggil via inline onchange atribut di select
-    const initialOpt = document.getElementById('select-barang');
-    if (initialOpt && initialOpt.value) {
-        updateStokInfo(initialOpt);
-    }
+                const nama = opt.dataset.nama;
+                const harga = parseFloat(opt.dataset.harga);
+                const qty = parseInt(qtyInput.value) || 1;
+                const subtotal = harga * qty;
 
-    document.getElementById('btn-tambah').addEventListener('click', () => {
-        const opt = selectBarang.selectedOptions[0];
-        if (!opt) return;
-
-        const nama = opt.dataset.nama;
-        const harga = parseFloat(opt.dataset.harga);
-        const qty = parseInt(qtyInput.value) || 1;
-        const subtotal = harga * qty;
-
-        const row = `
+                const row = `
             <tr>
                 <td>
                     ${nama}
@@ -295,81 +343,127 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td><button type="button" class="btn btn-danger btn-sm hapus">X</button></td>
             </tr>
         `;
-        keranjangTable.insertAdjacentHTML('beforeend', row);
-        hitungTotal();
-    });
+                keranjangTable.insertAdjacentHTML('beforeend', row);
+                hitungTotal();
+            });
 
-    // Update Qty
-    keranjangTable.addEventListener('input', function (e) {
-        if (!e.target.classList.contains('qty')) return;
+            // Update Qty
+            keranjangTable.addEventListener('input', function(e) {
+                if (!e.target.classList.contains('qty')) return;
 
-        const row = e.target.closest('tr');
-        const harga = parseFloat(row.querySelector('td:nth-child(3)').innerText.replace(/[Rp .]/g, ''));
-        const qty = parseInt(e.target.value) || 1;
-        const subtotal = harga * qty;
+                const row = e.target.closest('tr');
+                const harga = parseFloat(row.querySelector('td:nth-child(3)').innerText.replace(/[Rp .]/g,
+                    ''));
+                const qty = parseInt(e.target.value) || 1;
+                const subtotal = harga * qty;
 
-        const subtotalEl = row.querySelector('.subtotal');
-        subtotalEl.dataset.sub = subtotal;
-        subtotalEl.innerText = "Rp " + subtotal.toLocaleString('id-ID');
+                const subtotalEl = row.querySelector('.subtotal');
+                subtotalEl.dataset.sub = subtotal;
+                subtotalEl.innerText = "Rp " + subtotal.toLocaleString('id-ID');
 
-        hitungTotal();
-    });
+                hitungTotal();
+            });
 
-    // Hapus barang
-    keranjangTable.addEventListener('click', function (e) {
-        if (e.target.classList.contains('hapus')) {
-            e.target.closest('tr').remove();
-            hitungTotal();
-        }
-    });
+            // Hapus barang
+            keranjangTable.addEventListener('click', function(e) {
+                if (e.target.classList.contains('hapus')) {
+                    e.target.closest('tr').remove();
+                    hitungTotal();
+                }
+            });
 
-    // Hitung ulang bila bayar diketik
-    document.getElementById('bayar').addEventListener('input', hitungKembalian);
+            // Hitung ulang bila bayar diketik
+            document.getElementById('bayar').addEventListener('input', hitungKembalian);
 
-    // Toggle QRIS Display
-    const selectJenisPembayaran = document.getElementById('jenis_pembayaran_id');
-    const qrisContainer = document.getElementById('qris-container');
+            // Toggle QRIS Display
+            const selectJenisPembayaran = document.getElementById('jenis_pembayaran_id');
+            const qrisContainer = document.getElementById('qris-container');
 
-    selectJenisPembayaran.addEventListener('change', function () {
-        const selectedOption = this.selectedOptions[0];
-        const namaPembayaran = selectedOption.dataset.nama || '';
+            selectJenisPembayaran.addEventListener('change', function() {
+                const selectedOption = this.selectedOptions[0];
+                const namaPembayaran = selectedOption.dataset.nama || '';
 
-        if (namaPembayaran === 'qris') {
-            qrisContainer.classList.remove('d-none');
-        } else {
-            qrisContainer.classList.add('d-none');
-        }
-    });
+                if (namaPembayaran === 'qris') {
+                    qrisContainer.classList.remove('d-none');
+                } else {
+                    qrisContainer.classList.add('d-none');
+                }
+            });
 
-    function hitungTotal() {
-        let total = 0;
-        document.querySelectorAll('.subtotal').forEach(el => {
-            total += parseFloat(el.dataset.sub);
+            const selectDiskon = document.getElementById('paket_diskon_id');
+            selectDiskon.addEventListener('change', hitungTotal);
+
+            function hitungTotal() {
+                let subtotal = 0;
+                document.querySelectorAll('.subtotal').forEach(el => {
+                    subtotal += parseFloat(el.dataset.sub);
+                });
+
+                let diskonTotal = 0;
+                const optDiskon = selectDiskon.options[selectDiskon.selectedIndex];
+                
+                if (optDiskon && optDiskon.value) {
+                    const jenis = optDiskon.dataset.jenis;
+                    const nilai = parseFloat(optDiskon.dataset.nilai);
+                    const minimal = parseFloat(optDiskon.dataset.minimal) || 0;
+                    const barangId = optDiskon.dataset.barang;
+
+                    if (subtotal >= minimal) {
+                        if (barangId) {
+                            // Diskon khusus 1 produk
+                            document.querySelectorAll('#keranjang-table tbody tr').forEach(row => {
+                                const idBarangTerjual = row.querySelector('input[name="id_barang_terjual[]"]').value;
+                                if (idBarangTerjual === barangId) {
+                                    const subRow = parseFloat(row.querySelector('.subtotal').dataset.sub);
+                                    if (jenis === 'persentase') {
+                                        diskonTotal += (subRow * nilai / 100);
+                                    } else {
+                                        const qty = parseInt(row.querySelector('.qty').value) || 1;
+                                        diskonTotal += (nilai * qty);
+                                    }
+                                }
+                            });
+                        } else {
+                            // Diskon global (memotong subtotal keseluruhan)
+                            if (jenis === 'persentase') {
+                                diskonTotal = subtotal * nilai / 100;
+                            } else {
+                                diskonTotal = nilai;
+                            }
+                        }
+                    }
+                }
+
+                if (diskonTotal > subtotal) diskonTotal = subtotal;
+
+                let grandTotal = subtotal - diskonTotal;
+
+                document.getElementById('diskon-box').innerText = "- Rp " + diskonTotal.toLocaleString('id-ID');
+                document.getElementById('diskon-total-value').value = diskonTotal;
+
+                grandTotalEl.innerText = "Rp " + grandTotal.toLocaleString('id-ID');
+                document.getElementById('grand-total-value').value = grandTotal;
+                hitungKembalian();
+            }
+
+
+            function hitungKembalian() {
+                const total = parseFloat(document.getElementById('grand-total-value').value) || 0;
+                const bayar = parseRupiah(document.getElementById('bayar').value);
+                const selisih = bayar - total;
+
+                if (selisih < 0) {
+                    inputKembalian.value = "Kurang (-) Rp " + Math.abs(selisih).toLocaleString('id-ID');
+                    document.getElementById('kembalian-value').value = selisih; // angka minusnya
+                    btnSimpan.disabled = true;
+                } else {
+                    inputKembalian.value = "Rp " + selisih.toLocaleString('id-ID');
+                    document.getElementById('kembalian-value').value = selisih; // angka murni
+                    btnSimpan.disabled = !(total > 0);
+                }
+            }
+
+
         });
-        grandTotalEl.innerText = "Rp " + total.toLocaleString('id-ID');
-        document.getElementById('grand-total-value').value = total;
-        hitungKembalian();
-    }
-
-
-    function hitungKembalian() {
-        const total = parseFloat(document.getElementById('grand-total-value').value) || 0;
-        const bayar = parseFloat(bayarAN.getNumber()) || 0;
-        const selisih = bayar - total;
-
-        if (selisih < 0) {
-            inputKembalian.value = "Kurang (-) Rp " + Math.abs(selisih).toLocaleString('id-ID');
-            document.getElementById('kembalian-value').value = selisih; // angka minusnya
-            btnSimpan.disabled = true;
-        } else {
-            inputKembalian.value = "Rp " + selisih.toLocaleString('id-ID');
-            document.getElementById('kembalian-value').value = selisih; // angka murni
-            btnSimpan.disabled = !(total > 0);
-        }
-    }
-
-
-});
-
-</script>
+    </script>
 @endpush
