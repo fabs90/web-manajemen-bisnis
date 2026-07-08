@@ -33,13 +33,13 @@ class ProfileUpdateRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:2048',
+                'max:5048',
             ],
             'ttd_pemimpin' => [
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif',
-                'max:2048',
+                'max:5048',
             ],
 
         ];
