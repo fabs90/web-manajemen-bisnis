@@ -164,9 +164,9 @@
                 </div>
 
                 {{-- Jumlah Pendapatan --}}
-                <div class="mb-3">
+                <div class="mb-3" id="jumlah_pendapatan_container">
                     <label for="jumlah_penjualan" class="form-label">Jumlah Pendapatan (Otomatis)<span
-                            class="text-danger">*</span></label>
+                            class="text-danger" id="jumlah_penjualan_asterisk">*</span></label>
                     <input type="text" id="jumlah_penjualan" name="jumlah" class="form-control rupiah"
                         value="0" readonly required>
                     @error('jumlah')
@@ -304,6 +304,16 @@
                     jumlahPiutangContainer.classList.remove('d-none');
                 } else if (jenis === 'kredit') {
                     jumlahKreditContainer.classList.remove('d-none');
+                }
+
+                const jumlahPendapatanContainer = document.getElementById('jumlah_pendapatan_container');
+                const jumlahPenjualanAsterisk = document.getElementById('jumlah_penjualan_asterisk');
+                if (jenis === 'kredit') {
+                    if (jumlahPendapatanContainer) jumlahPendapatanContainer.classList.add('d-none');
+                    jumlahPenjualan.removeAttribute('required');
+                } else {
+                    if (jumlahPendapatanContainer) jumlahPendapatanContainer.classList.remove('d-none');
+                    jumlahPenjualan.setAttribute('required', 'required');
                 }
 
                 hitungTotal();
