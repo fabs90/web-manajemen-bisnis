@@ -37,9 +37,10 @@ class PaketDiskonController extends Controller
         return redirect()->route('keuangan.paket-diskon.index')->with('success', 'Paket Diskon berhasil ditambahkan.');
     }
 
-    public function edit(PaketDiskon $paket_diskon): View
+    public function edit($id): View
     {
-        if ($paket_diskon->user_id !== auth()->id()) {
+        $paket_diskon = PaketDiskon::findOrFail($id);
+        if ($paket_diskon->user_id != auth()->id()) {
             abort(403);
         }
         $barang = Barang::where('user_id', auth()->id())->get();
@@ -47,9 +48,10 @@ class PaketDiskonController extends Controller
         return view('keuangan.paket-diskon.edit', ['paketDiskon' => $paket_diskon, 'barang' => $barang]);
     }
 
-    public function update(PaketDiskonRequest $request, PaketDiskon $paket_diskon): RedirectResponse
+    public function update(PaketDiskonRequest $request, $id): RedirectResponse
     {
-        if ($paket_diskon->user_id !== auth()->id()) {
+        $paket_diskon = PaketDiskon::findOrFail($id);
+        if ($paket_diskon->user_id != auth()->id()) {
             abort(403);
         }
         $paket_diskon->update($request->validated());
@@ -57,9 +59,10 @@ class PaketDiskonController extends Controller
         return redirect()->route('keuangan.paket-diskon.index')->with('success', 'Paket Diskon berhasil diperbarui.');
     }
 
-    public function destroy(PaketDiskon $paket_diskon): RedirectResponse
+    public function destroy($id): RedirectResponse
     {
-        if ($paket_diskon->user_id !== auth()->id()) {
+        $paket_diskon = PaketDiskon::findOrFail($id);
+        if ($paket_diskon->user_id != auth()->id()) {
             abort(403);
         }
         $paket_diskon->delete();
