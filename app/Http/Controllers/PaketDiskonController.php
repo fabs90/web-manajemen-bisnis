@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PaketDiskonRequest;
 use App\Models\Barang;
 use App\Models\PaketDiskon;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class PaketDiskonController extends Controller
 {
@@ -24,6 +23,7 @@ class PaketDiskonController extends Controller
     public function create(): View
     {
         $barang = Barang::where('user_id', auth()->id())->get();
+
         return view('keuangan.paket-diskon.create', compact('barang'));
     }
 
@@ -37,32 +37,32 @@ class PaketDiskonController extends Controller
         return redirect()->route('keuangan.paket-diskon.index')->with('success', 'Paket Diskon berhasil ditambahkan.');
     }
 
-    public function edit(PaketDiskon $paketDiskon): View
+    public function edit(PaketDiskon $paket_diskon): View
     {
-        if ($paketDiskon->user_id !== auth()->id()) {
+        if ($paket_diskon->user_id !== auth()->id()) {
             abort(403);
         }
         $barang = Barang::where('user_id', auth()->id())->get();
 
-        return view('keuangan.paket-diskon.edit', compact('paketDiskon', 'barang'));
+        return view('keuangan.paket-diskon.edit', ['paketDiskon' => $paket_diskon, 'barang' => $barang]);
     }
 
-    public function update(PaketDiskonRequest $request, PaketDiskon $paketDiskon): RedirectResponse
+    public function update(PaketDiskonRequest $request, PaketDiskon $paket_diskon): RedirectResponse
     {
-        if ($paketDiskon->user_id !== auth()->id()) {
+        if ($paket_diskon->user_id !== auth()->id()) {
             abort(403);
         }
-        $paketDiskon->update($request->validated());
+        $paket_diskon->update($request->validated());
 
         return redirect()->route('keuangan.paket-diskon.index')->with('success', 'Paket Diskon berhasil diperbarui.');
     }
 
-    public function destroy(PaketDiskon $paketDiskon): RedirectResponse
+    public function destroy(PaketDiskon $paket_diskon): RedirectResponse
     {
-        if ($paketDiskon->user_id !== auth()->id()) {
+        if ($paket_diskon->user_id !== auth()->id()) {
             abort(403);
         }
-        $paketDiskon->delete();
+        $paket_diskon->delete();
 
         return redirect()->route('keuangan.paket-diskon.index')->with('success', 'Paket Diskon berhasil dihapus.');
     }
