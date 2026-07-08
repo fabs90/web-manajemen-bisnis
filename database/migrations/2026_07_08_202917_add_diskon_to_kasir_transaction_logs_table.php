@@ -19,13 +19,14 @@ return new class extends Migration
         // Pastikan setiap user punya akun Potongan Penjualan (4102)
         $users = \App\Models\User::all();
         foreach ($users as $user) {
-            \App\Models\Account::firstOrCreate([
+            // Update or create to ensure category and normal_balance are correct even if it exists
+            \App\Models\Account::updateOrCreate([
                 'user_id' => $user->id,
                 'code' => '4102'
             ], [
                 'name' => 'Potongan Penjualan',
-                'type' => 'income',
-                'description' => 'Akun untuk mencatat diskon atau potongan penjualan'
+                'category' => 'revenue',
+                'normal_balance' => 'debit'
             ]);
         }
     }
