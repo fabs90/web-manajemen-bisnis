@@ -37,7 +37,7 @@ class PendapatanService
             case 'piutang':
                 $this->storePiutang($request, $userId, $accounts, $entry);
                 break;
-            case 'pelunasan': // Pelunasan
+            case 'kredit': // Pelunasan
                 $this->storeKredit($request, $userId, $accounts, $entry);
                 break;
         }

@@ -56,7 +56,7 @@
                         <option value="piutang" {{ old('jenis_pendapatan') == 'piutang' ? 'selected' : '' }}>Piutang
                             (Menambah/Membuat Baru)
                         </option>
-                        <option value="kredit" {{ old('jenis_pendapatan') == 'pelunasan' ? 'selected' : '' }}>Pelunasan
+                        <option value="kredit" {{ old('jenis_pendapatan') == 'kredit' ? 'selected' : '' }}>Pelunasan
                             Hutang
                             dari Debitur</option>
                     </select>
