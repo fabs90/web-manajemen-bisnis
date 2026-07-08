@@ -35,13 +35,13 @@
                         <td><strong>{{ $item->nama }}</strong></td>
                         <td>{{ number_format($item->jumlah_min) }}</td>
                         <td>{{ number_format($item->jumlah_max) }}</td>
-                        <td>{{number_format($item->jumlah_unit_per_kemasan)}}</td>
+                        <td>{{ number_format($item->jumlah_unit_per_kemasan) }}</td>
                         <td>Rp {{ number_format($item->harga_beli_per_kemas, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}</td>
                         <td>
                             <a href="{{ route('barang.show', $item->id) }}" class="btn btn-sm btn-warning">
-                                <i class="bi bi-pencil-square"></i>
+                                <i class="bi bi-pencil-square text-white"></i>
                             </a>
                             <form action="{{ route('barang.destroy', $item->id) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
