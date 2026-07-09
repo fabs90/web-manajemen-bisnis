@@ -482,6 +482,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'pdfAgendaPerjalanan',
         ])->name('administrasi.agenda-perjalanan.pdf');
 
+        Route::get('/agenda-perjalanan/{id}/pdf-surat-tugas', [
+            AdministrasiSuratController::class,
+            'pdfSuratTugas',
+        ])->name('administrasi.agenda-perjalanan.pdf-surat-tugas');
+
         Route::post('/agenda-perjalanan/', [
             AdministrasiSuratController::class,
             'storeAgendaPerjalanan',

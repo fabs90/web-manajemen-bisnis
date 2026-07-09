@@ -127,6 +127,13 @@ class AdministrasiSuratController extends Controller
         return $agendaPerjalananService->generatePdf($id);
     }
 
+    public function pdfSuratTugas($id)
+    {
+        $agendaPerjalananService = app(AgendaSuratPerjalananService::class);
+
+        return $agendaPerjalananService->generatePdfSuratTugas($id);
+    }
+
     public function storeAgendaTelpon(AgendaTelponRequest $request)
     {
         $data = $request->validated();

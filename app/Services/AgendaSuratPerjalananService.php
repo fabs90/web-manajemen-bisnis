@@ -219,6 +219,30 @@ class AgendaSuratPerjalananService
         }
     }
 
+    public function generatePdfSuratTugas($id)
+    {
+        try {
+            $agendaPerjalanan = AgendaPerjalanan::where('user_id', auth()->id())
+                ->findOrFail($id);
+            $userProfile = Auth::user();
+            $pdf = Pdf::loadView(
+                'administrasi.surat.agenda-perjalanan.surat-tugas-pdf',
+                compact('agendaPerjalanan', 'userProfile'),
+            )->setPaper('A4', 'portrait');
+
+            $fileName =
+                'Surat-Tugas-Perjalanan-' . $agendaPerjalanan->id . '.pdf';
+
+            return $pdf->download($fileName);
+        } catch (\Exception $e) {
+            Log::error(
+                'Gagal membuat PDF Surat Tugas: ' .
+                $e->getMessage(),
+            );
+            throw new \Exception('Gagal membuat PDF: ' . $e->getMessage());
+        }
+    }
+
     private function cleanRupiah(string|int $value): int
     {
         return (int) preg_replace("/\D/", '', $value);

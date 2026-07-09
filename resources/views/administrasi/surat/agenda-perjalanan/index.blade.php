@@ -37,7 +37,8 @@
                     <th>Tanggal</th>
                     <th>Keperluan</th>
                     <th>Total Biaya</th>
-                    <th style="width: 120px">Aksi</th>
+                    <th style="width: 170px;">Download PDF</th>
+                    <th style="width: 80px">Aksi</th>
                 </tr>
             </thead>
 
@@ -51,7 +52,8 @@
                 <td>-</td>
                 <td>-</td>
                 <td>-</td>
-                    <td colspan="9" class="text-center text-muted py-3">
+                <td>-</td>
+                    <td colspan="1" class="text-center text-muted py-3">
                      -
                     </td>
                 </tr>
@@ -77,13 +79,19 @@
                         <td>Rp {{ number_format($item->total_biaya, 0, ',', '.') }}</td>
 
                         <td class="text-center">
+                            <a href="{{route('administrasi.agenda-perjalanan.pdf', ['id' => $item->id])}}" class="btn btn-warning btn-sm w-100 text-white mb-1" title="Download SPP">
+                                <i class="bi bi-file-pdf"></i> Download SPP
+                            </a>
+                            <a href="{{route('administrasi.agenda-perjalanan.pdf-surat-tugas', ['id' => $item->id])}}" class="btn btn-success btn-sm w-100" title="Download Surat Tugas">
+                                <i class="bi bi-file-earmark-text"></i> Download Surat Tugas
+                            </a>
+                        </td>
+
+                        <td class="text-center align-middle">
                             <!-- IN DEVELOPMENT <a href="{{ route('administrasi.agenda-perjalanan.show', $item->id) }}"
                                class="btn btn-info btn-sm">
                                 <i class="bi bi-eye"></i>
                             </a>-->
-                            <a href="{{route('administrasi.agenda-perjalanan.pdf', ['id' => $item->id])}}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-file-pdf text-white"></i>
-                            </a>
                             <form action="{{ route('administrasi.agenda-perjalanan.destroy', $item->id) }}"
                                   method="POST" class="d-inline delete-form">
                                 @csrf

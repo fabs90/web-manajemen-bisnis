@@ -38,7 +38,7 @@
                             </a>
                             <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}"
                                 class="btn btn-outline-success flex-fill text-center">
-                                + Tambah Pesanan Pelanggan (SPP Masuk)
+                                + Tambah Pesanan Pembelian dari Pelanggan
                             </a>
                         </div>
                     </div>
