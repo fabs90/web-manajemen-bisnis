@@ -197,38 +197,15 @@
         </tbody>
     </table>
 
-    <div style="margin-top: 15px; font-style: italic; color: #333;">
-        Metode Pengiriman: <span
-            class="fw-bold text-uppercase">{{ $faktur->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</span>
-    </div>
-
     {{-- TANDA TANGAN --}}
     <table width="100%" class="table-no-border footer-signature">
         <tr>
-            <td width="50%" class="text-center">
-                Penerima,<br>
-                @if ($faktur->suratPengirimanBarang->ttd_penerima)
-                    @php
-                        $ttdPenerimaPath = storage_path('app/public/' . $faktur->suratPengirimanBarang->ttd_penerima);
-                        $ttdPenerimaBase64 = null;
-                        if (file_exists($ttdPenerimaPath)) {
-                            $ttdPenerimaBase64 = base64_encode(file_get_contents($ttdPenerimaPath));
-                            $ttdPenerimaMime = mime_content_type($ttdPenerimaPath);
-                        }
-                    @endphp
-                    @if ($ttdPenerimaBase64)
-                        <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}" style="height:60px;">
-                    @else
-                        <div style="height:60px;"></div>
-                    @endif
-                @else
-                    <div style="height:60px;"></div>
-                @endif
-                <br>
-                <strong>( {{ $faktur->suratPengirimanBarang->nama_penerima ?? '_________' }} )</strong>
+            <td width="50%">
+                
             </td>
             <td width="50%" class="text-center">
                 Hormat Kami,<br>
+                <strong>{{ $profileUser->name ?? '_________' }}</strong><br>
                 @if ($profileUser->ttd_pemimpin)
                     @php
                         $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
@@ -247,8 +224,8 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong style="text-decoration: underline;">({{ $profileUser->name ?? '_________' }})</strong><br>
-                Bagian Penjualan
+                <strong style="text-decoration: underline;">{{ $profileUser->nama_pimpinan ?? 'Nama Pimpinan' }}</strong><br>
+                Pemimpin Usaha
             </td>
         </tr>
     </table>

@@ -255,18 +255,19 @@
             @endif
 
             <td width="50%" class="text-center" style="vertical-align: top;">
-                Pengirim Barang,<br>
-                @if ($data->ttd_pengirim)
+                Hormat Kami,<br>
+                <strong>{{ $profileUser->name ?? '_________' }}</strong><br>
+                @if ($profileUser->ttd_pemimpin)
                     @php
-                        $ttdPengirimPath = storage_path('app/public/' . $data->ttd_pengirim);
-                        $ttdPengirimBase64 = null;
-                        if (file_exists($ttdPengirimPath)) {
-                            $ttdPengirimBase64 = base64_encode(file_get_contents($ttdPengirimPath));
-                            $ttdPengirimMime = mime_content_type($ttdPengirimPath);
+                        $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
+                        $ttdBase64 = null;
+                        if (file_exists($ttdPath)) {
+                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
+                            $ttdMime = mime_content_type($ttdPath);
                         }
                     @endphp
-                    @if ($ttdPengirimBase64)
-                        <img src="data:{{ $ttdPengirimMime }};base64,{{ $ttdPengirimBase64 }}" style="height:60px;">
+                    @if ($ttdBase64)
+                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:60px;">
                     @else
                         <div style="height:60px;"></div>
                     @endif
@@ -274,7 +275,8 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong>
+                <strong style="text-decoration: underline;">{{ $profileUser->nama_pimpinan ?? 'Nama Pimpinan' }}</strong><br>
+                Pemimpin Usaha
             </td>
         </tr>
     </table>
