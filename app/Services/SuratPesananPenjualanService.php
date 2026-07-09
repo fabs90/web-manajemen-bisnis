@@ -17,28 +17,15 @@ use Illuminate\Support\Str;
 
 class SuratPesananPenjualanService
 {
-    public function __construct(protected FileUploadService $fileUploadService) {}
+    public function __construct(protected FileUploadService $fileUploadService)
+    {
+    }
 
     public function storePelanggan($request): SuratPesananPenjualan
     {
         DB::beginTransaction();
         try {
             $isRequest = $request instanceof Request;
-
-            $ttdFile = null;
-            if ($isRequest && $request->hasFile('ttd_pelanggan')) {
-                $ttdFile = $this->fileUploadService->upload(
-                    $request->file('ttd_pelanggan'),
-                    'surat-pesanan-penjualan/ttd_pelanggan',
-                    Auth::user()->email
-                );
-            } elseif (is_array($request) && isset($request['ttd_pelanggan']) && $request['ttd_pelanggan'] instanceof \Illuminate\Http\UploadedFile) {
-                $ttdFile = $this->fileUploadService->upload(
-                    $request['ttd_pelanggan'],
-                    'surat-pesanan-penjualan/ttd_pelanggan',
-                    Auth::user()->email
-                );
-            }
 
             $pelangganId = $isRequest ? $request->pelanggan_id : $request['pelanggan_id'];
             $nomorPesanan = $isRequest ? $request->nomor_pesanan_pembelian : $request['nomor_pesanan_pembelian'];
@@ -54,7 +41,7 @@ class SuratPesananPenjualanService
                 'tanggal_pesanan_penjualan' => $tanggalPesanan,
                 'tanggal_kirim_pesanan_penjualan' => $tanggalKirim,
                 'nama_bagian_pembelian' => $namaBagian,
-                'ttd_bagian_pembelian' => $ttdFile,
+                'ttd_bagian_pembelian' => null,
                 'user_id' => auth()->id(),
             ]);
 
@@ -112,7 +99,7 @@ class SuratPesananPenjualanService
                             'tanggal' => $tanggalPesanan,
                             'diterima' => $diterima,
                             'dikeluarkan' => $dikeluarkan,
-                            'uraian' => 'Pesanan Penjualan Barang - '.$suratPesananPenjualan->nomor_pesanan_penjualan,
+                            'uraian' => 'Pesanan Penjualan Barang - ' . $suratPesananPenjualan->nomor_pesanan_penjualan,
                             'saldo_persatuan' => $saldoPersatuanBaru,
                             'saldo_perkemasan' => $saldoPerKemasanBaru,
                             'user_id' => auth()->id(),
@@ -131,16 +118,16 @@ class SuratPesananPenjualanService
             if ($piutangAccount && $persediaanAccount && $pendapatanAccount && $hppAccount) {
                 $journalEntry = JournalEntry::create([
                     'user_id' => auth()->id(),
-                    'reference_number' => 'SPP-'.date('Ymd', strtotime($tanggalPesanan)).'-'.strtoupper(Str::random(6)),
+                    'reference_number' => 'SPP-' . date('Ymd', strtotime($tanggalPesanan)) . '-' . strtoupper(Str::random(6)),
                     'date' => $tanggalPesanan,
-                    'description' => 'Pesanan Penjualan - '.$suratPesananPenjualan->nomor_pesanan_penjualan,
+                    'description' => 'Pesanan Penjualan - ' . $suratPesananPenjualan->nomor_pesanan_penjualan,
                     'transaction_type' => 'penjualan',
                 ]);
 
                 // Update KartuGudang records with this journal_entry_id so we can easily track/delete them later
                 KartuGudang::where('user_id', auth()->id())
                     ->where('tanggal', $tanggalPesanan)
-                    ->where('uraian', 'Pesanan Penjualan Barang - '.$suratPesananPenjualan->nomor_pesanan_penjualan)
+                    ->where('uraian', 'Pesanan Penjualan Barang - ' . $suratPesananPenjualan->nomor_pesanan_penjualan)
                     ->update(['journal_entry_id' => $journalEntry->id]);
 
                 // 1. Debit: Piutang Usaha (1104)
@@ -226,7 +213,7 @@ class SuratPesananPenjualanService
                         'tanggal' => now(),
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pembatalan Pesanan Penjualan - '.$suratPesananPenjualan->nomor_pesanan_penjualan,
+                        'uraian' => 'Pembatalan Pesanan Penjualan - ' . $suratPesananPenjualan->nomor_pesanan_penjualan,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -242,7 +229,7 @@ class SuratPesananPenjualanService
 
             // Hapus Journal Entry terkait
             JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Pesanan Penjualan - '.$suratPesananPenjualan->nomor_pesanan_penjualan)
+                ->where('description', 'Pesanan Penjualan - ' . $suratPesananPenjualan->nomor_pesanan_penjualan)
                 ->delete();
 
             // Hapus SPP Pelanggan

@@ -129,8 +129,7 @@
         <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
         {{-- Format: (Nomor Urut)/F/(Nama Perusahaan)/(Bulan)/(Tahun) --}}
         <div style="font-size: 12px; color: #000;">
-            Nomor: <span
-                class="fw-bold">{{ $faktur->kode_faktur }}/F/{{ str_replace(' ', '', strtoupper($profileUser->name ?? 'TRANSDIGITAL')) }}/{{ \Carbon\Carbon::parse($faktur->tanggal_faktur)->translatedFormat('d F Y') }}</span>
+            Nomor: <span class="fw-bold">{{ $faktur->kode_faktur }}</span>
         </div>
     </div>
 
