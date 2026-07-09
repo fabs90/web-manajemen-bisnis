@@ -188,27 +188,25 @@
         <thead>
             <tr class="text-center">
                 <th width="5%">No</th>
-                <th width="15%">Kuantitas</th>
-                <th width="40%">Nama Barang</th>
-                <th width="20%">Harga</th>
-                <th width="20%">Jumlah</th>
+                <th width="35%">Nama Barang</th>
+                <th width="15%">Jumlah Dipesan</th>
+                <th width="15%">Jumlah Dikirim</th>
+                <th width="30%">Keterangan</th>
             </tr>
         </thead>
         <tbody>
-            @php $total = 0; @endphp
-
             @foreach ($data->suratPengirimanBarangDetail as $item)
                 @php
                     $detail = $item->pesananPenjualanDetail ?? $item->pesananPembelianDetail;
-                    $subtotal = $item->jumlah_dikirim * ($detail->harga ?? 0);
-                    $total += $subtotal;
+                    $kuantitasDipesan = $detail->kuantitas ?? 0;
+                    $satuan = $detail->satuan ?? '';
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center">{{ $item->jumlah_dikirim }}</td>
                     <td>{{ $detail->nama_barang ?? '-' }}</td>
-                    <td class="text-right">Rp {{ number_format($detail->harga ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $kuantitasDipesan }} {{ $satuan }}</td>
+                    <td class="text-center">{{ $item->jumlah_dikirim }} {{ $satuan }}</td>
+                    <td>{{ $item->keterangan ?? '-' }}</td>
                 </tr>
             @endforeach
 
@@ -222,14 +220,6 @@
                     <td></td>
                 </tr>
             @endfor
-
-            {{-- Total --}}
-            <tr>
-                <td colspan="4" class="text-right fw-bold">TOTAL</td>
-                <td class="text-right fw-bold">
-                    Rp {{ number_format($total, 0, ',', '.') }}
-                </td>
-            </tr>
         </tbody>
     </table>
 

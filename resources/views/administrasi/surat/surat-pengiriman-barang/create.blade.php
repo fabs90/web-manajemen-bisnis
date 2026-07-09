@@ -61,7 +61,8 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                             <div class="mt-2 text-end">
-                                <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}" class="text-decoration-none small text-success fw-bold">
+                                <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}"
+                                    class="text-decoration-none small text-success fw-bold">
                                     Belum ada pesanan? <i class="bi bi-plus-circle"></i> Buat Pesanan Pelanggan Baru
                                 </a>
                             </div>
@@ -230,8 +231,10 @@
 
                                     <label class="form-label fw-bold small">Tanda Tangan Penerima</label>
                                     <input type="file" name="ttd_penerima" id="ttd_penerima"
-                                        class="form-control @error('ttd_penerima') is-invalid @enderror" accept="image/*">
-                                    <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
+                                        class="form-control @error('ttd_penerima') is-invalid @enderror"
+                                        accept="image/*">
+                                    <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus
+                                        transparan</small>
                                     @error('ttd_penerima')
                                         <small class="text-danger">{{ $message }}</small>
                                     @enderror
@@ -357,6 +360,9 @@
                             checked
                             data-index="${i}"
                             data-kuantitas="${item.kuantitas}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm" name="items[${i}][keterangan]" placeholder="Opsional">
                     </td>
                 </tr>`;
             });

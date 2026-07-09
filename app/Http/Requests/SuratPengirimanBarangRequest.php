@@ -38,7 +38,9 @@ class SuratPengirimanBarangRequest extends FormRequest
             // ── Items ────────────────────────────────────────────────────
             'items' => ['required', 'array', 'min:1'],
             'items.*.spp_detail_id' => ['required', 'string'],
+            'items.*.spb_detail_id' => ['nullable', 'string'],
             'items.*.jumlah_dikirim' => ['required', 'integer', 'min:0'],
+            'items.*.keterangan' => ['nullable', 'string'],
         ];
     }
 

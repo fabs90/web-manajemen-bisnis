@@ -66,11 +66,15 @@ class SuratPengirimanBarangService
                         'spp_detail_id' => null,
                         'pesanan_penjualan_detail_id' => $item['spp_detail_id'],
                         'jumlah_dikirim' => $item['jumlah_dikirim'] ?? 0,
+                        'keterangan' => $item['keterangan'] ?? null,
                     ]);
                 }
             }
 
             DB::commit();
+
+            // Dispatch job email
+            \App\Jobs\SendSuratPengirimanBarangJob::dispatch($spb, auth()->user());
 
             return $spb;
         } catch (Exception $e) {
@@ -173,6 +177,7 @@ class SuratPengirimanBarangService
                         if ($detail) {
                             $detail->update([
                                 'jumlah_dikirim' => $item['jumlah_dikirim'] ?? 0,
+                                'keterangan' => $item['keterangan'] ?? null,
                             ]);
                         }
                     }

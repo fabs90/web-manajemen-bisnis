@@ -24,6 +24,9 @@ class AdministrasiFakturService
             ]);
             DB::commit();
 
+            // Dispatch job email
+            \App\Jobs\SendSFakturPenjualanJob::dispatch($faktur, auth()->user());
+
             return $faktur;
         } catch (\Exception $e) {
             DB::rollBack();

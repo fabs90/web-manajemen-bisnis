@@ -9,7 +9,7 @@ class SuratPengirimanBarangDetail extends Model
 {
     protected $table = 'surat_pengiriman_barang_detail';
 
-    protected $fillable = ['spb_id', 'spp_detail_id', 'pesanan_penjualan_detail_id', 'jumlah_dikirim'];
+    protected $fillable = ['spb_id', 'spp_detail_id', 'pesanan_penjualan_detail_id', 'jumlah_dikirim', 'keterangan'];
 
     public function suratPengirimanBarang(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

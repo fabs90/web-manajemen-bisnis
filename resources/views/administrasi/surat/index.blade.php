@@ -120,7 +120,7 @@
 
         <a href="{{ route('administrasi.faktur-penjualan.index') }}" class="menu-card text-black"
             style="background:#c6d9f1"
-            data-tooltip="Dokumen penagihan kepada pelanggan berisi daftar barang/jasa yang dijual.">
+            data-tooltip="Dokumen penagihan kepada pelanggan. (Catatan: Anda harus membuat SPB terlebih dahulu sebelum membuat Faktur Penjualan)">
             FAKTUR PENJUALAN
         </a>
 

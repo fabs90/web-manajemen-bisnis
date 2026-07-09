@@ -26,10 +26,17 @@
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div>
                             <h5 class="fw-bold">Buat Surat Pengiriman Barang (SPB)</h5>
-                            <p class="text-muted mb-3">
+                            <p class="text-muted mb-2">
                                 Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan untuk memudahkan
                                 pelacakan progress pengiriman.
                             </p>
+                            <div class="alert alert-warning py-2 mb-3 d-flex align-items-center" style="font-size: 14px;">
+                                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                <div>
+                                    <strong>Penting:</strong> Anda wajib membuat data Pesanan Pembelian dari
+                                    Pelanggan terlebih dahulu sebelum dapat membuat SPB Baru.
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex gap-2 w-100">
@@ -167,16 +174,24 @@
                                                                         <tr>
                                                                             <th>No</th>
                                                                             <th>Barang</th>
+                                                                            <th>Jumlah Dipesan</th>
                                                                             <th>Jumlah Dikirim</th>
+                                                                            <th>Keterangan</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         @foreach ($spb->suratPengirimanBarangDetail as $detail)
+                                                                            @php
+                                                                                $sppDetail = $detail->pesananPenjualanDetail ?? $detail->pesananPembelianDetail;
+                                                                                $kuantitasDipesan = $sppDetail->kuantitas ?? 0;
+                                                                                $satuan = $sppDetail->satuan ?? '';
+                                                                            @endphp
                                                                             <tr>
                                                                                 <td>{{ $loop->iteration }}</td>
-                                                                                <td>{{ $detail->pesananPenjualanDetail?->nama_barang ?? ($detail->pesananPembelianDetail?->nama_barang ?? '-') }}
-                                                                                </td>
-                                                                                <td>{{ $detail->jumlah_dikirim }}</td>
+                                                                                <td>{{ $sppDetail->nama_barang ?? '-' }}</td>
+                                                                                <td>{{ $kuantitasDipesan }} {{ $satuan }}</td>
+                                                                                <td>{{ $detail->jumlah_dikirim }} {{ $satuan }}</td>
+                                                                                <td>{{ $detail->keterangan ?? '-' }}</td>
                                                                             </tr>
                                                                         @endforeach
                                                                     </tbody>

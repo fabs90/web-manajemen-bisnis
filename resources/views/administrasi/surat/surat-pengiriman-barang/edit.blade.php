@@ -140,8 +140,9 @@
                                     <th>No</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah Dipesan</th>
-                                    <th width="180px">Jumlah Dikirim</th>
-                                    <th width="90px">Sesuai</th>
+                                    <th width="150px">Jumlah Dikirim</th>
+                                    <th width="80px">Sesuai</th>
+                                    <th width="180px">Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody id="tabel-barang">
@@ -173,6 +174,9 @@
                                             <input type="checkbox" class="form-check-input checkbox-sesuai"
                                                 {{ $isSesuai ? 'checked' : '' }} data-index="{{ $i }}"
                                                 data-kuantitas="{{ $kuantitasDipesan }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" name="items[{{ $i }}][keterangan]" placeholder="Opsional" value="{{ old('items.'.$i.'.keterangan', $detail->keterangan) }}">
                                         </td>
                                     </tr>
                                 @empty

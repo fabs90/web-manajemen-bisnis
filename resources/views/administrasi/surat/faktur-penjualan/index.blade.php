@@ -36,12 +36,10 @@
                         <thead class="table-light text-center">
                             <tr>
                                 <th width="5%">No</th>
+                                <th>Tanggal Faktur</th>
                                 <th>Kode Faktur</th>
                                 <th>Nama Pembeli</th>
                                 <th>Nomor Pesanan</th>
-                                <th>Nomor SPB</th>
-                                <th>Tanggal</th>
-                                <th>Jenis Pengiriman</th>
                                 <th width="13%">Aksi</th>
                             </tr>
                         </thead>
@@ -50,15 +48,13 @@
                             @foreach ($fakturPenjualan as $item)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
+                                    <td class="text-center">
+                                        {{ $item->tanggal_faktur ? \Carbon\Carbon::parse($item->tanggal_faktur)->format('d-m-Y') : '-' }}
+                                    </td>
                                     <td>{{ $item->kode_faktur }}</td>
                                     <td>{{ $item->suratPengirimanBarang->pesananPenjualan->pelanggan->nama ?? '-' }}</td>
                                     <td>{{ $item->suratPengirimanBarang->pesananPenjualan->nomor_pesanan_penjualan ?? '-' }}
                                     </td>
-                                    <td>{{ $item->suratPengirimanBarang->nomor_pengiriman_barang ?? '-' }}</td>
-                                    <td class="text-center">
-                                        {{ $item->tanggal_faktur ? \Carbon\Carbon::parse($item->tanggal_faktur)->format('d-m-Y') : '-' }}
-                                    </td>
-                                    <td>{{ $item->suratPengirimanBarang->jenis_pengiriman ?? '-' }}</td>
                                     <td class="text-center">
                                         {{-- Download PDF --}}
                                         <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $item->id) }}"
