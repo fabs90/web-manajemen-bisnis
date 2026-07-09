@@ -163,6 +163,10 @@
             <td>Status Pengiriman</td>
             <td>: <b>{{ strtoupper($data->status_pengiriman) ?? '-' }}</b></td>
         </tr>
+        <tr>
+            <td>Tanggal Dikirim</td>
+            <td>: {{ \Carbon\Carbon::parse($data->created_at)->translatedFormat('d F Y') ?? '-' }}</td>
+        </tr>
         @if ($data->status_pengiriman == 'diterima')
             <tr>
                 <td>Tanggal Diterima</td>
@@ -233,7 +237,7 @@
     <table width="100%" class="table-no-border" style="margin-top:30px;">
         <tr>
             @if ($data->status_pengiriman == 'diterima')
-                <td width="50%" class="text-center">
+                <td width="50%" class="text-center" style="vertical-align: top;">
                     Yang Menerima,<br>
                     @if ($data->ttd_penerima)
                         @php
@@ -260,7 +264,7 @@
                 <td width="50%"></td>
             @endif
 
-            <td width="50%" class="text-center">
+            <td width="50%" class="text-center" style="vertical-align: top;">
                 Pengirim Barang,<br>
                 @if ($data->ttd_pengirim)
                     @php
@@ -280,8 +284,7 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong><br>
-                <span>Tanggal: {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
+                <strong>( {{ $data->nama_pengirim ?? '_________' }} )</strong>
             </td>
         </tr>
     </table>
