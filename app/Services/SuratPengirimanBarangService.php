@@ -351,7 +351,7 @@ class SuratPengirimanBarangService
 
             // Faktur Penjualan otomatis terhapus jika kita set cascade di DB atau manual di controller
             if ($spb->fakturPenjualan) {
-                app(\App\Services\FakturPenjualanService::class)->destroy($spb->fakturPenjualan->id);
+                app(\App\Services\AdministrasiFakturService::class)->destroy($spb->fakturPenjualan->id);
             }
 
             $spb->suratPengirimanBarangDetail()->delete();

@@ -93,16 +93,15 @@ class SuratPesananPenjualanService
                 ->where('user_id', auth()->id())
                 ->findOrFail($sppId);
 
-            // Hapus detail SPP
-            $suratPesananPenjualan->details()->delete();
-
             // Hapus SPB (cascade) - harusnya di model ada event delete tapi kita hapus manual jika ada
-            if ($suratPesananPenjualan->suratPengirimanBarang) {
-                app(\App\Services\SuratPengirimanBarangService::class)->destroy($suratPesananPenjualan->suratPengirimanBarang->id);
+            if ($suratPesananPenjualan->suratPengirimanBarang && $suratPesananPenjualan->suratPengirimanBarang->count() > 0) {
+                foreach ($suratPesananPenjualan->suratPengirimanBarang as $spb) {
+                    app(\App\Services\SuratPengirimanBarangService::class)->destroy($spb->id);
+                }
             }
 
-            // Faktur Penjualan dihapus di SPB destroy atau jika ada tersendiri
-
+            // Hapus detail SPP setelah SPB dihapus (karena SPB butuh data detail SPP untuk reversal stok)
+            $suratPesananPenjualan->details()->delete();
 
             // Hapus SPP Pelanggan
             $suratPesananPenjualan->delete();
