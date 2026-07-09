@@ -129,6 +129,8 @@
         <strong>
             {{ $data->supplier->nama ?? '-' }}
         </strong><br>
+        {{ $data->supplier->alamat ?? '-' }}
+        <br>
         {{ $data->supplier->kontak ?? '-' }}
     </p>
 
@@ -193,8 +195,12 @@
     {{-- Tanda Tangan --}}
     <table width="100%" class="table-no-border" style="margin-top: 50px;">
         <tr>
-            <td width="50%" class="text-center">
+            <td width="70%" class="text-center">
+
+            </td>
+            <td width="30%" class="text-center">
                 Hormat Kami,<br>
+                <strong>{{ $profileUser->name ?? '_________' }}</strong><br>
                 @if ($profileUser->ttd_pemimpin)
                     @php
                         $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
@@ -213,31 +219,9 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong><u>({{ $profileUser->name ?? '_________' }})</u></strong><br>
-                {{ $profileUser->jabatan ?? 'Pemimpin Perusahaan' }}
-            </td>
-            <td width="50%" class="text-center">
-                Mengetahui,<br>
-                @if ($data->ttd_pengirim)
-                    @php
-                        $ttdPengirimPath = storage_path('app/public/' . $data->ttd_pengirim);
-                        $ttdPengirimBase64 = null;
-                        if (file_exists($ttdPengirimPath)) {
-                            $ttdPengirimBase64 = base64_encode(file_get_contents($ttdPengirimPath));
-                            $ttdMime = mime_content_type($ttdPengirimPath);
-                        }
-                    @endphp
-                    @if ($ttdPengirimBase64)
-                        <img src="data:{{ $ttdMime }};base64,{{ $ttdPengirimBase64 }}" style="height:60px;">
-                    @else
-                        <div style="height:60px;"></div>
-                    @endif
-                @else
-                    <div style="height:60px;"></div>
-                @endif
-                <br>
-                <strong><u>({{ $data->nama_bagian_pembelian ?? '_________' }})</u></strong><br>
-                Pemimpin Perusahaan {{ $data->supplier->nama ?? '-' }}
+                <strong
+                    style="text-decoration: underline;">{{ $profileUser->nama_pimpinan ?? 'Nama Pimpinan' }}</strong><br>
+                Pemimpin Usaha
             </td>
         </tr>
     </table>

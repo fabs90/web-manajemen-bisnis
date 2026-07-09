@@ -17,6 +17,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'nama_pimpinan' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
@@ -51,6 +52,10 @@ class ProfileUpdateRequest extends FormRequest
             'name.required' => 'Nama wajib diisi.',
             'name.string' => 'Nama harus berupa teks.',
             'name.max' => 'Nama maksimal 255 karakter.',
+
+            'nama_pimpinan.required' => 'Nama pimpinan wajib diisi.',
+            'nama_pimpinan.string' => 'Nama pimpinan harus berupa teks.',
+            'nama_pimpinan.max' => 'Nama pimpinan maksimal 255 karakter.',
 
             'email.required' => 'Email wajib diisi.',
             'email.string' => 'Email harus berupa teks.',

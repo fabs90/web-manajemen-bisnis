@@ -31,6 +31,7 @@ class User extends Authenticatable
         'otp_expires_at',
         'is_printer_enabled',
         'printer_store_name',
+        'nama_pimpinan',
     ];
 
     /**

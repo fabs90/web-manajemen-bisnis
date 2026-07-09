@@ -59,6 +59,12 @@
                 <div class="card-body">
 
                     <div class="mb-3">
+                        <label class="form-label">Nama Pimpinan <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_pimpinan" class="form-control"
+                            value="{{ old('nama_pimpinan', auth()->user()->nama_pimpinan) }}" required>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Alamat</label>
                         <textarea name="alamat" class="form-control" rows="2">{{ old('alamat', auth()->user()->alamat) }}</textarea>
                     </div>
