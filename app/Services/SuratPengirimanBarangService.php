@@ -61,13 +61,57 @@ class SuratPengirimanBarangService
             // Simpan detail barang
             if (isset($data['items']) && is_array($data['items'])) {
                 foreach ($data['items'] as $item) {
-                    SuratPengirimanBarangDetail::create([
+                    $spbDetail = SuratPengirimanBarangDetail::create([
                         'spb_id' => $spb->id,
                         'spp_detail_id' => null,
                         'pesanan_penjualan_detail_id' => $item['spp_detail_id'],
                         'jumlah_dikirim' => $item['jumlah_dikirim'] ?? 0,
                         'keterangan' => $item['keterangan'] ?? null,
                     ]);
+
+                    // Pengurangan stok (Kartu Gudang)
+                    $qtyDikirim = $item['jumlah_dikirim'] ?? 0;
+                    if ($qtyDikirim > 0) {
+                        $sppDetail = \App\Models\SPP\SuratPesananPenjualanDetail::find($item['spp_detail_id']);
+                        if ($sppDetail) {
+                            $barang = null;
+                            if ($sppDetail->barang_id) {
+                                $barang = \App\Models\Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
+                            } else {
+                                $barang = \App\Models\Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
+                            }
+
+                            if ($barang) {
+                                $lastKartu = \App\Models\KartuGudang::where('barang_id', $barang->id)
+                                    ->where('user_id', auth()->id())
+                                    ->latest()
+                                    ->first();
+
+                                $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
+                                $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
+
+                                $diterima = 0;
+                                $dikeluarkan = $qtyDikirim;
+
+                                $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
+
+                                $pcsPerKemasan = $barang->jumlah_unit_per_kemasan ?: 1;
+                                $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
+                                    round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
+
+                                \App\Models\KartuGudang::create([
+                                    'barang_id' => $barang->id,
+                                    'tanggal' => $data['tanggal_pengiriman'] ?? now(),
+                                    'diterima' => $diterima,
+                                    'dikeluarkan' => $dikeluarkan,
+                                    'uraian' => 'Pengiriman Barang - ' . $spb->nomor_pengiriman_barang,
+                                    'saldo_persatuan' => $saldoPersatuanBaru,
+                                    'saldo_perkemasan' => $saldoPerKemasanBaru,
+                                    'user_id' => auth()->id(),
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -175,10 +219,63 @@ class SuratPengirimanBarangService
                     if (isset($item['spb_detail_id'])) {
                         $detail = SuratPengirimanBarangDetail::find($item['spb_detail_id']);
                         if ($detail) {
+                            $oldJumlahDikirim = $detail->jumlah_dikirim;
+                            $newJumlahDikirim = $item['jumlah_dikirim'] ?? 0;
+
                             $detail->update([
-                                'jumlah_dikirim' => $item['jumlah_dikirim'] ?? 0,
+                                'jumlah_dikirim' => $newJumlahDikirim,
                                 'keterangan' => $item['keterangan'] ?? null,
                             ]);
+
+                            // Penyesuaian stok jika jumlah berubah
+                            if ($oldJumlahDikirim != $newJumlahDikirim) {
+                                $sppDetail = $detail->pesananPenjualanDetail;
+                                if ($sppDetail) {
+                                    $barang = null;
+                                    if ($sppDetail->barang_id) {
+                                        $barang = \App\Models\Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
+                                    } else {
+                                        $barang = \App\Models\Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
+                                    }
+
+                                    if ($barang) {
+                                        $lastKartu = \App\Models\KartuGudang::where('barang_id', $barang->id)
+                                            ->where('user_id', auth()->id())
+                                            ->latest()
+                                            ->first();
+
+                                        $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
+                                        $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
+
+                                        $selisih = $newJumlahDikirim - $oldJumlahDikirim;
+
+                                        if ($selisih > 0) {
+                                            $diterima = 0;
+                                            $dikeluarkan = $selisih;
+                                        } else {
+                                            $diterima = abs($selisih);
+                                            $dikeluarkan = 0;
+                                        }
+
+                                        $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
+
+                                        $pcsPerKemasan = $barang->jumlah_unit_per_kemasan ?: 1;
+                                        $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
+                                            round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
+
+                                        \App\Models\KartuGudang::create([
+                                            'barang_id' => $barang->id,
+                                            'tanggal' => now(),
+                                            'diterima' => $diterima,
+                                            'dikeluarkan' => $dikeluarkan,
+                                            'uraian' => 'Penyesuaian Pengiriman Barang - ' . $spb->nomor_pengiriman_barang,
+                                            'saldo_persatuan' => $saldoPersatuanBaru,
+                                            'saldo_perkemasan' => $saldoPerKemasanBaru,
+                                            'user_id' => auth()->id(),
+                                        ]);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -203,9 +300,61 @@ class SuratPengirimanBarangService
     {
         DB::beginTransaction();
         try {
-            $spb = SuratPengirimanBarang::where('id', $id)
+            $spb = SuratPengirimanBarang::with('suratPengirimanBarangDetail')->where('id', $id)
                 ->where('user_id', auth()->id())
                 ->firstOrFail();
+
+            // Reversal Stok
+            foreach ($spb->suratPengirimanBarangDetail as $item) {
+                if ($item->jumlah_dikirim > 0) {
+                    $sppDetail = $item->pesananPenjualanDetail;
+                    if ($sppDetail) {
+                        $barang = null;
+                        if ($sppDetail->barang_id) {
+                            $barang = \App\Models\Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
+                        } else {
+                            $barang = \App\Models\Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
+                        }
+
+                        if ($barang) {
+                            $lastKartu = \App\Models\KartuGudang::where('barang_id', $barang->id)
+                                ->where('user_id', auth()->id())
+                                ->latest()
+                                ->first();
+
+                            $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
+                            $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
+
+                            $diterima = $item->jumlah_dikirim;
+                            $dikeluarkan = 0;
+
+                            $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
+
+                            $pcsPerKemasan = $barang->jumlah_unit_per_kemasan ?: 1;
+                            $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
+                                round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
+
+                            \App\Models\KartuGudang::create([
+                                'barang_id' => $barang->id,
+                                'tanggal' => now(),
+                                'diterima' => $diterima,
+                                'dikeluarkan' => $dikeluarkan,
+                                'uraian' => 'Pembatalan Pengiriman Barang - ' . $spb->nomor_pengiriman_barang,
+                                'saldo_persatuan' => $saldoPersatuanBaru,
+                                'saldo_perkemasan' => $saldoPerKemasanBaru,
+                                'user_id' => auth()->id(),
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Faktur Penjualan otomatis terhapus jika kita set cascade di DB atau manual di controller
+            if ($spb->fakturPenjualan) {
+                app(\App\Services\FakturPenjualanService::class)->destroy($spb->fakturPenjualan->id);
+            }
+
+            $spb->suratPengirimanBarangDetail()->delete();
             $spb->delete();
             DB::commit();
 

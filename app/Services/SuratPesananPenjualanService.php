@@ -67,103 +67,14 @@ class SuratPesananPenjualanService
                         'total' => $total,
                     ]);
 
-                    // Update Stok & Kartu Gudang (Pengurangan Stok)
-                    if (isset($item['barang_id'])) {
-                        $barang = Barang::where('id', $item['barang_id'])->where('user_id', auth()->id())->first();
-                    } else {
-                        $barang = Barang::where('nama', $item['nama_barang'])->where('user_id', auth()->id())->first();
-                    }
-
-                    if ($barang) {
-                        $totalHppAmount += $kuantitas * $barang->harga_beli_per_unit;
-
-                        $lastKartu = KartuGudang::where('barang_id', $barang->id)
-                            ->where('user_id', auth()->id())
-                            ->latest()
-                            ->first();
-
-                        $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
-                        $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
-
-                        $diterima = 0;
-                        $dikeluarkan = $kuantitas;
-
-                        $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
-
-                        $pcsPerKemasan = $barang->jumlah_unit_per_kemasan ?: 1;
-                        $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
-                            round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
-
-                        KartuGudang::create([
-                            'barang_id' => $barang->id,
-                            'tanggal' => $tanggalPesanan,
-                            'diterima' => $diterima,
-                            'dikeluarkan' => $dikeluarkan,
-                            'uraian' => 'Pesanan Penjualan Barang - ' . $suratPesananPenjualan->nomor_pesanan_penjualan,
-                            'saldo_persatuan' => $saldoPersatuanBaru,
-                            'saldo_perkemasan' => $saldoPerKemasanBaru,
-                            'user_id' => auth()->id(),
-                        ]);
-                    }
+                    // Hapus logika Update Stok & Kartu Gudang dari SPP
+                    // Stok dikurangkan saat membuat Surat Pengiriman Barang (SPB)
                 }
             }
 
-            // Journaling (Penjurnalan)
-            // Get accounts for Sales Journal
-            $piutangAccount = Account::where('user_id', auth()->id())->where('code', '1104')->first();      // Piutang Usaha
-            $persediaanAccount = Account::where('user_id', auth()->id())->where('code', '1105')->first();   // Persediaan Barang Dagang
-            $pendapatanAccount = Account::where('user_id', auth()->id())->where('code', '4101')->first();   // Pendapatan Penjualan
-            $hppAccount = Account::where('user_id', auth()->id())->where('code', '5101')->first();          // HPP
+            // Hapus logika Journaling dari SPP
+            // Penjurnalan (Piutang, Penjualan, dll) dilakukan saat membuat Faktur Penjualan
 
-            if ($piutangAccount && $persediaanAccount && $pendapatanAccount && $hppAccount) {
-                $journalEntry = JournalEntry::create([
-                    'user_id' => auth()->id(),
-                    'reference_number' => 'SPP-' . date('Ymd', strtotime($tanggalPesanan)) . '-' . strtoupper(Str::random(6)),
-                    'date' => $tanggalPesanan,
-                    'description' => 'Pesanan Penjualan - ' . $suratPesananPenjualan->nomor_pesanan_penjualan,
-                    'transaction_type' => 'penjualan',
-                ]);
-
-                // Update KartuGudang records with this journal_entry_id so we can easily track/delete them later
-                KartuGudang::where('user_id', auth()->id())
-                    ->where('tanggal', $tanggalPesanan)
-                    ->where('uraian', 'Pesanan Penjualan Barang - ' . $suratPesananPenjualan->nomor_pesanan_penjualan)
-                    ->update(['journal_entry_id' => $journalEntry->id]);
-
-                // 1. Debit: Piutang Usaha (1104)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $piutangAccount->id,
-                    'debit' => $totalSalesAmount,
-                    'credit' => 0,
-                    'sub_ledger_type' => Pelanggan::class,
-                    'sub_ledger_id' => $pelangganId,
-                ]);
-
-                // 2. Credit: Pendapatan Penjualan (4101)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $pendapatanAccount->id,
-                    'debit' => 0,
-                    'credit' => $totalSalesAmount,
-                ]);
-
-                // 3. Debit: HPP (5101)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $hppAccount->id,
-                    'debit' => $totalHppAmount,
-                    'credit' => 0,
-                ]);
-
-                // 4. Credit: Persediaan (1105)
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $persediaanAccount->id,
-                    'debit' => 0,
-                    'credit' => $totalHppAmount,
-                ]);
-            }
 
             DB::commit();
 
@@ -182,55 +93,16 @@ class SuratPesananPenjualanService
                 ->where('user_id', auth()->id())
                 ->findOrFail($sppId);
 
-            foreach ($suratPesananPenjualan->details as $detail) {
-                if ($detail->barang_id) {
-                    $barang = Barang::where('id', $detail->barang_id)->where('user_id', auth()->id())->first();
-                } else {
-                    $barang = Barang::where('nama', $detail->nama_barang)->where('user_id', auth()->id())->first();
-                }
-
-                if ($barang) {
-                    $lastKartu = KartuGudang::where('barang_id', $barang->id)
-                        ->where('user_id', auth()->id())
-                        ->latest()
-                        ->first();
-
-                    $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
-                    $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
-
-                    // Reversal: Kuantitas yang sebelumnya dikeluarkan, sekarang diterima kembali
-                    $diterima = $detail->kuantitas;
-                    $dikeluarkan = 0;
-
-                    $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
-
-                    $pcsPerKemasan = $barang->jumlah_unit_per_kemasan ?: 1;
-                    $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
-                        round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
-
-                    KartuGudang::create([
-                        'barang_id' => $barang->id,
-                        'tanggal' => now(),
-                        'diterima' => $diterima,
-                        'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pembatalan Pesanan Penjualan - ' . $suratPesananPenjualan->nomor_pesanan_penjualan,
-                        'saldo_persatuan' => $saldoPersatuanBaru,
-                        'saldo_perkemasan' => $saldoPerKemasanBaru,
-                        'user_id' => auth()->id(),
-                    ]);
-                }
-            }
-
-            // Hapus detail
+            // Hapus detail SPP
             $suratPesananPenjualan->details()->delete();
 
-            // Hapus SPB
-            $suratPesananPenjualan->suratPengirimanBarang()->delete();
+            // Hapus SPB (cascade) - harusnya di model ada event delete tapi kita hapus manual jika ada
+            if ($suratPesananPenjualan->suratPengirimanBarang) {
+                app(\App\Services\SuratPengirimanBarangService::class)->destroy($suratPesananPenjualan->suratPengirimanBarang->id);
+            }
 
-            // Hapus Journal Entry terkait
-            JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Pesanan Penjualan - ' . $suratPesananPenjualan->nomor_pesanan_penjualan)
-                ->delete();
+            // Faktur Penjualan dihapus di SPB destroy atau jika ada tersendiri
+
 
             // Hapus SPP Pelanggan
             $suratPesananPenjualan->delete();

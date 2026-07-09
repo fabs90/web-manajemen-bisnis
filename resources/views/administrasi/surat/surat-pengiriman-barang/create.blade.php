@@ -172,13 +172,14 @@
                                     <th>No</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah Dipesan</th>
-                                    <th width="180px">Jumlah Dikirim</th>
-                                    <th width="90px">Sesuai</th>
+                                    <th width="150px">Jumlah Dikirim</th>
+                                    <th width="80px">Sesuai</th>
+                                    <th width="180px">Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody id="tabel-barang">
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted fst-italic">
+                                    <td colspan="6" class="text-center text-muted fst-italic">
                                         Pilih SPP terlebih dahulu...
                                     </td>
                                 </tr>
@@ -326,7 +327,7 @@
                 document.getElementById('nomor_pesanan').textContent = '-';
                 document.getElementById('tanggal_pengiriman').value = '';
                 document.getElementById('tabel-barang').innerHTML =
-                    `<tr><td colspan="5" class="text-center text-muted fst-italic">Pilih SPP terlebih dahulu...</td></tr>`;
+                    `<tr><td colspan="6" class="text-center text-muted fst-italic">Pilih SPP terlebih dahulu...</td></tr>`;
                 return;
             }
 

@@ -22,6 +22,87 @@ class AdministrasiFakturService
                 'tanggal_faktur' => $data['tanggal_faktur'],
                 'user_id' => auth()->user()->id,
             ]);
+
+            // Penjurnalan (Journaling)
+            $spb = \App\Models\SPB\SuratPengirimanBarang::with([
+                'pesananPenjualan.pelanggan',
+                'suratPengirimanBarangDetail.pesananPenjualanDetail.barang'
+            ])->find($data['spb_id']);
+
+            if ($spb && $spb->pesananPenjualan) {
+                $totalSalesAmount = 0;
+                $totalHppAmount = 0;
+
+                foreach ($spb->suratPengirimanBarangDetail as $detail) {
+                    $qty = $detail->jumlah_dikirim;
+                    if ($qty > 0 && $detail->pesananPenjualanDetail) {
+                        $hargaJual = $detail->pesananPenjualanDetail->harga ?? 0;
+                        $totalSalesAmount += ($qty * $hargaJual);
+
+                        $barangId = $detail->pesananPenjualanDetail->barang_id;
+                        $barang = null;
+                        if ($barangId) {
+                            $barang = \App\Models\Barang::where('id', $barangId)->where('user_id', auth()->id())->first();
+                        } else {
+                            $barang = \App\Models\Barang::where('nama', $detail->pesananPenjualanDetail->nama_barang)->where('user_id', auth()->id())->first();
+                        }
+
+                        if ($barang) {
+                            $totalHppAmount += ($qty * $barang->harga_beli_per_unit);
+                        }
+                    }
+                }
+
+                $piutangAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '1104')->first();
+                $persediaanAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '1105')->first();
+                $pendapatanAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '4101')->first();
+                $hppAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '5101')->first();
+
+                if ($piutangAccount && $persediaanAccount && $pendapatanAccount && $hppAccount) {
+                    $journalEntry = \App\Models\JournalEntry::create([
+                        'user_id' => auth()->id(),
+                        'reference_number' => 'FAK-' . date('Ymd', strtotime($data['tanggal_faktur'])) . '-' . strtoupper(Str::random(6)),
+                        'date' => $data['tanggal_faktur'],
+                        'description' => 'Faktur Penjualan - ' . $faktur->kode_faktur,
+                        'transaction_type' => 'penjualan',
+                    ]);
+
+                    // 1. Debit: Piutang Usaha
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $piutangAccount->id,
+                        'debit' => $totalSalesAmount,
+                        'credit' => 0,
+                        'sub_ledger_type' => \App\Models\Pelanggan::class,
+                        'sub_ledger_id' => $spb->pesananPenjualan->pelanggan_id ?? null,
+                    ]);
+
+                    // 2. Credit: Pendapatan Penjualan
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $pendapatanAccount->id,
+                        'debit' => 0,
+                        'credit' => $totalSalesAmount,
+                    ]);
+
+                    // 3. Debit: HPP
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $hppAccount->id,
+                        'debit' => $totalHppAmount,
+                        'credit' => 0,
+                    ]);
+
+                    // 4. Credit: Persediaan
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $persediaanAccount->id,
+                        'debit' => 0,
+                        'credit' => $totalHppAmount,
+                    ]);
+                }
+            }
+
             DB::commit();
 
             // Dispatch job email
@@ -68,6 +149,12 @@ class AdministrasiFakturService
         try {
             $faktur = FakturPenjualan::where('user_id', auth()->id())
                 ->findOrFail($id);
+
+            // Hapus Journal Entry terkait Faktur
+            \App\Models\JournalEntry::where('user_id', auth()->id())
+                ->where('description', 'Faktur Penjualan - ' . $faktur->kode_faktur)
+                ->delete();
+
             $faktur->delete();
 
             DB::commit();
