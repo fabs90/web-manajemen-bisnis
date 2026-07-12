@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\SPP\PesananPembelian;
+use App\Models\SPP\SuratPesananPembelian;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
@@ -18,7 +18,7 @@ class SuratPesananPembelianMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public PesananPembelian $pesananPembelian, public $user) {}
+    public function __construct(public SuratPesananPembelian $pesananPembelian, public $user) {}
 
     /**
      * Get the message envelope.

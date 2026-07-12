@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Account;
+use App\Models\Barang;
+use App\Models\JournalItem;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -222,12 +225,12 @@ class PendapatanRequest extends FormRequest
             $jenis = $this->input('jenis_pendapatan');
             $userId = auth()->id();
 
-            $accounts = \App\Models\Account::where('user_id', $userId)->get()->keyBy('code');
+            $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
             $piutangId = $accounts->has('1104') ? $accounts['1104']->id : null;
 
             // Validasi saldo piutang untuk pelanggan
             if (in_array($jenis, ['piutang', 'kredit']) && $this->filled('nama_pelanggan') && $piutangId) {
-                $balance = \App\Models\JournalItem::where('user_id', $userId)
+                $balance = JournalItem::where('user_id', $userId)
                     ->where('account_id', $piutangId)
                     ->where('sub_ledger_id', $this->nama_pelanggan)
                     ->selectRaw('SUM(debit - credit) as saldo')
@@ -239,7 +242,7 @@ class PendapatanRequest extends FormRequest
                     } else {
                         $kreditAmount = floatval($this->jumlah) + floatval($this->jumlah_kredit ?? 0);
                         if ($kreditAmount > $balance) {
-                            $validator->errors()->add('jumlah_kredit', 'Jumlah pelunasan (Rp ' . number_format($kreditAmount, 0, ',', '.') . ') melebihi total piutang pelanggan (Rp ' . number_format($balance, 0, ',', '.') . ').');
+                            $validator->errors()->add('jumlah_kredit', 'Jumlah pelunasan (Rp '.number_format($kreditAmount, 0, ',', '.').') melebihi total piutang pelanggan (Rp '.number_format($balance, 0, ',', '.').').');
                         }
                     }
                 }
@@ -253,7 +256,7 @@ class PendapatanRequest extends FormRequest
                 $totalCalculated = 0;
                 foreach ($this->barang_terjual as $index => $barangId) {
                     if ($barangId) {
-                        $barang = \App\Models\Barang::find($barangId);
+                        $barang = Barang::find($barangId);
                         if ($barang) {
                             $harga = $barang->harga_jual_per_unit;
                             $qty =

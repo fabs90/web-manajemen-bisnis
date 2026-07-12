@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class AgendaSuratPerjalananService
 {
-    public function __construct(public FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(public FileUploadService $fileUploadService) {}
 
     /**
      * Store new data.
@@ -86,9 +84,9 @@ class AgendaSuratPerjalananService
         if ($expenseAccount && $cashAccount && $agendaSuratPerjalanan->total_biaya > 0) {
             $entry = JournalEntry::create([
                 'user_id' => auth()->id(),
-                'reference_number' => 'Itineri-' . $agendaSuratPerjalanan->id,
+                'reference_number' => 'Itineri-'.$agendaSuratPerjalanan->id,
                 'date' => $agendaSuratPerjalanan->tanggal_mulai,
-                'description' => 'Pengeluaran untuk agenda surat perjalanan: ' . $agendaSuratPerjalanan->id . ' - ' . $agendaSuratPerjalanan->nama_pelaksana,
+                'description' => 'Pengeluaran untuk agenda surat perjalanan: '.$agendaSuratPerjalanan->id.' - '.$agendaSuratPerjalanan->nama_pelaksana,
                 'transaction_type' => 'agenda_perjalanan',
             ]);
 
@@ -182,7 +180,7 @@ class AgendaSuratPerjalananService
         JournalEntry::where('user_id', auth()->id())
             ->where(
                 'reference_number',
-                'PRJ-' . $agendaSuratPerjalanan->id,
+                'PRJ-'.$agendaSuratPerjalanan->id,
             )
             ->delete();
 
@@ -207,15 +205,15 @@ class AgendaSuratPerjalananService
             )->setPaper('A4', 'portrait');
 
             $fileName =
-                'Agenda-Surat-Perjalanan-' . $agendaPerjalanan->id . '.pdf';
+                'Agenda-Surat-Perjalanan-'.$agendaPerjalanan->id.'.pdf';
 
             return $pdf->download($fileName); // Jika ingin download: ->download($fileName)
         } catch (\Exception $e) {
             Log::error(
-                'Gagal membuat PDF Agenda Surat Perjalanan: ' .
+                'Gagal membuat PDF Agenda Surat Perjalanan: '.
                 $e->getMessage(),
             );
-            throw new \Exception('Gagal membuat PDF: ' . $e->getMessage());
+            throw new \Exception('Gagal membuat PDF: '.$e->getMessage());
         }
     }
 
@@ -231,15 +229,15 @@ class AgendaSuratPerjalananService
             )->setPaper('A4', 'portrait');
 
             $fileName =
-                'Surat-Tugas-Perjalanan-' . $agendaPerjalanan->id . '.pdf';
+                'Surat-Tugas-Perjalanan-'.$agendaPerjalanan->id.'.pdf';
 
             return $pdf->download($fileName);
         } catch (\Exception $e) {
             Log::error(
-                'Gagal membuat PDF Surat Tugas: ' .
+                'Gagal membuat PDF Surat Tugas: '.
                 $e->getMessage(),
             );
-            throw new \Exception('Gagal membuat PDF: ' . $e->getMessage());
+            throw new \Exception('Gagal membuat PDF: '.$e->getMessage());
         }
     }
 

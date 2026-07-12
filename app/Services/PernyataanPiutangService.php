@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\JournalItem;
 use App\Models\Pelanggan;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PernyataanPiutangService
@@ -12,7 +13,7 @@ class PernyataanPiutangService
     /**
      * Mendapatkan daftar pelanggan yang memiliki saldo piutang (berdasarkan JournalItem).
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getDaftarPiutang()
     {

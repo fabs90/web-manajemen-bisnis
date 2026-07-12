@@ -4,66 +4,67 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\Barang;
-use App\Models\Faktur\FakturPenjualan;
 use App\Models\JournalEntry;
 use App\Models\KartuGudang;
-use App\Models\MemoKredit\MemoKredit;
-use App\Models\MemoKredit\MemoKreditDetail;
+use App\Models\ReturPembelian;
+use App\Models\ReturPembelianDetail;
 use App\Models\Pelanggan;
-use App\Models\SPP\SuratPesananPenjualanDetail;
+use App\Models\SPP\SuratPesananPembelian;
+use App\Models\SPP\SuratPesananPembelianDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class MemoKreditService
+class ReturPembelianService
 {
     public function store($request)
     {
         DB::beginTransaction();
         try {
-            $totalSalesAmount = 0;
-            $totalCogsAmount = 0;
+            $totalPurchaseAmount = 0;
 
-            $nomorMemo = $this->generateNomorMemo();
+            $nomorRetur = $request->nomor_retur;
+            $spp = SuratPesananPembelian::findOrFail($request->spp_id);
 
-            // Simpan memo utama
-            $memo = MemoKredit::create([
-                'nomor_memo' => $nomorMemo,
+            // Simpan memo utama (Retur Pembelian)
+            $retur = ReturPembelian::create([
+                'nomor_retur' => $nomorRetur,
                 'tanggal' => $request->tanggal,
-                'faktur_penjualan_id' => $request->faktur_id,
+                'pesanan_pembelian_id' => $request->spp_id,
+                'supplier_id' => $spp->supplier_id,
                 'alasan_pengembalian' => $request->alasan_pengembalian,
                 'total' => 0, // Akan diupdate nanti
                 'user_id' => auth()->id(),
             ]);
 
-            // Simpan detail memo kredit
+            // Simpan detail retur
             foreach ($request->barang_id as $index => $barangDetailId) {
                 $qty = $request->jumlah_dikembalikan[$index];
+                if ($qty <= 0) continue;
+
                 $hargaSatuan = $this->cleanRupiah($request->harga[$index]);
                 $jumlah = $this->cleanRupiah($request->total[$index]);
 
-                $sppDetail = SuratPesananPenjualanDetail::findOrFail($barangDetailId);
+                $sppDetail = SuratPesananPembelianDetail::findOrFail($barangDetailId);
 
-                MemoKreditDetail::create([
-                    'memo_kredit_id' => $memo->id,
+                ReturPembelianDetail::create([
+                    'retur_pembelian_id' => $retur->id,
                     'nama_barang' => $sppDetail->nama_barang,
                     'kuantitas' => $qty,
                     'harga_satuan' => $hargaSatuan,
                     'jumlah' => $jumlah,
                 ]);
 
-                $totalSalesAmount += $jumlah;
+                $totalPurchaseAmount += $jumlah;
 
-                // Update Stok & Kartu Gudang
+                // Update Stok & Kartu Gudang (Barang Keluar)
                 $barang = Barang::where('nama', $sppDetail->nama_barang)
                     ->where('user_id', auth()->id())
                     ->first();
 
                 if ($barang) {
-                    $totalCogsAmount += ($qty * ($barang->harga_beli_per_unit ?? 0));
-
                     $lastKartu = KartuGudang::where('barang_id', $barang->id)
                         ->where('user_id', auth()->id())
                         ->latest()
@@ -72,8 +73,8 @@ class MemoKreditService
                     $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
                     $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
 
-                    $diterima = $qty; // Barang kembali
-                    $dikeluarkan = 0;
+                    $diterima = 0;
+                    $dikeluarkan = $qty; // Barang dikembalikan ke supplier
 
                     $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
 
@@ -86,7 +87,7 @@ class MemoKreditService
                         'tanggal' => $request->tanggal,
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Memo Kredit - ' . $memo->nomor_memo,
+                        'uraian' => 'Retur Pembelian - '.$retur->nomor_retur,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -94,55 +95,37 @@ class MemoKreditService
                 }
             }
 
-            $memo->update(['total' => $totalSalesAmount]);
+            $retur->update(['total' => $totalPurchaseAmount]);
 
             // Journal Entry
-            $receivableAccount = Account::where('user_id', auth()->id())->where('code', '1104')->first(); // Piutang Usaha
-            $revenueAccount = Account::where('user_id', auth()->id())->where('code', '4101')->first();    // Pendapatan Penjualan
-            $hppAccount = Account::where('user_id', auth()->id())->where('code', '5101')->first();        // HPP
+            $payableAccount = Account::where('user_id', auth()->id())->where('code', '2101')->first(); // Hutang Usaha
             $inventoryAccount = Account::where('user_id', auth()->id())->where('code', '1105')->first();  // Persediaan Barang Dagang
 
-            if ($receivableAccount && $revenueAccount && $hppAccount && $inventoryAccount) {
+            if ($payableAccount && $inventoryAccount) {
                 $journalEntry = JournalEntry::create([
                     'user_id' => auth()->id(),
-                    'reference_number' => 'MK-' . date('Ymd', strtotime($request->tanggal)) . '-' . strtoupper(Str::random(6)),
+                    'reference_number' => 'RPB-'.date('Ymd', strtotime($request->tanggal)).'-'.strtoupper(Str::random(6)),
                     'date' => $request->tanggal,
-                    'description' => 'Memo Kredit - ' . $memo->nomor_memo,
-                    'transaction_type' => 'return_penjualan',
+                    'description' => 'Retur Pembelian - '.$retur->nomor_retur,
+                    'transaction_type' => 'retur_pembelian',
                 ]);
 
-                // 1. Debit: Pendapatan Penjualan (4101) - Mengurangi Pendapatan
+                // 1. Debit: Hutang Usaha (2101) - Mengurangi Hutang
                 $journalEntry->items()->create([
                     'user_id' => auth()->id(),
-                    'account_id' => $revenueAccount->id,
-                    'debit' => $totalSalesAmount,
+                    'account_id' => $payableAccount->id,
+                    'debit' => $totalPurchaseAmount,
                     'credit' => 0,
-                ]);
-
-                // 2. Credit: Piutang Usaha (1104) - Mengurangi Piutang
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $receivableAccount->id,
-                    'debit' => 0,
-                    'credit' => $totalSalesAmount,
                     'sub_ledger_type' => Pelanggan::class,
-                    'sub_ledger_id' => $request->pelanggan_id,
+                    'sub_ledger_id' => $spp->supplier_id,
                 ]);
 
-                // 3. Debit: Persediaan (1105) - Menambah Persediaan
+                // 2. Credit: Persediaan (1105) - Mengurangi Persediaan
                 $journalEntry->items()->create([
                     'user_id' => auth()->id(),
                     'account_id' => $inventoryAccount->id,
-                    'debit' => $totalCogsAmount,
-                    'credit' => 0,
-                ]);
-
-                // 4. Credit: HPP (5101) - Mengurangi HPP
-                $journalEntry->items()->create([
-                    'user_id' => auth()->id(),
-                    'account_id' => $hppAccount->id,
                     'debit' => 0,
-                    'credit' => $totalCogsAmount,
+                    'credit' => $totalPurchaseAmount,
                 ]);
             }
 
@@ -152,7 +135,7 @@ class MemoKreditService
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error('Error generating memo kredit', [
+            Log::error('Error generating retur pembelian', [
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
@@ -162,16 +145,16 @@ class MemoKreditService
         }
     }
 
-    public function destroy($fakturId)
+    public function destroy($returId)
     {
         DB::beginTransaction();
         try {
-            $memo = MemoKredit::with('memoKreditDetail')
-                ->where('faktur_penjualan_id', $fakturId)
+            $retur = ReturPembelian::with('detail')
+                ->where('id', $returId)
                 ->where('user_id', auth()->id())
                 ->firstOrFail();
 
-            foreach ($memo->memoKreditDetail as $detail) {
+            foreach ($retur->detail as $detail) {
                 $barang = Barang::where('nama', $detail->nama_barang)
                     ->where('user_id', auth()->id())
                     ->first();
@@ -185,9 +168,9 @@ class MemoKreditService
                     $saldoPersatuanSebelumnya = $lastKartu->saldo_persatuan ?? 0;
                     $saldoPerKemasanSebelumnya = $lastKartu->saldo_perkemasan ?? 0;
 
-                    // Reversal: Barang yang sebelumnya diterima kembali, sekarang dikeluarkan (batal retur)
-                    $diterima = 0;
-                    $dikeluarkan = $detail->kuantitas;
+                    // Reversal: Barang yang sebelumnya dikeluarkan, sekarang diterima (batal retur)
+                    $diterima = $detail->kuantitas;
+                    $dikeluarkan = 0;
 
                     $saldoPersatuanBaru = $saldoPersatuanSebelumnya + $diterima - $dikeluarkan;
 
@@ -200,7 +183,7 @@ class MemoKreditService
                         'tanggal' => now(),
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pembatalan Memo Kredit - ' . $memo->nomor_memo,
+                        'uraian' => 'Pembatalan Retur Pembelian - '.$retur->nomor_retur,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -210,21 +193,21 @@ class MemoKreditService
 
             // Hapus Journal Entry terkait
             JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Memo Kredit - ' . $memo->nomor_memo)
+                ->where('description', 'Retur Pembelian - '.$retur->nomor_retur)
                 ->delete();
 
-            // Hapus detail memo
-            $memo->memoKreditDetail()->delete();
+            // Hapus detail retur
+            $retur->detail()->delete();
 
-            // Hapus memo utama
-            $memo->delete();
+            // Hapus retur utama
+            $retur->delete();
 
             DB::commit();
 
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting memo kredit: ', [
+            Log::error('Error deleting retur pembelian: ', [
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
@@ -234,58 +217,27 @@ class MemoKreditService
         }
     }
 
-    public function generatePdf($fakturId)
+    public function generatePdf($returId)
     {
-        $faktur = FakturPenjualan::where('user_id', auth()->id())->findOrFail($fakturId);
-        $memo = MemoKredit::with('memoKreditDetail')
-            ->where('faktur_penjualan_id', $fakturId)
+        $retur = ReturPembelian::with('detail', 'pesananPembelian.supplier')
+            ->where('id', $returId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
         $profileUser = Auth::user();
 
         // Generate PDF
         $pdf = Pdf::loadView(
-            'administrasi.surat.memo-kredit.template-pdf',
-            compact('faktur', 'memo', 'profileUser'),
+            'administrasi.surat.memo-kredit.template-pdf-penjual',
+            compact('retur', 'profileUser'),
         )->setPaper('A4', 'portrait');
 
         return $pdf->download(
-            Str::slug('memo_kredit_' . $memo->nomor_memo) . '.pdf',
+            Str::slug('retur_pembelian_'.$retur->nomor_retur).'.pdf',
         );
     }
 
     private function cleanRupiah(string|int $value): int
     {
         return (int) preg_replace("/\D/", '', $value);
-    }
-
-    private function generateNomorMemo()
-    {
-        $userId = auth()->id();
-        $now = now();
-
-        // 1. Cari nomor terakhir untuk user ini di bulan & tahun yang sama
-        $lastMemo = MemoKredit::where('user_id', $userId)
-            ->whereYear('tanggal', $now->year)
-            ->whereMonth('tanggal', $now->month)
-            ->latest('id')
-            ->first();
-
-        // 2. Tentukan nomor urut
-        if (!$lastMemo) {
-            $nextNumber = 1;
-        } else {
-            // Asumsi format: MK/001/202405/0001
-            $parts = explode('/', $lastMemo->nomor_memo);
-            $lastNumber = (int) end($parts);
-            $nextNumber = $lastNumber + 1;
-        }
-
-        // 3. Format string (MK / ID User / YYYYMM / 0001)
-        return sprintf(
-            'MK/%s/%s',
-            str_pad($userId, 3, '0', STR_PAD_LEFT),
-            str_pad($nextNumber, 4, '0', STR_PAD_LEFT),
-        );
     }
 }

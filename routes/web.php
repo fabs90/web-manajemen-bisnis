@@ -14,10 +14,13 @@ use App\Http\Controllers\Memo\MemoKreditController;
 use App\Http\Controllers\NeracaAkhirController;
 use App\Http\Controllers\NeracaAwalController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaketDiskonController;
 use App\Http\Controllers\PendapatanController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PernyataanPiutangController;
+use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QrisController;
 use App\Http\Controllers\Rapat\NotulenRapatController;
 use App\Http\Controllers\Rapat\SuratUndanganRapatController;
 use App\Http\Controllers\ReturController;
@@ -52,13 +55,13 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified'])->group(function () {
     // 🏦 GROUP: QRIS
     // =============================
     Route::prefix('dashboard/qris')->group(function () {
-        Route::get('/', [\App\Http\Controllers\QrisController::class, 'index'])->name(
+        Route::get('/', [QrisController::class, 'index'])->name(
             'qris.index',
         );
-        Route::post('/update', [\App\Http\Controllers\QrisController::class, 'update'])->name(
+        Route::post('/update', [QrisController::class, 'update'])->name(
             'qris.update',
         );
-        Route::delete('/', [\App\Http\Controllers\QrisController::class, 'destroy'])->name(
+        Route::delete('/', [QrisController::class, 'destroy'])->name(
             'qris.destroy',
         );
     });
@@ -67,8 +70,8 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified'])->group(function () {
     // 🖨️ GROUP: PRINTER
     // =============================
     Route::prefix('dashboard/printer')->group(function () {
-        Route::get('/', [\App\Http\Controllers\PrinterController::class, 'index'])->name('printer.index');
-        Route::post('/update', [\App\Http\Controllers\PrinterController::class, 'update'])->name('printer.update');
+        Route::get('/', [PrinterController::class, 'index'])->name('printer.index');
+        Route::post('/update', [PrinterController::class, 'update'])->name('printer.update');
     });
 });
 
@@ -183,7 +186,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
         ])->name('keuangan.pengeluaran-kas-kecil.store');
 
         // Paket Diskon
-        Route::resource('/paket-diskon', \App\Http\Controllers\PaketDiskonController::class)
+        Route::resource('/paket-diskon', PaketDiskonController::class)
             ->names('keuangan.paket-diskon')
             ->except(['show']);
 
@@ -254,25 +257,8 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
     // 🚚 GROUP: Retur
     // =============================
     Route::prefix('dashboard/retur')->group(function () {
-        Route::get('/', [ReturController::class, 'list'])->name('retur.list');
-
-        Route::get('/create/penjualan', [
-            ReturController::class,
-            'create',
-        ])->name('retur.create-penjualan');
-        Route::post('/', [ReturController::class, 'store'])->name(
-            'retur.store-penjualan',
-        );
-
-        Route::get('/create/pembelian', [
-            ReturController::class,
-            'create_retur_pembelian',
-        ])->name('retur.create-pembelian');
-
-        Route::post('/pembelian', [
-            ReturController::class,
-            'store_retur_pembelian',
-        ])->name('retur.store-pembelian');
+        Route::get('/penjualan', [ReturController::class, 'listPenjualan'])->name('retur.list-penjualan');
+        Route::get('/pembelian', [ReturController::class, 'listPembelian'])->name('retur.list-pembelian');
     });
 
     // =============================
@@ -730,6 +716,36 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'index',
         ])->name('administrasi.memo-kredit.index');
 
+        Route::get('/memo-kredit/pelanggan', [
+            MemoKreditController::class,
+            'pelanggan',
+        ])->name('administrasi.memo-kredit.pelanggan');
+
+        Route::get('/memo-kredit/penjual', [
+            MemoKreditController::class,
+            'penjual',
+        ])->name('administrasi.memo-kredit.penjual');
+
+        Route::get('/memo-kredit/penjual/create/{sppId}', [
+            MemoKreditController::class,
+            'createPenjual',
+        ])->name('administrasi.memo-kredit.create-penjual');
+
+        Route::post('/memo-kredit/penjual', [
+            MemoKreditController::class,
+            'storePenjual',
+        ])->name('administrasi.memo-kredit.store-penjual');
+
+        Route::delete('/memo-kredit/penjual/{returId}', [
+            MemoKreditController::class,
+            'destroyPenjual',
+        ])->name('administrasi.memo-kredit.destroy-penjual');
+
+        Route::get('/memo-kredit/penjual/{returId}/generate', [
+            MemoKreditController::class,
+            'generatePdfPenjual',
+        ])->name('administrasi.memo-kredit.generatePdf-penjual');
+
         Route::get('/memo-kredit/create/{fakturId}', [
             MemoKreditController::class,
             'create',
@@ -822,4 +838,4 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
 
     });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

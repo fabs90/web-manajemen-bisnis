@@ -16,20 +16,20 @@ class SuratPengirimanBarangRequest extends FormRequest
 
     public function rules(): array
     {
-        $butuhKonfirmasi = in_array($this->status_pengiriman, ['diterima', 'dikembalikan']);
+        $butuhKonfirmasi = in_array($this->status_pengiriman, ['diterima']);
 
         return [
             // ── SPB Info ────────────────────────────────────────────────
             'spp_id' => ['required', 'string'],
             'nomor_pengiriman_barang' => ['required', 'string'],
             'tanggal_pengiriman' => ['required', 'date'],
-            'status_pengiriman' => ['required', 'in:diproses,dikirim,diterima,dibatalkan,dikembalikan'],
+            'status_pengiriman' => ['required', 'in:diproses,dikirim,diterima,dibatalkan'],
             'jenis_pengiriman' => ['required', 'string', 'max:100'],
             'nama_pengirim' => ['required', 'string', 'max:100'],
             'ttd_pengirim' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'keterangan' => ['nullable', 'string'],
 
-            // ── Konfirmasi (wajib saat diterima / dikembalikan) ─────────
+            // ── Konfirmasi (wajib saat diterima) ─────────
             'tanggal_terima' => $butuhKonfirmasi ? ['required', 'date'] : ['nullable', 'date'],
             'keadaan' => $butuhKonfirmasi ? ['required', 'in:baik,rusak_ringan,rusak_berat'] : ['nullable', 'string'],
             'nama_penerima' => $butuhKonfirmasi ? ['required', 'string', 'max:100'] : ['nullable', 'string'],

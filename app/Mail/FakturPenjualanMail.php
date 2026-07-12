@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Models\Faktur\FakturPenjualan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -31,7 +30,7 @@ class FakturPenjualanMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Faktur Penjualan: ' . $this->faktur->kode_faktur,
+            subject: 'Faktur Penjualan: '.$this->faktur->kode_faktur,
         );
     }
 
@@ -72,7 +71,7 @@ class FakturPenjualanMail extends Mailable
 
         $attachments[] = Attachment::fromData(
             fn () => $pdf->output(),
-            Str::slug('faktur-penjualan-' . $this->faktur->kode_faktur) . '.pdf'
+            Str::slug('faktur-penjualan-'.$this->faktur->kode_faktur).'.pdf'
         )->withMime('application/pdf');
 
         return $attachments;

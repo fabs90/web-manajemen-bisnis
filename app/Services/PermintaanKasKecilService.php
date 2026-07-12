@@ -8,6 +8,7 @@ use App\Models\JournalEntry;
 use App\Models\KasKecil;
 use App\Models\KasKecilDetail;
 use App\Models\KasKecilFormulir;
+use App\Models\PengisianKasKecilLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -109,7 +110,7 @@ class PermintaanKasKecilService
                 ]);
             }
 
-            \App\Models\PengisianKasKecilLog::create([
+            PengisianKasKecilLog::create([
                 'journal_entry_id' => $entry->id,
                 'kas_kecil_id' => $kasKecil->id,
                 'uraian' => ($isPengeluaran ? 'Pengeluaran Kas Kecil: ' : 'Penambahan Kas Kecil: ').$referenceNumber,

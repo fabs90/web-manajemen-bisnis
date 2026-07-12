@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -225,7 +226,7 @@ class DefaultAccountSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = \App\Models\User::first();
+        $user = User::first();
 
         if ($user) {
             self::seedForUser($user->id);

@@ -3,6 +3,7 @@
 use App\Http\Middleware\checkIsAdmin;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Middleware\EnsureUserIsVerified;
+use App\Http\Middleware\PreventBackHistory;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append([App\Http\Middleware\PreventBackHistory::class]);
+        $middleware->append([PreventBackHistory::class]);
         $middleware->alias([
             'ensureUserIsVerified' => EnsureUserIsVerified::class,
             'ensureProfileCompleted' => EnsureProfileComplete::class,

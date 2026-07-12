@@ -2,13 +2,13 @@
 
 namespace App\Jobs;
 
-use App\Models\Faktur\FakturPenjualan;
 use App\Mail\FakturPenjualanMail;
+use App\Models\Faktur\FakturPenjualan;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use Illuminate\Support\Facades\Mail;
 
 class SendSFakturPenjualanJob implements ShouldQueue
 {
@@ -29,14 +29,15 @@ class SendSFakturPenjualanJob implements ShouldQueue
     {
         try {
             $email = $this->faktur->suratPengirimanBarang?->pesananPenjualan?->pelanggan?->email ?? null;
-            if (!$email) {
-                Log::warning('Faktur Penjualan Job: Email pelanggan tidak ditemukan untuk Faktur ID ' . $this->faktur->id);
+            if (! $email) {
+                Log::warning('Faktur Penjualan Job: Email pelanggan tidak ditemukan untuk Faktur ID '.$this->faktur->id);
+
                 return;
             }
 
             Mail::to($email)->send(new FakturPenjualanMail($this->faktur, $this->user));
         } catch (Exception $e) {
-            Log::error('Error mengirim Faktur Penjualan Mail: ' . $e->getMessage());
+            Log::error('Error mengirim Faktur Penjualan Mail: '.$e->getMessage());
             throw $e;
         }
     }

@@ -3,11 +3,13 @@
 namespace App\Models\SPP;
 
 use App\Models\Pelanggan;
+use App\Models\ReturPembelian;
 use App\Models\SPB\SuratPengirimanBarang;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Model;
 
-class PesananPembelian extends Model
+class SuratPesananPembelian extends Model
 {
     protected $table = 'surat_pesanan_pembelian';
 
@@ -36,7 +38,7 @@ class PesananPembelian extends Model
 
     public function pesananPembelianDetail()
     {
-        return $this->hasMany(PesananPembelianDetail::class, 'spp_id');
+        return $this->hasMany(SuratPesananPembelianDetail::class, 'spp_id');
     }
 
     public function suratPengirimanBarang()
@@ -44,11 +46,16 @@ class PesananPembelian extends Model
         return $this->hasMany(SuratPengirimanBarang::class, 'spp_id');
     }
 
+    public function returPembelian()
+    {
+        return $this->hasMany(ReturPembelian::class, 'pesanan_pembelian_id', 'id');
+    }
+
     public function generatePdf()
     {
         $this->loadMissing(['supplier', 'pesananPembelianDetail', 'user']);
 
-        return \Barryvdh\DomPDF\Facade\Pdf::loadView(
+        return Pdf::loadView(
             'administrasi.surat.surat-pesanan-pembelian.template-pdf',
             [
                 'data' => $this,

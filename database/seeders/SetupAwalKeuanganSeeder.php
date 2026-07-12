@@ -2,10 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\Account;
 use App\Models\Barang;
+use App\Models\JournalEntry;
 use App\Models\KartuGudang;
+use App\Models\Pelanggan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SetupAwalKeuanganSeeder extends Seeder
 {
@@ -77,16 +81,16 @@ class SetupAwalKeuanganSeeder extends Seeder
             }
 
             // 3. Pastikan Akun tersedia (panggil DefaultAccountSeeder jika kosong)
-            $accounts = \App\Models\Account::where('user_id', 3)->get()->keyBy('code');
+            $accounts = Account::where('user_id', 3)->get()->keyBy('code');
             if ($accounts->isEmpty()) {
-                \Database\Seeders\DefaultAccountSeeder::seedForUser(3);
-                $accounts = \App\Models\Account::where('user_id', 3)->get()->keyBy('code');
+                DefaultAccountSeeder::seedForUser(3);
+                $accounts = Account::where('user_id', 3)->get()->keyBy('code');
             }
 
             // pelanggan: Debitur PT Sumber Makmur
-            $pelangganDebitur = \App\Models\Pelanggan::where('jenis', 'debitur')->first();
+            $pelangganDebitur = Pelanggan::where('jenis', 'debitur')->first();
             // supplier: Kreditur PT Bumi Rezeki
-            $pelangganKreditur = \App\Models\Pelanggan::where('jenis', 'kreditur')->first();
+            $pelangganKreditur = Pelanggan::where('jenis', 'kreditur')->first();
 
             $kasAwal = 100_000_000;
             $piutangAwal = 25_000_000;
@@ -100,9 +104,9 @@ class SetupAwalKeuanganSeeder extends Seeder
             $modalAwal = $totalDebit - $hutangAwal; // Agar balance
 
             // Buat Jurnal Entry untuk Setup Awal (Saldo Awal)
-            $entry = \App\Models\JournalEntry::create([
+            $entry = JournalEntry::create([
                 'user_id' => 3,
-                'reference_number' => 'SA-20250101-'.\Illuminate\Support\Str::random(4),
+                'reference_number' => 'SA-20250101-'.Str::random(4),
                 'date' => '2025-01-01',
                 'description' => 'Setup Saldo Awal',
                 'transaction_type' => 'neraca_awal',
@@ -115,7 +119,7 @@ class SetupAwalKeuanganSeeder extends Seeder
             if ($pelangganDebitur) {
                 $entry->items()->create([
                     'user_id' => 3, 'account_id' => $accounts['1104']->id,
-                    'sub_ledger_type' => \App\Models\Pelanggan::class, 'sub_ledger_id' => $pelangganDebitur->id,
+                    'sub_ledger_type' => Pelanggan::class, 'sub_ledger_id' => $pelangganDebitur->id,
                     'debit' => $piutangAwal, 'credit' => 0,
                 ]);
             }
@@ -136,7 +140,7 @@ class SetupAwalKeuanganSeeder extends Seeder
             if ($pelangganKreditur) {
                 $entry->items()->create([
                     'user_id' => 3, 'account_id' => $accounts['2101']->id,
-                    'sub_ledger_type' => \App\Models\Pelanggan::class, 'sub_ledger_id' => $pelangganKreditur->id,
+                    'sub_ledger_type' => Pelanggan::class, 'sub_ledger_id' => $pelangganKreditur->id,
                     'debit' => 0, 'credit' => $hutangAwal,
                 ]);
             }

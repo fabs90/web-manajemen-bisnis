@@ -2,9 +2,10 @@
 
 namespace App\Models\SPP;
 
+use App\Models\Barang;
 use Illuminate\Database\Eloquent\Model;
 
-class PesananPembelianDetail extends Model
+class SuratPesananPembelianDetail extends Model
 {
     protected $table = 'surat_pesanan_pembelian_detail';
 
@@ -20,11 +21,11 @@ class PesananPembelianDetail extends Model
 
     public function pesananPembelian()
     {
-        return $this->belongsTo(PesananPembelian::class, 'spp_id');
+        return $this->belongsTo(SuratPesananPembelian::class, 'spp_id');
     }
 
     public function barang()
     {
-        return $this->belongsTo(\App\Models\Barang::class, 'barang_id');
+        return $this->belongsTo(Barang::class, 'barang_id');
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Account;
+use App\Models\JournalItem;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PengeluaranRequest extends FormRequest
@@ -26,20 +28,20 @@ class PengeluaranRequest extends FormRequest
         $validator->after(function ($validator) {
             if ($this->jenis_keperluan === 'membayar_hutang' && $this->filled('hutang_id')) {
                 $userId = auth()->id();
-                $utangAccount = \App\Models\Account::where('user_id', $userId)->where('code', '2101')->first();
+                $utangAccount = Account::where('user_id', $userId)->where('code', '2101')->first();
                 if ($utangAccount) {
-                    $journalItem = \App\Models\JournalItem::find($this->hutang_id);
+                    $journalItem = JournalItem::find($this->hutang_id);
                     if ($journalItem) {
                         $pelangganId = $journalItem->sub_ledger_id;
-                        $balance = \App\Models\JournalItem::where('user_id', $userId)
+                        $balance = JournalItem::where('user_id', $userId)
                             ->where('account_id', $utangAccount->id)
                             ->where('sub_ledger_id', $pelangganId)
                             ->selectRaw('SUM(credit - debit) as saldo')
                             ->value('saldo');
-                        
+
                         $bayarAmount = floatval($this->jumlah_manual);
                         if ($bayarAmount > $balance) {
-                            $validator->errors()->add('jumlah_manual', 'Jumlah pembayaran (Rp ' . number_format($bayarAmount, 0, ',', '.') . ') melebihi total hutang (Rp ' . number_format($balance, 0, ',', '.') . ').');
+                            $validator->errors()->add('jumlah_manual', 'Jumlah pembayaran (Rp '.number_format($bayarAmount, 0, ',', '.').') melebihi total hutang (Rp '.number_format($balance, 0, ',', '.').').');
                         }
                     }
                 }

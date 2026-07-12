@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendSuratUndanganRapatJob;
 use App\Jobs\SendUpdateSuratUndanganRapatJob;
 use App\Models\SuratUndanganRapat;
 use Illuminate\Support\Facades\Auth;
@@ -63,7 +64,7 @@ class SuratUndanganRapatService
             DB::commit();
 
             // Dispatch job to send email
-            \App\Jobs\SendSuratUndanganRapatJob::dispatch($suratUndanganRapat, auth()->user());
+            SendSuratUndanganRapatJob::dispatch($suratUndanganRapat, auth()->user());
 
             return $suratUndanganRapat;
         } catch (Throwable $e) {

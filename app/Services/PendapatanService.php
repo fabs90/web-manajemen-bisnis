@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\KartuGudang;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class PendapatanService
@@ -12,7 +13,7 @@ class PendapatanService
     public function storePendapatan($request, $userId, $accounts)
     {
         $prefix = 'PEND';
-        $date = \Carbon\Carbon::parse($request->tanggal)->format('Ymd');
+        $date = Carbon::parse($request->tanggal)->format('Ymd');
         $random = strtoupper(Str::random(6));
         $referenceNumber = "{$prefix}-{$date}-{$random}";
 
@@ -142,7 +143,7 @@ class PendapatanService
     protected function handleBarangTerjual($request, $userId, $entry)
     {
         foreach ($request->barang_terjual as $index => $barangId) {
-            if (!$barangId) {
+            if (! $barangId) {
                 continue;
             }
 
@@ -165,7 +166,7 @@ class PendapatanService
                 'tanggal' => $request->tanggal,
                 'diterima' => 0,
                 'dikeluarkan' => $jumlahDijual,
-                'uraian' => 'Penjualan: ' . $request->uraian_pendapatan,
+                'uraian' => 'Penjualan: '.$request->uraian_pendapatan,
                 'saldo_persatuan' => $satuanBaru,
                 'saldo_perkemasan' => $saldoPerKemasanBaru,
                 'journal_entry_id' => $entry->id,

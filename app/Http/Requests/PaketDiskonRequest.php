@@ -22,7 +22,7 @@ class PaketDiskonRequest extends FormRequest
             'is_active' => ['boolean'],
         ];
     }
-    
+
     protected function prepareForValidation(): void
     {
         $this->merge([

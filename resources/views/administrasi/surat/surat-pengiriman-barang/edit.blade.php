@@ -84,7 +84,6 @@
                                         'dikirim' => '🚚 Dikirim',
                                         'diterima' => '✅ Diterima',
                                         'dibatalkan' => '❌ Dibatalkan',
-                                        'dikembalikan' => '↩️ Dikembalikan',
                                     ];
                                     $currentStatus = old('status_pengiriman', $dataSpb->status_pengiriman);
                                 @endphp

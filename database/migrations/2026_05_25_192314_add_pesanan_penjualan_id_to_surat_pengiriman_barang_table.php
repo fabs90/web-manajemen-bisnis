@@ -31,7 +31,7 @@ return new class extends Migration
                     ->on('surat_pesanan_penjualan')
                     ->nullOnDelete();
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         // 4. Make spp_detail_id nullable
@@ -54,7 +54,7 @@ return new class extends Migration
                     ->on('surat_pesanan_penjualan_detail')
                     ->nullOnDelete();
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
     }
 

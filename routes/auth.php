@@ -54,8 +54,6 @@ Route::middleware('guest')->group(function () {
         'store',
     ])->name('superadmin.store');
 
-
-
 });
 
 Route::middleware('auth')->group(function () {

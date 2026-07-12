@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Models\SPB\SuratPengirimanBarang;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -31,7 +30,7 @@ class SuratPengirimanBarangMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Surat Pengiriman Barang: ' . $this->spb->nomor_pengiriman_barang,
+            subject: 'Surat Pengiriman Barang: '.$this->spb->nomor_pengiriman_barang,
         );
     }
 
@@ -66,7 +65,7 @@ class SuratPengirimanBarangMail extends Mailable
             'suratPengirimanBarangDetail.pesananPembelianDetail',
             'suratPengirimanBarangDetail.pesananPenjualanDetail',
         ])->find($this->spb->id);
-        
+
         $profileUser = $this->user;
 
         $pdf = Pdf::loadView(
@@ -76,7 +75,7 @@ class SuratPengirimanBarangMail extends Mailable
 
         $attachments[] = Attachment::fromData(
             fn () => $pdf->output(),
-            Str::slug('surat-pengiriman-barang-' . $this->spb->nomor_pengiriman_barang) . '.pdf'
+            Str::slug('surat-pengiriman-barang-'.$this->spb->nomor_pengiriman_barang).'.pdf'
         )->withMime('application/pdf');
 
         return $attachments;

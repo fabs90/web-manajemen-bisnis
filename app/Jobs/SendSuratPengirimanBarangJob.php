@@ -2,13 +2,13 @@
 
 namespace App\Jobs;
 
-use App\Models\SPB\SuratPengirimanBarang;
 use App\Mail\SuratPengirimanBarangMail;
+use App\Models\SPB\SuratPengirimanBarang;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use Illuminate\Support\Facades\Mail;
 
 class SendSuratPengirimanBarangJob implements ShouldQueue
 {
@@ -29,14 +29,15 @@ class SendSuratPengirimanBarangJob implements ShouldQueue
     {
         try {
             $email = $this->spb->pesananPenjualan?->pelanggan?->email ?? null;
-            if (!$email) {
-                Log::warning('SPB Job: Email pelanggan tidak ditemukan untuk SPB ID ' . $this->spb->id);
+            if (! $email) {
+                Log::warning('SPB Job: Email pelanggan tidak ditemukan untuk SPB ID '.$this->spb->id);
+
                 return;
             }
 
             Mail::to($email)->send(new SuratPengirimanBarangMail($this->spb, $this->user));
         } catch (Exception $e) {
-            Log::error('Error mengirim SPB Mail: ' . $e->getMessage());
+            Log::error('Error mengirim SPB Mail: '.$e->getMessage());
             throw $e;
         }
     }

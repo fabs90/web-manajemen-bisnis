@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Models\Barang;
 use App\Models\JournalItem;
+use App\Models\KartuGudang;
 use Illuminate\Support\Facades\Auth;
 
 class KeuanganService
@@ -83,10 +85,10 @@ class KeuanganService
             ->whereIn('account_id', $revenueAccounts)
             ->whereHas('journalEntry', function ($q) use ($dateRange) {
                 $q->whereBetween('date', $dateRange)
-                  ->where(function ($subQ) {
-                      $subQ->where('transaction_type', '!=', 'pendapatan_lain')
-                           ->orWhereNull('transaction_type');
-                  });
+                    ->where(function ($subQ) {
+                        $subQ->where('transaction_type', '!=', 'pendapatan_lain')
+                            ->orWhereNull('transaction_type');
+                    });
             })
             ->get();
 
@@ -121,13 +123,13 @@ class KeuanganService
     {
         $startDate = $dateRange[0];
         $endDate = $dateRange[1];
-        
-        $barang = \App\Models\Barang::where('user_id', $userId)->get();
+
+        $barang = Barang::where('user_id', $userId)->get();
 
         $persediaanAwal = 0;
         $prevDate = date('Y-m-d', strtotime($startDate.' -1 day'));
         foreach ($barang as $b) {
-            $lastKartu = \App\Models\KartuGudang::where('barang_id', $b->id)
+            $lastKartu = KartuGudang::where('barang_id', $b->id)
                 ->where('tanggal', '<=', $prevDate)
                 ->latest('id')
                 ->first();
@@ -138,7 +140,7 @@ class KeuanganService
 
         $persediaanAkhir = 0;
         foreach ($barang as $b) {
-            $lastKartu = \App\Models\KartuGudang::where('barang_id', $b->id)
+            $lastKartu = KartuGudang::where('barang_id', $b->id)
                 ->where('tanggal', '<=', $endDate)
                 ->latest('id')
                 ->first();
@@ -149,7 +151,7 @@ class KeuanganService
 
         return compact('persediaanAwal', 'persediaanAkhir');
     }
-    
+
     private function getPembelianTotal(int $userId, array $dateRange): float
     {
         $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
@@ -162,7 +164,7 @@ class KeuanganService
             ->where('account_id', $persediaanAccount->id)
             ->whereHas('journalEntry', function ($q) use ($dateRange) {
                 $q->whereBetween('date', $dateRange)
-                  ->where('transaction_type', 'membeli_barang');
+                    ->where('transaction_type', 'membeli_barang');
             })
             ->get();
 
@@ -210,10 +212,10 @@ class KeuanganService
             ->whereIn('account_id', Account::where('user_id', $userId)->where('category', 'revenue')->pluck('id'))
             ->whereHas('journalEntry', function ($q) use ($dateRange) {
                 $q->whereBetween('date', $dateRange)
-                  ->where('transaction_type', 'pendapatan_lain');
+                    ->where('transaction_type', 'pendapatan_lain');
             })
             ->get();
-        
+
         $pendapatanLain = $pendapatanLainItems->sum('credit') - $pendapatanLainItems->sum('debit');
 
         $biayaAdministrasiBank = 0; // If specific account exists, use it.
@@ -237,12 +239,12 @@ class KeuanganService
         $totalKas = $kas + $kasKecil + $bank;
 
         $saldoPiutang = $this->getAccountBalance($userId, '1104', $date);
-        
+
         // Gunakan saldo persediaan dari KartuGudang agar akurat dengan fisik gudang
-        $barang = \App\Models\Barang::where('user_id', $userId)->get();
+        $barang = Barang::where('user_id', $userId)->get();
         $nilaiPersediaan = 0;
         foreach ($barang as $b) {
-            $lastKartu = \App\Models\KartuGudang::where('barang_id', $b->id)
+            $lastKartu = KartuGudang::where('barang_id', $b->id)
                 ->where('tanggal', '<=', $date)
                 ->latest('id')
                 ->first();
@@ -269,14 +271,14 @@ class KeuanganService
         // Laba all time (to ensure balance sheet balances correctly)
         // If there's no closing entry system, past year profits must be included in Laba Ditahan.
         $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date);
-        
+
         // Current period profit for display
         $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date);
-        
+
         // Display taxes accumulated over all time
         $pajak = $allTimeLabaRugi['pajak'];
         $labaBersih = $dataLabaRugi['labaSetelahPajak'];
-        
+
         // Past years profit not yet closed to retained earnings
         $labaDitahan = $labaDitahanAkun + ($allTimeLabaRugi['labaSetelahPajak'] - $labaBersih);
 

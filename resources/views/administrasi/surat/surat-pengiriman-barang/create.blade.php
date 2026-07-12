@@ -114,7 +114,6 @@
                                         'dikirim' => '🚚 Dikirim',
                                         'diterima' => '✅ Diterima',
                                         'dibatalkan' => '❌ Dibatalkan',
-                                        'dikembalikan' => '↩️ Dikembalikan',
                                     ];
                                 @endphp
                                 @foreach ($statusList as $val => $label)

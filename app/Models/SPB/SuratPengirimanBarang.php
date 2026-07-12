@@ -3,9 +3,13 @@
 namespace App\Models\SPB;
 
 use App\Models\Faktur\FakturPenjualan;
-use App\Models\SPP\PesananPembelian;
+use App\Models\SPP\SuratPesananPembelian;
+use App\Models\SPP\SuratPesananPenjualan;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SuratPengirimanBarang extends Model
 {
@@ -27,27 +31,27 @@ class SuratPengirimanBarang extends Model
         'user_id',
     ];
 
-    public function pesananPembelian(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function pesananPembelian(): BelongsTo
     {
-        return $this->belongsTo(PesananPembelian::class, 'spp_id');
+        return $this->belongsTo(SuratPesananPembelian::class, 'spp_id');
     }
 
-    public function pesananPenjualan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function pesananPenjualan(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\SPP\SuratPesananPenjualan::class, 'pesanan_penjualan_id');
+        return $this->belongsTo(SuratPesananPenjualan::class, 'pesanan_penjualan_id');
     }
 
-    public function suratPengirimanBarangDetail(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function suratPengirimanBarangDetail(): HasMany
     {
         return $this->hasMany(SuratPengirimanBarangDetail::class, 'spb_id');
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function fakturPenjualan(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function fakturPenjualan(): HasOne
     {
         return $this->hasOne(FakturPenjualan::class, 'spb_id', 'id');
     }

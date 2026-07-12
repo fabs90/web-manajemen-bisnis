@@ -2,24 +2,17 @@
 
 namespace App\Services;
 
-use App\Models\Account;
 use App\Models\Barang;
-use App\Models\JournalEntry;
-use App\Models\KartuGudang;
 use App\Models\Pelanggan;
 use App\Models\SPP\SuratPesananPenjualan;
 use App\Models\SPP\SuratPesananPenjualanDetail;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class SuratPesananPenjualanService
 {
-    public function __construct(protected FileUploadService $fileUploadService)
-    {
-    }
+    public function __construct(protected FileUploadService $fileUploadService) {}
 
     public function storePelanggan($request): SuratPesananPenjualan
     {
@@ -75,7 +68,6 @@ class SuratPesananPenjualanService
             // Hapus logika Journaling dari SPP
             // Penjurnalan (Piutang, Penjualan, dll) dilakukan saat membuat Faktur Penjualan
 
-
             DB::commit();
 
             return $suratPesananPenjualan;
@@ -96,7 +88,7 @@ class SuratPesananPenjualanService
             // Hapus SPB (cascade) - harusnya di model ada event delete tapi kita hapus manual jika ada
             if ($suratPesananPenjualan->suratPengirimanBarang && $suratPesananPenjualan->suratPengirimanBarang->count() > 0) {
                 foreach ($suratPesananPenjualan->suratPengirimanBarang as $spb) {
-                    app(\App\Services\SuratPengirimanBarangService::class)->destroy($spb->id);
+                    app(SuratPengirimanBarangService::class)->destroy($spb->id);
                 }
             }
 

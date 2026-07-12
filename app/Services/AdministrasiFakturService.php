@@ -2,7 +2,13 @@
 
 namespace App\Services;
 
+use App\Jobs\SendSFakturPenjualanJob;
+use App\Models\Account;
+use App\Models\Barang;
 use App\Models\Faktur\FakturPenjualan;
+use App\Models\JournalEntry;
+use App\Models\Pelanggan;
+use App\Models\SPB\SuratPengirimanBarang;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -24,9 +30,9 @@ class AdministrasiFakturService
             ]);
 
             // Penjurnalan (Journaling)
-            $spb = \App\Models\SPB\SuratPengirimanBarang::with([
+            $spb = SuratPengirimanBarang::with([
                 'pesananPenjualan.pelanggan',
-                'suratPengirimanBarangDetail.pesananPenjualanDetail.barang'
+                'suratPengirimanBarangDetail.pesananPenjualanDetail.barang',
             ])->find($data['spb_id']);
 
             if ($spb && $spb->pesananPenjualan) {
@@ -42,9 +48,9 @@ class AdministrasiFakturService
                         $barangId = $detail->pesananPenjualanDetail->barang_id;
                         $barang = null;
                         if ($barangId) {
-                            $barang = \App\Models\Barang::where('id', $barangId)->where('user_id', auth()->id())->first();
+                            $barang = Barang::where('id', $barangId)->where('user_id', auth()->id())->first();
                         } else {
-                            $barang = \App\Models\Barang::where('nama', $detail->pesananPenjualanDetail->nama_barang)->where('user_id', auth()->id())->first();
+                            $barang = Barang::where('nama', $detail->pesananPenjualanDetail->nama_barang)->where('user_id', auth()->id())->first();
                         }
 
                         if ($barang) {
@@ -53,17 +59,17 @@ class AdministrasiFakturService
                     }
                 }
 
-                $piutangAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '1104')->first();
-                $persediaanAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '1105')->first();
-                $pendapatanAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '4101')->first();
-                $hppAccount = \App\Models\Account::where('user_id', auth()->id())->where('code', '5101')->first();
+                $piutangAccount = Account::where('user_id', auth()->id())->where('code', '1104')->first();
+                $persediaanAccount = Account::where('user_id', auth()->id())->where('code', '1105')->first();
+                $pendapatanAccount = Account::where('user_id', auth()->id())->where('code', '4101')->first();
+                $hppAccount = Account::where('user_id', auth()->id())->where('code', '5101')->first();
 
                 if ($piutangAccount && $persediaanAccount && $pendapatanAccount && $hppAccount) {
-                    $journalEntry = \App\Models\JournalEntry::create([
+                    $journalEntry = JournalEntry::create([
                         'user_id' => auth()->id(),
-                        'reference_number' => 'FAK-' . date('Ymd', strtotime($data['tanggal_faktur'])) . '-' . strtoupper(Str::random(6)),
+                        'reference_number' => 'FAK-'.date('Ymd', strtotime($data['tanggal_faktur'])).'-'.strtoupper(Str::random(6)),
                         'date' => $data['tanggal_faktur'],
-                        'description' => 'Faktur Penjualan - ' . $faktur->kode_faktur,
+                        'description' => 'Faktur Penjualan - '.$faktur->kode_faktur,
                         'transaction_type' => 'penjualan',
                     ]);
 
@@ -73,7 +79,7 @@ class AdministrasiFakturService
                         'account_id' => $piutangAccount->id,
                         'debit' => $totalSalesAmount,
                         'credit' => 0,
-                        'sub_ledger_type' => \App\Models\Pelanggan::class,
+                        'sub_ledger_type' => Pelanggan::class,
                         'sub_ledger_id' => $spb->pesananPenjualan->pelanggan_id ?? null,
                     ]);
 
@@ -106,7 +112,7 @@ class AdministrasiFakturService
             DB::commit();
 
             // Dispatch job email
-            \App\Jobs\SendSFakturPenjualanJob::dispatch($faktur, auth()->user());
+            SendSFakturPenjualanJob::dispatch($faktur, auth()->user());
 
             return $faktur;
         } catch (\Exception $e) {
@@ -151,8 +157,8 @@ class AdministrasiFakturService
                 ->findOrFail($id);
 
             // Hapus Journal Entry terkait Faktur
-            \App\Models\JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Faktur Penjualan - ' . $faktur->kode_faktur)
+            JournalEntry::where('user_id', auth()->id())
+                ->where('description', 'Faktur Penjualan - '.$faktur->kode_faktur)
                 ->delete();
 
             $faktur->delete();

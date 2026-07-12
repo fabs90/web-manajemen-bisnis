@@ -181,7 +181,7 @@ class ManajemenRapatService
             DB::commit();
 
             return true;
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -205,7 +205,7 @@ class ManajemenRapatService
             return redirect()
                 ->back()
                 ->with('success', 'Data Hasil Keputusan berhasil dihapus!');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             return redirect()
@@ -309,7 +309,7 @@ class ManajemenRapatService
             DB::commit();
 
             return $rapat;
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -381,7 +381,7 @@ class ManajemenRapatService
             return $pdf->download(
                 'Surat Keputusan Rapat-'.$nomorSurat.'.pdf',
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Hasil Keputusan PDF Generation Error: '.$e->getMessage());
 
             return redirect()

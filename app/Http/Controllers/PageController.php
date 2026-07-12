@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
+use App\Models\KasKecil;
 use App\Models\Pelanggan;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -264,7 +265,7 @@ class PageController extends Controller
         }
 
         // Data Buku Kas Kecil
-        $kasKecilData = \App\Models\KasKecil::with(['kasKecilDetail', 'kasKecilFormulir', 'kasKecilLog'])
+        $kasKecilData = KasKecil::with(['kasKecilDetail', 'kasKecilFormulir', 'kasKecilLog'])
             ->where('user_id', $userId)
             ->orderBy('tanggal', 'asc')
             ->orderBy('id', 'asc')

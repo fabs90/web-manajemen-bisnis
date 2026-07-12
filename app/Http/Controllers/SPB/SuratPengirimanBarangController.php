@@ -157,7 +157,7 @@ class SuratPengirimanBarangController extends Controller
                     'success',
                     'Surat Pengiriman Barang (SPB) berhasil dihapus.',
                 );
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             Log::error(
                 'Gagal menghapus Surat Pengiriman Barang (SPB): '.
                 $th->getMessage(),

@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
+use App\Models\KartuGudang;
 use App\Models\Pelanggan;
 use App\Services\PengeluaranService;
 use Illuminate\Http\RedirectResponse;
@@ -210,7 +211,7 @@ class PengeluaranController extends Controller
                 $uraianKartuGudang = str_replace('Pesanan Pembelian - ', 'Pesanan Pembelian Barang - ', $entry->description);
             }
 
-            $barangDibeli = \App\Models\KartuGudang::with('barang')
+            $barangDibeli = KartuGudang::with('barang')
                 ->where('user_id', $userId)
                 ->where('tanggal', $entry->date)
                 ->where('uraian', $uraianKartuGudang)

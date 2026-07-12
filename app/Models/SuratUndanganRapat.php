@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Model;
 
 class SuratUndanganRapat extends Model
@@ -44,7 +45,7 @@ class SuratUndanganRapat extends Model
     {
         $this->loadMissing('details');
 
-        return \Barryvdh\DomPDF\Facade\Pdf::loadView('administrasi.surat.surat-undangan-rapat.template-pdf', [
+        return Pdf::loadView('administrasi.surat.surat-undangan-rapat.template-pdf', [
             'agendaJanjiTemu' => $this,
             'profileUser' => $this->user,
         ])->setPaper('a4', 'portrait');

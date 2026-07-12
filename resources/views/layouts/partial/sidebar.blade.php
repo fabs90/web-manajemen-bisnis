@@ -3,7 +3,9 @@
         <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="logo">
-                    <a href="{{ route('dashboard') }}"><p class="h5 fw-bold mb-0 text-primary">TRANSDIGITAL</p></a>
+                    <a href="{{ route('dashboard') }}">
+                        <p class="h5 fw-bold mb-0 text-primary">TRANSDIGITAL</p>
+                    </a>
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="theme-toggle d-flex gap-2 align-items-center mt-1">
@@ -16,12 +18,14 @@
                                 <g transform="translate(-210 -1)">
                                     <path d="M220.5 2.5v2m6.5.5l-1.5 1.5"></path>
                                     <circle cx="220.5" cy="11.5" r="4"></circle>
-                                    <path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2"></path>
+                                    <path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2">
+                                    </path>
                                 </g>
                             </g>
                         </svg>
                         <div class="form-check form-switch fs-6 mb-0">
-                            <input class="form-check-input me-0" type="checkbox" id="toggle-dark" style="cursor: pointer">
+                            <input class="form-check-input me-0" type="checkbox" id="toggle-dark"
+                                style="cursor: pointer">
                             <label class="form-check-label"></label>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -60,14 +64,17 @@
                         <span>Laporan Keuangan</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-awal*') ? 'active' : '' }}">
+                        <li
+                            class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-awal*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.neraca-awal.index') }}" class="submenu-link">Neraca
                                 Awal</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('dashboard/laporan-keuangan/rugi-laba*') ? 'active' : '' }}">
+                        <li
+                            class="submenu-item {{ Request::is('dashboard/laporan-keuangan/rugi-laba*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.rugi-laba') }}" class="submenu-link">Rugi Laba</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-akhir*') ? 'active' : '' }}">
+                        <li
+                            class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-akhir*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.neraca-akhir') }}" class="submenu-link">Neraca
                                 Akhir</a>
                         </li>
@@ -88,12 +95,13 @@
                             <a href="{{ route('keuangan.paket-diskon.index') }}" class="submenu-link">Paket Diskon</a>
                         </li>
                         <li class="submenu-item {{ Request::is('dashboard/keuangan/pendapatan*') ? 'active' : '' }}">
-                            <a href="{{ route('keuangan.pendapatan.list') }}"
-                                class="submenu-link">Penerimaan Kas Perusahaan/Penjualan</a>
+                            <a href="{{ route('keuangan.pendapatan.list') }}" class="submenu-link">Penerimaan Kas
+                                Perusahaan/Penjualan</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('dashboard/keuangan/pengeluaran*') || Request::is('dashboard/keuangan/pengeluaran-kas-kecil*') ? 'active' : '' }}">
-                            <a href="{{ route('keuangan.pengeluaran.list') }}"
-                                class="submenu-link">Pengeluaran Kas Perusahaan/Pembelian</a>
+                        <li
+                            class="submenu-item {{ Request::is('dashboard/keuangan/pengeluaran*') || Request::is('dashboard/keuangan/pengeluaran-kas-kecil*') ? 'active' : '' }}">
+                            <a href="{{ route('keuangan.pengeluaran.list') }}" class="submenu-link">Pengeluaran Kas
+                                Perusahaan/Pembelian</a>
                         </li>
                     </ul>
                 </li>
@@ -104,7 +112,8 @@
                         <span>Barang</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('dashboard/barang') || Request::is('dashboard/barang/list*') || Request::is('dashboard/barang/create*') || Request::is('dashboard/barang/detail*') ? 'active' : '' }}">
+                        <li
+                            class="submenu-item {{ Request::is('dashboard/barang') || Request::is('dashboard/barang/list*') || Request::is('dashboard/barang/create*') || Request::is('dashboard/barang/detail*') ? 'active' : '' }}">
                             <a href="{{ route('barang.index') }}" class="submenu-link">List Barang</a>
                         </li>
                         <li class="submenu-item {{ Request::is('dashboard/barang/kartu-gudang*') ? 'active' : '' }}">
@@ -112,26 +121,23 @@
                         </li>
                     </ul>
                 </li>
-<li class="sidebar-item {{ Request::is('dashboard/debitur-kreditur*') ? 'active' : '' }}">
-    <a href="{{ route('debitur-kreditur.list') }}" class='sidebar-link'>
-        <i class="bi bi-people-fill"></i>
-        <span>Debitur & Kreditur</span>
-    </a>
-</li>
+                <li class="sidebar-item {{ Request::is('dashboard/debitur-kreditur*') ? 'active' : '' }}">
+                    <a href="{{ route('debitur-kreditur.list') }}" class='sidebar-link'>
+                        <i class="bi bi-people-fill"></i>
+                        <span>Debitur & Kreditur</span>
+                    </a>
+                </li>
                 <li class="sidebar-item has-sub {{ Request::is('dashboard/retur*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
                         <i class="bi bi-truck"></i>
                         <span>Retur</span>
                     </a>
                     <ul class="submenu">
-                        <li class="submenu-item {{ Request::is('dashboard/retur') ? 'active' : '' }}">
-                            <a href="{{ route('retur.list') }}" class="submenu-link">List Retur</a>
+                        <li class="submenu-item {{ Request::routeIs('retur.list-penjualan') ? 'active' : '' }}">
+                            <a href="{{ route('retur.list-penjualan') }}" class="submenu-link">List Retur Penjualan</a>
                         </li>
-                        <li class="submenu-item {{ Request::is('dashboard/retur/*penjualan*') ? 'active' : '' }}">
-                            <a href="{{ route('retur.create-penjualan') }}" class="submenu-link">Retur Penjualan</a>
-                        </li>
-                        <li class="submenu-item {{ Request::is('dashboard/retur/*pembelian*') ? 'active' : '' }}">
-                            <a href="{{ route('retur.create-pembelian') }}" class="submenu-link">Retur Pembelian</a>
+                        <li class="submenu-item {{ Request::routeIs('retur.list-pembelian') ? 'active' : '' }}">
+                            <a href="{{ route('retur.list-pembelian') }}" class="submenu-link">List Retur Pembelian</a>
                         </li>
                     </ul>
                 </li>

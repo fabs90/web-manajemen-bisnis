@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Account;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,16 +19,16 @@ return new class extends Migration
         });
 
         // Pastikan setiap user punya akun Potongan Penjualan (4102)
-        $users = \App\Models\User::all();
+        $users = User::all();
         foreach ($users as $user) {
             // Update or create to ensure category and normal_balance are correct even if it exists
-            \App\Models\Account::updateOrCreate([
+            Account::updateOrCreate([
                 'user_id' => $user->id,
-                'code' => '4102'
+                'code' => '4102',
             ], [
                 'name' => 'Potongan Penjualan',
                 'category' => 'revenue',
-                'normal_balance' => 'debit'
+                'normal_balance' => 'debit',
             ]);
         }
     }

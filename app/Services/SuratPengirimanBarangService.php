@@ -2,8 +2,12 @@
 
 namespace App\Services;
 
+use App\Jobs\SendSuratPengirimanBarangJob;
+use App\Models\Barang;
+use App\Models\KartuGudang;
 use App\Models\SPB\SuratPengirimanBarang;
 use App\Models\SPB\SuratPengirimanBarangDetail;
+use App\Models\SPP\SuratPesananPenjualanDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -72,17 +76,17 @@ class SuratPengirimanBarangService
                     // Pengurangan stok (Kartu Gudang)
                     $qtyDikirim = $item['jumlah_dikirim'] ?? 0;
                     if ($qtyDikirim > 0) {
-                        $sppDetail = \App\Models\SPP\SuratPesananPenjualanDetail::find($item['spp_detail_id']);
+                        $sppDetail = SuratPesananPenjualanDetail::find($item['spp_detail_id']);
                         if ($sppDetail) {
                             $barang = null;
                             if ($sppDetail->barang_id) {
-                                $barang = \App\Models\Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
+                                $barang = Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
                             } else {
-                                $barang = \App\Models\Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
+                                $barang = Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
                             }
 
                             if ($barang) {
-                                $lastKartu = \App\Models\KartuGudang::where('barang_id', $barang->id)
+                                $lastKartu = KartuGudang::where('barang_id', $barang->id)
                                     ->where('user_id', auth()->id())
                                     ->latest()
                                     ->first();
@@ -99,12 +103,12 @@ class SuratPengirimanBarangService
                                 $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
                                     round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
 
-                                \App\Models\KartuGudang::create([
+                                KartuGudang::create([
                                     'barang_id' => $barang->id,
                                     'tanggal' => $data['tanggal_pengiriman'] ?? now(),
                                     'diterima' => $diterima,
                                     'dikeluarkan' => $dikeluarkan,
-                                    'uraian' => 'Pengiriman Barang - ' . $spb->nomor_pengiriman_barang,
+                                    'uraian' => 'Pengiriman Barang - '.$spb->nomor_pengiriman_barang,
                                     'saldo_persatuan' => $saldoPersatuanBaru,
                                     'saldo_perkemasan' => $saldoPerKemasanBaru,
                                     'user_id' => auth()->id(),
@@ -118,7 +122,7 @@ class SuratPengirimanBarangService
             DB::commit();
 
             // Dispatch job email
-            \App\Jobs\SendSuratPengirimanBarangJob::dispatch($spb, auth()->user());
+            SendSuratPengirimanBarangJob::dispatch($spb, auth()->user());
 
             return $spb;
         } catch (Exception $e) {
@@ -233,13 +237,13 @@ class SuratPengirimanBarangService
                                 if ($sppDetail) {
                                     $barang = null;
                                     if ($sppDetail->barang_id) {
-                                        $barang = \App\Models\Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
+                                        $barang = Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
                                     } else {
-                                        $barang = \App\Models\Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
+                                        $barang = Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
                                     }
 
                                     if ($barang) {
-                                        $lastKartu = \App\Models\KartuGudang::where('barang_id', $barang->id)
+                                        $lastKartu = KartuGudang::where('barang_id', $barang->id)
                                             ->where('user_id', auth()->id())
                                             ->latest()
                                             ->first();
@@ -263,12 +267,12 @@ class SuratPengirimanBarangService
                                         $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
                                             round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
 
-                                        \App\Models\KartuGudang::create([
+                                        KartuGudang::create([
                                             'barang_id' => $barang->id,
                                             'tanggal' => now(),
                                             'diterima' => $diterima,
                                             'dikeluarkan' => $dikeluarkan,
-                                            'uraian' => 'Penyesuaian Pengiriman Barang - ' . $spb->nomor_pengiriman_barang,
+                                            'uraian' => 'Penyesuaian Pengiriman Barang - '.$spb->nomor_pengiriman_barang,
                                             'saldo_persatuan' => $saldoPersatuanBaru,
                                             'saldo_perkemasan' => $saldoPerKemasanBaru,
                                             'user_id' => auth()->id(),
@@ -311,13 +315,13 @@ class SuratPengirimanBarangService
                     if ($sppDetail) {
                         $barang = null;
                         if ($sppDetail->barang_id) {
-                            $barang = \App\Models\Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
+                            $barang = Barang::where('id', $sppDetail->barang_id)->where('user_id', auth()->id())->first();
                         } else {
-                            $barang = \App\Models\Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
+                            $barang = Barang::where('nama', $sppDetail->nama_barang)->where('user_id', auth()->id())->first();
                         }
 
                         if ($barang) {
-                            $lastKartu = \App\Models\KartuGudang::where('barang_id', $barang->id)
+                            $lastKartu = KartuGudang::where('barang_id', $barang->id)
                                 ->where('user_id', auth()->id())
                                 ->latest()
                                 ->first();
@@ -334,12 +338,12 @@ class SuratPengirimanBarangService
                             $saldoPerKemasanBaru = $saldoPerKemasanSebelumnya +
                                 round(($diterima - $dikeluarkan) / $pcsPerKemasan, 0);
 
-                            \App\Models\KartuGudang::create([
+                            KartuGudang::create([
                                 'barang_id' => $barang->id,
                                 'tanggal' => now(),
                                 'diterima' => $diterima,
                                 'dikeluarkan' => $dikeluarkan,
-                                'uraian' => 'Pembatalan Pengiriman Barang - ' . $spb->nomor_pengiriman_barang,
+                                'uraian' => 'Pembatalan Pengiriman Barang - '.$spb->nomor_pengiriman_barang,
                                 'saldo_persatuan' => $saldoPersatuanBaru,
                                 'saldo_perkemasan' => $saldoPerKemasanBaru,
                                 'user_id' => auth()->id(),
@@ -351,7 +355,7 @@ class SuratPengirimanBarangService
 
             // Faktur Penjualan otomatis terhapus jika kita set cascade di DB atau manual di controller
             if ($spb->fakturPenjualan) {
-                app(\App\Services\AdministrasiFakturService::class)->destroy($spb->fakturPenjualan->id);
+                app(AdministrasiFakturService::class)->destroy($spb->fakturPenjualan->id);
             }
 
             $spb->suratPengirimanBarangDetail()->delete();

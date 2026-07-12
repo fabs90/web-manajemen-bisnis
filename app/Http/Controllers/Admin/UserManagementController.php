@@ -17,7 +17,7 @@ use App\Models\KasKecilFormulir;
 use App\Models\MemoKredit\MemoKredit;
 use App\Models\PengisianKasKecilLog;
 use App\Models\SPB\SuratPengirimanBarang;
-use App\Models\SPP\PesananPembelian;
+use App\Models\SPP\SuratPesananPembelian;
 use App\Models\SPP\SuratPesananPenjualan;
 use App\Models\SuratUndanganRapat;
 use App\Models\User;
@@ -122,7 +122,7 @@ class UserManagementController extends Controller
             // Delete all operational documents
             FakturPenjualan::where('user_id', $id)->delete();
             SuratPengirimanBarang::where('user_id', $id)->delete();
-            PesananPembelian::where('user_id', $id)->delete();
+            SuratPesananPembelian::where('user_id', $id)->delete();
             SuratPesananPenjualan::where('user_id', $id)->delete();
             MemoKredit::where('user_id', $id)->delete();
             KasKecilFormulir::where('user_id', $id)->delete();

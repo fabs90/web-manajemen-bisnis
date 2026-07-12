@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
@@ -17,10 +18,10 @@ class AdminController extends Controller
         return view('superadmin.dashboard.superadmin', compact('users', 'totalUsers', 'verifiedUsers', 'unverifiedUsers'));
     }
 
-    public function logout(\Illuminate\Http\Request $request)
+    public function logout(Request $request)
     {
         auth()->logout();
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

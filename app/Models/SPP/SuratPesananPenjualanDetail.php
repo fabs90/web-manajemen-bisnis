@@ -2,6 +2,7 @@
 
 namespace App\Models\SPP;
 
+use App\Models\Barang;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -36,6 +37,6 @@ class SuratPesananPenjualanDetail extends Model
 
     public function barang(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Barang::class, 'barang_id');
+        return $this->belongsTo(Barang::class, 'barang_id');
     }
 }

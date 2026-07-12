@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Mail\SuratPesananPembelianMail;
-use App\Models\SPP\PesananPembelian;
+use App\Models\SPP\SuratPesananPembelian;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +20,7 @@ class SendSuratPesananPembelianJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public PesananPembelian $pesananPembelian,
+        public SuratPesananPembelian $pesananPembelian,
         public User $user,
         public string $emailPenerima
     ) {}
