@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsDashboardCache;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class KasKecil extends Model
 {
+    use HasFactory, ClearsDashboardCache;
+
     protected $table = 'kas_kecil';
 
     protected $fillable = [

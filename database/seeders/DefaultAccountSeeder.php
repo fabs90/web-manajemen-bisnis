@@ -157,17 +157,7 @@ class DefaultAccountSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-            [
-                'user_id' => $userId,
-                'code' => '3200',
-                'name' => 'Laba Ditahan',
-                'category' => 'equity',
-                'sub_category' => 'equity',
-                'normal_balance' => 'credit',
-                'requires_sub_ledger' => false,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
+
 
             // ==========================================
             // 6. REVENUE & EXPENSE

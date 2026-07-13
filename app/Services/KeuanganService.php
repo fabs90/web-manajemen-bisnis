@@ -32,7 +32,12 @@ class KeuanganService
 
         // In periodic inventory system:
         // Pembelian = total of 'membeli_barang' debit to 1105
-        $pembelianBersih = $this->getPembelianTotal($userId, $dateRange);
+        $pembelianKredit = $this->getPembelianTotal($userId, $dateRange);
+        $pembelianTunai = 0;
+        $returPembelian = $this->getReturPembelianTotal($userId, $dateRange);
+        $potonganPembelian = 0;
+        
+        $pembelianBersih = $pembelianKredit + $pembelianTunai - $returPembelian - $potonganPembelian;
 
         // HPP = Awal + Pembelian - Akhir
         $hpp = $inventory['persediaanAwal'] + $pembelianBersih - $inventory['persediaanAkhir'];
@@ -40,12 +45,6 @@ class KeuanganService
         // If there's any manual HPP (5101) entry, we might want to add it, but standard periodic ignores it or adds to it.
         $hppManual = $this->getHppTotal($userId, $dateRange);
         $hpp += $hppManual;
-
-        // Split into components for report consistency if possible
-        $pembelianKredit = $pembelianBersih;
-        $pembelianTunai = 0;
-        $returPembelian = 0;
-        $potonganPembelian = 0;
 
         $labaKotor = $penjualanBersih - $hpp;
 
@@ -81,7 +80,8 @@ class KeuanganService
         $revenueAccounts = Account::where('user_id', $userId)->where('category', 'revenue')->pluck('id');
         $potonganPenjualanId = Account::where('user_id', $userId)->where('code', '4102')->value('id');
 
-        $items = JournalItem::where('user_id', $userId)
+        $items = JournalItem::with('journalEntry')
+            ->where('user_id', $userId)
             ->whereIn('account_id', $revenueAccounts)
             ->whereHas('journalEntry', function ($q) use ($dateRange) {
                 $q->whereBetween('date', $dateRange)
@@ -99,8 +99,10 @@ class KeuanganService
         // Normal balance for revenue is Credit.
         $totalPenjualan = $otherRevenueItems->sum('credit');
 
-        // returPenjualan = sum of debit on normal revenue accounts
-        $returPenjualan = $otherRevenueItems->sum('debit');
+        // returPenjualan = sum of debit on normal revenue accounts (specifically from retur transactions)
+        $returPenjualan = $otherRevenueItems->filter(function($item) {
+            return in_array($item->journalEntry->transaction_type ?? '', ['retur_penjualan', 'return_penjualan']);
+        })->sum('debit');
 
         // potonganPenjualan = sum of debit on 4102 (normal balance is debit)
         $potonganPenjualan = $potonganItems->sum('debit') - $potonganItems->sum('credit');
@@ -169,6 +171,24 @@ class KeuanganService
             ->get();
 
         return (float) $items->sum('debit');
+    }
+
+    private function getReturPembelianTotal(int $userId, array $dateRange): float
+    {
+        $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
+        if (! $persediaanAccount) {
+            return 0;
+        }
+
+        $items = JournalItem::where('user_id', $userId)
+            ->where('account_id', $persediaanAccount->id)
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange)
+                    ->where('transaction_type', 'retur_pembelian');
+            })
+            ->get();
+
+        return (float) $items->sum('credit');
     }
 
     private function getHppTotal(int $userId, array $dateRange): float
@@ -264,12 +284,11 @@ class KeuanganService
         $hutangBank = $this->getAccountBalance($userId, '2201', $date);
         $saldoHutang = $hutangUsaha + $hutangBank;
 
-        // Modal & Retained Earnings
-        $modal = $this->getAccountBalance($userId, '3100', $date);
-        $labaDitahanAkun = $this->getAccountBalance($userId, '3200', $date);
+        // Modal
+        $modalAkun = $this->getAccountBalance($userId, '3100', $date);
 
         // Laba all time (to ensure balance sheet balances correctly)
-        // If there's no closing entry system, past year profits must be included in Laba Ditahan.
+        // If there's no closing entry system, past year profits must be merged into Modal.
         $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date);
 
         // Current period profit for display
@@ -279,10 +298,12 @@ class KeuanganService
         $pajak = $allTimeLabaRugi['pajak'];
         $labaBersih = $dataLabaRugi['labaSetelahPajak'];
 
-        // Past years profit not yet closed to retained earnings
-        $labaDitahan = $labaDitahanAkun + ($allTimeLabaRugi['labaSetelahPajak'] - $labaBersih);
+        // Past years profit not yet closed to modal
+        $labaTahunLalu = $allTimeLabaRugi['labaSetelahPajak'] - $labaBersih;
+        
+        $modal = $modalAkun + $labaTahunLalu;
 
-        $totalPasiva = $saldoHutang + $pajak + $labaBersih + $modal + $labaDitahan;
+        $totalPasiva = $saldoHutang + $pajak + $labaBersih + $modal;
 
         return compact(
             'totalKas',
@@ -296,7 +317,6 @@ class KeuanganService
             'pajak',
             'labaBersih',
             'modal',
-            'labaDitahan',
             'totalPasiva'
         );
     }

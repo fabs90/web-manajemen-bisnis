@@ -63,10 +63,7 @@
                         <td>Laba</td>
                         <td class="text-end">Rp {{ number_format($labaBersih, 0, ',', '.') }}</td>
                     </tr>
-                    <tr>
-                        <td>Laba Ditahan</td>
-                        <td class="text-end">Rp {{ number_format($labaDitahan, 0, ',', '.') }}</td>
-                    </tr>
+
                     <tr>
                         <td>Modal</td>
                         <td class="text-end">Rp {{ number_format($modal, 0, ',', '.') }}</td>
