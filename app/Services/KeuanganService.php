@@ -36,7 +36,7 @@ class KeuanganService
         $pembelianTunai = 0;
         $returPembelian = $this->getReturPembelianTotal($userId, $dateRange);
         $potonganPembelian = 0;
-        
+
         $pembelianBersih = $pembelianKredit + $pembelianTunai - $returPembelian - $potonganPembelian;
 
         // HPP = Awal + Pembelian - Akhir
@@ -92,17 +92,30 @@ class KeuanganService
             })
             ->get();
 
-        // Separate Potongan Penjualan from other revenues
-        $potonganItems = $potonganPenjualanId ? $items->where('account_id', $potonganPenjualanId) : collect();
-        $otherRevenueItems = $potonganPenjualanId ? $items->where('account_id', '!=', $potonganPenjualanId) : $items;
+        $returTypes = ['retur_penjualan', 'return_penjualan'];
+
+        $returItems = $items->filter(function ($item) use ($returTypes) {
+            return in_array($item->journalEntry->transaction_type ?? '', $returTypes);
+        });
+
+        $potonganItems = $items->filter(function ($item) use ($potonganPenjualanId, $returTypes) {
+            return $potonganPenjualanId &&
+                $item->account_id == $potonganPenjualanId &&
+                !in_array($item->journalEntry->transaction_type ?? '', $returTypes);
+        });
+
+        $otherRevenueItems = $items->filter(function ($item) use ($potonganPenjualanId, $returTypes) {
+            $isRetur = in_array($item->journalEntry->transaction_type ?? '', $returTypes);
+            $isPotongan = $potonganPenjualanId && $item->account_id == $potonganPenjualanId;
+
+            return !$isRetur && !$isPotongan;
+        });
 
         // Normal balance for revenue is Credit.
         $totalPenjualan = $otherRevenueItems->sum('credit');
 
-        // returPenjualan = sum of debit on normal revenue accounts (specifically from retur transactions)
-        $returPenjualan = $otherRevenueItems->filter(function($item) {
-            return in_array($item->journalEntry->transaction_type ?? '', ['retur_penjualan', 'return_penjualan']);
-        })->sum('debit');
+        // returPenjualan = sum of debit on revenue accounts from retur transactions
+        $returPenjualan = $returItems->sum('debit') - $returItems->sum('credit');
 
         // potonganPenjualan = sum of debit on 4102 (normal balance is debit)
         $potonganPenjualan = $potonganItems->sum('debit') - $potonganItems->sum('credit');
@@ -129,7 +142,7 @@ class KeuanganService
         $barang = Barang::where('user_id', $userId)->get();
 
         $persediaanAwal = 0;
-        $prevDate = date('Y-m-d', strtotime($startDate.' -1 day'));
+        $prevDate = date('Y-m-d', strtotime($startDate . ' -1 day'));
         foreach ($barang as $b) {
             $lastKartu = KartuGudang::where('barang_id', $b->id)
                 ->where('tanggal', '<=', $prevDate)
@@ -157,7 +170,7 @@ class KeuanganService
     private function getPembelianTotal(int $userId, array $dateRange): float
     {
         $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
-        if (! $persediaanAccount) {
+        if (!$persediaanAccount) {
             return 0;
         }
 
@@ -176,7 +189,7 @@ class KeuanganService
     private function getReturPembelianTotal(int $userId, array $dateRange): float
     {
         $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
-        if (! $persediaanAccount) {
+        if (!$persediaanAccount) {
             return 0;
         }
 
@@ -194,7 +207,7 @@ class KeuanganService
     private function getHppTotal(int $userId, array $dateRange): float
     {
         $hppAccount = Account::where('user_id', $userId)->where('code', '5101')->first();
-        if (! $hppAccount) {
+        if (!$hppAccount) {
             return 0;
         }
 
@@ -300,7 +313,7 @@ class KeuanganService
 
         // Past years profit not yet closed to modal
         $labaTahunLalu = $allTimeLabaRugi['labaSetelahPajak'] - $labaBersih;
-        
+
         $modal = $modalAkun + $labaTahunLalu;
 
         $totalPasiva = $saldoHutang + $pajak + $labaBersih + $modal;
@@ -324,7 +337,7 @@ class KeuanganService
     private function getAccountBalance(int $userId, string $accountCode, string $date): float
     {
         $account = Account::where('user_id', $userId)->where('code', $accountCode)->first();
-        if (! $account) {
+        if (!$account) {
             return 0;
         }
 
