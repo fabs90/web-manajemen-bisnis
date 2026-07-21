@@ -16,8 +16,8 @@
             </div>
         @endif
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Buat Surat Pengiriman Barang (SPB)</h5>
+            <div class="card-header bg-primary">
+                <h5 class="mb-0 text-white">Buat Surat Pengiriman Barang (SPB)</h5>
             </div>
 
             <div class="card-body py-4">
@@ -52,7 +52,8 @@
                                         data-alamat="{{ $pelangganAlamat }}"
                                         data-nomor="{{ $spp->nomor_pesanan_pembelian }}"
                                         data-tanggal="{{ $spp->tanggal_kirim_pesanan_pembelian }}"
-                                        data-details="{{ $detailsJson }}">
+                                        data-details="{{ $detailsJson }}"
+                                        {{ old('spp_id') == $spp->id ? 'selected' : '' }}>
                                         {{ $spp->nomor_pesanan_pembelian }} – {{ $pelangganNama }}
                                     </option>
                                 @endforeach
@@ -298,11 +299,6 @@
 
             sectionEl.style.display = butuhKonfirmasi ? 'block' : 'none';
 
-            // required dinamis
-            tglTerima.required = butuhKonfirmasi;
-            keadaanEl.required = butuhKonfirmasi;
-            namaPenerimaEl.required = butuhKonfirmasi;
-
             if (butuhKonfirmasi) {
                 const cfg = konfirmasiConfig[status];
 
@@ -384,5 +380,10 @@
                 chk.dispatchEvent(new Event('change'));
             });
         });
+
+        // Trigger change event on load if spp_id has value (from old input)
+        if (document.getElementById('spp_id').value) {
+            document.getElementById('spp_id').dispatchEvent(new Event('change'));
+        }
     </script>
 @endsection

@@ -6,7 +6,7 @@
         {{-- DAFTAR SPP PELANGGAN --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
-                <span>Daftar Surat Pesanan Penjualan (SPP)</span>
+                <span>Daftar Surat Pesanan Pembelian (SPP)</span>
 
                 <div>
                     <a href="{{ route('administrasi.spb.index') }}" class="btn btn-light btn-sm fw-bold me-2">
@@ -59,7 +59,7 @@
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
-                    Input Surat Pesanan Penjualan
+                    Input Surat Pesanan Pembelian dari Pelanggan
                 </div>
                 <div class="card-body mt-3">
                     {{-- DATA PELANGGAN --}}

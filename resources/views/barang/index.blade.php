@@ -2,20 +2,22 @@
 @section('page-title', 'List Barang | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'List Barang')
 @section('section-row')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Daftar Barang</h5>
-        <a href="{{ route('barang.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Barang
-        </a>
-    </div>
-
-    @if ($barang->isEmpty())
-        <div class="alert alert-primary">
-            Tidak ada data barang.
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-box-seam me-2"></i>Daftar Barang</h5>
+            <a href="{{ route('barang.create') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Tambah Barang
+            </a>
         </div>
-    @else
-        <table class="table" id="table-barang">
-            <thead>
+        <div class="card-body">
+            @if ($barang->isEmpty())
+                <div class="alert alert-primary mb-0">
+                    Tidak ada data barang.
+                </div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped w-100" id="table-barang">
+                        <thead>
                 <tr>
                     <th>Kode Barang</th>
                     <th>Nama Barang</th>
@@ -61,9 +63,11 @@
                     </tr>
                 @endforelse
             </tbody>
-        </table>
-    @endif
-
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
 
 @endsection
 @push('script')
@@ -72,7 +76,7 @@
             $('#table-barang').DataTable({
                 searching: true,
                 paging: true,
-                responsive: false
+                responsive: true
             });
         });
 

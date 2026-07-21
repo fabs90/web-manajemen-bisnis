@@ -17,11 +17,12 @@ class SuratPengirimanBarangRequest extends FormRequest
     public function rules(): array
     {
         $butuhKonfirmasi = in_array($this->status_pengiriman, ['diterima']);
+        $id = $this->route('id');
 
         return [
             // ── SPB Info ────────────────────────────────────────────────
             'spp_id' => ['required', 'string'],
-            'nomor_pengiriman_barang' => ['required', 'string'],
+            'nomor_pengiriman_barang' => ['required', 'string', 'max:100', 'unique:surat_pengiriman_barang,nomor_pengiriman_barang' . ($id ? ',' . $id : '')],
             'tanggal_pengiriman' => ['required', 'date'],
             'status_pengiriman' => ['required', 'in:diproses,dikirim,diterima,dibatalkan'],
             'jenis_pengiriman' => ['required', 'string', 'max:100'],
@@ -51,7 +52,7 @@ class SuratPengirimanBarangRequest extends FormRequest
             'spp_id.required' => 'Pesanan Pembelian (SPP) wajib dipilih.',
             'spp_id.exists' => 'SPP yang dipilih tidak valid.',
             'nomor_pengiriman_barang.required' => 'Nomor SPB wajib diisi.',
-            'nomor_pengiriman_barang.unique' => 'Nomor SPB sudah digunakan.',
+            'nomor_pengiriman_barang.unique' => 'Nomor SPB sudah digunakan, silakan gunakan nomor yang lain.',
             'tanggal_pengiriman.required' => 'Tanggal pengiriman wajib diisi.',
             'tanggal_pengiriman.date' => 'Format tanggal pengiriman tidak valid.',
             'status_pengiriman.required' => 'Status pengiriman wajib dipilih.',

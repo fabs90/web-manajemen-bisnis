@@ -17,12 +17,13 @@
         @endif
 
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Edit Surat Pengiriman Barang (SPB)</h5>
+            <div class="card-header bg-primary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-white">Edit Surat Pengiriman Barang (SPB)</h5>
             </div>
 
             <div class="card-body py-4">
-                <form action="{{ route('administrasi.spb.update', ['id' => $dataSpb->id]) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('administrasi.spb.update', ['id' => $dataSpb->id]) }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -32,9 +33,9 @@
                             <input type="hidden" name="spp_id" value="{{ $dataSpb->pesanan_penjualan_id }}">
                             @php
                                 $pp = $dataSpb->pesananPenjualan;
-                                $pelangganNama = $pp->pelanggan->nama ?? $pp->supplier->nama ?? '-';
-                                $pelangganAlamat = $pp->pelanggan->alamat ?? $pp->supplier->alamat ?? '-';
-                                $nomorPesanan = $pp->nomor_pesanan_penjualan ?? $pp->nomor_pesanan_pembelian ?? '-';
+                                $pelangganNama = $pp->pelanggan->nama ?? ($pp->supplier->nama ?? '-');
+                                $pelangganAlamat = $pp->pelanggan->alamat ?? ($pp->supplier->alamat ?? '-');
+                                $nomorPesanan = $pp->nomor_pesanan_penjualan ?? ($pp->nomor_pesanan_pembelian ?? '-');
                             @endphp
                             <input type="text" class="form-control bg-light"
                                 value="{{ $nomorPesanan }} – {{ $pelangganNama }}" readonly>
@@ -65,8 +66,7 @@
                                 $tglKirim = $pp->tanggal_kirim_pesanan_penjualan ?? $pp->tanggal_pesanan_penjualan;
                                 $tglKirimFormatted = $tglKirim ? \Carbon\Carbon::parse($tglKirim)->format('Y-m-d') : '';
                             @endphp
-                            <input type="date" name="tanggal_pengiriman"
-                                value="{{ $tglKirimFormatted }}"
+                            <input type="date" name="tanggal_pengiriman" value="{{ $tglKirimFormatted }}"
                                 class="form-control @error('tanggal_pengiriman') is-invalid @enderror" required>
                             @error('tanggal_pengiriman')
                                 <small class="text-danger">{{ $message }}</small>
@@ -122,9 +122,10 @@
                             <input type="file" name="ttd_pengirim"
                                 class="form-control @error('ttd_pengirim') is-invalid @enderror" accept="image/*">
                             <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
-                            @if($dataSpb->ttd_pengirim)
+                            @if ($dataSpb->ttd_pengirim)
                                 <div class="mt-2 mb-1">
-                                    <img src="{{ Storage::url($dataSpb->ttd_pengirim) }}" alt="TTD Pengirim" class="img-thumbnail" style="max-height: 100px;">
+                                    <img src="{{ Storage::url($dataSpb->ttd_pengirim) }}" alt="TTD Pengirim"
+                                        class="img-thumbnail" style="max-height: 100px;">
                                 </div>
                                 <small class="text-success">Sudah ada tanda tangan. Unggah lagi untuk mengganti.</small>
                             @endif
@@ -175,7 +176,9 @@
                                                 data-kuantitas="{{ $kuantitasDipesan }}">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control form-control-sm" name="items[{{ $i }}][keterangan]" placeholder="Opsional" value="{{ old('items.'.$i.'.keterangan', $detail->keterangan) }}">
+                                            <input type="text" class="form-control form-control-sm"
+                                                name="items[{{ $i }}][keterangan]" placeholder="Opsional"
+                                                value="{{ old('items.' . $i . '.keterangan', $detail->keterangan) }}">
                                         </td>
                                     </tr>
                                 @empty
@@ -234,12 +237,15 @@
                                     <label class="form-label fw-bold small">Tanda Tangan Penerima (Opsional)</label>
                                     <input type="file" name="ttd_penerima" id="ttd_penerima"
                                         class="form-control @error('ttd_penerima') is-invalid @enderror" accept="image/*">
-                                    <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus transparan</small>
-                                    @if($dataSpb->ttd_penerima)
+                                    <small class="text-danger d-block mt-1">* Tanda tangan yang diupload harus
+                                        transparan</small>
+                                    @if ($dataSpb->ttd_penerima)
                                         <div class="mt-2 mb-1">
-                                            <img src="{{ Storage::url($dataSpb->ttd_penerima) }}" alt="TTD Penerima" class="img-thumbnail" style="max-height: 100px;">
+                                            <img src="{{ Storage::url($dataSpb->ttd_penerima) }}" alt="TTD Penerima"
+                                                class="img-thumbnail" style="max-height: 100px;">
                                         </div>
-                                        <small class="text-success">Sudah ada tanda tangan. Unggah lagi untuk mengganti.</small>
+                                        <small class="text-success">Sudah ada tanda tangan. Unggah lagi untuk
+                                            mengganti.</small>
                                     @endif
                                 </div>
                             </div>
@@ -295,10 +301,6 @@
             const butuhKonfirmasi = STATUS_KONFIRMASI.includes(status);
 
             sectionEl.style.display = butuhKonfirmasi ? 'block' : 'none';
-
-            tglTerima.required = butuhKonfirmasi;
-            keadaanEl.required = butuhKonfirmasi;
-            namaPenerimaEl.required = butuhKonfirmasi;
 
             if (butuhKonfirmasi) {
                 const cfg = konfirmasiConfig[status];
