@@ -138,10 +138,8 @@ class UserManagementController extends Controller
             SuratUndanganRapat::where('user_id', $id)->delete();
             AgendaJanjiTemu::where('user_id', $id)->delete();
 
-            // Keep Neraca Awal, delete other journal entries
-            JournalEntry::where('user_id', $id)
-                ->where('transaction_type', '!=', 'neraca_awal')
-                ->delete();
+            // Delete all journal entries including neraca_awal
+            JournalEntry::where('user_id', $id)->delete();
 
             // Delete KartuGudang and Barang
             KartuGudang::where('user_id', $id)->delete();
@@ -149,7 +147,7 @@ class UserManagementController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Data finansial user berhasil di-restore ke Neraca Awal.');
+            return redirect()->back()->with('success', 'Seluruh data finansial user berhasil dihapus.');
         } catch (\Throwable $th) {
             DB::rollBack();
 

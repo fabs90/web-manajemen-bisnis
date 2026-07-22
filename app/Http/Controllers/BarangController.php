@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use App\Models\Barang;
+use App\Models\JournalEntry;
 use App\Models\KartuGudang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class BarangController extends Controller
 {
@@ -169,6 +173,8 @@ class BarangController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+
             $barang = Barang::findOrFail($barangId);
             $lastKartu = KartuGudang::where('barang_id', $barangId)
                 ->latest()
@@ -202,6 +208,60 @@ class BarangController extends Controller
                 'saldo_perkemasan' => $saldoPerKemasanBaru,
             ]);
 
+            // Penjurnalan (Account 1105 - Persediaan Barang)
+            $inventoryAccount = Account::where('user_id', auth()->id())->where('code', '1105')->first();
+            $modalAccount = Account::where('user_id', auth()->id())->where('code', '3100')->first(); // Menggunakan Modal Pemilik sebagai akun penyeimbang
+
+            if ($inventoryAccount && $modalAccount && ($diterima > 0 || $dikeluarkan > 0)) {
+                $journalEntry = JournalEntry::create([
+                    'user_id' => auth()->id(),
+                    'reference_number' => 'KG-'.date('Ymd', strtotime($request->tanggal)).'-'.strtoupper(Str::random(6)),
+                    'date' => $request->tanggal,
+                    'description' => 'Penyesuaian Kartu Gudang: '.$barang->nama.' ('.$request->uraian.')',
+                    'transaction_type' => 'penyesuaian-kartu-gudang',
+                ]);
+
+                if ($diterima > 0) {
+                    $amount = $diterima * $barang->harga_beli_per_unit;
+
+                    // Debit: Persediaan Barang
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $inventoryAccount->id,
+                        'debit' => $amount,
+                        'credit' => 0,
+                    ]);
+
+                    // Kredit: Modal
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $modalAccount->id,
+                        'debit' => 0,
+                        'credit' => $amount,
+                    ]);
+                } elseif ($dikeluarkan > 0) {
+                    $amount = $dikeluarkan * $barang->harga_beli_per_unit;
+
+                    // Debit: Modal
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $modalAccount->id,
+                        'debit' => $amount,
+                        'credit' => 0,
+                    ]);
+
+                    // Kredit: Persediaan Barang
+                    $journalEntry->items()->create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $inventoryAccount->id,
+                        'debit' => 0,
+                        'credit' => $amount,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
             return redirect()
                 ->route('kartu-gudang.create', ['barang_id' => $barangId])
                 ->with(
@@ -209,6 +269,8 @@ class BarangController extends Controller
                     'Kartu gudang '.$barang->nama.' berhasil ditambahkan.',
                 );
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return back()
                 ->withErrors([
                     'error' => "Terjadi kesalahan saat menyimpan data kartu gudang.: {$e->getMessage()}",
@@ -219,11 +281,32 @@ class BarangController extends Controller
 
     public function deleteKartuGudang($id)
     {
-        $kartuGudang = KartuGudang::findOrFail($id);
-        $kartuGudang->delete();
+        try {
+            DB::beginTransaction();
+            $kartuGudang = KartuGudang::with('barang')->findOrFail($id);
 
-        return redirect()
-            ->route('kartu-gudang.index')
-            ->with('success', 'Kartu gudang berhasil dihapus.');
+            // Hapus Journal Entry terkait
+            if ($kartuGudang->barang) {
+                JournalEntry::where('user_id', auth()->id())
+                    ->where('transaction_type', 'penyesuaian-kartu-gudang')
+                    ->where('date', $kartuGudang->tanggal)
+                    ->where('description', 'Penyesuaian Kartu Gudang: '.$kartuGudang->barang->nama.' ('.$kartuGudang->uraian.')')
+                    ->delete();
+            }
+
+            $kartuGudang->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('kartu-gudang.index')
+                ->with('success', 'Kartu gudang berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('kartu-gudang.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus data: '.$e->getMessage());
+        }
     }
 }
