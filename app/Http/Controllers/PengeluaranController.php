@@ -58,7 +58,11 @@ class PengeluaranController extends Controller
             ];
         });
 
-        $dataPengeluaran = $allDatas->values();
+        // Filter: Hanya tampilkan transaksi yang benar-benar mengeluarkan kas/bank/kas kecil
+        // Pembelian barang secara kredit/hutang murni tidak akan dicatat pada pengeluaran kas
+        $dataPengeluaran = $allDatas->filter(function ($item) {
+            return $item->jumlah_pengeluaran > 0 || $item->keluar_kas_kecil > 0;
+        })->values();
         $dataKasKecil = collect();
 
         $totalPengeluaran = $dataPengeluaran->sum('jumlah_pengeluaran');

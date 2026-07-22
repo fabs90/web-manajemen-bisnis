@@ -27,7 +27,7 @@ class PageController extends Controller
             // Data barang dengan kartu gudang terbaru
             $barangDenganKartuTerbaru = Barang::with([
                 'kartuGudang' => function ($query) {
-                    $query->latest()->take(1);
+                    $query->latest('id')->take(1);
                 },
             ])
                 ->where('user_id', $userId)
@@ -105,13 +105,12 @@ class PageController extends Controller
                 $totalHutang = $sumCredit - $sumDebit; // Kredit normal
             }
 
-            // Total Persediaan (Account code: 1105)
-            $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
+            // Total Persediaan (Diambil dari Kartu Gudang agar sinkron dengan menu Kartu Gudang)
             $totalPersediaan = 0;
-            if ($persediaanAccount) {
-                $sumDebit = JournalItem::where('account_id', $persediaanAccount->id)->sum('debit');
-                $sumCredit = JournalItem::where('account_id', $persediaanAccount->id)->sum('credit');
-                $totalPersediaan = $sumDebit - $sumCredit;
+            foreach ($barangDenganKartuTerbaru as $b) {
+                $lastKartu = $b->kartuGudang->first();
+                $saldoAkhir = $lastKartu ? $lastKartu->saldo_persatuan : 0;
+                $totalPersediaan += ($saldoAkhir * $b->harga_beli_per_unit);
             }
 
             // Total Kas Kecil (Account code: 1102)

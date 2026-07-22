@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Memo;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMemoKreditPenjualRequest;
+use App\Http\Requests\StoreMemoKreditRequest;
 use App\Models\Faktur\FakturPenjualan;
 use App\Models\MemoKredit\MemoKredit;
+use App\Models\ReturPembelian;
 use App\Models\SPP\SuratPesananPembelian;
 use App\Models\SPP\SuratPesananPenjualanDetail;
 use App\Services\MemoKreditService;
-use Illuminate\Http\Request;
+use App\Services\ReturPembelianService;
 
 class MemoKreditController extends Controller
 {
@@ -39,7 +42,7 @@ class MemoKreditController extends Controller
     // Memo kredit dari penjual (Mengurangi hutang sendiri ke penjual | Retur Pembelian)
     public function penjual()
     {
-        $returPembelian = \App\Models\ReturPembelian::with('pesananPembelian.supplier')
+        $returPembelian = ReturPembelian::with('pesananPembelian.supplier')
             ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get();
@@ -59,12 +62,8 @@ class MemoKreditController extends Controller
         return view('administrasi.surat.memo-kredit.create-penjual', compact('spp'));
     }
 
-    public function storePenjual(Request $request, \App\Services\ReturPembelianService $services)
+    public function storePenjual(StoreMemoKreditPenjualRequest $request, ReturPembelianService $services)
     {
-        $request->validate([
-            'barang_id' => 'required|array',
-            'jumlah_dikembalikan' => 'required|array',
-        ]);
 
         $serviceApp = $services->store($request);
         if ($serviceApp) {
@@ -78,7 +77,7 @@ class MemoKreditController extends Controller
             ->with('error', 'Memo Kredit dari Penjual gagal disimpan!')->withInput();
     }
 
-    public function destroyPenjual($returId, \App\Services\ReturPembelianService $services)
+    public function destroyPenjual($returId, ReturPembelianService $services)
     {
         $serviceApp = $services->destroy($returId);
         if ($serviceApp) {
@@ -92,7 +91,7 @@ class MemoKreditController extends Controller
             ->with('error', 'Memo Kredit dari Penjual gagal dihapus!');
     }
 
-    public function generatePdfPenjual($returId, \App\Services\ReturPembelianService $services)
+    public function generatePdfPenjual($returId, ReturPembelianService $services)
     {
         return $services->generatePdf($returId);
     }
@@ -108,12 +107,8 @@ class MemoKreditController extends Controller
         return view('administrasi.surat.memo-kredit.create', compact('faktur'));
     }
 
-    public function store(Request $request, MemoKreditService $services)
+    public function store(StoreMemoKreditRequest $request, MemoKreditService $services)
     {
-        $request->validate([
-            'barang_id' => 'required|array',
-            'jumlah_dikembalikan' => 'required|array',
-        ]);
 
         foreach ($request->barang_id as $index => $barangDetailId) {
             $qty = $request->jumlah_dikembalikan[$index] ?? 0;

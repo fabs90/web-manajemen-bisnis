@@ -101,60 +101,57 @@
         </table>
     </div>
 
-    {{-- ===================== TABEL Hutang ===================== --}}
     <h5 class="mt-5 mb-3">Semua Data Hutang Perusahaan</h5>
-    <div class="table-responsive">
-        <table class="table table-sm hutang-table">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Uraian</th>
-                    <th>Debit</th>
-                    <th>Kredit</th>
-                    <th>Saldo</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($dataHutang as $pelangganId => $items)
-                    <tr class="table-secondary fw-bold">
-                        <td colspan="6">
-                            {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
-                        </td>
-                    </tr>
+    @forelse ($dataHutang as $pelangganId => $items)
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-white fw-bold">
+                {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover align-middle hutang-datatable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Uraian</th>
+                                <th>Debit</th>
+                                <th>Kredit</th>
+                                <th>Saldo</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($items as $item)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
+                                    <td>{{ $item->uraian }}</td>
+                                    <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
+                                    <td>
+                                        <form action="{{ route('keuangan.hutang.destroy', $item->id) }}" method="POST"
+                                            class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
 
-                    @foreach ($items as $item)
-                        <tr>
-                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
-                            <td>{{ $item->uraian }}</td>
-                            <td>Rp {{ number_format($item->debit ?? 0, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
-                            <td>
-                                <form action="{{ route('keuangan.hutang.destroy', $item->id) }}" method="POST"
-                                    class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button type="button" class="btn btn-danger btn-sm delete-btn">
-                                        <span class="delete-text"><i class="bi bi-trash"></i></span>
-                                        <span class="spinner-border spinner-border-sm d-none"></span>
-                                    </button>
-                                </form>
-                            </td>
-
-                        </tr>
-                    @endforeach
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-3">
-                            <em>Tidak ada data hutang.</em>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                                            <button type="button" class="btn btn-danger btn-sm delete-btn">
+                                                <span class="delete-text"><i class="bi bi-trash"></i></span>
+                                                <span class="spinner-border spinner-border-sm d-none"></span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @empty
+        <div class="alert alert-secondary text-center">
+            <em>Tidak ada data hutang.</em>
+        </div>
+    @endforelse
 
 @endsection
 @push('script')
@@ -176,6 +173,28 @@
                 language: {
                     emptyTable: "Tidak ada data untuk ditampilkan",
                     search: "Cari:"
+                }
+            });
+
+            $('.hutang-datatable').DataTable({
+                paging: true,
+                pageLength: 10,
+                ordering: false, // Dimatikan agar urutan saldo per pelanggan tetap logis
+                responsive: true,
+                info: true,
+                language: {
+                    emptyTable: "Tidak ada data untuk ditampilkan",
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ entri",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 entri",
+                    infoFiltered: "(disaring dari _MAX_ total entri)",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Selanjutnya",
+                        previous: "Sebelumnya"
+                    }
                 }
             });
 

@@ -65,11 +65,23 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <div class="col-5 text-muted">Tgl. Memo:</div>
+                            <div class="col-5 text-muted">No. Memo: <span class="text-danger">*</span></div>
+                            <div class="col-7">
+                                <input type="text" name="nomor_memo" class="form-control form-control-sm @error('nomor_memo') is-invalid @enderror" value="{{ old('nomor_memo') }}" required placeholder="Misal: MK/001/2026/001">
+                                @error('nomor_memo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Tgl. Memo: <span class="text-danger">*</span></div>
                             <div class="col-7">
                                 <input type="date" name="tanggal"
-                                    class="form-control form-control-sm w-auto d-inline-block" readonly
-                                    value="{{ now()->format('Y-m-d') }}">
+                                    class="form-control form-control-sm w-auto d-inline-block @error('tanggal') is-invalid @enderror"
+                                    value="{{ old('tanggal', now()->format('Y-m-d')) }}" required>
+                                @error('tanggal')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -131,8 +143,11 @@
                 </div>
                 {{-- Alasan --}}
                 <div class="mb-3">
-                    <label class="fw-bold">Alasan Pengembalian Barang</label>
-                    <textarea name="alasan_pengembalian" class="form-control" rows="3" required></textarea>
+                    <label class="fw-bold">Alasan Pengembalian Barang <span class="text-danger">*</span></label>
+                    <textarea name="alasan_pengembalian" class="form-control @error('alasan_pengembalian') is-invalid @enderror" rows="3" required>{{ old('alasan_pengembalian') }}</textarea>
+                    @error('alasan_pengembalian')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="d-flex justify-content-end gap-2 mt-4">
                     <a href="{{ route('administrasi.memo-kredit.index') }}" class="btn btn-secondary">Kembali</a>

@@ -49,7 +49,7 @@
                             <td>{{ $item->created_at }}</td>
                             <td>{{ $item->uraian }}</td>
                             <td>Rp {{ number_format(($item->jumlah ?? 0) + ($item->diskon ?? 0), 0, ',', '.') }}</td>
-                            <td class="text-warning">Rp {{ number_format($item->diskon ?? 0, 0, ',', '.') }}</td>
+                            <td class="text-black">Rp {{ number_format($item->diskon ?? 0, 0, ',', '.') }}</td>
                             <td class="fw-bold">Rp {{ number_format($item->jumlah ?? 0, 0, ',', '.') }}</td>
 
                             <td class="text-center">
