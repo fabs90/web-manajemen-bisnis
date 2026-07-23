@@ -69,7 +69,7 @@ class AdministrasiFakturService
                         'user_id' => auth()->id(),
                         'reference_number' => 'FAK-'.date('Ymd', strtotime($data['tanggal_faktur'])).'-'.strtoupper(Str::random(6)),
                         'date' => $data['tanggal_faktur'],
-                        'description' => 'Faktur Penjualan - '.$faktur->kode_faktur,
+                        'description' => 'Faktur Penjualan Kredit - '.$faktur->kode_faktur,
                         'transaction_type' => 'penjualan',
                     ]);
 

@@ -20,38 +20,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <h5 class="fw-bold">Buat Surat Pengiriman Barang (SPB)</h5>
-                            <p class="text-muted mb-2">
-                                Buat dan dokumentasikan pengiriman barang dari perusahaan ke pelanggan untuk memudahkan
-                                pelacakan progress pengiriman.
-                            </p>
-                            <div class="alert alert-warning py-2 mb-3 d-flex align-items-center" style="font-size: 14px;">
-                                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-                                <div>
-                                    <strong>Penting:</strong> Anda wajib membuat data Pesanan Pembelian dari
-                                    Pelanggan terlebih dahulu sebelum dapat membuat SPB Baru.
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="d-flex gap-2 w-100">
-                            <a href="{{ route('administrasi.spb.create') }}" class="btn btn-success flex-fill text-center">
-                                + Buat SPB Baru
-                            </a>
-                            <a href="{{ route('administrasi.spb.spp-pelanggan.create') }}"
-                                class="btn btn-outline-success flex-fill text-center">
-                                + Tambah Pesanan Pembelian dari Pelanggan
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <strong>DAFTAR SURAT PENGIRIMAN BARANG (SPB)</strong>
@@ -174,7 +143,8 @@
                                                                 <hr>
 
                                                                 <div class="table-responsive">
-                                                                    <table class="table table-bordered table-sm text-center">
+                                                                    <table
+                                                                        class="table table-bordered table-sm text-center">
                                                                         <thead class="table-light">
                                                                             <tr>
                                                                                 <th>No</th>
@@ -202,37 +172,53 @@
                                                                                         {{ $satuan }}</td>
                                                                                     <td>{{ $detail->jumlah_dikirim }}
                                                                                         {{ $satuan }}</td>
-                                                                                    <td>{{ $detail->keterangan ?? '-' }}</td>
+                                                                                    <td>{{ $detail->keterangan ?? '-' }}
+                                                                                    </td>
                                                                                 </tr>
                                                                             @endforeach
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
-                                                                
+
                                                                 <h6 class="mt-4">Unduh Dokumen</h6>
                                                                 <div class="d-flex gap-2 flex-wrap">
-                                                                    @if($spb->spp_id)
-                                                                        <a href="{{ route('administrasi.spp.generatePdf', $spb->spp_id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
-                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                    @if ($spb->spp_id)
+                                                                        <a href="{{ route('administrasi.spp.generatePdf', $spb->spp_id) }}"
+                                                                            class="btn btn-outline-warning btn-sm"
+                                                                            target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat
+                                                                            Pesanan Pembelian
                                                                         </a>
                                                                     @elseif($spb->pesanan_penjualan_id)
-                                                                        <a href="{{ route('administrasi.spb.spp-pelanggan.generatePdf', $spb->pesanan_penjualan_id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
-                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                        <a href="{{ route('administrasi.spb.spp-pelanggan.generatePdf', $spb->pesanan_penjualan_id) }}"
+                                                                            class="btn btn-outline-warning btn-sm"
+                                                                            target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat
+                                                                            Pesanan Pembelian
                                                                         </a>
                                                                     @endif
-                                                                    
-                                                                    <form id="generatePdfForm-{{ $spb->id }}" action="{{ route('administrasi.spb.generatePdf', $spb->id) }}" method="get" target="_blank" class="d-inline">
-                                                                        <button class="btn btn-outline-success btn-sm generatePdfBtn" type="submit">
+
+                                                                    <form id="generatePdfForm-{{ $spb->id }}"
+                                                                        action="{{ route('administrasi.spb.generatePdf', $spb->id) }}"
+                                                                        method="get" target="_blank" class="d-inline">
+                                                                        <button
+                                                                            class="btn btn-outline-success btn-sm generatePdfBtn"
+                                                                            type="submit">
                                                                             <span class="btn-text">
-                                                                                <i class="bi bi-file-earmark-pdf"></i> Surat Pengiriman Barang
+                                                                                <i class="bi bi-file-earmark-pdf"></i> Surat
+                                                                                Pengiriman Barang
                                                                             </span>
-                                                                            <span class="spinner-border spinner-border-sm d-none"></span>
+                                                                            <span
+                                                                                class="spinner-border spinner-border-sm d-none"></span>
                                                                         </button>
                                                                     </form>
 
-                                                                    @if($spb->fakturPenjualan)
-                                                                        <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $spb->fakturPenjualan->id) }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Faktur Penjualan
+                                                                    @if ($spb->fakturPenjualan)
+                                                                        <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $spb->fakturPenjualan->id) }}"
+                                                                            class="btn btn-outline-primary btn-sm"
+                                                                            target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat
+                                                                            Faktur Penjualan
                                                                         </a>
                                                                     @endif
                                                                 </div>
@@ -253,7 +239,7 @@
                                                 class="btn btn-secondary btn-sm" title="Edit SPB">
                                                 <i class="bi bi-pencil text-white"></i>
                                             </a>
-                                            
+
                                             {{-- Hapus --}}
                                             <form action="{{ route('administrasi.spb.destroy', $spb->id) }}" method="POST"
                                                 class="d-inline delete-form">

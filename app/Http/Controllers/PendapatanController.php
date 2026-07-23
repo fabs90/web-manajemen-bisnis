@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PendapatanRequest;
 use App\Models\Account;
 use App\Models\Barang;
+use App\Models\Faktur\FakturPenjualan;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KartuGudang;
@@ -95,10 +96,10 @@ class PendapatanController extends Controller
                 ->with(['journalEntry', 'subLedger'])
                 ->get();
 
-            $fakturs = \App\Models\Faktur\FakturPenjualan::where('user_id', $userId)
+            $fakturs = FakturPenjualan::where('user_id', $userId)
                 ->with([
                     'suratPengirimanBarang.suratPengirimanBarangDetail',
-                    'suratPengirimanBarang.pesananPenjualan.details.barang'
+                    'suratPengirimanBarang.pesananPenjualan.details.barang',
                 ])
                 ->get()
                 ->keyBy('kode_faktur');
@@ -133,7 +134,14 @@ class PendapatanController extends Controller
                     $description = $item->journalEntry->description ?? '';
                     if (str_starts_with($description, 'Faktur Penjualan - ')) {
                         $kodeFaktur = str_replace('Faktur Penjualan - ', '', $description);
+                        // In case there is appended text like ' - Uraian', get just the kode faktur part
+                        $kodeFaktur = explode(' - ', $kodeFaktur)[0];
                         $faktur = $fakturs->get($kodeFaktur);
+                    }
+
+                    // Also try to match INV- format directly if not found
+                    if (! $faktur && preg_match('/(INV-\d+-[A-Z0-9]+)/', $description, $matches)) {
+                        $faktur = $fakturs->get($matches[1]);
                     }
 
                     return (object) [

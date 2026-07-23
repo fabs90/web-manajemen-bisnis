@@ -76,6 +76,20 @@
                     </div>
                 </div>
 
+                {{-- Tanggal Pesan & Kirim (Untuk Kredit/Piutang) --}}
+                <div id="tanggal-kredit-section" class="d-none">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="tanggal_pesan" class="form-label">Tanggal Pesan<span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_pesan" id="tanggal_pesan" class="form-control" value="{{ old('tanggal_pesan', date('Y-m-d')) }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tanggal_kirim" class="form-label">Tanggal Kirim<span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_kirim" id="tanggal_kirim" class="form-control" value="{{ old('tanggal_kirim', date('Y-m-d')) }}">
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Section Debitur --}}
                 <div id="debitur-section" class="d-none">
                     <hr>
@@ -277,10 +291,23 @@
                 jumlahKreditContainer.classList.add('d-none');
                 piutangSelect.setAttribute('disabled', 'disabled');
                 hutangSelect.setAttribute('disabled', 'disabled');
+                
+                const tanggalKreditSection = document.getElementById('tanggal-kredit-section');
+                if (tanggalKreditSection) {
+                    tanggalKreditSection.classList.add('d-none');
+                    document.getElementById('tanggal_pesan').removeAttribute('required');
+                    document.getElementById('tanggal_kirim').removeAttribute('required');
+                }
 
                 if (jenis === 'piutang' || jenis === 'kredit' || jenis === 'pelunasan_piutang') {
                     adaDebiturCheck.checked = true;
                     adaDebitur = true;
+                    
+                    if (tanggalKreditSection && (jenis === 'piutang' || jenis === 'kredit')) {
+                        tanggalKreditSection.classList.remove('d-none');
+                        document.getElementById('tanggal_pesan').setAttribute('required', 'required');
+                        document.getElementById('tanggal_kirim').setAttribute('required', 'required');
+                    }
                     // debiturCheckContainer stays hidden because it's forced
                 } else if (jenis === 'tunai' || jenis === 'lain_lain') {
                     debiturCheckContainer.classList.remove('d-none');
