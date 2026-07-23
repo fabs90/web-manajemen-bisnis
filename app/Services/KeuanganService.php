@@ -35,7 +35,7 @@ class KeuanganService
         $pembelianKredit = $this->getPembelianTotal($userId, $dateRange);
         $pembelianTunai = 0;
         $returPembelian = $this->getReturPembelianTotal($userId, $dateRange);
-        $potonganPembelian = 0;
+        $potonganPembelian = $operating['potonganPembelian'] ?? 0;
 
         $pembelianBersih = $pembelianKredit + $pembelianTunai - $returPembelian - $potonganPembelian;
 
@@ -240,10 +240,19 @@ class KeuanganService
             ->whereHas('journalEntry', function ($q) use ($dateRange) {
                 $q->whereBetween('date', $dateRange);
             })
+            ->with('journalEntry')
             ->get();
 
+        // Potongan pembelian is recorded as credit on expense accounts in membeli_barang and membayar_hutang
+        $potonganPembelianItems = $items->filter(function ($item) {
+            return in_array($item->journalEntry->transaction_type ?? '', ['membeli_barang', 'membayar_hutang']);
+        });
+
+        $potonganPembelian = $potonganPembelianItems->sum('credit');
+
         // Normal balance for expense is Debit
-        $biayaOperasional = $items->sum('debit') - $items->sum('credit');
+        // Subtract potonganPembelian from total credit so we don't double count the reduction
+        $biayaOperasional = $items->sum('debit') - ($items->sum('credit') - $potonganPembelian);
 
         // Get pendapatan_lain from revenue accounts
         $pendapatanLainItems = JournalItem::where('user_id', $userId)
@@ -262,6 +271,7 @@ class KeuanganService
             'biayaOperasional',
             'pendapatanLain',
             'biayaAdministrasiBank',
+            'potonganPembelian'
         );
     }
 
