@@ -31,7 +31,14 @@ class SuratPesananPenjualanRequest extends FormRequest
                 }),
             ],
             'alamat_pelanggan' => ['required'],
-            'nomor_pesanan_pembelian' => ['required', 'string', 'max:255'],
+            'nomor_pesanan_pembelian' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('surat_pesanan_penjualan', 'nomor_pesanan_penjualan')->where(function ($query) {
+                    return $query->where('user_id', auth()->id());
+                }),
+            ],
             'tanggal_pesanan_pembelian' => ['required', 'date'],
             'tanggal_kirim_pesanan_pembelian' => ['required', 'date'],
             'nama_pelanggan' => ['required', 'string', 'max:255'],
@@ -41,6 +48,18 @@ class SuratPesananPenjualanRequest extends FormRequest
             'detail.*.kuantitas' => 'required|string',
             'detail.*.harga' => 'required|string',
             'detail.*.total' => 'required|string',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'nomor_pesanan_pembelian.unique' => 'Nomor Pesanan ini sudah pernah digunakan. Harap masukkan nomor pesanan yang berbeda.',
         ];
     }
 }

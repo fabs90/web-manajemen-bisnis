@@ -12,8 +12,8 @@
                     <a href="{{ route('administrasi.spb.index') }}" class="btn btn-light btn-sm fw-bold me-2">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
-                    <button type="button" class="btn btn-light btn-sm fw-bold" id="btn-toggle-form">
-                        <i class="bi bi-plus-circle"></i> Buat SPP Baru
+                    <button type="button" class="btn btn-light btn-sm fw-bold" id="btn-scroll-form">
+                        <i class="bi bi-arrow-down-circle"></i> Buat SPP Baru
                     </button>
                 </div>
             </div>
@@ -46,7 +46,8 @@
                                                 method="POST" class="d-inline form-delete">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Hapus">
+                                                <button type="button" class="btn btn-danger btn-sm btn-delete"
+                                                    title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -60,8 +61,34 @@
             </div>
         </div>
 
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Sukses!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Gagal!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Oops! Ada kesalahan:</strong>
+                <ul class="mb-0 mt-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <form action="{{ route('administrasi.spb.spp-pelanggan.store') }}" method="POST" enctype="multipart/form-data"
-            id="spp-pelanggan-form" style="display: none;">
+            id="spp-pelanggan-form">
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
@@ -76,7 +103,8 @@
                             <select name="pelanggan_id" id="pelangganSelect" class="form-select" required>
                                 <option value="">-- Pilih Pelanggan --</option>
                                 @foreach ($pelanggan as $p)
-                                    <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}">
+                                    <option value="{{ $p->id }}" data-alamat="{{ $p->alamat }}"
+                                        {{ old('pelanggan_id') == $p->id ? 'selected' : '' }}>
                                         {{ $p->nama }}
                                     </option>
                                 @endforeach
@@ -84,8 +112,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Alamat Pelanggan</label>
-                            <input type="text" name="alamat_pelanggan" id="alamatPelanggan" class="form-control"
-                                readonly>
+                            <input type="text" name="alamat_pelanggan" id="alamatPelanggan" class="form-control" readonly
+                                value="{{ old('alamat_pelanggan') }}">
                         </div>
                     </div>
 
@@ -95,15 +123,17 @@
                         <div class="col-md-4">
                             <label class="form-label">Nomor Pesanan<span class="text-danger">*</span></label>
                             <input type="text" name="nomor_pesanan_pembelian" class="form-control"
-                                placeholder="Contoh: PO-001" required>
+                                placeholder="Contoh: PO-001" required value="{{ old('nomor_pesanan_pembelian') }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tanggal Pesanan<span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal_pesanan_pembelian" class="form-control" required>
+                            <input type="date" name="tanggal_pesanan_pembelian" class="form-control" required
+                                value="{{ old('tanggal_pesanan_pembelian') }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Permintaan Tanggal Kirim<span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal_kirim_pesanan_pembelian" class="form-control">
+                            <input type="date" name="tanggal_kirim_pesanan_pembelian" class="form-control"
+                                value="{{ old('tanggal_kirim_pesanan_pembelian') }}">
                         </div>
                     </div>
 
@@ -111,7 +141,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Nama Pihak Pemesan<span class="text-danger">*</span></label>
                             <input type="text" name="nama_pelanggan" class="form-control"
-                                placeholder="Nama orang yang memesan" required>
+                                placeholder="Nama orang yang memesan" required value="{{ old('nama_pelanggan') }}">
                         </div>
                     </div>
 
@@ -132,31 +162,72 @@
                         </thead>
 
                         <tbody id="tbody-detail">
-                            <tr>
-                                <td class="row-index text-center">1</td>
-                                <td>
-                                    <select name="detail[0][barang_id]" class="form-select barang-select" required>
-                                        <option value="">-- Pilih Barang --</option>
-                                        @foreach ($barang as $b)
-                                            <option value="{{ $b->id }}"
-                                                data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
-                                                data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
-                                                data-nama="{{ $b->nama }}">
-                                                {{ $b->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="hidden" name="detail[0][nama_barang]" class="nama-barang">
-                                </td>
-                                <td><input type="text" class="form-control stok" readonly></td>
-                                <td><input type="text" name="detail[0][kuantitas]" class="form-control qty" required>
-                                </td>
-                                <td><input type="text" name="detail[0][harga]" class="form-control harga" required>
-                                </td>
-                                <td><input type="text" name="detail[0][total]" class="form-control total" readonly>
-                                </td>
-                                <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button></td>
-                            </tr>
+                            @if (old('detail'))
+                                @foreach (old('detail') as $index => $item)
+                                    <tr>
+                                        <td class="row-index text-center">{{ $index + 1 }}</td>
+                                        <td>
+                                            <select name="detail[{{ $index }}][barang_id]"
+                                                class="form-select barang-select" required>
+                                                <option value="">-- Pilih Barang --</option>
+                                                @foreach ($barang as $b)
+                                                    <option value="{{ $b->id }}"
+                                                        {{ isset($item['barang_id']) && $item['barang_id'] == $b->id ? 'selected' : '' }}
+                                                        data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
+                                                        data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
+                                                        data-nama="{{ $b->nama }}">
+                                                        {{ $b->nama }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <input type="hidden" name="detail[{{ $index }}][nama_barang]"
+                                                class="nama-barang" value="{{ $item['nama_barang'] ?? '' }}">
+                                        </td>
+                                        <td><input type="text" class="form-control stok" readonly></td>
+                                        <td><input type="text" name="detail[{{ $index }}][kuantitas]"
+                                                class="form-control qty" value="{{ $item['kuantitas'] ?? '' }}" required>
+                                        </td>
+                                        <td><input type="text" name="detail[{{ $index }}][harga]"
+                                                class="form-control harga" value="{{ $item['harga'] ?? '' }}" required>
+                                        </td>
+                                        <td><input type="text" name="detail[{{ $index }}][total]"
+                                                class="form-control total" value="{{ $item['total'] ?? '' }}" readonly>
+                                        </td>
+                                        <td><button type="button"
+                                                class="btn btn-danger btn-sm remove-row">&times;</button></td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td class="row-index text-center">1</td>
+                                    <td>
+                                        <select name="detail[0][barang_id]" class="form-select barang-select" required>
+                                            <option value="">-- Pilih Barang --</option>
+                                            @foreach ($barang as $b)
+                                                <option value="{{ $b->id }}"
+                                                    data-stok="{{ number_format($b->getSaldoAkhir(), 0, '.', '') }}"
+                                                    data-harga="{{ number_format($b->harga_jual_per_unit, 0, '.', '') }}"
+                                                    data-nama="{{ $b->nama }}">
+                                                    {{ $b->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <input type="hidden" name="detail[0][nama_barang]" class="nama-barang">
+                                    </td>
+                                    <td><input type="text" class="form-control stok" readonly></td>
+                                    <td><input type="text" name="detail[0][kuantitas]" class="form-control qty"
+                                            required>
+                                    </td>
+                                    <td><input type="text" name="detail[0][harga]" class="form-control harga"
+                                            required>
+                                    </td>
+                                    <td><input type="text" name="detail[0][total]" class="form-control total"
+                                            readonly>
+                                    </td>
+                                    <td><button type="button" class="btn btn-danger btn-sm remove-row">&times;</button>
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
 
@@ -183,20 +254,22 @@
     <script>
         $(document).ready(function() {
             $('#spp-penjualan-table').DataTable();
-        });
 
-        // Toggle Form
-        $('#btn-toggle-form').click(function() {
-            let btn = $(this);
-            $('#spp-pelanggan-form').slideToggle(300, function() {
-                if ($(this).is(':visible')) {
-                    btn.html('<i class="bi bi-x-circle"></i> Batal Buat SPP');
-                    btn.removeClass('btn-light').addClass('btn-danger');
-                } else {
-                    btn.html('<i class="bi bi-plus-circle"></i> Buat SPP Baru');
-                    btn.removeClass('btn-danger').addClass('btn-light');
+            // Repopulate stock if there's old data
+            $('.barang-select').each(function() {
+                if ($(this).val()) {
+                    let selectedOption = $(this).find('option:selected');
+                    let stok = selectedOption.data('stok') || 0;
+                    $(this).closest('tr').find('.stok').val(formatRupiah(stok.toString()));
                 }
             });
+        });
+
+        // Scroll to Form
+        $('#btn-scroll-form').click(function() {
+            $('html, body').animate({
+                scrollTop: $("#spp-pelanggan-form").offset().top - 20
+            }, 500);
         });
 
         // Delete Confirmation
@@ -228,10 +301,9 @@
         });
 
         // Loading Button
-        $('#submit-btn').click(function() {
-            $(this).prop('disabled', true).html(
+        $('#spp-pelanggan-form').on('submit', function() {
+            $('#submit-btn').prop('disabled', true).html(
                 '<i class="bi bi-spinner spinner-border spinner-border-sm"></i> Loading...');
-            $('#spp-pelanggan-form').submit();
         });
 
         // Fungsi format angka menjadi format rupiah (tanpa Rp)
@@ -256,7 +328,7 @@
             return parseInt(value.replace(/\./g, '').replace(/,/g, '')) || 0;
         }
 
-        let index = 1;
+        let index = {{ old('detail') ? count(old('detail')) : 1 }};
 
         // Tambah baris
         document.getElementById('add-row').addEventListener('click', function() {
@@ -339,28 +411,5 @@
             document.getElementById('alamatPelanggan').value = alamat;
         });
 
-        @if (session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Sukses!',
-                text: "{{ session('success') }}",
-            });
-        @endif
-
-        @if (session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: "{{ session('error') }}",
-            });
-        @endif
-
-        @if ($errors->any())
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops! Ada kesalahan:',
-                html: '<ul class="text-start">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
-            });
-        @endif
     </script>
 @endpush
