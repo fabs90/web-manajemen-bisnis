@@ -63,7 +63,8 @@
                         <thead class="table-primary text-center">
                             <tr>
                                 <th width="5%">No</th>
-                                <th>Nomor SPP</th>
+                                <th>Nomor Pesanan</th>
+                                <th>Nomor Faktur</th>
                                 <th>Nomor SPB</th>
                                 <th>Tanggal Dikirim</th>
                                 <th>Status</th>
@@ -78,6 +79,9 @@
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td class="fw-bold">{{ $spb->pesananPenjualan->nomor_pesanan_penjualan ?? '-' }}</td>
+                                    <td class="fw-bold">
+                                        {{ $spb->fakturPenjualan->kode_faktur ?? '-' }}
+                                    </td>
                                     <td class="fw-bold">{{ $spb->nomor_pengiriman_barang }}</td>
                                     <td class="text-center">
                                         {{ \Carbon\Carbon::parse($spb->created_at)->format('d-m-Y') }}
@@ -146,7 +150,7 @@
                                                                     data-bs-dismiss="modal"></button>
                                                             </div>
 
-                                                            <div class="modal-body">
+                                                            <div class="modal-body text-start">
 
                                                                 <div class="row mb-2">
                                                                     <div class="col-6">
@@ -169,34 +173,69 @@
 
                                                                 <hr>
 
-                                                                <table class="table table-bordered table-sm text-center">
-                                                                    <thead class="table-light">
-                                                                        <tr>
-                                                                            <th>No</th>
-                                                                            <th>Barang</th>
-                                                                            <th>Jumlah Dipesan</th>
-                                                                            <th>Jumlah Dikirim</th>
-                                                                            <th>Keterangan</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach ($spb->suratPengirimanBarangDetail as $detail)
-                                                                            @php
-                                                                                $sppDetail = $detail->pesananPenjualanDetail ?? $detail->pesananPembelianDetail;
-                                                                                $kuantitasDipesan = $sppDetail->kuantitas ?? 0;
-                                                                                $satuan = $sppDetail->satuan ?? '';
-                                                                            @endphp
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-bordered table-sm text-center">
+                                                                        <thead class="table-light">
                                                                             <tr>
-                                                                                <td>{{ $loop->iteration }}</td>
-                                                                                <td>{{ $sppDetail->nama_barang ?? '-' }}</td>
-                                                                                <td>{{ $kuantitasDipesan }} {{ $satuan }}</td>
-                                                                                <td>{{ $detail->jumlah_dikirim }} {{ $satuan }}</td>
-                                                                                <td>{{ $detail->keterangan ?? '-' }}</td>
+                                                                                <th>No</th>
+                                                                                <th>Barang</th>
+                                                                                <th>Jumlah Dipesan</th>
+                                                                                <th>Jumlah Dikirim</th>
+                                                                                <th>Keterangan</th>
                                                                             </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @foreach ($spb->suratPengirimanBarangDetail as $detail)
+                                                                                @php
+                                                                                    $sppDetail =
+                                                                                        $detail->pesananPenjualanDetail ??
+                                                                                        $detail->pesananPembelianDetail;
+                                                                                    $kuantitasDipesan =
+                                                                                        $sppDetail->kuantitas ?? 0;
+                                                                                    $satuan = $sppDetail->satuan ?? '';
+                                                                                @endphp
+                                                                                <tr>
+                                                                                    <td>{{ $loop->iteration }}</td>
+                                                                                    <td>{{ $sppDetail->nama_barang ?? '-' }}
+                                                                                    </td>
+                                                                                    <td>{{ $kuantitasDipesan }}
+                                                                                        {{ $satuan }}</td>
+                                                                                    <td>{{ $detail->jumlah_dikirim }}
+                                                                                        {{ $satuan }}</td>
+                                                                                    <td>{{ $detail->keterangan ?? '-' }}</td>
+                                                                                </tr>
+                                                                            @endforeach
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                
+                                                                <h6 class="mt-4">Unduh Dokumen</h6>
+                                                                <div class="d-flex gap-2 flex-wrap">
+                                                                    @if($spb->spp_id)
+                                                                        <a href="{{ route('administrasi.spp.generatePdf', $spb->spp_id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                        </a>
+                                                                    @elseif($spb->pesanan_penjualan_id)
+                                                                        <a href="{{ route('administrasi.spb.spp-pelanggan.generatePdf', $spb->pesanan_penjualan_id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                        </a>
+                                                                    @endif
+                                                                    
+                                                                    <form id="generatePdfForm-{{ $spb->id }}" action="{{ route('administrasi.spb.generatePdf', $spb->id) }}" method="get" target="_blank" class="d-inline">
+                                                                        <button class="btn btn-outline-success btn-sm generatePdfBtn" type="submit">
+                                                                            <span class="btn-text">
+                                                                                <i class="bi bi-file-earmark-pdf"></i> Surat Pengiriman Barang
+                                                                            </span>
+                                                                            <span class="spinner-border spinner-border-sm d-none"></span>
+                                                                        </button>
+                                                                    </form>
 
+                                                                    @if($spb->fakturPenjualan)
+                                                                        <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $spb->fakturPenjualan->id) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Faktur Penjualan
+                                                                        </a>
+                                                                    @endif
+                                                                </div>
                                                             </div>
 
                                                             <div class="modal-footer">
@@ -214,16 +253,7 @@
                                                 class="btn btn-secondary btn-sm" title="Edit SPB">
                                                 <i class="bi bi-pencil text-white"></i>
                                             </a>
-                                            <form id="generatePdfForm"
-                                                action="{{ route('administrasi.spb.generatePdf', $spb->id) }}"
-                                                method="get">
-                                                <button class="btn btn-warning btn-sm generatePdfBtn" type="submit">
-                                                    <span class="btn-text">
-                                                        <i class="bi bi-file-earmark-pdf text-white"></i>
-                                                    </span>
-                                                    <span class="spinner-border spinner-border-sm d-none"></span>
-                                                </button>
-                                            </form>
+                                            
                                             {{-- Hapus --}}
                                             <form action="{{ route('administrasi.spb.destroy', $spb->id) }}" method="POST"
                                                 class="d-inline delete-form">

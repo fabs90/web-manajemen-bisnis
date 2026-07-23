@@ -37,14 +37,20 @@
                                     <td>{{ $spp->pelanggan->nama ?? '-' }}</td>
                                     <td>{{ \Carbon\Carbon::parse($spp->tanggal_pesanan_penjualan)->format('d-m-Y') }}</td>
                                     <td>
-                                        <form action="{{ route('administrasi.spb.spp-pelanggan.destroy', $spp->id) }}"
-                                            method="POST" class="d-inline form-delete">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn btn-danger btn-sm btn-delete">
-                                                <i class="bi bi-trash"></i> Hapus
-                                            </button>
-                                        </form>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="{{ route('administrasi.spb.spp-pelanggan.generatePdf', $spp->id) }}"
+                                                class="btn btn-warning btn-sm" target="_blank" title="Unduh PDF">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                            </a>
+                                            <form action="{{ route('administrasi.spb.spp-pelanggan.destroy', $spp->id) }}"
+                                                method="POST" class="d-inline form-delete">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

@@ -107,6 +107,100 @@
                                     <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                                     <td>
+                                        @if (isset($item->faktur) && $item->faktur)
+                                            <button type="button" class="btn btn-info btn-sm text-white me-1"
+                                                data-bs-toggle="modal" data-bs-target="#detailPiutangModal-{{ $item->id }}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            
+                                            {{-- Modal Detail Piutang --}}
+                                            <div class="modal fade" id="detailPiutangModal-{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Detail Transaksi: {{ $item->uraian }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body text-start">
+                                                            <h6>Barang yang Terjual (Modal Saja)</h6>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm table-bordered">
+                                                                    <thead class="table-light">
+                                                                        <tr>
+                                                                            <th>Nama Barang</th>
+                                                                            <th>Kuantitas</th>
+                                                                            <th>Harga Modal</th>
+                                                                            <th>Total Modal</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @php
+                                                                            $totalModal = 0;
+                                                                            $details = [];
+                                                                            if ($item->faktur->suratPengirimanBarang) {
+                                                                                if ($item->faktur->suratPengirimanBarang->pesananPenjualan) {
+                                                                                    $details = $item->faktur->suratPengirimanBarang->pesananPenjualan->details;
+                                                                                } elseif ($item->faktur->suratPengirimanBarang->pesananPembelian) {
+                                                                                    $details = $item->faktur->suratPengirimanBarang->pesananPembelian->pesananPembelianDetail;
+                                                                                }
+                                                                            }
+                                                                        @endphp
+                                                                        @forelse($details as $detail)
+                                                                            @php
+                                                                                $hargaBeli = $detail->barang ? $detail->barang->harga_beli_per_unit : 0;
+                                                                                $subtotal = $hargaBeli * $detail->kuantitas;
+                                                                                $totalModal += $subtotal;
+                                                                            @endphp
+                                                                            <tr>
+                                                                                <td>{{ $detail->nama_barang }}</td>
+                                                                                <td>{{ $detail->kuantitas }}</td>
+                                                                                <td>Rp {{ number_format($hargaBeli, 0, ',', '.') }}</td>
+                                                                                <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                                                                            </tr>
+                                                                        @empty
+                                                                            <tr>
+                                                                                <td colspan="4" class="text-center">Tidak ada data barang.</td>
+                                                                            </tr>
+                                                                        @endforelse
+                                                                    </tbody>
+                                                                    <tfoot>
+                                                                        <tr>
+                                                                            <th colspan="3" class="text-end">Total</th>
+                                                                            <th>Rp {{ number_format($totalModal, 0, ',', '.') }}</th>
+                                                                        </tr>
+                                                                    </tfoot>
+                                                                </table>
+                                                            </div>
+
+                                                            <h6 class="mt-4">Unduh Dokumen</h6>
+                                                            <div class="d-flex gap-2 flex-wrap">
+                                                                @if($item->faktur->suratPengirimanBarang)
+                                                                    @if($item->faktur->suratPengirimanBarang->spp_id)
+                                                                        <a href="{{ route('administrasi.spp.generatePdf', $item->faktur->suratPengirimanBarang->spp_id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                        </a>
+                                                                    @elseif($item->faktur->suratPengirimanBarang->pesanan_penjualan_id)
+                                                                        <a href="{{ route('administrasi.spb.spp-pelanggan.generatePdf', $item->faktur->suratPengirimanBarang->pesanan_penjualan_id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                        </a>
+                                                                    @endif
+                                                                    
+                                                                    <a href="{{ route('administrasi.spb.generatePdf', $item->faktur->suratPengirimanBarang->id) }}" class="btn btn-outline-success btn-sm" target="_blank">
+                                                                        <i class="bi bi-file-earmark-pdf"></i> Surat Pengiriman Barang
+                                                                    </a>
+                                                                @endif
+                                                                <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $item->faktur->id) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Faktur Penjualan
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                         <form id="deletePiutang-{{ $item->id }}"
                                             action="{{ route('keuangan.piutang.destroy', $item->id) }}" method="POST"
                                             class="d-inline">

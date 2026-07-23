@@ -674,6 +674,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'destroy',
         ])->name('administrasi.spb.spp-pelanggan.destroy');
 
+        Route::get('/surat-pengiriman-barang/pesanan-pelanggan/{id}/generate-pdf', [
+            SuratPesananPelangganController::class,
+            'generatePdf',
+        ])->name('administrasi.spb.spp-pelanggan.generatePdf');
+
         // Surat Pengiriman Barang (SPB)
         Route::get('/surat-pengiriman-barang', [
             SuratPengirimanBarangController::class,

@@ -115,4 +115,30 @@ class SuratPesananPenjualanService
 
         return (int) preg_replace("/\D/", '', $value);
     }
+
+    public function generatePdf($id)
+    {
+        try {
+            $data = SuratPesananPenjualan::with(
+                'pelanggan',
+                'details',
+            )
+                ->where('user_id', auth()->user()->id)
+                ->findOrFail($id);
+
+            $profileUser = \Illuminate\Support\Facades\Auth::user();
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+                'administrasi.surat.surat-pengiriman-barang.template-pdf-spp-pelanggan',
+                compact('data', 'profileUser'),
+            )->setPaper('A4', 'portrait');
+
+            return $pdf->download(
+                \Illuminate\Support\Str::slug('surat-pesanan-pembelian-dari-pelanggan-'.
+                    $data->nomor_pesanan_penjualan).'.pdf',
+            );
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

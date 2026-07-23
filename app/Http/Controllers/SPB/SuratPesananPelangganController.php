@@ -63,4 +63,15 @@ class SuratPesananPelangganController extends Controller
             return back()->with('error', 'Gagal menghapus Pesanan Pembelian dari Pelanggan: ' . $th->getMessage());
         }
     }
+
+    public function generatePdf($id, SuratPesananPenjualanService $service)
+    {
+        try {
+            return $service->generatePdf($id);
+        } catch (\Throwable $th) {
+            Log::error('Gagal generate PDF SPP Pelanggan: ' . $th->getMessage());
+
+            return back()->with('error', 'Gagal generate PDF Pesanan Pembelian dari Pelanggan.');
+        }
+    }
 }

@@ -95,7 +95,15 @@ class PendapatanController extends Controller
                 ->with(['journalEntry', 'subLedger'])
                 ->get();
 
-            $dataPiutang = $piutangItems->groupBy('sub_ledger_id')->map(function ($items) {
+            $fakturs = \App\Models\Faktur\FakturPenjualan::where('user_id', $userId)
+                ->with([
+                    'suratPengirimanBarang.suratPengirimanBarangDetail',
+                    'suratPengirimanBarang.pesananPenjualan.details.barang'
+                ])
+                ->get()
+                ->keyBy('kode_faktur');
+
+            $dataPiutang = $piutangItems->groupBy('sub_ledger_id')->map(function ($items) use ($fakturs) {
                 $saldo = 0;
 
                 return $items->sort(function ($a, $b) {
@@ -118,17 +126,25 @@ class PendapatanController extends Controller
                     }
 
                     return $a->id <=> $b->id;
-                })->values()->map(function ($item) use (&$saldo) {
+                })->values()->map(function ($item) use (&$saldo, $fakturs) {
                     $saldo += ($item->debit - $item->credit);
+
+                    $faktur = null;
+                    $description = $item->journalEntry->description ?? '';
+                    if (str_starts_with($description, 'Faktur Penjualan - ')) {
+                        $kodeFaktur = str_replace('Faktur Penjualan - ', '', $description);
+                        $faktur = $fakturs->get($kodeFaktur);
+                    }
 
                     return (object) [
                         'id' => $item->id,
                         'tanggal' => $item->journalEntry->date,
-                        'uraian' => $item->journalEntry->description,
+                        'uraian' => $description,
                         'debit' => $item->debit,
                         'kredit' => $item->credit,
                         'saldo' => $saldo,
                         'pelanggan' => $item->subLedger,
+                        'faktur' => $faktur,
                     ];
                 });
             });
