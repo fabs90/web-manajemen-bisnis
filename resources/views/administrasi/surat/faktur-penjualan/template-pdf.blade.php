@@ -62,8 +62,8 @@
         }
 
         .title-faktur {
-            font-size: 20px;
-            letter-spacing: 6px;
+            font-size: 18px;
+            letter-spacing: 4px;
             margin-bottom: 5px;
             color: #000;
         }
@@ -126,7 +126,7 @@
     </div> --}}
 
     <div class="text-center" style="margin-bottom: 25px;">
-        <div class="title-faktur fw-bold text-uppercase">FAKTUR</div>
+        <div class="title-faktur fw-bold text-uppercase">FAKTUR PENJUALAN</div>
         {{-- Format: (Nomor Urut)/F/(Nama Perusahaan)/(Bulan)/(Tahun) --}}
         <div style="font-size: 12px; color: #000;">
             Nomor: <span class="fw-bold">{{ $faktur->kode_faktur }}</span>
@@ -201,7 +201,7 @@
     <table width="100%" class="table-no-border footer-signature">
         <tr>
             <td width="50%">
-                
+
             </td>
             <td width="50%" class="text-center">
                 Hormat Kami,<br>
@@ -224,7 +224,8 @@
                     <div style="height:60px;"></div>
                 @endif
                 <br>
-                <strong style="text-decoration: underline;">{{ $profileUser->nama_pimpinan ?? 'Nama Pimpinan' }}</strong><br>
+                <strong
+                    style="text-decoration: underline;">{{ $profileUser->nama_pimpinan ?? 'Nama Pimpinan' }}</strong><br>
                 Pemimpin Usaha
             </td>
         </tr>

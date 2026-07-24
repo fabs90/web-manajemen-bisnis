@@ -78,31 +78,7 @@
 
 <body>
 
-    {{-- KOP SURAT (Milik Perusahaan yang Menerima Pesanan, bisa diubah sesuai kebutuhan) --}}
-    <table class="table-no-border" style="margin-bottom: 10px;">
-        <tr>
-            <td width="15%">
-                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
-                    @php
-                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
-                    @endphp
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
-                @endif
-            </td>
-            <td width="70%" class="text-center">
-                <div style="font-size:16px; font-weight:bold; text-transform:uppercase;">
-                    {{ $profileUser->name ?? 'Nama Perusahaan' }}</div>
-                <div style="font-size:11px;">{{ $profileUser->alamat ?? 'Alamat Perusahaan' }}</div>
-                <div style="font-size:11px;">Telp: {{ $profileUser->nomor_telepon ?? '-' }} | Email:
-                    {{ $profileUser->email ?? '-' }}</div>
-            </td>
-            <td width="15%"></td>
-        </tr>
-    </table>
 
-    <div class="line"></div>
     <h3 class="text-center fw-bold mb-3 uppercase">SURAT PESANAN PEMBELIAN</h3>
     {{-- Nomor dan Tanggal Surat --}}
     <table width="100%" class="table-no-border mb-4">
