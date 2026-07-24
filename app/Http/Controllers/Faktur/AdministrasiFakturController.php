@@ -72,6 +72,7 @@ class AdministrasiFakturController extends Controller
                 ->route('administrasi.faktur-penjualan.index')
                 ->with('success', 'Faktur penjualan berhasil ditambahkan.');
         } catch (\Throwable $th) {
+            report($th);
             Log::error(
                 'Gagal menambahkan faktur penjualan: '.$th->getMessage(),
             );
@@ -100,6 +101,7 @@ class AdministrasiFakturController extends Controller
                 ->route('administrasi.faktur-penjualan.index')
                 ->with('success', 'Faktur penjualan berhasil dihapus🗑️.');
         } catch (\Throwable $th) {
+            report($th);
             Log::error(
                 'Gagal menghapus faktur penjualan: '.$th->getMessage(),
             );

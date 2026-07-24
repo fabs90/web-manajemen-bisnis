@@ -147,6 +147,7 @@ class AdministrasiSuratController extends Controller
                 ->back()
                 ->with('success', 'Agenda telepon berhasil disimpan.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menyimpan pada Agenda telepon. Error: '.
@@ -172,6 +173,7 @@ class AdministrasiSuratController extends Controller
                 ->back()
                 ->with('success', 'Agenda Perjalanan berhasil disimpan.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menyimpan pada Agenda Perjalanan. Error: '.
@@ -199,6 +201,7 @@ class AdministrasiSuratController extends Controller
                 ->route('administrasi.janji-temu.index')
                 ->with('success', 'Agenda Janji Temu berhasil disimpan.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menyimpan pada Agenda Janji Temu. Error: '.
@@ -268,6 +271,7 @@ class AdministrasiSuratController extends Controller
                 ->back()
                 ->with('success', 'Agenda telepon berhasil dihapus.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menghapus pada Agenda telepon. Error: '.
@@ -297,6 +301,7 @@ class AdministrasiSuratController extends Controller
                 ->back()
                 ->with('success', 'Agenda perjalanan berhasil dihapus.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menghapus pada Agenda perjalanan. Error: '.
@@ -326,6 +331,7 @@ class AdministrasiSuratController extends Controller
                 ->back()
                 ->with('success', 'Agenda janji temu berhasil dihapus.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menghapus pada Agenda janji temu. Error: '.

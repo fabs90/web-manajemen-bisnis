@@ -250,6 +250,7 @@ class PendapatanController extends Controller
 
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Penerimaan berhasil ditambahkan');
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
             Log::error('Gagal menyimpan pendapatan: '.$e->getMessage());
 
@@ -274,6 +275,7 @@ class PendapatanController extends Controller
 
             return redirect()->route('keuangan.pendapatan.list')->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
             Log::error('Gagal menghapus pendapatan: '.$e->getMessage());
 
@@ -348,6 +350,7 @@ class PendapatanController extends Controller
                 ->route('keuangan.pendapatan.create_lain')
                 ->with('success', 'Data pendapatan lain berhasil ditambahkan.');
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
             Log::error('Gagal menyimpan pendapatan lain: '.$e->getMessage());
 
@@ -385,6 +388,7 @@ class PendapatanController extends Controller
                     'Data piutang & penyesuaian kas berhasil dihapus.',
                 );
         } catch (\Exception $e) {
+            report($e);
             DB::rollBack();
             Log::error('Gagal menghapus piutang: '.$e->getMessage());
 

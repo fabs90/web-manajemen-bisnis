@@ -10,8 +10,8 @@ use App\Models\JournalEntry;
 use App\Models\KartuGudang;
 use App\Models\KasirTransactionLog;
 use App\Models\PaketDiskon;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -62,11 +62,11 @@ class KasirController extends Controller
             // Ambil akun-akun
             $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
 
-            if (!isset($accounts['1101']) || !isset($accounts['4101'])) {
+            if (! isset($accounts['1101']) || ! isset($accounts['4101'])) {
                 throw new \Exception('Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) tidak ditemukan.');
             }
 
-            if ($request->diskon_total > 0 && !isset($accounts['4102'])) {
+            if ($request->diskon_total > 0 && ! isset($accounts['4102'])) {
                 throw new \Exception('Akun Potongan Penjualan (4102) tidak ditemukan.');
             }
 
@@ -114,14 +114,14 @@ class KasirController extends Controller
             // Insert barang
             if ($request->filled('id_barang_terjual')) {
                 foreach ($request->id_barang_terjual as $index => $barangId) {
-                    if (!$barangId) {
+                    if (! $barangId) {
                         continue;
                     }
 
                     $detailBarang = Barang::where('id', $barangId)
                         ->where('user_id', auth()->id())
                         ->first();
-                    if (!$detailBarang) {
+                    if (! $detailBarang) {
                         throw new \Exception(
                             "Barang dengan ID {$barangId} tidak valid atau bukan milik Anda.",
                         );
@@ -132,7 +132,7 @@ class KasirController extends Controller
                         ->latest('id')
                         ->first();
 
-                    if (!$barangItem) {
+                    if (! $barangItem) {
                         throw new \Exception(
                             "Kartu gudang untuk barang ID {$barangId} tidak ditemukan.",
                         );
@@ -159,9 +159,9 @@ class KasirController extends Controller
                         'tanggal' => now(),
                         'diterima' => 0,
                         'dikeluarkan' => $jumlahDijual,
-                        'uraian' => 'Pendapatan Kasir Tunai: ' .
-                            $detailBarang->nama .
-                            ' - ' .
+                        'uraian' => 'Pendapatan Kasir Tunai: '.
+                            $detailBarang->nama.
+                            ' - '.
                             Carbon::now('Asia/Jakarta')->format('d/m/Y H:i'),
                         'saldo_persatuan' => $saldoSatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
@@ -219,7 +219,7 @@ class KasirController extends Controller
 
             return redirect()
                 ->back()
-                ->with('error', 'Terjadi Error: ' . $e->getMessage());
+                ->with('error', 'Terjadi Error: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Transaksi berhasil')->with('receipt', $receiptData);
@@ -259,7 +259,7 @@ class KasirController extends Controller
 
             return redirect()
                 ->back()
-                ->with('error', 'Terjadi Error: ' . $e->getMessage());
+                ->with('error', 'Terjadi Error: '.$e->getMessage());
         }
     }
 }

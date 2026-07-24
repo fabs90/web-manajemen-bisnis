@@ -62,6 +62,7 @@ class SuratMasukController extends Controller
                 ->route('administrasi.surat-masuk.index')
                 ->with('success', 'Surat masuk berhasil ditambahkan.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error('Gagal simpan surat masuk: '.$e->getMessage(), [
                 'user_id' => auth()->id(),
@@ -158,6 +159,7 @@ class SuratMasukController extends Controller
                 ->route('administrasi.surat-masuk.index')
                 ->with('success', 'Disposisi berhasil disimpan.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error('Disposisi store error: '.$e->getMessage());
 
@@ -186,6 +188,7 @@ class SuratMasukController extends Controller
                 ->route('administrasi.surat-masuk.index')
                 ->with('success', 'Agenda surat masuk berhasil dihapus');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 "Error deleting agenda surat masuk ID $id: ".$e->getMessage(),

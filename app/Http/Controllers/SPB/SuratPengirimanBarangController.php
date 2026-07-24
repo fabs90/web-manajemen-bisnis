@@ -46,7 +46,7 @@ class SuratPengirimanBarangController extends Controller
                 'nomor_pesanan_pembelian' => $item->nomor_pesanan_penjualan,
                 'tanggal_kirim_pesanan_pembelian' => $item->tanggal_kirim_pesanan_penjualan ? $item->tanggal_kirim_pesanan_penjualan->format('Y-m-d') : null,
                 'pelanggan' => $item->pelanggan,
-                'pesananPembelianDetail' => $item->details->map(fn($d) => (object) [
+                'pesananPembelianDetail' => $item->details->map(fn ($d) => (object) [
                     'id' => $d->id,
                     'nama_barang' => $d->nama_barang,
                     'kuantitas' => $d->kuantitas,
@@ -74,8 +74,9 @@ class SuratPengirimanBarangController extends Controller
 
             return $service->generatePdf($id);
         } catch (Throwable $th) {
+            report($th);
             Log::error(
-                'Gagal generate PDF Surat Pengiriman): ' . $th->getMessage(),
+                'Gagal generate PDF Surat Pengiriman): '.$th->getMessage(),
             );
 
             return back()
@@ -101,8 +102,9 @@ class SuratPengirimanBarangController extends Controller
                     'Surat Pengiriman Barang (SPB) berhasil ditambahkan.',
                 );
         } catch (Throwable $th) {
+            report($th);
             Log::error(
-                'Gagal menambahkan Surat Pengiriman Barang (SPB): ' .
+                'Gagal menambahkan Surat Pengiriman Barang (SPB): '.
                 $th->getMessage(),
             );
 
@@ -129,8 +131,9 @@ class SuratPengirimanBarangController extends Controller
                     'Surat Pengiriman Barang (SPB) berhasil diubah.',
                 );
         } catch (Throwable $th) {
+            report($th);
             Log::error(
-                'Gagal mengubah Surat Pengiriman Barang (SPB): ' .
+                'Gagal mengubah Surat Pengiriman Barang (SPB): '.
                 $th->getMessage(),
             );
 
@@ -138,7 +141,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal mengubah Surat Pengiriman Barang (SPB): ' .
+                    'Gagal mengubah Surat Pengiriman Barang (SPB): '.
                     $th->getMessage(),
                 );
         }
@@ -157,8 +160,9 @@ class SuratPengirimanBarangController extends Controller
                     'Surat Pengiriman Barang (SPB) berhasil dihapus.',
                 );
         } catch (Throwable $th) {
+            report($th);
             Log::error(
-                'Gagal menghapus Surat Pengiriman Barang (SPB): ' .
+                'Gagal menghapus Surat Pengiriman Barang (SPB): '.
                 $th->getMessage(),
             );
 
@@ -166,7 +170,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menghapus Surat Pengiriman Barang (SPB): ' .
+                    'Gagal menghapus Surat Pengiriman Barang (SPB): '.
                     $th->getMessage(),
                 );
         }

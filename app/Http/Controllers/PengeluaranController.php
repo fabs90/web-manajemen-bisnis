@@ -172,6 +172,7 @@ class PengeluaranController extends Controller
                 ->route('keuangan.pengeluaran.list') // Redirect ke list saja agar user bisa lihat hasilnya
                 ->with('success', 'Data pengeluaran berhasil disimpan.');
         } catch (\Throwable $e) {
+            report($e);
             Log::error('Gagal menyimpan pengeluaran', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -194,6 +195,8 @@ class PengeluaranController extends Controller
                 ->route('keuangan.pengeluaran.list')
                 ->with('success', 'Pengeluaran berhasil dihapus.');
         } catch (\Throwable $e) {
+            report($e);
+
             return back()->with('error', 'Gagal menghapus pengeluaran: '.$e->getMessage());
         }
     }
@@ -238,6 +241,8 @@ class PengeluaranController extends Controller
                 ->route('keuangan.pengeluaran.list')
                 ->with('success', 'Data hutang berhasil dihapus.');
         } catch (\Throwable $e) {
+            report($e);
+
             return redirect()
                 ->route('keuangan.pengeluaran.list')
                 ->with('error', 'Gagal menghapus hutang: '.$e->getMessage());

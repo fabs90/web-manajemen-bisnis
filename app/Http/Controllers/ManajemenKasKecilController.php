@@ -108,6 +108,7 @@ class ManajemenKasKecilController extends Controller
                 ->route('keuangan.pengeluaran-kas-kecil.index')
                 ->with('success', 'Kas kecil berhasil ditambahkan');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error('Error creating kas kecil: '.$e->getMessage());
 

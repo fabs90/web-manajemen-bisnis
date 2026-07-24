@@ -48,6 +48,7 @@ class KasKecilController extends Controller
 
             return back()->with('success', 'Permintaan kas kecil berhasil disimpan.');
         } catch (\Exception $e) {
+            report($e);
             Log::error('Gagal simpan kas kecil: '.$e->getMessage(), [
                 'user_id' => Auth::id(),
                 'request' => $request->except(['_token', 'ttd_*']),
@@ -110,6 +111,7 @@ class KasKecilController extends Controller
 
             return redirect()->back()->with('success', 'Data kas kecil berhasil dihapus.');
         } catch (\Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error('Delete kas kecil error: '.$e->getMessage());
 

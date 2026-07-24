@@ -50,8 +50,10 @@ final class SuratKeluarController extends Controller
                 ->route('administrasi.surat-keluar.index')
                 ->with('success', 'Surat keluar berhasil dikirim ke penerima.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error('Store surat keluar error: '.$e->getMessage());
+            report($e);
 
             return back()->with(
                 'error',
@@ -74,6 +76,7 @@ final class SuratKeluarController extends Controller
                 ->route('administrasi.surat-keluar.index')
                 ->with('success', 'Surat keluar berhasil dihapus.');
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error('Gagal menghapus Surat Keluar: '.$e->getMessage());
 

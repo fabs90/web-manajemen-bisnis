@@ -57,6 +57,7 @@ class NotulenRapatController extends Controller
                 ->route('administrasi.rapat.edit', $rapatId)
                 ->with('success', 'Agenda rapat berhasil diperbarui.');
         } catch (\Throwable $th) {
+            report($th);
             Log::error('Update rapat error', [
                 'message' => $th->getMessage(),
                 'id' => $rapatId,
@@ -79,6 +80,7 @@ class NotulenRapatController extends Controller
                 ->route('administrasi.rapat.index')
                 ->with('success', 'Notulen rapat dan hasil keputusan rapat berhasil ditambahkan.');
         } catch (\Throwable $th) {
+            report($th);
             Log::error('Store rapat error', [
                 'message' => $th->getMessage(),
             ]);
@@ -101,6 +103,7 @@ class NotulenRapatController extends Controller
                 ->route('administrasi.rapat.index')
                 ->with('success', 'Agenda rapat berhasil dihapus.');
         } catch (\Throwable $th) {
+            report($th);
             Log::error('Delete rapat error', [
                 'message' => $th->getMessage(),
                 'id' => $id,

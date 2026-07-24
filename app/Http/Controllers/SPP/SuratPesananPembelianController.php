@@ -46,6 +46,7 @@ class SuratPesananPembelianController extends Controller
                     'Surat Pesanan Pembelian (SPP) berhasil ditambahkan.',
                 );
         } catch (\Throwable $th) {
+            report($th);
             Log::error(
                 'Gagal menambahkan Surat Pesanan Pembelian (SPP): '.
                 $th->getMessage(),
@@ -73,6 +74,7 @@ class SuratPesananPembelianController extends Controller
                     'Surat Pesanan Pembelian (SPP) berhasil dihapus.',
                 );
         } catch (\Throwable $th) {
+            report($th);
             Log::error(
                 'Gagal menghapus Surat Pesanan Pembelian (SPP): '.
                 $th->getMessage(),
@@ -93,6 +95,7 @@ class SuratPesananPembelianController extends Controller
         try {
             return $service->generatePdf($sppId);
         } catch (\Throwable $th) {
+            report($th);
             Log::error(
                 'Gagal generate PDF Surat Pesanan Pembelian (SPP): '.
                 $th->getMessage(),

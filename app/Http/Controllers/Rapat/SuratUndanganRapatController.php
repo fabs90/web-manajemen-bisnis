@@ -104,6 +104,7 @@ class SuratUndanganRapatController extends Controller
                     'Agenda surat undangan rapat berhasil dihapus.',
                 );
         } catch (Throwable $e) {
+            report($e);
             DB::rollBack();
             Log::error(
                 'Gagal menghapus pada surat undangan rapat. Error: '.
