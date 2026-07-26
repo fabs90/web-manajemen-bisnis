@@ -7,6 +7,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-success text-white fw-bold">
             <span>List Retur Pembelian</span>
+            {{-- List Retur Pembelian (Memo kredit dari Penjual) --}}
         </div>
         <div class="card-body">
             <div class="table-responsive">
