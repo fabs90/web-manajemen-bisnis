@@ -42,7 +42,8 @@ class ReturPembelianService
             // Simpan detail retur
             foreach ($request->barang_id as $index => $barangDetailId) {
                 $qty = $request->jumlah_dikembalikan[$index];
-                if ($qty <= 0) continue;
+                if ($qty <= 0)
+                    continue;
 
                 $hargaSatuan = $this->cleanRupiah($request->harga[$index]);
                 $jumlah = $this->cleanRupiah($request->total[$index]);
@@ -87,7 +88,7 @@ class ReturPembelianService
                         'tanggal' => $request->tanggal,
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Retur Pembelian - '.$retur->nomor_retur,
+                        'uraian' => 'Retur Pembelian - ' . $retur->nomor_retur,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -104,9 +105,9 @@ class ReturPembelianService
             if ($payableAccount && $inventoryAccount) {
                 $journalEntry = JournalEntry::create([
                     'user_id' => auth()->id(),
-                    'reference_number' => 'RPB-'.date('Ymd', strtotime($request->tanggal)).'-'.strtoupper(Str::random(6)),
+                    'reference_number' => 'RPB-' . date('Ymd', strtotime($request->tanggal)) . '-' . strtoupper(Str::random(6)),
                     'date' => $request->tanggal,
-                    'description' => 'Retur Pembelian - '.$retur->nomor_retur,
+                    'description' => 'Memo Kredit - ' . $retur->nomor_retur,
                     'transaction_type' => 'retur_pembelian',
                 ]);
 
@@ -183,7 +184,7 @@ class ReturPembelianService
                         'tanggal' => now(),
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Pembatalan Retur Pembelian - '.$retur->nomor_retur,
+                        'uraian' => 'Pembatalan Retur Pembelian - ' . $retur->nomor_retur,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),
@@ -193,7 +194,7 @@ class ReturPembelianService
 
             // Hapus Journal Entry terkait
             JournalEntry::where('user_id', auth()->id())
-                ->where('description', 'Retur Pembelian - '.$retur->nomor_retur)
+                ->where('description', 'Retur Pembelian - ' . $retur->nomor_retur)
                 ->delete();
 
             // Hapus detail retur
@@ -232,7 +233,7 @@ class ReturPembelianService
         )->setPaper('A4', 'portrait');
 
         return $pdf->download(
-            Str::slug('retur_pembelian_'.$retur->nomor_retur).'.pdf',
+            Str::slug('retur_pembelian_' . $retur->nomor_retur) . '.pdf',
         );
     }
 

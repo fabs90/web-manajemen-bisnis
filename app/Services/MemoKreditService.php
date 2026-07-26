@@ -86,7 +86,7 @@ class MemoKreditService
                         'tanggal' => $request->tanggal,
                         'diterima' => $diterima,
                         'dikeluarkan' => $dikeluarkan,
-                        'uraian' => 'Memo Kredit - '.$memo->nomor_memo,
+                        'uraian' => 'Retur Penjualan - '.$memo->nomor_memo,
                         'saldo_persatuan' => $saldoPersatuanBaru,
                         'saldo_perkemasan' => $saldoPerKemasanBaru,
                         'user_id' => auth()->id(),

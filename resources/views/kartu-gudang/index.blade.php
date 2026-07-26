@@ -45,6 +45,7 @@
                     <table class="table table-sm kartu-gudang-table">
                         <thead>
                             <tr>
+                                <th>No</th>
                                 <th>Tanggal</th>
                                 <th>Diterima</th>
                                 <th>Dikeluarkan</th>
@@ -57,6 +58,7 @@
                         <tbody>
                             @forelse ($item->kartuGudang as $kartu)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $kartu->tanggal->format('d-m-Y') }}</td>
                                     <td>{{ $kartu->diterima }}</td>
                                     <td>{{ $kartu->dikeluarkan }}</td>
@@ -76,7 +78,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-3">
+                                    <td colspan="8" class="text-center text-muted py-3">
                                         <em>Tidak ada data kartu gudang untuk barang ini.</em>
                                     </td>
                                 </tr>
@@ -102,6 +104,7 @@
                     paging: true,
                     info: true,
                     ordering: true,
+                    order: [[0, 'asc']],
                     responsive: true,
                     columnDefs: [{
                         targets: "_all",

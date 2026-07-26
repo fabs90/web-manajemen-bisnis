@@ -67,7 +67,9 @@
                         <div class="row mb-2">
                             <div class="col-5 text-muted">No. Memo: <span class="text-danger">*</span></div>
                             <div class="col-7">
-                                <input type="text" name="nomor_memo" class="form-control form-control-sm @error('nomor_memo') is-invalid @enderror" value="{{ old('nomor_memo') }}" required placeholder="Misal: MK/001/2026/001">
+                                <input type="text" name="nomor_memo"
+                                    class="form-control form-control-sm @error('nomor_memo') is-invalid @enderror"
+                                    value="{{ old('nomor_memo') }}" required placeholder="Misal: MK/001/2026/001">
                                 @error('nomor_memo')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -144,15 +146,133 @@
                 {{-- Alasan --}}
                 <div class="mb-3">
                     <label class="fw-bold">Alasan Pengembalian Barang <span class="text-danger">*</span></label>
-                    <textarea name="alasan_pengembalian" class="form-control @error('alasan_pengembalian') is-invalid @enderror" rows="3" required>{{ old('alasan_pengembalian') }}</textarea>
+                    <textarea name="alasan_pengembalian" class="form-control @error('alasan_pengembalian') is-invalid @enderror"
+                        rows="3" required>{{ old('alasan_pengembalian') }}</textarea>
                     @error('alasan_pengembalian')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="{{ route('administrasi.memo-kredit.index') }}" class="btn btn-secondary">Kembali</a>
-                    <button type="submit" class="btn btn-primary">Simpan Memo Kredit</button>
+                <div class="row">
+                    <div class="col d-flex justify-content-between">
+                        {{-- Detail penjualan --}}
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-info text-white" data-bs-toggle="modal"
+                                data-bs-target="#detailFakturModal" title="Lihat Detail Penjualan">
+                                <i class="bi bi-eye"></i> Detail Penjualan
+                            </button>
+
+                            {{-- Modal Detail Faktur --}}
+                            <div class="modal fade" id="detailFakturModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg text-start">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title text-white">Detail Faktur: {{ $faktur->kode_faktur }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <h6>Barang yang Terjual</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered text-center">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Nama Barang</th>
+                                                            <th>Kuantitas</th>
+                                                            <th>Harga Satuan</th>
+                                                            <th>Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @php
+                                                            $total = 0;
+                                                            $details = [];
+                                                            if ($faktur->suratPengirimanBarang) {
+                                                                if ($faktur->suratPengirimanBarang->pesananPenjualan) {
+                                                                    $details =
+                                                                        $faktur->suratPengirimanBarang->pesananPenjualan
+                                                                            ->details;
+                                                                } elseif (
+                                                                    $faktur->suratPengirimanBarang->pesananPembelian
+                                                                ) {
+                                                                    $details =
+                                                                        $faktur->suratPengirimanBarang->pesananPembelian
+                                                                            ->pesananPembelianDetail;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        @forelse($details as $detail)
+                                                            @php
+                                                                $harga = $detail->harga ?? 0;
+                                                                $subtotal =
+                                                                    $detail->total ?? $harga * $detail->kuantitas;
+                                                                $total += $subtotal;
+                                                            @endphp
+                                                            <tr>
+                                                                <td>{{ $detail->nama_barang }}</td>
+                                                                <td>{{ $detail->kuantitas }}</td>
+                                                                <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
+                                                                <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                                                            </tr>
+                                                        @empty
+                                                            <tr>
+                                                                <td colspan="4" class="text-center">Tidak ada data
+                                                                    barang.</td>
+                                                            </tr>
+                                                        @endforelse
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th colspan="3" class="text-end">Total</th>
+                                                            <th>Rp {{ number_format($total, 0, ',', '.') }}</th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+
+                                            <h6 class="mt-4">Unduh Dokumen</h6>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                @if ($faktur->suratPengirimanBarang)
+                                                    @if ($faktur->suratPengirimanBarang->spp_id)
+                                                        <a href="{{ route('administrasi.spp.generatePdf', $faktur->suratPengirimanBarang->spp_id) }}"
+                                                            class="btn btn-outline-warning btn-sm" target="_blank">
+                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                        </a>
+                                                    @elseif($faktur->suratPengirimanBarang->pesanan_penjualan_id)
+                                                        <a href="{{ route('administrasi.spb.spp-pelanggan.generatePdf', $faktur->suratPengirimanBarang->pesanan_penjualan_id) }}"
+                                                            class="btn btn-outline-warning btn-sm" target="_blank">
+                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                        </a>
+                                                    @endif
+
+                                                    <a href="{{ route('administrasi.spb.generatePdf', $faktur->suratPengirimanBarang->id) }}"
+                                                        class="btn btn-outline-success btn-sm" target="_blank">
+                                                        <i class="bi bi-file-earmark-pdf"></i> Surat Pengiriman Barang
+                                                    </a>
+                                                @endif
+
+                                                <a href="{{ route('administrasi.faktur-penjualan.generatePdf', $faktur->id) }}"
+                                                    class="btn btn-outline-primary btn-sm" target="_blank">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Faktur Penjualan
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Tutup</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{{ route('administrasi.memo-kredit.index') }}" class="btn btn-secondary">Kembali</a>
+                            <button type="submit" class="btn btn-primary">Simpan Memo Kredit</button>
+                        </div>
+                    </div>
                 </div>
+
             </form>
         </div>
     </div>

@@ -34,7 +34,7 @@ class MemoKreditController extends Controller
             ->get();
 
         return view(
-            'administrasi.surat.memo-kredit.pelanggan',
+            'administrasi.surat.memo-kredit.index-pelanggan',
             compact('memoKredit', 'fakturPenjualan'),
         );
     }
@@ -46,12 +46,11 @@ class MemoKreditController extends Controller
             ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get();
-        $suratPesananPembelian = SuratPesananPembelian::with('supplier', 'pesananPembelianDetail')
+        $suratPesananPembelian = SuratPesananPembelian::with('supplier', 'pesananPembelianDetail', 'returPembelian')
             ->where('user_id', auth()->id())
-            ->whereDoesntHave('returPembelian')
             ->get();
 
-        return view('administrasi.surat.memo-kredit.penjual', compact('suratPesananPembelian', 'returPembelian'));
+        return view('administrasi.surat.memo-kredit.index-penjual', compact('suratPesananPembelian', 'returPembelian'));
     }
 
     public function createPenjual($sppId)

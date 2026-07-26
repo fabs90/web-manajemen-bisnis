@@ -68,7 +68,8 @@
                                                 <div class="modal-dialog modal-lg text-start">
                                                     <div class="modal-content">
                                                         <div class="modal-header bg-primary text-white">
-                                                            <h5 class="modal-title">Detail Faktur: {{ $item->kode_faktur }}
+                                                            <h5 class="modal-title text-white">Detail Faktur:
+                                                                {{ $item->kode_faktur }}
                                                             </h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                 aria-label="Close"></button>

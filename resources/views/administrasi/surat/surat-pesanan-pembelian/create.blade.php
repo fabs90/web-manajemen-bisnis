@@ -3,7 +3,7 @@
 @section('page-title', 'Input Surat Pesanan Pembelian ke Supplier/Pemasok | TRANSDIGITAL')
 @section('section-row')
     <div class="container mt-4">
-        <form action="{{ route('administrasi.spp.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('administrasi.spp.store') }}" method="POST" enctype="multipart/form-data" id="form-spp">
             @csrf
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white fw-bold">
@@ -114,8 +114,9 @@
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
                     <input type="hidden" name="jenis" value="transaksi_masuk">
-                    <button type="submit" class="btn btn-primary">
-                        Simpan SPP
+                    <button type="submit" class="btn btn-primary" id="btn-submit">
+                        <span class="btn-text">Simpan SPP</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                     </button>
                 </div>
 
@@ -265,5 +266,16 @@
                 html: '<ul class="text-start">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
             });
         @endif
+
+        // Loading state on submit
+        document.getElementById('form-spp').addEventListener('submit', function() {
+            let btnSubmit = document.getElementById('btn-submit');
+            let btnText = btnSubmit.querySelector('.btn-text');
+            let spinner = btnSubmit.querySelector('.spinner-border');
+
+            btnSubmit.disabled = true;
+            btnText.textContent = 'Menyimpan...';
+            spinner.classList.remove('d-none');
+        });
     </script>
 @endpush

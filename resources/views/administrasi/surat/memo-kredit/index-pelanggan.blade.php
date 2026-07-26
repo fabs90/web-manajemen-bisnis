@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 
-@section('page-title', 'Memo Kredit dari Penjual | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
+@section('page-title', 'Memo Kredit Pelanggan | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-row')
     {{-- Alert sukses --}}
     @if (session('success'))
@@ -19,21 +19,22 @@
     @endif
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <strong>MEMO KREDIT DARI PENJUAL (RETUR PEMBELIAN)</strong>
-            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalSelectSPP">
+            <strong>MEMO KREDIT KEPADA PELANGGAN</strong>
+            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalSelectFaktur">
                 <i class="bi bi-plus-circle"></i> Tambah Memo Kredit
             </button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="memo-kredit-penjual-table">
+                <table class="table table-bordered table-striped" id="memo-kredit-table">
                     <thead class="table-light">
                         <tr>
                             <th>No</th>
-                            <th>Nomor Retur</th>
+                            <th>Nomor Memo</th>
+                            <th>Kode Faktur</th>
                             <th>Tanggal</th>
-                            <th>Nomor SPP</th>
-                            <th>Supplier</th>
+                            <th style="width:10%">Nomor Pesanan</th>
+                            <th>Jenis Pengiriman</th>
                             <th>Alasan Pengembalian</th>
                             <th>Total Pengembalian</th>
                             <th>Aksi</th>
@@ -41,10 +42,11 @@
                     </thead>
 
                     <tbody>
-                        @foreach ($returPembelian as $item)
+                        @foreach ($memoKredit as $item)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $item->nomor_retur }}</td>
+                                <td>{{ $item->nomor_memo }}</td>
+                                <td>{{ $item->fakturPenjualan->kode_faktur }}</td>
                                 <td>
                                     <span class="badge bg-primary px-3 py-2">
                                         {{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}
@@ -52,12 +54,12 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary px-3 py-2">
-                                        {{ $item->pesananPembelian->nomor_pesanan_pembelian ?? '-' }}
+                                        {{ $item->fakturPenjualan->suratPengirimanBarang->pesananPenjualan->nomor_pesanan_penjualan ?? '-' }}
                                     </span>
                                 </td>
 
                                 <td>
-                                    {{ $item->pesananPembelian->supplier->nama ?? '-' }}
+                                    {{ $item->fakturPenjualan->suratPengirimanBarang->jenis_pengiriman }}
                                 </td>
                                 <td>
                                     {{ $item->alasan_pengembalian ?? '-' }}
@@ -67,13 +69,13 @@
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="{{ route('administrasi.memo-kredit.generatePdf-penjual', ['returId' => $item->id]) }}"
+                                    <a href="{{ route('administrasi.memo-kredit.generatePdf', ['fakturId' => $item->faktur_penjualan_id]) }}"
                                         class="btn btn-success btn-sm" title="Generate PDF">
                                         <i class="bi bi-file-pdf text-white"></i>
                                     </a>
 
                                     <form
-                                        action="{{ route('administrasi.memo-kredit.destroy-penjual', ['returId' => $item->id]) }}"
+                                        action="{{ route('administrasi.memo-kredit.destroy', ['fakturId' => $item->faktur_penjualan_id]) }}"
                                         method="POST" class="d-inline delete-form">
                                         @csrf
                                         @method('DELETE')
@@ -91,37 +93,41 @@
         </div>
     </div>
 
-    <!-- Modal Select SPP -->
-    <div class="modal fade" id="modalSelectSPP" tabindex="-1" aria-labelledby="modalSelectSPPLabel" aria-hidden="true">
+    <!-- Modal Select Faktur -->
+    <div class="modal fade" id="modalSelectFaktur" tabindex="-1" aria-labelledby="modalSelectFakturLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalSelectSPPLabel">Pilih Surat Pesanan Pembelian</h5>
+                    <h5 class="modal-title" id="modalSelectFakturLabel">Pilih Faktur Penjualan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="spp-table">
+                        <table class="table table-bordered table-striped" id="faktur-penjualan-table">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Nomor SPP</th>
+                                    <th>Kode Faktur</th>
                                     <th>Tanggal</th>
-                                    <th>Supplier</th>
+                                    <th>Nomor Pesanan</th>
+                                    <th>Pelanggan</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($suratPesananPembelian as $spp)
+                                @foreach ($fakturPenjualan as $faktur)
                                     <tr>
-                                        <td>{{ $spp->nomor_pesanan_pembelian }}</td>
-                                        <td>{{ $spp->tanggal_pesanan_pembelian ? \Carbon\Carbon::parse($spp->tanggal_pesanan_pembelian)->format('d-m-Y') : '-' }}
+                                        <td>{{ $faktur->kode_faktur }}</td>
+                                        <td>{{ $faktur->tanggal_faktur ? \Carbon\Carbon::parse($faktur->tanggal_faktur)->format('d-m-Y') : '-' }}
+                                        </td>
+                                        <td>{{ $faktur->suratPengirimanBarang?->pesananPenjualan?->nomor_pesanan_penjualan ?? '-' }}
                                         </td>
                                         <td>
-                                            {{ $spp->supplier?->nama ?? '-' }}
+                                            {{ $faktur->suratPengirimanBarang?->pesananPenjualan?->pelanggan?->nama ?? '-' }}
                                         </td>
                                         <td class="text-center">
-                                            <a href="{{ route('administrasi.memo-kredit.create-penjual', ['sppId' => $spp->id]) }}"
-                                                class="btn btn-primary btn-sm">
+                                            <a href="{{ route('administrasi.memo-kredit.create', ['fakturId' => $faktur->id]) }}"
+                                                class="btn btn-primary btn-sm text-white">
                                                 Pilih
                                             </a>
                                         </td>
@@ -139,15 +145,15 @@
 @push('script')
     <script>
         $(document).ready(function() {
-            $('#memo-kredit-penjual-table').DataTable({
+            $('#memo-kredit-table').DataTable({
                 responsive: true,
                 pageLength: 10,
                 language: {
-                    emptyTable: "Belum ada Data Memo Kredit (Retur Pembelian) 📪"
+                    emptyTable: "Belum ada Data Memo Kredit📪 (Dibuat dari faktur penjualan)"
                 }
             });
 
-            $('#spp-table').DataTable({
+            $('#faktur-penjualan-table').DataTable({
                 responsive: true,
                 pageLength: 5
             });
