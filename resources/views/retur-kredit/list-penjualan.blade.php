@@ -6,7 +6,7 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-info text-white fw-bold">
-            <span>List Retur Penjualan (Memo Kredit)</span>
+            {{-- <span>List Retur Penjualan (Memo Kredit dari Penjual) </span> --}}
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -27,11 +27,11 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ \Carbon\Carbon::parse($retur->tanggal)->format('d/m/Y') }}</td>
-                                <td><code>{{ $retur->nomor_memo }}</code></td>
+                                <td>{{ $retur->nomor_memo }}</td>
                                 <td>{{ $retur->fakturPenjualan->suratPengirimanBarang->pesananPenjualan->pelanggan->nama ?? '-' }}
                                 </td>
                                 <td>{{ Str::limit($retur->alasan_pengembalian, 50) }}</td>
-                                <td class="text-end fw-bold text-danger">
+                                <td class="text-end fw-bold text-black">
                                     Rp {{ number_format($retur->total, 0, ',', '.') }}
                                 </td>
                                 <td class="text-center">

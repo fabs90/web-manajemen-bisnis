@@ -16,7 +16,7 @@
             <a href="{{ route('administrasi.memo-kredit.penjual') }}" class="btn btn-light btn-sm me-3">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
-            <h5 class="mb-0"><strong>TAMBAH MEMO KREDIT DARI PENJUAL (RETUR PEMBELIAN)</strong></h5>
+            <h5 class="mb-0 text-white"><strong>TAMBAH MEMO KREDIT DARI PENJUAL (RETUR PEMBELIAN)</strong></h5>
         </div>
         <div class="card-body">
             <form action="{{ route('administrasi.memo-kredit.store-penjual') }}" method="POST" id="formMemoKreditPenjual">

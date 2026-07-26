@@ -100,7 +100,7 @@
     <div class="line"></div>
 
     {{-- Judul --}}
-    <h3 class="text-center fw-bold uppercase mb-3">MEMO KREDIT (RETUR PEMBELIAN)</h3>
+    <h3 class="text-center fw-bold uppercase mb-3">RETUR PEMBELIAN</h3>
 
     @php
         $spp = $retur->pesananPembelian;
