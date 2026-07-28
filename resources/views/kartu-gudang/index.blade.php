@@ -6,7 +6,8 @@
     <div class="alert alert-success d-flex align-items-center mb-4 shadow-sm" role="alert">
         <i class="bi bi-info-circle-fill fs-4 me-3"></i>
         <div>
-            <h5 class="alert-heading mb-1">Total Nilai Persediaan Barang Dagang Akhir: <strong>Rp {{ number_format($totalNilaiPersediaan ?? 0, 0, ',', '.') }}</strong></h5>
+            <h5 class="alert-heading mb-1">Total Nilai Persediaan Barang Dagang Akhir: <strong>Rp
+                    {{ number_format($totalNilaiPersediaan ?? 0, 0, ',', '.') }}</strong></h5>
             <small>
                 Nilai ini didapatkan dari akumulasi seluruh barang dagang. Rumus per barang: <br>
                 <em>(Saldo Persatuan Terakhir di Kartu Gudang) × (Harga Beli Per Unit Barang)</em>
@@ -27,8 +28,9 @@
                     </small>
                     <div class="mt-2 text-primary">
                         <small>
-                            <strong>Kalkulasi Persediaan:</strong> 
-                            {{ $item->saldo_akhir }} unit (Saldo Akhir) × Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} (Harga Beli) 
+                            <strong>Kalkulasi Persediaan:</strong>
+                            {{ $item->saldo_akhir }} unit (Saldo Akhir) × Rp
+                            {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} (Harga Beli)
                             = <strong>Rp {{ number_format($item->nilai_persediaan, 0, ',', '.') }}</strong>
                         </small>
                     </div>
@@ -101,10 +103,9 @@
             $('.kartu-gudang-table').each(function() {
                 $(this).DataTable({
                     searching: true,
-                    paging: true,
+                    paging: false,
                     info: true,
                     ordering: true,
-                    order: [[0, 'desc']],
                     responsive: true,
                     columnDefs: [{
                         targets: "_all",

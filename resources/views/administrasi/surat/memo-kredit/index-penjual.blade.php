@@ -107,6 +107,7 @@
                                     <th>Nomor SPP</th>
                                     <th>Tanggal</th>
                                     <th>Supplier</th>
+                                    <th>Detail Barang</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -118,6 +119,16 @@
                                         </td>
                                         <td>
                                             {{ $spp->supplier?->nama ?? '-' }}
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($spp->pesananPembelianDetail->count() > 0)
+                                                <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#sppDetailModal{{ $spp->id }}">
+                                                    <i class="bi bi-eye text-white"></i>
+                                                </button>
+                                            @else
+                                                <span class="text-muted">Tidak ada detail</span>
+                                            @endif
                                         </td>
                                         <td class="text-center">
                                             @if ($spp->returPembelian->isNotEmpty())
@@ -140,6 +151,63 @@
             </div>
         </div>
     </div>
+
+
+    <!-- Modals for Retur Pembelian -->
+    @foreach ($returPembelian as $item)
+        @if ($item->detail->count() > 0)
+        @endif
+    @endforeach
+
+    <!-- Modals for SPP -->
+    @foreach ($suratPesananPembelian as $spp)
+        @if ($spp->pesananPembelianDetail->count() > 0)
+
+                                                {{-- Modal Detail Barang --}}
+                                                <div class="modal fade" id="sppDetailModal{{ $spp->id }}" tabindex="-1"
+                                                    aria-labelledby="sppModalLabel{{ $spp->id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg text-start">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-primary text-white">
+                                                                <h5 class="modal-title text-white" id="sppModalLabel{{ $spp->id }}">
+                                                                    Detail Barang - SPP {{ $spp->nomor_pesanan_pembelian }}
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalSelectSPP"></button>
+                                                            </div>
+
+                                                            <div class="modal-body">
+                                                                <table class="table table-sm table-bordered text-center">
+                                                                    <thead class="table-light">
+                                                                        <tr>
+                                                                            <th>Barang</th>
+                                                                            <th>Qty</th>
+                                                                            <th>Harga</th>
+                                                                            <th>Total</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($spp->pesananPembelianDetail as $detail)
+                                                                            <tr>
+                                                                                <td>{{ $detail->nama_barang }}</td>
+                                                                                <td>{{ $detail->kuantitas }}</td>
+                                                                                <td>Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
+                                                                                <td>Rp {{ number_format($detail->total, 0, ',', '.') }}</td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-bs-toggle="modal" data-bs-target="#modalSelectSPP">Kembali</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+        @endif
+    @endforeach
+
 @endsection
 
 @push('script')

@@ -131,17 +131,21 @@
                                     <td>
                                         @if (isset($item->spp) && $item->spp)
                                             <button type="button" class="btn btn-info btn-sm text-white me-1"
-                                                data-bs-toggle="modal" data-bs-target="#detailHutangModal-{{ $item->id }}">
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#detailHutangModal-{{ $item->id }}">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            
+
                                             {{-- Modal Detail Hutang --}}
-                                            <div class="modal fade" id="detailHutangModal-{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal fade" id="detailHutangModal-{{ $item->id }}"
+                                                tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title">Detail Transaksi: {{ $item->uraian }}</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            <h5 class="modal-title">Detail Transaksi: {{ $item->uraian }}
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                                aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body text-start">
                                                             <h6>Barang yang Dibeli</h6>
@@ -158,30 +162,40 @@
                                                                     <tbody>
                                                                         @php
                                                                             $totalBeli = 0;
-                                                                            $details = $item->spp->pesananPembelianDetail ?? [];
+                                                                            $details =
+                                                                                $item->spp->pesananPembelianDetail ??
+                                                                                [];
                                                                         @endphp
                                                                         @forelse($details as $detail)
                                                                             @php
                                                                                 $hargaBeli = $detail->harga ?? 0;
-                                                                                $subtotal = $hargaBeli * $detail->kuantitas;
+                                                                                $subtotal =
+                                                                                    $hargaBeli * $detail->kuantitas;
                                                                                 $totalBeli += $subtotal;
                                                                             @endphp
                                                                             <tr>
                                                                                 <td>{{ $detail->nama_barang }}</td>
                                                                                 <td>{{ $detail->kuantitas }}</td>
-                                                                                <td>Rp {{ number_format($hargaBeli, 0, ',', '.') }}</td>
-                                                                                <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                                                                                <td>Rp
+                                                                                    {{ number_format($hargaBeli, 0, ',', '.') }}
+                                                                                </td>
+                                                                                <td>Rp
+                                                                                    {{ number_format($subtotal, 0, ',', '.') }}
+                                                                                </td>
                                                                             </tr>
                                                                         @empty
                                                                             <tr>
-                                                                                <td colspan="4" class="text-center">Tidak ada data barang.</td>
+                                                                                <td colspan="4" class="text-center">Tidak
+                                                                                    ada data barang.</td>
                                                                             </tr>
                                                                         @endforelse
                                                                     </tbody>
                                                                     <tfoot>
                                                                         <tr>
                                                                             <th colspan="3" class="text-end">Total</th>
-                                                                            <th>Rp {{ number_format($totalBeli, 0, ',', '.') }}</th>
+                                                                            <th>Rp
+                                                                                {{ number_format($totalBeli, 0, ',', '.') }}
+                                                                            </th>
                                                                         </tr>
                                                                     </tfoot>
                                                                 </table>
@@ -189,29 +203,23 @@
 
                                                             <h6 class="mt-4">Unduh Dokumen</h6>
                                                             <div class="d-flex gap-2 flex-wrap">
-                                                                <a href="{{ route('administrasi.spp.generatePdf', $item->spp->id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
-                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                <a href="{{ route('administrasi.spp.generatePdf', $item->spp->id) }}"
+                                                                    class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan
+                                                                    Pembelian
                                                                 </a>
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Tutup</button>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        @else
+                                            <p class="text-center">-</p>
                                         @endif
-
-                                        <form action="{{ route('keuangan.hutang.destroy', $item->id) }}" method="POST"
-                                            class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="button" class="btn btn-danger btn-sm delete-btn">
-                                                <span class="delete-text"><i class="bi bi-trash"></i></span>
-                                                <span class="spinner-border spinner-border-sm d-none"></span>
-                                            </button>
-                                        </form>
                                     </td>
                                 </tr>
                             @endforeach
@@ -220,85 +228,85 @@
                 </div>
             </div>
         </div>
-    @empty
-        <div class="alert alert-secondary text-center">
-            <em>Tidak ada data hutang.</em>
-        </div>
-    @endforelse
+        @empty
+            <div class="alert alert-secondary text-center">
+                <em>Tidak ada data hutang.</em>
+            </div>
+        @endforelse
 
-@endsection
-@push('script')
-    <script>
-        $(document).ready(function() {
-            $('.pengeluaran-table').DataTable({
-                searching: false,
-                paging: false,
-                info: false,
-                responsive: false
-            });
+    @endsection
+    @push('script')
+        <script>
+            $(document).ready(function() {
+                $('.pengeluaran-table').DataTable({
+                    searching: false,
+                    paging: false,
+                    info: false,
+                    responsive: false
+                });
 
-            $('#allDatasTable').DataTable({
-                paging: true,
-                pageLength: 10,
-                ordering: true,
-                responsive: true,
-                info: false,
-                language: {
-                    emptyTable: "Tidak ada data untuk ditampilkan",
-                    search: "Cari:"
-                }
-            });
-
-            $('.hutang-datatable').DataTable({
-                paging: true,
-                pageLength: 10,
-                ordering: false, // Dimatikan agar urutan saldo per pelanggan tetap logis
-                responsive: true,
-                info: true,
-                language: {
-                    emptyTable: "Tidak ada data untuk ditampilkan",
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ entri",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 entri",
-                    infoFiltered: "(disaring dari _MAX_ total entri)",
-                    paginate: {
-                        first: "Pertama",
-                        last: "Terakhir",
-                        next: "Selanjutnya",
-                        previous: "Sebelumnya"
-                    }
-                }
-            });
-
-
-
-            $('.delete-btn').on('click', function() {
-                let form = $(this).closest('form');
-
-                Swal.fire({
-                    title: 'Yakin ingin menghapus?',
-                    text: "Data yang dihapus tidak dapat dikembalikan!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, hapus',
-                    cancelButtonText: 'Batal',
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        let btn = form.find('.delete-btn');
-                        btn.prop('disabled', true);
-                        btn.find('.delete-text').addClass('d-none');
-                        btn.find('.spinner-border').removeClass('d-none');
-
-                        form.submit();
+                $('#allDatasTable').DataTable({
+                    paging: true,
+                    pageLength: 10,
+                    ordering: true,
+                    responsive: true,
+                    info: false,
+                    language: {
+                        emptyTable: "Tidak ada data untuk ditampilkan",
+                        search: "Cari:"
                     }
                 });
+
+                $('.hutang-datatable').DataTable({
+                    paging: true,
+                    pageLength: 10,
+                    ordering: false, // Dimatikan agar urutan saldo per pelanggan tetap logis
+                    responsive: true,
+                    info: true,
+                    language: {
+                        emptyTable: "Tidak ada data untuk ditampilkan",
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ entri",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                        infoEmpty: "Menampilkan 0 sampai 0 dari 0 entri",
+                        infoFiltered: "(disaring dari _MAX_ total entri)",
+                        paginate: {
+                            first: "Pertama",
+                            last: "Terakhir",
+                            next: "Selanjutnya",
+                            previous: "Sebelumnya"
+                        }
+                    }
+                });
+
+
+
+                $('.delete-btn').on('click', function() {
+                    let form = $(this).closest('form');
+
+                    Swal.fire({
+                        title: 'Yakin ingin menghapus?',
+                        text: "Data yang dihapus tidak dapat dikembalikan!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, hapus',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+
+                            let btn = form.find('.delete-btn');
+                            btn.prop('disabled', true);
+                            btn.find('.delete-text').addClass('d-none');
+                            btn.find('.spinner-border').removeClass('d-none');
+
+                            form.submit();
+                        }
+                    });
+                });
+
+
             });
-
-
-        });
-    </script>
-@endpush
+        </script>
+    @endpush
