@@ -9,6 +9,7 @@ use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KartuGudang;
 use App\Models\Pelanggan;
+use App\Models\SPP\SuratPesananPembelian;
 use App\Services\PengeluaranService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
@@ -75,8 +76,12 @@ class PengeluaranController extends Controller
             ->get()
             ->groupBy('sub_ledger_id');
 
+        $spps = SuratPesananPembelian::with('pesananPembelianDetail.barang')
+            ->where('user_id', $userId)
+            ->get();
+
         // Transform dataHutang agar memiliki struktur yang sama dengan BukuBesarHutang lama untuk view
-        $dataHutangFormatted = $dataHutang->map(function ($items) {
+        $dataHutangFormatted = $dataHutang->map(function ($items) use ($spps) {
             $saldo = 0;
 
             return $items->sort(function ($a, $b) {
@@ -99,8 +104,14 @@ class PengeluaranController extends Controller
                 }
 
                 return $a->id <=> $b->id;
-            })->values()->map(function ($item) use (&$saldo) {
+            })->values()->map(function ($item) use (&$saldo, $spps) {
                 $saldo += ($item->credit - $item->debit);
+
+                $matchedSpp = $spps->where('supplier_id', $item->sub_ledger_id)
+                    ->where('tanggal_pesanan_pembelian', $item->journalEntry->date->format('Y-m-d'))
+                    ->filter(function ($spp) use ($item) {
+                        return $spp->created_at->diffInSeconds($item->journalEntry->created_at) <= 10;
+                    })->first();
 
                 return (object) [
                     'id' => $item->id,
@@ -110,6 +121,7 @@ class PengeluaranController extends Controller
                     'kredit' => $item->credit,
                     'saldo' => $saldo,
                     'pelanggan' => $item->subLedger,
+                    'spp' => $matchedSpp,
                 ];
             });
         });

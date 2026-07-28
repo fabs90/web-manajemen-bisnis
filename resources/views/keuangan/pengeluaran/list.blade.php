@@ -129,6 +129,79 @@
                                     <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                                     <td>
+                                        @if (isset($item->spp) && $item->spp)
+                                            <button type="button" class="btn btn-info btn-sm text-white me-1"
+                                                data-bs-toggle="modal" data-bs-target="#detailHutangModal-{{ $item->id }}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            
+                                            {{-- Modal Detail Hutang --}}
+                                            <div class="modal fade" id="detailHutangModal-{{ $item->id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Detail Transaksi: {{ $item->uraian }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body text-start">
+                                                            <h6>Barang yang Dibeli</h6>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm table-bordered">
+                                                                    <thead class="table-light">
+                                                                        <tr>
+                                                                            <th>Nama Barang</th>
+                                                                            <th>Kuantitas</th>
+                                                                            <th>Harga Satuan</th>
+                                                                            <th>Total Harga</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @php
+                                                                            $totalBeli = 0;
+                                                                            $details = $item->spp->pesananPembelianDetail ?? [];
+                                                                        @endphp
+                                                                        @forelse($details as $detail)
+                                                                            @php
+                                                                                $hargaBeli = $detail->harga ?? 0;
+                                                                                $subtotal = $hargaBeli * $detail->kuantitas;
+                                                                                $totalBeli += $subtotal;
+                                                                            @endphp
+                                                                            <tr>
+                                                                                <td>{{ $detail->nama_barang }}</td>
+                                                                                <td>{{ $detail->kuantitas }}</td>
+                                                                                <td>Rp {{ number_format($hargaBeli, 0, ',', '.') }}</td>
+                                                                                <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                                                                            </tr>
+                                                                        @empty
+                                                                            <tr>
+                                                                                <td colspan="4" class="text-center">Tidak ada data barang.</td>
+                                                                            </tr>
+                                                                        @endforelse
+                                                                    </tbody>
+                                                                    <tfoot>
+                                                                        <tr>
+                                                                            <th colspan="3" class="text-end">Total</th>
+                                                                            <th>Rp {{ number_format($totalBeli, 0, ',', '.') }}</th>
+                                                                        </tr>
+                                                                    </tfoot>
+                                                                </table>
+                                                            </div>
+
+                                                            <h6 class="mt-4">Unduh Dokumen</h6>
+                                                            <div class="d-flex gap-2 flex-wrap">
+                                                                <a href="{{ route('administrasi.spp.generatePdf', $item->spp->id) }}" class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan Pembelian
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         <form action="{{ route('keuangan.hutang.destroy', $item->id) }}" method="POST"
                                             class="d-inline">
                                             @csrf

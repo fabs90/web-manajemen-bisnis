@@ -10,6 +10,8 @@ use App\Models\KartuGudang;
 use App\Models\KasKecil;
 use App\Models\Pelanggan;
 use App\Models\PengisianKasKecilLog;
+use App\Models\SPP\SuratPesananPembelian;
+use App\Models\SPP\SuratPesananPembelianDetail;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -214,7 +216,7 @@ class PengeluaranService
         if (($data['jenis_pengeluaran'] ?? 'tunai') !== 'tunai' && ! empty($data['nama_kreditur'])) {
             $kreditur = Pelanggan::find($data['nama_kreditur']);
             if ($kreditur) {
-                $description .= ' (berhutang kepada '.$kreditur->nama.')';
+                $description .= ' (Secara kredit kepada '.$kreditur->nama.')';
             }
         }
 
@@ -271,6 +273,38 @@ class PengeluaranService
                 'debit' => 0,
                 'credit' => $totalKeluar,
             ]);
+
+            if (! empty($data['nama_kreditur'])) {
+                $krediturNama = Pelanggan::find($data['nama_kreditur'])?->nama ?? '';
+
+                $spp = SuratPesananPembelian::create([
+                    'jenis' => 'transaksi_keluar',
+                    'pelanggan_id' => null,
+                    'supplier_id' => $data['nama_kreditur'],
+                    'nomor_pesanan_pembelian' => 'SPP-'.date('Ymd', strtotime($data['tanggal'])).'-'.strtoupper(Str::random(6)),
+                    'tanggal_pesanan_pembelian' => $data['tanggal'],
+                    'tanggal_kirim_pesanan_pembelian' => $data['tanggal'],
+                    'nama_bagian_pembelian' => 'Admin '.$krediturNama,
+                    'user_id' => $userId,
+                ]);
+
+                if (! empty($data['barang_dibeli'])) {
+                    foreach ($data['barang_dibeli'] as $index => $barangId) {
+                        $qty = $data['jumlah_barang_dibeli'][$index] ?? 0;
+                        $barang = Barang::find($barangId);
+
+                        SuratPesananPembelianDetail::create([
+                            'spp_id' => $spp->id,
+                            'barang_id' => $barang->id,
+                            'nama_barang' => $barang->nama,
+                            'kuantitas' => $qty,
+                            'harga' => $barang->harga_beli_per_unit ?? 0,
+                            'diskon' => 0,
+                            'total' => ($barang->harga_beli_per_unit ?? 0) * $qty,
+                        ]);
+                    }
+                }
+            }
         }
 
         $this->tambahBarangKeGudang($data, $userId);

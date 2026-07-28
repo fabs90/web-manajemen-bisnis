@@ -126,7 +126,7 @@
                                                 </span>
                                             @else
                                                 <a href="{{ route('administrasi.memo-kredit.create-penjual', ['sppId' => $spp->id]) }}"
-                                                    class="btn btn-primary btn-sm">
+                                                    class="btn btn-primary btn-sm text-white">
                                                     Pilih
                                                 </a>
                                             @endif

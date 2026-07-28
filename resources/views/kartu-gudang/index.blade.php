@@ -104,7 +104,7 @@
                     paging: true,
                     info: true,
                     ordering: true,
-                    order: [[0, 'asc']],
+                    order: [[0, 'desc']],
                     responsive: true,
                     columnDefs: [{
                         targets: "_all",
