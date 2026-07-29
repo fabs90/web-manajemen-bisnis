@@ -129,7 +129,7 @@
                                     <td>Rp {{ number_format($item->kredit ?? 0, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}</td>
                                     <td>
-                                        @if (isset($item->spp) && $item->spp)
+                                        @if ($item->transaction_type === 'membeli_barang' || $item->transaction_type === 'pemesanan-barang')
                                             <button type="button" class="btn btn-info btn-sm text-white me-1"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#detailHutangModal-{{ $item->id }}">
@@ -162,9 +162,29 @@
                                                                     <tbody>
                                                                         @php
                                                                             $totalBeli = 0;
-                                                                            $details =
-                                                                                $item->spp->pesananPembelianDetail ??
-                                                                                [];
+                                                                            if (isset($item->spp) && $item->spp) {
+                                                                                $details = $item->spp->pesananPembelianDetail ?? [];
+                                                                            } else {
+                                                                                $uraianKartuGudang = '';
+                                                                                if ($item->transaction_type === 'membeli_barang') {
+                                                                                    $uraianKartuGudang = str_replace('Pembelian barang: ', '', $item->uraian);
+                                                                                } elseif ($item->transaction_type === 'pemesanan-barang') {
+                                                                                    $uraianKartuGudang = str_replace('Pesanan Pembelian - ', 'Pesanan Pembelian Barang - ', $item->uraian);
+                                                                                }
+                                                                                $details = \App\Models\KartuGudang::with('barang')
+                                                                                    ->where('user_id', auth()->id())
+                                                                                    ->where('tanggal', $item->tanggal)
+                                                                                    ->where('uraian', $uraianKartuGudang)
+                                                                                    ->where('diterima', '>', 0)
+                                                                                    ->get()
+                                                                                    ->map(function($kg) {
+                                                                                        return (object)[
+                                                                                            'nama_barang' => $kg->barang->nama ?? 'Tidak diketahui',
+                                                                                            'kuantitas' => $kg->diterima,
+                                                                                            'harga' => $kg->harga_satuan ?? 0
+                                                                                        ];
+                                                                                    });
+                                                                            }
                                                                         @endphp
                                                                         @forelse($details as $detail)
                                                                             @php
@@ -201,14 +221,16 @@
                                                                 </table>
                                                             </div>
 
-                                                            <h6 class="mt-4">Unduh Dokumen</h6>
-                                                            <div class="d-flex gap-2 flex-wrap">
-                                                                <a href="{{ route('administrasi.spp.generatePdf', $item->spp->id) }}"
-                                                                    class="btn btn-outline-warning btn-sm" target="_blank">
-                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan
-                                                                    Pembelian
-                                                                </a>
-                                                            </div>
+                                                            @if (isset($item->spp) && $item->spp)
+                                                                <h6 class="mt-4">Unduh Dokumen</h6>
+                                                                <div class="d-flex gap-2 flex-wrap">
+                                                                    <a href="{{ route('administrasi.spp.generatePdf', $item->spp->id) }}"
+                                                                        class="btn btn-outline-warning btn-sm" target="_blank">
+                                                                        <i class="bi bi-file-earmark-pdf"></i> Surat Pesanan
+                                                                        Pembelian
+                                                                    </a>
+                                                                </div>
+                                                            @endif
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary"
@@ -220,6 +242,17 @@
                                         @else
                                             <p class="text-center">-</p>
                                         @endif
+
+                                        <form action="{{ route('keuangan.hutang.destroy', $item->id) }}" method="POST"
+                                            class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button type="button" class="btn btn-danger btn-sm delete-btn">
+                                                <span class="delete-text"><i class="bi bi-trash"></i></span>
+                                                <span class="spinner-border spinner-border-sm d-none"></span>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

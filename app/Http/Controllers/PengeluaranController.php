@@ -122,6 +122,8 @@ class PengeluaranController extends Controller
                     'saldo' => $saldo,
                     'pelanggan' => $item->subLedger,
                     'spp' => $matchedSpp,
+                    'transaction_type' => $item->journalEntry->transaction_type,
+                    'journal_entry_id' => $item->journalEntry->id,
                 ];
             });
         });
