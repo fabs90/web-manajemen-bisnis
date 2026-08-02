@@ -51,6 +51,11 @@
                         <td>Rp {{ number_format($data->potongan_pembelian ?? 0, 0, ',', '.') }}</td>
                         <td>
                             Rp {{ number_format($data->lain_lain ?? 0, 0, ',', '.') }}
+                            @if (($data->lain_lain ?? 0) > 0)
+                                <br><small class="text-success fw-bold">(+) Laba Operasional</small>
+                            @elseif (($data->lain_lain ?? 0) < 0)
+                                <br><small class="text-danger fw-bold">(-) Rugi Operasional</small>
+                            @endif
                         </td>
                         <td>Rp {{ number_format($data->jumlah_pengeluaran ?? 0, 0, ',', '.') }}</td>
                         <td>

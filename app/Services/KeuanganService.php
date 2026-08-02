@@ -42,18 +42,11 @@ class KeuanganService
         // HPP = Awal + Pembelian - Akhir
         $hpp = $inventory['persediaanAwal'] + $pembelianBersih - $inventory['persediaanAkhir'];
 
-        // If there's any manual HPP (5101) entry, we might want to add it, but standard periodic ignores it or adds to it.
-        $hppManual = $this->getHppTotal($userId, $dateRange);
-        $hpp += $hppManual;
-
         $labaKotor = $penjualanBersih - $hpp;
 
         $labaOperasional = $labaKotor - $operating['biayaOperasional'];
 
-        $labaSebelumPajak =
-            $labaOperasional +
-            $operating['pendapatanLain'] -
-            $operating['biayaAdministrasiBank'];
+        $labaSebelumPajak = $labaOperasional + $operating['totalPendapatanBiayaLain'];
 
         $pajak = $labaSebelumPajak > 0 ? $labaSebelumPajak * self::TAX_RATE : 0;
         $labaSetelahPajak = $labaSebelumPajak - $pajak;
@@ -142,20 +135,14 @@ class KeuanganService
         $barang = Barang::where('user_id', $userId)->get();
 
         $persediaanAwal = 0;
-        $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
-        if ($persediaanAccount) {
-            $items = JournalItem::where('user_id', $userId)
-                ->where('account_id', $persediaanAccount->id)
-                ->whereHas('journalEntry', function ($q) use ($startDate) {
-                    $q->where('date', '<', $startDate)
-                        ->orWhere(function ($subQ) use ($startDate) {
-                            $subQ->where('date', $startDate)
-                                ->where('transaction_type', '!=', 'membeli_barang')
-                                ->where('transaction_type', '!=', 'retur_pembelian');
-                        });
-                })
-                ->get();
-            $persediaanAwal = $items->sum('debit') - $items->sum('credit');
+        foreach ($barang as $b) {
+            // Mengambil baris pertama di Kartu Gudang sebagai Saldo Awal
+            $firstKartu = KartuGudang::where('barang_id', $b->id)
+                ->oldest('id')
+                ->first();
+            if ($firstKartu) {
+                $persediaanAwal += ($firstKartu->saldo_persatuan * $b->harga_beli_per_unit);
+            }
         }
 
         $persediaanAkhir = 0;
@@ -174,21 +161,20 @@ class KeuanganService
 
     private function getPembelianTotal(int $userId, array $dateRange): float
     {
-        $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
-        if (! $persediaanAccount) {
-            return 0;
-        }
-
-        // Pembelian = Debit ke akun persediaan dari transaksi membeli_barang
-        $items = JournalItem::where('user_id', $userId)
-            ->where('account_id', $persediaanAccount->id)
-            ->whereHas('journalEntry', function ($q) use ($dateRange) {
-                $q->whereBetween('date', $dateRange)
-                    ->where('transaction_type', 'membeli_barang');
-            })
+        $kartuGudang = KartuGudang::with('barang')
+            ->where('user_id', $userId)
+            ->whereBetween('tanggal', $dateRange)
+            ->where('diterima', '>', 0)
+            ->where('uraian', 'not like', '%Retur Penjualan%')
+            ->where('uraian', 'not like', '%Pembatalan%')
             ->get();
 
-        return (float) $items->sum('debit');
+        $total = 0;
+        foreach ($kartuGudang as $kg) {
+            $total += $kg->diterima * ($kg->barang->harga_beli_per_unit ?? 0);
+        }
+
+        return (float) $total;
     }
 
     private function getReturPembelianTotal(int $userId, array $dateRange): float
@@ -250,9 +236,12 @@ class KeuanganService
 
         $potonganPembelian = $potonganPembelianItems->sum('credit');
 
-        // Normal balance for expense is Debit
-        // Subtract potonganPembelian from total credit so we don't double count the reduction
-        $biayaOperasional = $items->sum('debit') - ($items->sum('credit') - $potonganPembelian);
+        // BIAYA OPERASIONAL: Diperoleh dari jumlah pengeluaran pada kolom 'lain-lain'
+        $biayaOperasionalItems = $items->filter(function ($item) {
+            return $item->journalEntry->transaction_type === 'lain_lain';
+        });
+
+        $biayaOperasional = $biayaOperasionalItems->sum('debit') - $biayaOperasionalItems->sum('credit');
 
         // Get pendapatan_lain from revenue accounts
         $pendapatanLainItems = JournalItem::where('user_id', $userId)
@@ -266,11 +255,13 @@ class KeuanganService
         $pendapatanLain = $pendapatanLainItems->sum('credit') - $pendapatanLainItems->sum('debit');
 
         $biayaAdministrasiBank = 0; // If specific account exists, use it.
+        $totalPendapatanBiayaLain = $pendapatanLain - $biayaAdministrasiBank;
 
         return compact(
             'biayaOperasional',
             'pendapatanLain',
             'biayaAdministrasiBank',
+            'totalPendapatanBiayaLain',
             'potonganPembelian'
         );
     }

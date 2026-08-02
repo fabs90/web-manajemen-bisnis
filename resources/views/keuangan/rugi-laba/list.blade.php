@@ -30,33 +30,34 @@
 
         <div class="card-body p-0" id="laporan-rugi-laba">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped mb-0 pendapatan-table" style="min-width: 800px;">
-                    <thead class="bg-light text-black">
+                <table class="table table-bordered mb-0 pendapatan-table" style="min-width: 800px;">
+                    <thead class="table-dark">
                         <tr>
-                            <th class="text-center" style="width: 5%;">No</th>
-                            <th style="width: 60%;">URAIAN</th>
-                            <th class="text-end" style="width: 17%;">JUMLAH</th>
-                            <th class="text-end" style="width: 18%;">TOTAL</th>
+                            <th class="text-center" style="width: 5%;">NO</th>
+                            <th style="width: 55%;">URAIAN</th>
+                            <th class="text-end" style="width: 20%;">JUMLAH</th>
+                            <th class="text-end" style="width: 20%;">TOTAL</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 1. Penjualan Tunai + Kredit -->
+                        {{-- 1. Penjualan --}}
                         <tr>
                             <td class="text-center">1</td>
-                            <td><strong>Penjualan Tunai + Kredit</strong></td>
-                            <td></td>
-                            <td class="text-end"><strong>Rp {{ number_format($totalPenjualan, 0, ',', '.') }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td class="ps-5">Retur Penjualan</td>
-                            <td class="text-end">Rp {{ number_format($returPenjualan, 0, ',', '.') }}</td>
+                            <td><strong>Penjualan</strong></td>
+                            <td class="text-end">Rp {{ number_format($totalPenjualan, 0, ',', '.') }}</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <td class="text-center">2</td>
+                            <td class="ps-4">Retur Penjualan</td>
+                            <td class="text-end">Rp {{ number_format($returPenjualan, 0, ',', '.') }} -</td>
                             <td></td>
-                            <td class="ps-5">Potongan Penjualan</td>
-                            <td class="text-end">Rp {{ number_format($potonganPenjualan, 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">3</td>
+                            <td class="ps-4">Potongan Penjualan</td>
+                            <td class="text-end text-decoration-underline">Rp
+                                {{ number_format($potonganPenjualan, 0, ',', '.') }} -</td>
                             <td></td>
                         </tr>
                         <tr class="table-info">
@@ -66,132 +67,147 @@
                             <td class="text-end"><strong>Rp {{ number_format($penjualanBersih, 0, ',', '.') }}</strong></td>
                         </tr>
 
-                        <!-- 5. Persediaan Awal -->
-                        <tr>
-                            <td class="text-center">5</td>
-                            <td><strong>Persediaan Barang Dagangan Awal</strong></td>
+                        {{-- Sub heading --}}
+                        <tr class="table-secondary">
                             <td></td>
-                            <td class="text-end">Rp {{ number_format($persediaanAwal, 0, ',', '.') }}</td>
+                            <td><strong>Harga Pokok Penjualan</strong></td>
+                            <td></td>
+                            <td></td>
                         </tr>
 
-                        <!-- 6. Pembelian Kredit + Tunai -->
+                        {{-- 5-11. Persediaan / Pembelian --}}
+                        <tr>
+                            <td class="text-center">5</td>
+                            <td><strong>Persediaan Barang Dagang Awal</strong></td>
+                            <td class="text-end">Rp {{ number_format($persediaanAwal, 0, ',', '.') }}</td>
+                            <td></td>
+                        </tr>
                         <tr>
                             <td class="text-center">6</td>
-                            <td><strong>Pembelian Secara Kredit + Tunai</strong></td>
-                            <td></td>
+                            <td class="ps-4">Pembelian Kredit dan Tunai</td>
                             <td class="text-end">Rp {{ number_format($pembelianKredit + $pembelianTunai, 0, ',', '.') }}
                             </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td class="ps-5">Retur Pembelian</td>
-                            <td class="text-end">Rp {{ number_format($returPembelian, 0, ',', '.') }}</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <td class="text-center">7</td>
+                            <td class="ps-4">Retur Pembelian</td>
+                            <td class="text-end">Rp {{ number_format($returPembelian, 0, ',', '.') }} -</td>
                             <td></td>
-                            <td class="ps-5">Potongan Pembelian</td>
-                            <td class="text-end">Rp {{ number_format($potonganPembelian, 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">8</td>
+                            <td class="ps-4">Potongan Pembelian</td>
+                            <td class="text-end text-decoration-underline">Rp
+                                {{ number_format($potonganPembelian, 0, ',', '.') }} -</td>
                             <td></td>
                         </tr>
                         <tr class="table-secondary">
                             <td class="text-center">9</td>
                             <td><strong>Pembelian Bersih</strong></td>
+                            <td class="text-end text-decoration-underline"><strong>Rp
+                                    {{ number_format($pembelianBersih, 0, ',', '.') }} +</strong></td>
                             <td></td>
-                            <td class="text-end"><strong>Rp {{ number_format($pembelianBersih, 0, ',', '.') }}</strong>
-                            </td>
                         </tr>
-
-                        <!-- 10. Barang Tersedia -->
-                        <tr class="table-warning">
+                        <tr>
                             <td class="text-center">10</td>
-                            <td><strong>Barang yang Tersedia untuk Dijual</strong></td>
+                            <td>Barang yang Tersedia untuk Dijual</td>
+                            <td class="text-end">Rp {{ number_format($persediaanAwal + $pembelianBersih, 0, ',', '.') }}
+                            </td>
                             <td></td>
-                            <td class="text-end"><strong>Rp
-                                    {{ number_format($persediaanAwal + $pembelianBersih, 0, ',', '.') }}</strong></td>
                         </tr>
-
-                        <!-- 11. Persediaan Akhir -->
                         <tr>
                             <td class="text-center">11</td>
-                            <td><strong>Persediaan Barang Dagangan Akhir</strong></td>
+                            <td>Persediaan Barang Dagang Akhir</td>
+                            <td class="text-end text-decoration-underline">Rp
+                                {{ number_format($persediaanAkhir, 0, ',', '.') }} -</td>
                             <td></td>
-                            <td class="text-end">Rp {{ number_format($persediaanAkhir, 0, ',', '.') }}</td>
                         </tr>
 
-                        <!-- 12. HPP -->
-                        <tr class="table-danger text-white bg-danger">
+                        {{-- 12. HPP --}}
+                        <tr class="table-danger">
                             <td class="text-center">12</td>
                             <td><strong>HPP (Harga Pokok Penjualan)</strong></td>
                             <td></td>
-                            <td class="text-end"><strong>Rp {{ number_format($hpp, 0, ',', '.') }}</strong></td>
+                            <td class="text-end text-decoration-underline"><strong>Rp
+                                    {{ number_format($hpp, 0, ',', '.') }} -</strong></td>
                         </tr>
 
-                        <!-- 13. Laba Kotor -->
+                        {{-- 13. Laba Kotor --}}
                         <tr class="table-success">
                             <td class="text-center">13</td>
-                            <td><strong>Laba Kotor</strong></td>
+                            <td class="text-center"><strong>Laba Kotor</strong></td>
                             <td></td>
                             <td class="text-end"><strong>Rp {{ number_format($labaKotor, 0, ',', '.') }}</strong></td>
                         </tr>
 
-                        <!-- 14. Biaya Operasional -->
-                        <tr>
+                        {{-- 14. Biaya Operasional --}}
+                        <tr class="table-warning">
                             <td class="text-center">14</td>
-                            <td><strong>Biaya Operasional</strong></td>
+                            <td>Biaya Operasional</td>
                             <td></td>
-                            <td class="text-end">Rp {{ number_format($biayaOperasional, 0, ',', '.') }}</td>
+                            <td class="text-end text-decoration-underline">Rp
+                                {{ number_format($biayaOperasional, 0, ',', '.') }} -</td>
                         </tr>
 
-                        <!-- 15. Laba Operasional -->
-                        <tr class="table-primary">
+                        {{-- 15. Laba Operasional --}}
+                        <tr class="table-success">
                             <td class="text-center">15</td>
-                            <td><strong>Laba Operasional</strong></td>
+                            <td class="text-center"><strong>Laba Operasional</strong></td>
                             <td></td>
                             <td class="text-end"><strong>Rp {{ number_format($labaOperasional, 0, ',', '.') }}</strong>
                             </td>
                         </tr>
 
-                        <!-- 16. Pendapatan Lain-lain -->
+                        {{-- 16-17. Pendapatan/Biaya lain --}}
                         <tr>
                             <td class="text-center">16</td>
-                            <td><strong>Pendapatan Lain-lain</strong></td>
-                            <td></td>
+                            <td>Pendapatan Lain-lain</td>
                             <td class="text-end">Rp {{ number_format($pendapatanLain, 0, ',', '.') }}</td>
+                            <td></td>
                         </tr>
-
-                        <!-- 17. Biaya Admin Bank -->
                         <tr>
                             <td class="text-center">17</td>
-                            <td><strong>Biaya Administrasi Bank</strong></td>
+                            <td>Biaya Administrasi Bank</td>
+                            <td class="text-end text-decoration-underline">Rp
+                                {{ number_format($biayaAdministrasiBank, 0, ',', '.') }} -</td>
                             <td></td>
-                            <td class="text-end">Rp {{ number_format($biayaAdministrasiBank, 0, ',', '.') }}</td>
                         </tr>
 
-                        <!-- 18. Laba Sebelum Pajak -->
+                        {{-- 18. Total Pendapatan dan Biaya Lain-lain --}}
                         <tr class="table-info">
                             <td class="text-center">18</td>
-                            <td><strong>Laba Sebelum Pajak</strong></td>
+                            <td><strong>Total Pendapatan dan Biaya Lain-lain</strong></td>
+                            <td></td>
+                            <td class="text-end text-decoration-underline"><strong>Rp
+                                    {{ number_format($totalPendapatanBiayaLain, 0, ',', '.') }} +</strong></td>
+                        </tr>
+
+                        {{-- 19. Laba Sebelum Pajak --}}
+                        <tr class="table-primary">
+                            <td class="text-center">19</td>
+                            <td class="text-center"><strong>Laba Sebelum Pajak</strong></td>
                             <td></td>
                             <td class="text-end"><strong>Rp {{ number_format($labaSebelumPajak, 0, ',', '.') }}</strong>
                             </td>
                         </tr>
 
-                        <!-- 19. Pajak -->
-                        <tr>
-                            <td class="text-center">19</td>
-                            <td><strong>Pajak (15%)</strong></td>
+                        {{-- 20. Pajak --}}
+                        <tr class="table-warning">
+                            <td class="text-center">20</td>
+                            <td>Pajak UKM dan Nelayan 5%</td>
                             <td></td>
-                            <td class="text-end">Rp {{ number_format($pajak, 0, ',', '.') }}</td>
+                            <td class="text-end text-decoration-underline">Rp {{ number_format($pajak, 0, ',', '.') }} -
+                            </td>
                         </tr>
 
-                        <!-- 20. Laba Setelah Pajak -->
+                        {{-- 21. Laba Bersih --}}
                         <tr class="table-success text-white bg-success">
-                            <td class="text-center">20</td>
-                            <td><strong>Laba Setelah Pajak</strong></td>
+                            <td class="text-center">21</td>
+                            <td class="text-center"><strong>Laba Bersih</strong></td>
                             <td></td>
-                            <td class="text-end"><strong>Rp {{ number_format($labaSetelahPajak, 0, ',', '.') }}</strong>
-                            </td>
+                            <td class="text-end text-decoration-underline"><strong>Rp
+                                    {{ number_format($labaSetelahPajak, 0, ',', '.') }}</strong></td>
                         </tr>
                     </tbody>
                 </table>

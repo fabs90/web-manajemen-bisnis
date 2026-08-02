@@ -202,6 +202,10 @@
             <td class="text-right">Rp {{ number_format($biayaAdministrasiBank, 0, ',', '.') }}</td>
         </tr>
         <tr>
+            <td class="text-left fw-bold">Total Pendapatan & Biaya Lain-lain</td>
+            <td class="text-right fw-bold">Rp {{ number_format($totalPendapatanBiayaLain, 0, ',', '.') }}</td>
+        </tr>
+        <tr>
             <td class="text-left fw-bold">Laba Sebelum Pajak</td>
             <td class="text-right fw-bold">Rp {{ number_format($labaSebelumPajak, 0, ',', '.') }}</td>
         </tr>
