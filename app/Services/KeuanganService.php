@@ -238,7 +238,7 @@ class KeuanganService
 
         // BIAYA OPERASIONAL: Diperoleh dari jumlah pengeluaran pada kolom 'lain-lain'
         $biayaOperasionalItems = $items->filter(function ($item) {
-            return $item->journalEntry->transaction_type === 'lain_lain';
+            return in_array($item->journalEntry->transaction_type, ['lain_lain', 'agenda_perjalanan']);
         });
 
         $biayaOperasional = $biayaOperasionalItems->sum('debit') - $biayaOperasionalItems->sum('credit');
