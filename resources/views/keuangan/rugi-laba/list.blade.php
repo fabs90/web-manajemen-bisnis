@@ -153,9 +153,9 @@
                         </tr>
 
                         {{-- 13. Laba Kotor --}}
-                        <tr class="table-success">
+                        <tr class="{{ $labaKotor >= 0 ? 'table-success' : 'table-danger' }}">
                             <td class="text-center">13</td>
-                            <td class="text-center"><strong>Laba Kotor</strong></td>
+                            <td class="text-center"><strong>{{ $labaKotor >= 0 ? 'Laba Kotor' : 'Rugi Kotor' }}</strong></td>
                             <td></td>
                             <td></td>
                             <td class="text-end"><strong>Rp {{ number_format($labaKotor, 0, ',', '.') }}</strong></td>

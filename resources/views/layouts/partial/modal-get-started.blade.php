@@ -1,7 +1,7 @@
 <!-- Floating Button -->
 <button type="button" class="btn btn-primary rounded-circle shadow fab-btn" data-bs-toggle="modal"
     data-bs-target="#getStartedModal">
-    <i class="bi bi-question-lg fs-4 mb-4"></i>
+    <i class="bi bi-question-lg fs-4"></i>
 </button>
 
 <!-- Modal -->
@@ -57,19 +57,25 @@
 <style>
     .fab-btn {
         position: fixed;
-        bottom: 25px;
-        right: 25px;
-        width: 55px;
-        height: 55px;
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
         z-index: 1050;
         display: flex;
         align-items: center;
         justify-content: center;
+        opacity: 0.5;
         transition: all 0.3s ease;
+    }
+
+    .fab-btn i {
+        font-size: 1.5rem !important;
     }
 
     .fab-btn:hover {
         transform: scale(1.1);
+        opacity: 1;
     }
 
     .modal-body a {

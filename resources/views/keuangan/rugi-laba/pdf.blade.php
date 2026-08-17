@@ -235,7 +235,7 @@
             {{-- 13. Laba Kotor --}}
             <tr class="bg-light">
                 <td class="text-center">13</td>
-                <td class="text-center fw-bold">Laba Kotor</td>
+                <td class="text-center fw-bold">{{ $labaKotor >= 0 ? 'Laba Kotor' : 'Rugi Kotor' }}</td>
                 <td></td>
                 <td></td>
                 <td class="text-right fw-bold">Rp {{ number_format($labaKotor, 0, ',', '.') }}</td>

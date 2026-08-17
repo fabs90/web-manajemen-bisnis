@@ -32,8 +32,8 @@ class KeuanganService
 
         // In periodic inventory system:
         // Pembelian = total of 'membeli_barang' debit to 1105
-        $pembelianKredit = $this->getPembelianTotal($userId, $dateRange);
-        $pembelianTunai = 0;
+        $pembelianKredit = $this->getPembelianKreditTotal($userId, $dateRange);
+        $pembelianTunai = $this->getPembelianTunaiTotal($userId, $dateRange);
         $returPembelian = $this->getReturPembelianTotal($userId, $dateRange);
         $potonganPembelian = $operating['potonganPembelian'] ?? 0;
 
@@ -159,22 +159,46 @@ class KeuanganService
         return compact('persediaanAwal', 'persediaanAkhir');
     }
 
-    private function getPembelianTotal(int $userId, array $dateRange): float
+    private function getPembelianTunaiTotal(int $userId, array $dateRange): float
     {
-        $kartuGudang = KartuGudang::with('barang')
-            ->where('user_id', $userId)
-            ->whereBetween('tanggal', $dateRange)
-            ->where('diterima', '>', 0)
-            ->where('uraian', 'not like', '%Retur Penjualan%')
-            ->where('uraian', 'not like', '%Pembatalan%')
+        $entries = JournalEntry::where('user_id', $userId)
+            ->where('transaction_type', 'membeli_barang')
+            ->whereBetween('date', $dateRange)
+            ->with(['items.account'])
             ->get();
 
-        $total = 0;
-        foreach ($kartuGudang as $kg) {
-            $total += $kg->diterima * ($kg->barang->harga_beli_per_unit ?? 0);
+        $totalTunai = 0;
+        foreach ($entries as $entry) {
+            $pengeluaranKas = $entry->items->where('account.code', '1101')->sum('credit') + $entry->items->where('account.code', '1103')->sum('credit');
+            $keluarKasKecil = $entry->items->where('account.code', '1102')->sum('credit');
+
+            if ($pengeluaranKas > 0 || $keluarKasKecil > 0) {
+                $biayaKotor = $entry->items->filter(function ($item) {
+                    return $item->debit > 0 && ! in_array($item->account->code, ['1101', '1103', '2101']);
+                })->sum('debit');
+                $totalTunai += $biayaKotor;
+            }
         }
 
-        return (float) $total;
+        return (float) $totalTunai;
+    }
+
+    private function getPembelianKreditTotal(int $userId, array $dateRange): float
+    {
+        $hutangAccount = Account::where('user_id', $userId)->where('code', '2101')->first();
+        if (! $hutangAccount) {
+            return 0;
+        }
+
+        $kredit = JournalItem::where('user_id', $userId)
+            ->where('account_id', $hutangAccount->id)
+            ->whereHas('journalEntry', function ($q) use ($dateRange) {
+                $q->whereBetween('date', $dateRange)
+                    ->whereIn('transaction_type', ['membeli_barang', 'pemesanan-barang']);
+            })
+            ->sum('credit');
+
+        return (float) $kredit;
     }
 
     private function getReturPembelianTotal(int $userId, array $dateRange): float
