@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Barang;
+use App\Models\KartuGudang;
 use App\Models\User;
 use App\Services\KeuanganService;
 use Database\Seeders\DefaultAccountSeeder;
@@ -23,6 +24,14 @@ test('neraca akhir seimbang setelah inisialisasi neraca awal', function () {
         'nama' => 'Barang A',
         'harga_beli_per_unit' => 100000,
         'harga_jual_per_unit' => 120000,
+    ]);
+
+    KartuGudang::create([
+        'user_id' => $user->id,
+        'barang_id' => $barang->id,
+        'tanggal' => now()->format('Y-m-d'),
+        'uraian' => 'Saldo Awal',
+        'saldo_persatuan' => 100,
     ]);
 
     $response = $this->post(route('laporan-keuangan.neraca-awal.store'), [

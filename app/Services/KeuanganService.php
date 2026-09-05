@@ -135,44 +135,30 @@ class KeuanganService
 
     private function getInventoryMetrics(int $userId, array $dateRange): array
     {
-        $startDate = date('Y-m-d', strtotime($dateRange[0]));
-        $endDate = date('Y-m-d', strtotime($dateRange[1]));
+        $startDate = $dateRange[0];
+        $endDate = $dateRange[1];
 
-        $neracaAwalPersediaan = (float) JournalItem::where('user_id', $userId)
-            ->whereHas('account', fn ($q) => $q->where('code', '1105'))
-            ->whereHas('journalEntry', fn ($q) => $q->where('transaction_type', 'neraca_awal'))
-            ->sum('debit');
+        $barang = Barang::where('user_id', $userId)->get();
 
-        $persediaanAwalDate = date('Y-m-d', strtotime($startDate.' -1 day'));
-        $persediaanAwalBefore = $this->getAccountBalance($userId, '1105', $persediaanAwalDate);
-
-        $persediaanAwal = $persediaanAwalBefore > 0 ? $persediaanAwalBefore : $neracaAwalPersediaan;
-
-        // Jika persediaan awal masih 0, fallback cek baris awal kartu gudang jika ada
-        if ($persediaanAwal == 0) {
-            $barang = Barang::where('user_id', $userId)->get();
-            foreach ($barang as $b) {
-                $firstKartu = KartuGudang::where('barang_id', $b->id)
-                    ->oldest('id')
-                    ->first();
-                if ($firstKartu) {
-                    $persediaanAwal += ($firstKartu->saldo_persatuan * $b->harga_beli_per_unit);
-                }
+        $persediaanAwal = 0;
+        foreach ($barang as $b) {
+            // Mengambil baris pertama di Kartu Gudang sebagai Saldo Awal
+            $firstKartu = KartuGudang::where('barang_id', $b->id)
+                ->oldest('id')
+                ->first();
+            if ($firstKartu) {
+                $persediaanAwal += ($firstKartu->saldo_persatuan * $b->harga_beli_per_unit);
             }
         }
 
-        // Persediaan akhir per tanggal endDate
-        $persediaanAkhir = $this->getAccountBalance($userId, '1105', $endDate);
-        if ($persediaanAkhir == 0) {
-            $barang = Barang::where('user_id', $userId)->get();
-            foreach ($barang as $b) {
-                $lastKartu = KartuGudang::where('barang_id', $b->id)
-                    ->where('tanggal', '<=', $endDate)
-                    ->latest('id')
-                    ->first();
-                if ($lastKartu) {
-                    $persediaanAkhir += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
-                }
+        $persediaanAkhir = 0;
+        foreach ($barang as $b) {
+            $lastKartu = KartuGudang::where('barang_id', $b->id)
+                ->where('tanggal', '<=', $endDate)
+                ->latest('id')
+                ->first();
+            if ($lastKartu) {
+                $persediaanAkhir += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
             }
         }
 
@@ -322,7 +308,19 @@ class KeuanganService
         $totalKas = $kas + $kasKecil + $bank;
 
         $saldoPiutang = $this->getAccountBalance($userId, '1104', $date);
-        $nilaiPersediaan = $this->getAccountBalance($userId, '1105', $date);
+
+        // Gunakan saldo persediaan dari KartuGudang agar akurat dengan fisik gudang
+        $barang = Barang::where('user_id', $userId)->get();
+        $nilaiPersediaan = 0;
+        foreach ($barang as $b) {
+            $lastKartu = KartuGudang::where('barang_id', $b->id)
+                ->whereDate('tanggal', '<=', $date)
+                ->latest('id')
+                ->first();
+            if ($lastKartu) {
+                $nilaiPersediaan += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
+            }
+        }
 
         $tanah = $this->getAccountBalance($userId, '1203', $date);
         $kendaraan = $this->getAccountBalance($userId, '1202', $date);
