@@ -335,23 +335,15 @@ class KeuanganService
         $hutangBank = $this->getAccountBalance($userId, '2201', $date);
         $saldoHutang = $hutangUsaha + $hutangBank;
 
-        // Modal Akun (3100)
-        $modalAkun = $this->getAccountBalance($userId, '3100', $date);
-
-        // Laba all time (to ensure balance sheet balances correctly)
+        // Laba all time untuk pajak & laba periode berjalan
         $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date);
-
-        // Current period profit for display
         $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date);
 
-        // Display taxes accumulated over all time
         $pajak = $allTimeLabaRugi['pajak'];
         $labaBersih = $dataLabaRugi['labaSetelahPajak'];
 
-        // Past years profit not yet closed to modal
-        $labaTahunLalu = $allTimeLabaRugi['labaSetelahPajak'] - $labaBersih;
-
-        $modal = $modalAkun + $labaTahunLalu;
+        // Modal dihitung sesuai ketentuan: Total Aktiva - Hutang - Pajak - Laba
+        $modal = $totalAktiva - $saldoHutang - $pajak - $labaBersih;
 
         $totalPasiva = $saldoHutang + $pajak + $labaBersih + $modal;
 
