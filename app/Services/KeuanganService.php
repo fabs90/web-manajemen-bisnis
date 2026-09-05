@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\Barang;
+use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KartuGudang;
 use Illuminate\Support\Facades\Auth;
