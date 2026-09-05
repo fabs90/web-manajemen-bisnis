@@ -26,10 +26,10 @@ trait ClearsDashboardCache
     public function clearDashboardCache()
     {
         $userId = $this->user_id ?? auth()->id();
-        
+
         if ($userId) {
             Cache::forget("dashboard_data_{$userId}");
-            
+
             // Clear chart data for all available periods
             $periods = [1, 3, 6, 12];
             foreach ($periods as $period) {

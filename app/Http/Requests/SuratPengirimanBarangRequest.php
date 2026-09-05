@@ -22,7 +22,7 @@ class SuratPengirimanBarangRequest extends FormRequest
         return [
             // ── SPB Info ────────────────────────────────────────────────
             'spp_id' => ['required', 'string'],
-            'nomor_pengiriman_barang' => ['required', 'string', 'max:100', 'unique:surat_pengiriman_barang,nomor_pengiriman_barang' . ($id ? ',' . $id : '')],
+            'nomor_pengiriman_barang' => ['required', 'string', 'max:100', 'unique:surat_pengiriman_barang,nomor_pengiriman_barang'.($id ? ','.$id : '')],
             'tanggal_pengiriman' => ['required', 'date'],
             'status_pengiriman' => ['required', 'in:diproses,dikirim,diterima,dibatalkan'],
             'jenis_pengiriman' => ['required', 'string', 'max:100'],

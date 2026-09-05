@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class KartuGudang extends Model
 {
-    use HasFactory, ClearsDashboardCache;
+    use ClearsDashboardCache, HasFactory;
 
     protected $table = 'kartu_gudang';
 

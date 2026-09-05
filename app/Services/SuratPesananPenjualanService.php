@@ -6,9 +6,12 @@ use App\Models\Barang;
 use App\Models\Pelanggan;
 use App\Models\SPP\SuratPesananPenjualan;
 use App\Models\SPP\SuratPesananPenjualanDetail;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SuratPesananPenjualanService
 {
@@ -126,18 +129,18 @@ class SuratPesananPenjualanService
                 ->where('user_id', auth()->user()->id)
                 ->findOrFail($id);
 
-            $profileUser = \Illuminate\Support\Facades\Auth::user();
+            $profileUser = Auth::user();
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            $pdf = Pdf::loadView(
                 'administrasi.surat.surat-pengiriman-barang.template-pdf-spp-pelanggan',
                 compact('data', 'profileUser'),
             )->setPaper('A4', 'portrait');
 
             return $pdf->download(
-                \Illuminate\Support\Str::slug('surat-pesanan-pembelian-dari-pelanggan-'.
+                Str::slug('surat-pesanan-pembelian-dari-pelanggan-'.
                     $data->nomor_pesanan_penjualan).'.pdf',
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
     }

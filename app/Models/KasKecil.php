@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class KasKecil extends Model
 {
-    use HasFactory, ClearsDashboardCache;
+    use ClearsDashboardCache, HasFactory;
 
     protected $table = 'kas_kecil';
 

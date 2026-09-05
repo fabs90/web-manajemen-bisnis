@@ -158,7 +158,6 @@ class DefaultAccountSeeder extends Seeder
                 'updated_at' => $now,
             ],
 
-
             // ==========================================
             // 6. REVENUE & EXPENSE
             // ==========================================

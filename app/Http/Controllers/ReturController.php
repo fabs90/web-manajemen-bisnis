@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\MemoKredit\MemoKredit;
 use App\Models\ReturPembelian;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReturController extends Controller
