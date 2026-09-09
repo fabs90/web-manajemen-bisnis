@@ -47,6 +47,16 @@ class RegisteredUserController extends Controller
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:ukm,nelayan,koperasi,superadmin'],
+        ], [
+            'name.required' => 'Nama UMKM/perusahaan wajib diisi.',
+            'name.max' => 'Nama UMKM/perusahaan maksimal 255 karakter.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email ini sudah terdaftar. Silakan gunakan email lain atau masuk ke akun Anda.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'role.required' => 'Silakan pilih jenis akun.',
+            'role.in' => 'Jenis akun yang dipilih tidak valid.',
         ]);
         $otp = random_int(100000, 999999);
         $expiresAt = Carbon::now('Asia/Makassar')->addMinutes(30);

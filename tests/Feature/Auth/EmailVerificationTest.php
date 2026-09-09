@@ -1,46 +1,63 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 
-test('email verification screen can be rendered', function () {
-    $user = User::factory()->unverified()->create();
+test('account verification screen can be rendered', function () {
+    $user = User::factory()->create([
+        'is_verified' => false,
+        'otp' => '123456',
+        'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
+    ]);
 
-    $response = $this->actingAs($user)->get('/verify-email');
+    $response = $this->actingAs($user)->get(route('account-verification.show'));
 
     $response->assertStatus(200);
 });
 
-test('email can be verified', function () {
-    $user = User::factory()->unverified()->create();
+test('account can be verified with valid OTP', function () {
+    $user = User::factory()->create([
+        'is_verified' => false,
+        'otp' => '123456',
+        'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
+    ]);
 
-    Event::fake();
+    $response = $this->actingAs($user)->post(route('account-verification.store'), [
+        'otp' => ['1', '2', '3', '4', '5', '6'],
+    ]);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
-
-    $response = $this->actingAs($user)->get($verificationUrl);
-
-    Event::assertDispatched(Verified::class);
-    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    expect($user->fresh()->is_verified)->toBeTruthy();
+    $response->assertRedirect(route('dashboard.getStarted'));
 });
 
-test('email is not verified with invalid hash', function () {
-    $user = User::factory()->unverified()->create();
+test('account verification returns human friendly error with invalid OTP', function () {
+    $user = User::factory()->create([
+        'is_verified' => false,
+        'otp' => '123456',
+        'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
+    ]);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1('wrong-email')]
-    );
+    $response = $this->actingAs($user)->post(route('account-verification.store'), [
+        'otp' => ['6', '5', '4', '3', '2', '1'],
+    ]);
 
-    $this->actingAs($user)->get($verificationUrl);
+    $response->assertSessionHasErrors([
+        'otp' => 'Kode OTP yang Anda masukkan salah atau telah kedaluwarsa. Silakan periksa kembali email Anda.',
+    ]);
+});
 
-    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+test('user can request resend OTP', function () {
+    Mail::fake();
+
+    $user = User::factory()->create([
+        'is_verified' => false,
+        'otp' => '123456',
+        'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
+    ]);
+
+    $response = $this->actingAs($user)->post(route('account-verification.resend'));
+
+    $response->assertRedirect(route('account-verification.show'));
+    $response->assertSessionHas('status', 'Kode OTP baru telah berhasil dikirim ke email Anda.');
 });

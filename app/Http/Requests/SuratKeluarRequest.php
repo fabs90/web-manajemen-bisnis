@@ -71,6 +71,9 @@ class SuratKeluarRequest extends FormRequest
             'tanggal_surat.date' => 'Tanggal surat tidak valid.',
 
             'nama_penerima.required' => 'Nama penerima wajib diisi.',
+            'email_penerima.required' => 'Email penerima wajib diisi.',
+            'email_penerima.email' => 'Format email penerima tidak valid.',
+            'email_penerima.max' => 'Email penerima maksimal 255 karakter.',
             'paragraf_isi.required' => 'Bagian isi surat wajib diisi.',
 
             'nama_pengirim.required' => 'Nama pengirim wajib diisi.',

@@ -114,7 +114,7 @@ class ManajemenKasKecilController extends Controller
 
             return redirect()
                 ->back()
-                ->with('error', 'Failed to create kas kecil');
+                ->with('error', 'Gagal menambahkan kas kecil.');
         }
     }
 }

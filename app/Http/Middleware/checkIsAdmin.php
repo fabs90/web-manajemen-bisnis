@@ -25,7 +25,7 @@ class checkIsAdmin
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            abort(403, 'Unauthorized');
+            abort(403, 'Anda tidak memiliki hak akses untuk mengakses halaman ini.');
         }
 
         return $next($request);

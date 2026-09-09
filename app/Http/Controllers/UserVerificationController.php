@@ -27,8 +27,13 @@ class UserVerificationController extends Controller
     {
         $user = $request->user();
         $otp = $request->input('otp');
-        $otpKey = implode($otp);
-        if ($user->otp === $otpKey) {
+        $otpKey = is_array($otp) ? implode('', $otp) : (string) $otp;
+
+        if ($user->otp && $user->otp === $otpKey) {
+            if ($user->otp_expires_at && Carbon::now('Asia/Makassar')->gt($user->otp_expires_at)) {
+                return back()->withErrors(['otp' => 'Kode OTP telah kedaluwarsa. Silakan klik "Kirim Ulang OTP".']);
+            }
+
             $user->is_verified = true;
             $user->otp = null;
             $user->otp_expires_at = null;
@@ -39,7 +44,7 @@ class UserVerificationController extends Controller
                 ->with('success', 'Akun Anda berhasil diverifikasi!');
         }
 
-        return response()->json(['message' => 'Invalid OTP'], 400);
+        return back()->withErrors(['otp' => 'Kode OTP yang Anda masukkan salah atau telah kedaluwarsa. Silakan periksa kembali email Anda.']);
     }
 
     public function resetEmailView()
@@ -51,6 +56,10 @@ class UserVerificationController extends Controller
     {
         $request->validate([
             'email' => 'required|email|unique:users,email,'.$request->user()->id,
+        ], [
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email ini sudah terdaftar. Silakan gunakan email lain.',
         ]);
 
         $user = $request->user();
@@ -63,7 +72,7 @@ class UserVerificationController extends Controller
 
     public function regenerateOtp(Request $request)
     {
-        $this->generateAndSendOtp($request->user());
+        return $this->generateAndSendOtp($request->user());
     }
 
     public function generateAndSendOtp(User $user)
@@ -79,6 +88,6 @@ class UserVerificationController extends Controller
 
         return redirect()
             ->route('account-verification.show')
-            ->with('status', 'Berhasil mengirim ulang OTP');
+            ->with('status', 'Kode OTP baru telah berhasil dikirim ke email Anda.');
     }
 }
