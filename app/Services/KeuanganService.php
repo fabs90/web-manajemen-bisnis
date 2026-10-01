@@ -13,9 +13,9 @@ class KeuanganService
 {
     private const TAX_RATE = 0.15;
 
-    public function hitungLabaRugi($startDate = null, $endDate = null)
+    public function hitungLabaRugi($startDate = null, $endDate = null, ?int $userId = null)
     {
-        $userId = Auth::id();
+        $userId = $userId ?? Auth::id();
         $startDate = $startDate ?? now()->startOfYear()->format('Y-m-d');
         $endDate = $endDate ?? now()->endOfYear()->format('Y-m-d');
         $dateRange = [$startDate.' 00:00:00', $endDate.' 23:59:59'];
@@ -296,9 +296,9 @@ class KeuanganService
         );
     }
 
-    public function hitungNeraca($date = null)
+    public function hitungNeraca($date = null, ?int $userId = null)
     {
-        $userId = Auth::id();
+        $userId = $userId ?? Auth::id();
         $date = $date ?? now()->format('Y-m-d');
 
         // === AKTIVA ===
@@ -334,8 +334,8 @@ class KeuanganService
         $saldoHutang = $hutangUsaha + $hutangBank;
 
         // Laba all time untuk pajak & laba periode berjalan
-        $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date);
-        $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date);
+        $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date, $userId);
+        $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date, $userId);
 
         $pajak = $allTimeLabaRugi['pajak'];
         $labaBersih = $dataLabaRugi['labaSetelahPajak'];

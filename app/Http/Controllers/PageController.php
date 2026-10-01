@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KasKecil;
+use App\Services\KeuanganService;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,11 +20,11 @@ class PageController extends Controller
         return view('welcome');
     }
 
-    public function dashboard()
+    public function dashboard(KeuanganService $keuangan)
     {
         $userId = Auth::id();
 
-        $dashboardData = Cache::remember("dashboard_data_{$userId}", 60, function () use ($userId) {
+        $dashboardData = Cache::remember("dashboard_data_{$userId}", 60, function () use ($userId, $keuangan) {
             // Data barang dengan kartu gudang terbaru
             $barangDenganKartuTerbaru = Barang::with([
                 'kartuGudang' => function ($query) {
@@ -124,22 +125,9 @@ class PageController extends Controller
                 $pengeluaranKasKecil = $sumCredit;
             }
 
-            // Laba Bersih (Revenue - Expense)
-            $revenueTotal = JournalItem::where('user_id', $userId)
-                ->whereHas('account', function ($q) {
-                    $q->where('category', 'revenue');
-                })
-                ->selectRaw('SUM(credit) - SUM(debit) as total')
-                ->value('total') ?? 0;
-
-            $expenseTotal = JournalItem::where('user_id', $userId)
-                ->whereHas('account', function ($q) {
-                    $q->where('category', 'expense');
-                })
-                ->selectRaw('SUM(debit) - SUM(credit) as total')
-                ->value('total') ?? 0;
-
-            $labaBersih = $revenueTotal - $expenseTotal;
+            // Laba Bersih disinkronkan dengan Laporan Rugi Laba (laba setelah pajak tahun berjalan)
+            $labaRugi = $keuangan->hitungLabaRugi(null, null, $userId);
+            $labaBersih = $labaRugi['labaSetelahPajak'];
 
             // Data untuk Chart: Pendapatan vs Pengeluaran per bulan
             $months = [];
