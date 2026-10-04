@@ -61,7 +61,7 @@ class RugiLabaController extends Controller
         )->setPaper('a4', 'portrait');
 
         return $pdf->download(
-            'laporan-rugi-laba-' . now()->format('Y-m-d') . '.pdf',
+            'laporan-rugi-laba-'.now()->format('Y-m-d').'.pdf',
         );
     }
 }

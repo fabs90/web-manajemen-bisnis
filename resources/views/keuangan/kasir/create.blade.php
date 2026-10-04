@@ -160,8 +160,8 @@
 
                         <div id="qris-container" class="mt-2 mb-3 text-center d-none">
                             <label class="fw-bold d-block mb-1">Pindai QRIS untuk Pembayaran</label>
-                            @if (auth()->user()->qris_image)
-                                <img src="{{ asset('storage/' . auth()->user()->qris_image) }}" alt="QRIS"
+                            @if (auth()->user()->qris_image && storage_resolve_path(auth()->user()->qris_image))
+                                <img src="{{ route('qris.image', ['v' => auth()->user()->updated_at?->timestamp ?? time()]) }}" alt="QRIS"
                                     class="img-fluid border p-2" style="max-height: 250px;">
                             @else
                                 <div class="alert alert-warning py-2 small">

@@ -11,8 +11,8 @@
                 <h5 class="card-title mb-0">QRIS Barcode Saat Ini</h5>
             </div>
             <div class="card-body text-center">
-                @if($user->qris_image)
-                    <img src="{{ asset('storage/' . $user->qris_image) }}" alt="QRIS Barcode" class="img-fluid border p-2 mb-3" style="max-height: 400px;">
+                @if($user->qris_image && storage_resolve_path($user->qris_image))
+                    <img src="{{ route('qris.image', ['v' => $user->updated_at?->timestamp ?? time()]) }}" alt="QRIS Barcode" class="img-fluid border p-2 mb-3" style="max-height: 400px;">
                     <p class="text-muted">Barcode ini akan ditampilkan pada halaman kasir saat memilih jenis pembayaran QRIS.</p>
                 @else
                     <div class="py-5">
@@ -22,7 +22,7 @@
                 @endif
 
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalUploadQris">
-                    <i class="fas fa-upload me-1"></i> {{ $user->qris_image ? 'Perbarui QRIS' : 'Unggah QRIS' }}
+                    <i class="fas fa-upload me-1"></i> {{ ($user->qris_image && storage_resolve_path($user->qris_image)) ? 'Perbarui QRIS' : 'Unggah QRIS' }}
                 </button>
                 <form action="{{ route('qris.destroy') }}" method="POST" id="deleteQrisForm" class="d-inline">
                     @csrf

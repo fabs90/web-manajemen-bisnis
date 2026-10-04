@@ -71,6 +71,11 @@ class FileUploadService
             return $appPublicPath;
         }
 
+        $appLocalLegacyPath = storage_path('app/'.$path);
+        if (file_exists($appLocalLegacyPath) && is_file($appLocalLegacyPath)) {
+            return $appLocalLegacyPath;
+        }
+
         $directPublicPath = public_path($path);
         if (file_exists($directPublicPath) && is_file($directPublicPath)) {
             return $directPublicPath;

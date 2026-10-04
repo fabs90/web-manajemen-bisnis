@@ -58,6 +58,9 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified'])->group(function () {
         Route::get('/', [QrisController::class, 'index'])->name(
             'qris.index',
         );
+        Route::get('/image', [QrisController::class, 'showImage'])->name(
+            'qris.image',
+        );
         Route::post('/update', [QrisController::class, 'update'])->name(
             'qris.update',
         );
