@@ -199,4 +199,26 @@ class SuratMasukController extends Controller
                 ->with('error', 'Agenda surat masuk gagal dihapus');
         }
     }
+
+    public function viewSurat(string $id)
+    {
+        $surat = AgendaSuratMasuk::where('user_id', auth()->id())->findOrFail($id);
+
+        abort_unless($surat->file_surat, 404);
+
+        $filePath = storage_resolve_path($surat->file_surat);
+
+        abort_unless($filePath && file_exists($filePath), 404);
+        $fileName = basename($surat->file_surat);
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $inlineExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+        if (! in_array($extension, $inlineExtensions, true)) {
+            return response()->download($filePath, $fileName);
+        }
+
+        return response()->file($filePath, [
+            'Content-Disposition' => 'inline; filename="'.$fileName.'"',
+        ]);
+    }
 }

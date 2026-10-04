@@ -87,13 +87,11 @@
     <table class="table-no-border">
         <tr>
             <td width="15%">
-                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
-                    @php
-                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
-                    @endphp
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                @php
+                    $logoBase64 = image_to_base64($profileUser->logo_perusahaan ?? null);
+                @endphp
+                @if ($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height:70px;">
                 @endif
             </td>
             <td width="70%" class="text-center">

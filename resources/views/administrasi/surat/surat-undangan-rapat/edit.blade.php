@@ -227,7 +227,7 @@
                         <label class="form-label fw-semibold">Dokumen Lampiran <small class="text-muted fw-normal">(PDF/Gambar)</small></label>
                         @if($suratUndanganRapat->file_lampiran)
                             <div class="mb-2">
-                                <a href="{{ asset('storage/' . $suratUndanganRapat->file_lampiran) }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                <a href="{{ route('administrasi.surat-undangan-rapat.view-lampiran', $suratUndanganRapat->id) }}" target="_blank" class="btn btn-sm btn-outline-info">
                                     <i class="bi bi-file-earmark-pdf"></i> Lihat Lampiran Saat Ini
                                 </a>
                             </div>

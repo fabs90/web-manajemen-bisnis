@@ -35,6 +35,7 @@ class DebiturController extends Controller
 
     public function destroy(Pelanggan $pelanggan)
     {
+        $pelanggan = Pelanggan::where('user_id', auth()->id())->where('id', $pelanggan->id)->first();
         if ($pelanggan) {
             $pelanggan->delete();
 

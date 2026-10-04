@@ -29,7 +29,7 @@ class UserVerificationController extends Controller
         $otp = $request->input('otp');
         $otpKey = is_array($otp) ? implode('', $otp) : (string) $otp;
 
-        if ($user->otp && $user->otp === $otpKey) {
+        if ($user->otp && hash_equals($user->otp, hash('sha256', $otpKey))) {
             if ($user->otp_expires_at && Carbon::now('Asia/Makassar')->gt($user->otp_expires_at)) {
                 return back()->withErrors(['otp' => 'Kode OTP telah kedaluwarsa. Silakan klik "Kirim Ulang OTP".']);
             }

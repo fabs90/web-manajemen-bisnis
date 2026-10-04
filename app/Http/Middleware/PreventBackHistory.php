@@ -4,7 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PreventBackHistory
 {
@@ -17,8 +19,24 @@ class PreventBackHistory
     {
         $response = $next($request);
 
-        return $response->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
-            ->header('Pragma', 'no-cache')
-            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
+        if (
+            $response instanceof BinaryFileResponse ||
+            $response instanceof StreamedResponse ||
+            $response->headers->has('Content-Disposition') ||
+            str_contains($response->headers->get('Content-Type', ''), 'application/pdf') ||
+            ! str_contains($response->headers->get('Content-Type', 'text/html'), 'text/html')
+        ) {
+            $response->headers->set('Cache-Control', 'private, max-age=0, must-revalidate');
+            $response->headers->remove('Pragma');
+            $response->headers->remove('Expires');
+
+            return $response;
+        }
+
+        $response->headers->set('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
+
+        return $response;
     }
 }

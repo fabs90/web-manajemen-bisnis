@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class SuratKeluarMail extends Mailable implements ShouldQueue
 {
@@ -50,9 +51,14 @@ class SuratKeluarMail extends Mailable implements ShouldQueue
         ]);
 
         if ($this->surat->file_lampiran) {
-            $pathFile = storage_path('app/public/'.$this->surat->file_lampiran);
+            $pathFile = null;
+            if (Storage::disk('local')->exists($this->surat->file_lampiran)) {
+                $pathFile = Storage::disk('local')->path($this->surat->file_lampiran);
+            } elseif (Storage::disk('public')->exists($this->surat->file_lampiran)) {
+                $pathFile = Storage::disk('public')->path($this->surat->file_lampiran);
+            }
 
-            if (file_exists($pathFile)) {
+            if ($pathFile && file_exists($pathFile)) {
                 $email->attach(
                     $pathFile,
                     [

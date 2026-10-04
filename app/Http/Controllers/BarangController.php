@@ -79,7 +79,7 @@ class BarangController extends Controller
 
     public function show($id)
     {
-        $barang = Barang::find($id);
+        $barang = Barang::where('user_id', auth()->id())->find($id);
         if (! $barang) {
             return back()->with([
                 'error' => 'Barang tidak ditemukan.',
@@ -91,7 +91,7 @@ class BarangController extends Controller
 
     public function update(Request $request, $id)
     {
-        $barang = Barang::find($id);
+        $barang = Barang::where('user_id', auth()->id())->find($id);
         if (! $barang) {
             return back()->with([
                 'error' => 'Barang tidak ditemukan.',
@@ -118,7 +118,7 @@ class BarangController extends Controller
 
     public function destroy($id)
     {
-        $barang = Barang::find($id);
+        $barang = Barang::where('user_id', auth()->id())->find($id);
         if (! $barang) {
             return back()->with([
                 'error' => 'Barang tidak ditemukan.',

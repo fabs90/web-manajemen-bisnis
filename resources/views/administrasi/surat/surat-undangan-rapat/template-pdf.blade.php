@@ -98,17 +98,11 @@
     <table class="table-no-border" style="margin-bottom: 10px;">
         <tr>
             <td width="15%">
-                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
-                    @php
-                        $logoPath = storage_path('app/public/' . $profileUser->logo_perusahaan);
-                    @endphp
-                    @if (file_exists($logoPath))
-                        @php
-                            $logoBase64 = base64_encode(file_get_contents($logoPath));
-                            $logoMime = mime_content_type($logoPath);
-                        @endphp
-                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
-                    @endif
+                @php
+                    $logoBase64 = image_to_base64($profileUser->logo_perusahaan ?? null);
+                @endphp
+                @if ($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height:70px;">
                 @endif
             </td>
             <td width="70%" class="text-center">
@@ -220,19 +214,11 @@
                 Pemimpin Perusahaan,<br>
 
                 {{-- Validasi TTD Pemimpin --}}
-                @if ($profileUser->ttd_pemimpin)
-                    @php
-                        $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
-                        if (file_exists($ttdPath)) {
-                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
-                            $ttdMime = mime_content_type($ttdPath);
-                        }
-                    @endphp
-                    @if (isset($ttdBase64))
-                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" width="110">
-                    @else
-                        <br><br><br><br>
-                    @endif
+                @php
+                    $ttdBase64 = image_to_base64($profileUser->ttd_pemimpin ?? null);
+                @endphp
+                @if ($ttdBase64)
+                    <img src="{{ $ttdBase64 }}" width="110">
                 @else
                     <br><br><br><br>
                 @endif

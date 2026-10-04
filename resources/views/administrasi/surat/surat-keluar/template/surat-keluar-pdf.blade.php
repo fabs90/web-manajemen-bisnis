@@ -88,20 +88,15 @@
 
     {{-- KOP SURAT --}}
     @php
-        $logoPath = $user->logo_perusahaan ? public_path('storage/' . $user->logo_perusahaan) : null;
-        $hasLogo = $logoPath && file_exists($logoPath);
-        if ($hasLogo) {
-            $logoBase64 = base64_encode(file_get_contents($logoPath));
-            $logoMime = mime_content_type($logoPath);
-        }
+        $logoBase64 = image_to_base64($user->logo_perusahaan ?? null);
     @endphp
 
     <table class="kop-table">
         <tr>
-            @if ($hasLogo)
+            @if ($logoBase64)
                 {{-- Cell Logo --}}
                 <td width="15%" class="logo-cell">
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" width="70">
+                    <img src="{{ $logoBase64 }}" width="70">
                 </td>
 
                 {{-- Cell Teks Tengah --}}
@@ -179,17 +174,10 @@
             <td width="25%" class="text-right">
                 Hormat kami,<br>
                 @php
-                    $ttdBase64 = null;
-                    if (isset($user->ttd_pemimpin) && $user->ttd_pemimpin) {
-                        $ttdPath = public_path('storage/' . $user->ttd_pemimpin);
-                        if (file_exists($ttdPath) && is_file($ttdPath)) {
-                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
-                            $ttdMime = mime_content_type($ttdPath);
-                        }
-                    }
+                    $ttdBase64 = image_to_base64($user->ttd_pemimpin ?? null);
                 @endphp
                 @if ($ttdBase64)
-                    <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:70px;">
+                    <img src="{{ $ttdBase64 }}" style="height:70px;">
                 @else
                     <br><br><br><br>
                 @endif

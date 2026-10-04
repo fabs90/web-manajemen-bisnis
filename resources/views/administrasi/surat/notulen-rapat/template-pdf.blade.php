@@ -59,17 +59,11 @@
     <table class="table-no-border" style="margin-bottom: 10px;">
         <tr>
             <td width="15%">
-                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
-                    @php
-                        $logoPath = storage_path('app/public/' . $profileUser->logo_perusahaan);
-                        if (file_exists($logoPath)) {
-                            $logoBase64 = base64_encode(file_get_contents($logoPath));
-                            $logoMime = mime_content_type($logoPath);
-                        }
-                    @endphp
-                    @if (isset($logoBase64))
-                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
-                    @endif
+                @php
+                    $logoBase64 = image_to_base64($profileUser->logo_perusahaan ?? null);
+                @endphp
+                @if ($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height:70px;">
                 @endif
             </td>
             <td width="70%" class="text-center">
@@ -135,17 +129,11 @@
                     <td>{{ $peserta->nama }}</td>
                     <td>{{ $peserta->jabatan }}</td>
                     <td class="text-center">
-                        @if ($peserta->tanda_tangan)
-                            @php
-                                $path = storage_path('app/public/' . $peserta->tanda_tangan);
-                            @endphp
-                            @if (file_exists($path))
-                                @php
-                                    $data = base64_encode(file_get_contents($path));
-                                    $mime = mime_content_type($path);
-                                @endphp
-                                <img src="data:{{ $mime }};base64,{{ $data }}" style="height: 40px;">
-                            @endif
+                        @php
+                            $pesertaTtd = image_to_base64($peserta->tanda_tangan ?? null);
+                        @endphp
+                        @if ($pesertaTtd)
+                            <img src="{{ $pesertaTtd }}" style="height: 40px;">
                         @else
                             -
                         @endif
@@ -253,17 +241,11 @@
 
                 {{-- Bagian TTD Pemimpin --}}
                 <div class="text-center">
-                    @if (isset($agendaJanjiTemu->ttd_pemimpin) && $agendaJanjiTemu->ttd_pemimpin)
-                        @php
-                            $ttdPath = storage_path('app/public/' . $agendaJanjiTemu->ttd_pemimpin);
-                        @endphp
-                        @if (file_exists($ttdPath))
-                            @php
-                                $ttdData = base64_encode(file_get_contents($ttdPath));
-                                $ttdMime = mime_content_type($ttdPath);
-                            @endphp
-                            <img src="data:{{ $ttdMime }};base64,{{ $ttdData }}" style="height: 50px;">
-                        @endif
+                    @php
+                        $ttdPemimpin = image_to_base64($agendaJanjiTemu->ttd_pemimpin ?? null);
+                    @endphp
+                    @if ($ttdPemimpin)
+                        <img src="{{ $ttdPemimpin }}" style="height: 50px;">
                     @endif
                 </div>
 
@@ -274,17 +256,11 @@
                 <div>{{ $agendaJanjiTemu->nama_kota ?? 'Jakarta' }},
                     {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
                 <div class="fw-bold">Notulis,</div>
-                @if (isset($agendaJanjiTemu->ttd_notulis) && $agendaJanjiTemu->ttd_notulis)
-                    @php
-                        $ttdPath = storage_path('app/public/' . $agendaJanjiTemu->ttd_notulis);
-                    @endphp
-                    @if (file_exists($ttdPath))
-                        @php
-                            $ttdData = base64_encode(file_get_contents($ttdPath));
-                            $ttdMime = mime_content_type($ttdPath);
-                        @endphp
-                        <img src="data:{{ $ttdMime }};base64,{{ $ttdData }}" style="height: 50px;">
-                    @endif
+                @php
+                    $ttdNotulis = image_to_base64($agendaJanjiTemu->ttd_notulis ?? null);
+                @endphp
+                @if ($ttdNotulis)
+                    <img src="{{ $ttdNotulis }}" style="height: 50px;">
                 @endif
                 <br>
                 <div class="fw-bold">{{ $agendaJanjiTemu->nama_notulis }}</div>

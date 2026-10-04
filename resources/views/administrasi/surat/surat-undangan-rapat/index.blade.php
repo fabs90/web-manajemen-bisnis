@@ -70,8 +70,8 @@
                                         </a>
 
                                         @if ($item->file_lampiran)
-                                            <a href="{{ asset('storage/' . $item->file_lampiran) }}" target="_blank"
-                                                class="btn btn-sm btn-secondary text-white" title="Lihat Lampiran">
+                                            <a href="{{ route('administrasi.surat-undangan-rapat.view-lampiran', $item->id) }}" target="_blank"
+                                                class="btn btn-sm btn-info text-white" title="Lihat Lampiran">
                                                 <i class="bi bi-paperclip"></i>
                                             </a>
                                         @endif

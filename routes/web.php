@@ -357,6 +357,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'showDisposisi',
         ])->name('administrasi.surat-masuk.disposisi.create');
 
+        Route::get('/surat-masuk/{id}/file', [
+            SuratMasukController::class,
+            'viewSurat',
+        ])->name('administrasi.surat-masuk.view-file');
+
         Route::post('/surat-masuk/disposisi/{id}', [
             SuratMasukController::class,
             'storeDisposisi',
@@ -383,6 +388,8 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'destroy',
         ])->name('administrasi.surat-keluar.destroy');
 
+        Route::get('/surat-keluar/{id}/signature', [SuratKeluarController::class, 'viewSignature'])->name('administrasi.surat-keluar.view-signature');
+        Route::get('/surat-keluar/{id}/lampiran', [SuratKeluarController::class, 'viewLampiran'])->name('administrasi.surat-keluar.view-lampiran');
         Route::get('/surat-keluar/{id}', [SuratKeluarController::class, 'downloadPdf'])->name('administrasi.surat-keluar.downloadPdf');
 
         // Surat Kas Kecil
@@ -529,6 +536,11 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             SuratUndanganRapatController::class,
             'generatePdf',
         ])->name('administrasi.surat-undangan-rapat.pdf');
+
+        Route::get('/surat-undangan-rapat/{id}/lampiran', [
+            SuratUndanganRapatController::class,
+            'viewLampiran',
+        ])->name('administrasi.surat-undangan-rapat.view-lampiran');
 
         Route::post('/surat-undangan-rapat/', [
             SuratUndanganRapatController::class,

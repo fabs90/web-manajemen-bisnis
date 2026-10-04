@@ -229,7 +229,7 @@ class KasirController extends Controller
     {
         DB::beginTransaction();
         try {
-            $log = KasirTransactionLog::findOrFail($id);
+            $log = KasirTransactionLog::where('user_id', auth()->id())->findOrFail($id);
             $journalEntryId = $log->journal_entry_id;
 
             if ($journalEntryId) {

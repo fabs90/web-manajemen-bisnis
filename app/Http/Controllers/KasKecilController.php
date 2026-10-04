@@ -62,9 +62,8 @@ class KasKecilController extends Controller
 
     public function generatePdf(int $id)
     {
-        $data = KasKecil::with(['kasKecilDetail', 'kasKecilFormulir'])->findOrFail($id);
         $userProfile = Auth::user();
-
+        $data = KasKecil::with(['kasKecilDetail', 'kasKecilFormulir'])->where('user_id', $userProfile->id)->findOrFail($id);
         $pdf = Pdf::loadView('administrasi.surat.kas-kecil.template-pdf', [
             'data' => $data,
             'userProfile' => $userProfile,

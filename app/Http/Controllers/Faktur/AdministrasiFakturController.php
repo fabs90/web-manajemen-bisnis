@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Faktur;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdministrasiFakturRequest;
 use App\Models\Faktur\FakturPenjualan;
 use App\Models\SPB\SuratPengirimanBarang;
 use App\Services\AdministrasiFakturService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AdministrasiFakturController extends Controller
@@ -62,11 +62,11 @@ class AdministrasiFakturController extends Controller
         return view('administrasi.surat.faktur-penjualan.create', compact('dataSpb'));
     }
 
-    public function store(Request $request)
+    public function store(AdministrasiFakturRequest $request)
     {
         try {
-            $manajemenRapatServices = app(AdministrasiFakturService::class);
-            $manajemenRapatServices->store($request->all());
+            $fakturService = app(AdministrasiFakturService::class);
+            $fakturService->store($request->validated());
 
             return redirect()
                 ->route('administrasi.faktur-penjualan.index')
@@ -79,7 +79,7 @@ class AdministrasiFakturController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Gagal menambahkan faktur penjualan.');
+                ->with('error', $th->getMessage() ?: 'Gagal menambahkan faktur penjualan.');
         }
     }
 

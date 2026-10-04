@@ -51,8 +51,9 @@
                                         </a>
 
                                         @if ($surat->file_lampiran)
-                                            <a href="{{ asset('storage/' . $surat->file_lampiran) }}" target="_blank"
-                                                class="btn btn-sm btn-info text-white" title="Lihat Lampiran">
+                                            <a href="{{ route('administrasi.surat-keluar.view-lampiran', ['id' => $surat->id]) }}"
+                                                target="_blank" class="btn btn-sm btn-info text-white"
+                                                title="Lihat Lampiran">
                                                 <i class="bi bi-paperclip"></i>
                                             </a>
                                         @endif

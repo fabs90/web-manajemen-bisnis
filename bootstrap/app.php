@@ -4,7 +4,7 @@ use App\Http\Middleware\checkIsAdmin;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Middleware\EnsureUserIsVerified;
 use App\Http\Middleware\PreventBackHistory;
-use App\Jobs\SendErrorLogJob;
+use App\Http\Middleware\SecurityHeader;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append([PreventBackHistory::class]);
+        $middleware->append([PreventBackHistory::class, SecurityHeader::class]);
         $middleware->alias([
             'ensureUserIsVerified' => EnsureUserIsVerified::class,
             'ensureProfileCompleted' => EnsureProfileComplete::class,
@@ -24,13 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->report(function (Throwable $e) {
-
-            // if (!app()->isProduction()) {
-            //     return;
-            // }
-
-            dispatch(new SendErrorLogJob($e));
-        });
+        //
     })
     ->create();

@@ -9,7 +9,6 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class SuratKeluarService
@@ -77,15 +76,12 @@ class SuratKeluarService
 
     public function delete(AgendaSuratKeluar $surat)
     {
-        if (
-            $surat->file_lampiran &&
-            Storage::disk('public')->exists($surat->file_lampiran)
-        ) {
-            Storage::disk('public')->delete($surat->file_lampiran);
+        if ($surat->file_lampiran) {
+            $this->fileUploadService->delete($surat->file_lampiran);
         }
 
-        if ($surat->ttd && Storage::disk('public')->exists($surat->ttd)) {
-            Storage::disk('public')->delete($surat->ttd);
+        if ($surat->ttd) {
+            $this->fileUploadService->delete($surat->ttd);
         }
 
         return $surat->delete();
@@ -93,7 +89,7 @@ class SuratKeluarService
 
     public function generatePdf(int $id)
     {
-        $suratKeluar = AgendaSuratKeluar::findOrFail($id);
+        $suratKeluar = AgendaSuratKeluar::where('user_id', auth()->id())->findOrFail($id);
 
         $fileName = 'surat-keluar-'.Str::slug($suratKeluar->nomor_surat ?? 'dokumen').'.pdf';
 
@@ -102,7 +98,7 @@ class SuratKeluarService
             'user' => auth()->user(),
         ]);
 
-        return $pdf->download($fileName);
+        return $pdf->stream($fileName);
     }
 
     private function validateEmail(string $email): bool

@@ -22,19 +22,29 @@ class AdministrasiFakturService
     {
         DB::beginTransaction();
         try {
-            $faktur = FakturPenjualan::create([
-                'spb_id' => $data['spb_id'],
-                'kode_faktur' => $data['kode_faktur'],
-                'tanggal_faktur' => $data['tanggal_faktur'],
-                'user_id' => auth()->user()->id,
-            ]);
+            $userId = auth()->id();
 
-            // Penjurnalan (Journaling)
             $spb = SuratPengirimanBarang::with([
                 'pesananPenjualan.pelanggan',
                 'suratPengirimanBarangDetail.pesananPenjualanDetail.barang',
-            ])->find($data['spb_id']);
+                'fakturPenjualan',
+            ])
+                ->where('user_id', $userId)
+                ->where('id', $data['spb_id'])
+                ->firstOrFail();
 
+            if ($spb->fakturPenjualan()->exists()) {
+                throw new \Exception('Surat Pengiriman Barang ini sudah pernah dibuatkan faktur penjualan.');
+            }
+
+            $faktur = FakturPenjualan::create([
+                'spb_id' => $spb->id,
+                'kode_faktur' => $data['kode_faktur'],
+                'tanggal_faktur' => $data['tanggal_faktur'],
+                'user_id' => $userId,
+            ]);
+
+            // Penjurnalan (Journaling)
             if ($spb && $spb->pesananPenjualan) {
                 $totalSalesAmount = 0;
                 $totalHppAmount = 0;

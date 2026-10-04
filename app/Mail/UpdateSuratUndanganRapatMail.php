@@ -58,7 +58,10 @@ class UpdateSuratUndanganRapatMail extends Mailable implements ShouldQueue
         $attachments = [];
 
         if ($this->suratUndanganRapat->file_lampiran) {
-            $attachments[] = Attachment::fromStorageDisk('public', $this->suratUndanganRapat->file_lampiran);
+            $filePath = storage_resolve_path($this->suratUndanganRapat->file_lampiran);
+            if ($filePath && file_exists($filePath)) {
+                $attachments[] = Attachment::fromPath($filePath)->as(basename($this->suratUndanganRapat->file_lampiran));
+            }
         }
 
         // Generate PDF using model method and attach it

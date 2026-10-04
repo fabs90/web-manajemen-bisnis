@@ -79,7 +79,7 @@ class SuratUndanganRapatService
     {
         DB::beginTransaction();
         try {
-            $suratUndanganRapat = SuratUndanganRapat::findOrFail($id);
+            $suratUndanganRapat = SuratUndanganRapat::where('user_id', Auth::id())->findOrFail($id);
 
             if (! empty($data['file_lampiran'])) {
                 $fileLampiran = $this->fileUploadService->upload($data['file_lampiran'], 'surat-undangan-rapat/lampiran', auth()->user()->email);
@@ -141,7 +141,7 @@ class SuratUndanganRapatService
     {
         DB::beginTransaction();
         try {
-            $suratUndanganRapat = SuratUndanganRapat::findOrFail($id);
+            $suratUndanganRapat = SuratUndanganRapat::where('user_id', Auth::id())->findOrFail($id);
             $suratUndanganRapat->details()->delete();
             $suratUndanganRapat->delete();
 
@@ -158,7 +158,7 @@ class SuratUndanganRapatService
 
     public function generatePdf($id)
     {
-        $suratUndanganRapat = SuratUndanganRapat::findOrFail($id);
+        $suratUndanganRapat = SuratUndanganRapat::where('user_id', Auth::id())->findOrFail($id);
         $pdf = $suratUndanganRapat->generatePdf();
 
         return $pdf->download(

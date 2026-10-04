@@ -67,17 +67,10 @@
         <tr>
             <td width="15%">
                 @php
-                    $logoBase64 = null;
-                    if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan) {
-                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        if (file_exists($logoPath) && is_file($logoPath)) {
-                            $logoBase64 = base64_encode(file_get_contents($logoPath));
-                            $logoMime = mime_content_type($logoPath);
-                        }
-                    }
+                    $logoBase64 = image_to_base64($profileUser->logo_perusahaan ?? null);
                 @endphp
                 @if ($logoBase64)
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                    <img src="{{ $logoBase64 }}" style="height:70px;">
                 @endif
             </td>
             <td width="70%" class="text-center">
@@ -147,17 +140,10 @@
                 Yang Menyatakan,
                 <br>
                 @php
-                    $ttdBase64 = null;
-                    if (isset($profileUser->ttd_pemimpin) && $profileUser->ttd_pemimpin) {
-                        $ttdPath = public_path('storage/' . $profileUser->ttd_pemimpin);
-                        if (file_exists($ttdPath) && is_file($ttdPath)) {
-                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
-                            $ttdMime = mime_content_type($ttdPath);
-                        }
-                    }
+                    $ttdBase64 = image_to_base64($profileUser->ttd_pemimpin ?? null);
                 @endphp
                 @if ($ttdBase64)
-                    <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:70px;">
+                    <img src="{{ $ttdBase64 }}" style="height:70px;">
                 @else
                     <br><br><br><br>
                 @endif

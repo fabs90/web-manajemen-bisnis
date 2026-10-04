@@ -50,7 +50,7 @@
                                             Disposisi
                                         </a>
                                         @if ($s->file_surat)
-                                            <a href="{{ asset('storage/' . $s->file_surat) }}" target="_blank"
+                                            <a href="{{ route('administrasi.surat-masuk.view-file', $s->id) }}" target="_blank"
                                                 class="btn btn-sm btn-secondary mb-1">
                                                 Lihat Pdf
                                             </a>

@@ -65,7 +65,7 @@ final class SuratKeluarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $surat = AgendaSuratKeluar::findOrFail($id);
+            $surat = AgendaSuratKeluar::where('user_id', auth()->id())->findOrFail($id);
 
             $this->suratKeluarService->delete($surat);
 
@@ -89,5 +89,41 @@ final class SuratKeluarController extends Controller
     public function downloadPdf(int $id)
     {
         return $this->suratKeluarService->generatePdf($id);
+    }
+
+    public function viewSignature(int $id)
+    {
+        $surat = AgendaSuratKeluar::where('user_id', auth()->id())->findOrFail($id);
+
+        abort_unless($surat->ttd, 404);
+
+        $filePath = storage_resolve_path($surat->ttd);
+
+        abort_unless($filePath && file_exists($filePath), 404);
+
+        return response()->file($filePath);
+    }
+
+    public function viewLampiran(int $id)
+    {
+        $surat = AgendaSuratKeluar::where('user_id', auth()->id())->findOrFail($id);
+
+        abort_unless($surat->file_lampiran, 404);
+
+        $filePath = storage_resolve_path($surat->file_lampiran);
+
+        abort_unless($filePath && file_exists($filePath), 404);
+
+        $fileName = basename($surat->file_lampiran);
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $inlineExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+        if (! in_array($extension, $inlineExtensions, true)) {
+            return response()->download($filePath, $fileName);
+        }
+
+        return response()->file($filePath, [
+            'Content-Disposition' => 'inline; filename="'.$fileName.'"',
+        ]);
     }
 }

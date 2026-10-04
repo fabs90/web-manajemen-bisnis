@@ -58,8 +58,8 @@ class RegisteredUserController extends Controller
             'role.required' => 'Silakan pilih jenis akun.',
             'role.in' => 'Jenis akun yang dipilih tidak valid.',
         ]);
-        $otp = random_int(100000, 999999);
-        $expiresAt = Carbon::now('Asia/Makassar')->addMinutes(30);
+        $otp = hash('sha256', (string) random_int(100000, 999999));
+        $expiresAt = Carbon::now('Asia/Makassar')->addMinutes(10);
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,

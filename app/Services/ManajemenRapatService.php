@@ -152,7 +152,7 @@ class ManajemenRapatService
         DB::beginTransaction();
 
         try {
-            $rapat = AgendaRapat::findOrFail($id);
+            $rapat = AgendaRapat::where('user_id', auth()->id())->findOrFail($id);
 
             // Hapus detail rapat
             RapatDetail::where('agenda_rapat_id', $rapat->id)->delete();
@@ -191,7 +191,7 @@ class ManajemenRapatService
     {
         DB::beginTransaction();
         try {
-            $hasil = HasilKeputusanRapat::find($id);
+            $hasil = HasilKeputusanRapat::where('user_id', auth()->id())->find($id);
             if (! $hasil) {
                 return redirect()
                     ->back()
@@ -220,7 +220,7 @@ class ManajemenRapatService
 
         try {
             // Ambil data rapat
-            $rapat = AgendaRapat::findOrFail($id);
+            $rapat = AgendaRapat::where('user_id', auth()->id())->findOrFail($id);
 
             // Update master
             $rapat->update([
@@ -322,7 +322,9 @@ class ManajemenRapatService
                 'rapatDetails',
                 'pesertaRapat',
                 'tindakLanjutRapat',
-            ])->findOrFail($id);
+            ])
+                ->where('user_id', auth()->id())
+                ->findOrFail($id);
 
             $profileUser = Auth::user();
             $pdf = Pdf::loadView(

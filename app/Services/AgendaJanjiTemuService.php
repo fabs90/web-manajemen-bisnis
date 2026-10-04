@@ -23,7 +23,7 @@ class AgendaJanjiTemuService
 
     public function delete(int $id)
     {
-        $agendaJanjiTemu = AgendaJanjiTemu::find($id);
+        $agendaJanjiTemu = AgendaJanjiTemu::where('user_id', auth()->id())->find($id);
         if ($agendaJanjiTemu) {
             $agendaJanjiTemu->delete();
         }
@@ -31,7 +31,7 @@ class AgendaJanjiTemuService
 
     public function show($id)
     {
-        $agendaJanjiTemu = AgendaJanjiTemu::where('user_id', auth()->user()->id)
+        $agendaJanjiTemu = AgendaJanjiTemu::where('user_id', auth()->id())
             ->where('id', $id)
             ->first();
         if ($agendaJanjiTemu) {
@@ -43,7 +43,7 @@ class AgendaJanjiTemuService
 
     public function generatePdf($id)
     {
-        $agendaJanjiTemu = AgendaJanjiTemu::findOrFail($id);
+        $agendaJanjiTemu = AgendaJanjiTemu::where('user_id', auth()->id())->findOrFail($id);
 
         $pdf = Pdf::loadView('administrasi.surat.janji-temu.template-pdf', [
             'agendaJanjiTemu' => $agendaJanjiTemu,

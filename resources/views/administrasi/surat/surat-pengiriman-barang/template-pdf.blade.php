@@ -83,13 +83,11 @@
     <table class="table-no-border">
         <tr>
             <td width="15%">
-                @if (isset($profileUser->logo_perusahaan) && $profileUser->logo_perusahaan)
-                    @php
-                        $logoPath = public_path('storage/' . $profileUser->logo_perusahaan);
-                        $logoBase64 = base64_encode(file_get_contents($logoPath));
-                        $logoMime = mime_content_type($logoPath);
-                    @endphp
-                    <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" style="height:70px;">
+                @php
+                    $logoBase64 = image_to_base64($profileUser->logo_perusahaan ?? null);
+                @endphp
+                @if ($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height:70px;">
                 @endif
             </td>
             <td width="70%" class="text-center">
@@ -229,21 +227,11 @@
             @if ($data->status_pengiriman == 'diterima')
                 <td width="50%" class="text-center" style="vertical-align: top;">
                     Yang Menerima,<br>
-                    @if ($data->ttd_penerima)
-                        @php
-                            $ttdPenerimaPath = storage_path('app/public/' . $data->ttd_penerima);
-                            $ttdPenerimaBase64 = null;
-                            if (file_exists($ttdPenerimaPath)) {
-                                $ttdPenerimaBase64 = base64_encode(file_get_contents($ttdPenerimaPath));
-                                $ttdPenerimaMime = mime_content_type($ttdPenerimaPath);
-                            }
-                        @endphp
-                        @if ($ttdPenerimaBase64)
-                            <img src="data:{{ $ttdPenerimaMime }};base64,{{ $ttdPenerimaBase64 }}"
-                                style="height:60px;">
-                        @else
-                            <div style="height:60px;"></div>
-                        @endif
+                    @php
+                        $ttdPenerimaBase64 = image_to_base64($data->ttd_penerima ?? null);
+                    @endphp
+                    @if ($ttdPenerimaBase64)
+                        <img src="{{ $ttdPenerimaBase64 }}" style="height:60px;">
                     @else
                         <div style="height:60px;"></div>
                     @endif
@@ -257,20 +245,11 @@
             <td width="50%" class="text-center" style="vertical-align: top;">
                 Hormat Kami,<br>
                 <strong>{{ $profileUser->name ?? '_________' }}</strong><br>
-                @if ($profileUser->ttd_pemimpin)
-                    @php
-                        $ttdPath = storage_path('app/public/' . $profileUser->ttd_pemimpin);
-                        $ttdBase64 = null;
-                        if (file_exists($ttdPath)) {
-                            $ttdBase64 = base64_encode(file_get_contents($ttdPath));
-                            $ttdMime = mime_content_type($ttdPath);
-                        }
-                    @endphp
-                    @if ($ttdBase64)
-                        <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}" style="height:60px;">
-                    @else
-                        <div style="height:60px;"></div>
-                    @endif
+                @php
+                    $ttdBase64 = image_to_base64($profileUser->ttd_pemimpin ?? null);
+                @endphp
+                @if ($ttdBase64)
+                    <img src="{{ $ttdBase64 }}" style="height:60px;">
                 @else
                     <div style="height:60px;"></div>
                 @endif

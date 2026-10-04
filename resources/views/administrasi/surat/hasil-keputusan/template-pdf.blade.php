@@ -50,17 +50,11 @@
     <table style="width:100%; margin-bottom:10px; border-collapse:collapse;">
         <tr>
             <td style="width:70px; vertical-align:middle;">
-                @if (isset($user->logo_perusahaan) && $user->logo_perusahaan)
-                    @php
-                        $logoPath = public_path('storage/' . $user->logo_perusahaan);
-                    @endphp
-                    @if (file_exists($logoPath))
-                        @php
-                            $logoBase64 = base64_encode(file_get_contents($logoPath));
-                            $logoMime = mime_content_type($logoPath);
-                        @endphp
-                        <img src="data:{{ $logoMime }};base64,{{ $logoBase64 }}" alt="Logo" style="height:60px;">
-                    @endif
+                @php
+                    $logoBase64 = image_to_base64($user->logo_perusahaan ?? null);
+                @endphp
+                @if ($logoBase64)
+                    <img src="{{ $logoBase64 }}" alt="Logo" style="height:60px;">
                 @endif
             </td>
             <td style="vertical-align:middle; text-align:center;">
@@ -116,20 +110,12 @@
 
                 <div class="signature" style="margin-top: 10px;">
                     {{-- Bagian TTD --}}
-                    @if (!empty($result->ttd_pemimpin))
-                        @php
-                            $path = storage_path('app/public/' . $result->ttd_pemimpin);
-                        @endphp
-
-                        @if (file_exists($path))
-                            @php
-                                $type = pathinfo($path, PATHINFO_EXTENSION);
-                                $data = file_get_contents($path);
-                                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                            @endphp
-                            <img src="{{ $base64 }}" alt="Tanda Tangan"
-                                style="max-width: 150px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;">
-                        @endif
+                    @php
+                        $ttdBase64 = image_to_base64($result->ttd_pemimpin ?? null);
+                    @endphp
+                    @if ($ttdBase64)
+                        <img src="{{ $ttdBase64 }}" alt="Tanda Tangan"
+                            style="max-width: 150px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;">
                     @else
                         {{-- Jarak jika tidak ada gambar --}}
                         <div style="height: 60px;"></div>

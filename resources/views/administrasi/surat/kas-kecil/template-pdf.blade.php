@@ -60,23 +60,10 @@
     @php
         $formulir = $data->kasKecilFormulir->last();
 
-        $getImgBase64 = function ($path) {
-            if (!$path) {
-                return null;
-            }
-            $fullPath = storage_path('app/public/' . $path);
-            if (file_exists($fullPath)) {
-                $mime = mime_content_type($fullPath);
-                $base64 = base64_encode(file_get_contents($fullPath));
-                return 'data:' . $mime . ';base64,' . $base64;
-            }
-            return null;
-        };
-
-        $logoSrc = $getImgBase64($userProfile->logo_perusahaan);
-        $ttdPemohonSrc = $getImgBase64($formulir->ttd_nama_pemohon ?? '');
-        $ttdAtasanSrc = $getImgBase64($formulir->ttd_atasan_langsung ?? '');
-        $ttdKeuanganSrc = $getImgBase64($formulir->ttd_bagian_keuangan ?? '');
+        $logoSrc = image_to_base64($userProfile->logo_perusahaan ?? null);
+        $ttdPemohonSrc = image_to_base64($formulir->ttd_nama_pemohon ?? null);
+        $ttdAtasanSrc = image_to_base64($formulir->ttd_atasan_langsung ?? null);
+        $ttdKeuanganSrc = image_to_base64($formulir->ttd_bagian_keuangan ?? null);
     @endphp
 
     {{-- HEADER --}}

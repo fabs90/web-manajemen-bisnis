@@ -35,7 +35,9 @@ class NotulenRapatController extends Controller
             'rapatDetails',
             'pesertaRapat',
             'tindakLanjutRapat',
-        ])->findOrFail($rapatId);
+        ])
+            ->where('user_id', auth()->id())
+            ->findOrFail($rapatId);
 
         return view('administrasi.surat.notulen-rapat.edit', compact('rapat'));
     }
