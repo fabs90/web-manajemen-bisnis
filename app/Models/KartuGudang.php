@@ -42,4 +42,32 @@ class KartuGudang extends Model
     {
         return $this->belongsTo(JournalEntry::class);
     }
+
+    public function formatSaldoPerkemasan(?int $unitPerKemasan = null): string
+    {
+        $unitPerKemasan = $unitPerKemasan ?? $this->barang?->jumlah_unit_per_kemasan ?? 1;
+
+        if ($unitPerKemasan <= 1) {
+            return $this->saldo_persatuan.' unit';
+        }
+
+        $saldo = (int) $this->saldo_persatuan;
+        if ($saldo === 0) {
+            return '0 kemas';
+        }
+
+        $isNegative = $saldo < 0;
+        $absSaldo = abs($saldo);
+
+        $kemas = intdiv($absSaldo, $unitPerKemasan);
+        $sisa = $absSaldo % $unitPerKemasan;
+
+        $prefix = $isNegative ? '-' : '';
+
+        if ($sisa === 0) {
+            return "{$prefix}{$kemas} kemas";
+        }
+
+        return "{$prefix}{$kemas} kemas + {$sisa} unit";
+    }
 }

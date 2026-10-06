@@ -23,21 +23,21 @@
                             @php
                                 $latest = $barang->kartuGudang()->latest()->first();
                                 $stokUnit = $latest->saldo_persatuan ?? 0;
-                                $stokKemas = $latest->saldo_perkemasan ?? 0;
+                                $stokKemasFormatted = $latest ? $latest->formatSaldoPerkemasan($barang->jumlah_unit_per_kemasan) : '0 kemas';
                             @endphp
                             <div class="col-6 text-center">
-                                <small class="text-muted d-block text-uppercase small fw-bold">Stok Saat Ini</small>
+                                <small class="text-muted d-block text-uppercase small fw-bold">Stok Unit</small>
                                 <span class="fs-4 fw-bold text-warning">{{ number_format($stokUnit, 0, ',', '.') }}</span>
                                 <small class="d-block text-muted">Unit</small>
                             </div>
                             <div class="col-6 text-center border-start">
-                                <small class="text-muted d-block text-uppercase small fw-bold">Stok Saat Ini</small>
-                                <span class="fs-4 fw-bold text-warning">{{ number_format($stokKemas, 0, ',', '.') }}</span>
+                                <small class="text-muted d-block text-uppercase small fw-bold">Stok Kemasan</small>
+                                <span class="fs-5 fw-bold text-info">{{ $stokKemasFormatted }}</span>
                                 <small class="d-block text-muted">Kemasan</small>
                             </div>
                         </div>
 
-                        <div class="mt-4 p-3 bg-light rounded-3 border">
+                        <div class="mt-4 p-3 rounded-3 border">
                             <h6 class="fw-bold mb-2 small text-uppercase text-muted">Detail Konversi</h6>
                             <div class="d-flex justify-content-between mb-1">
                                 <span class="small">1 Kemasan</span>
@@ -59,8 +59,8 @@
             <!-- Form Card -->
             <div class="col-lg-8 mb-4">
                 <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="mb-0 text-dark"><i class="bi bi-pencil-square me-2"></i>Input Transaksi Stok</h5>
+                    <div class="card-header border-bottom py-3">
+                        <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Input Transaksi Stok</h5>
                     </div>
                     <div class="card-body p-4">
                         <form action="{{ route('kartu-gudang.store', ['barang_id' => $barang->id]) }}" method="post">
@@ -86,7 +86,7 @@
                                     <label for="tanggal" class="form-label fw-bold">Tanggal Transaksi <span
                                             class="text-danger">*</span></label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0"><i
+                                        <span class="input-group-text border-end-0"><i
                                                 class="bi bi-calendar3"></i></span>
                                         <input type="date" class="form-control border-start-0" id="tanggal"
                                             name="tanggal" required value="{{ old('tanggal', date('Y-m-d')) }}">
@@ -149,9 +149,9 @@
                             </div>
 
                             <div class="mt-5 pt-3 d-flex justify-content-between align-items-center">
-                                <a href="{{ route('kartu-gudang.index') }}"
+                                <a href="{{ route('kartu-gudang.detail', $barang->id) }}"
                                     class="btn btn-link text-secondary text-decoration-none p-0">
-                                    <i class="bi bi-arrow-left me-1"></i> Kembali ke List
+                                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Detail Barang
                                 </a>
                                 <div class="d-flex gap-2">
                                     <button type="reset" class="btn btn-light px-4">Reset</button>

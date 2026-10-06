@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\VerifyUserController;
 use App\Http\Controllers\AdministrasiSuratController;
+use App\Http\Controllers\AgendaJanjiTemuController;
+use App\Http\Controllers\AgendaPerjalananController;
+use App\Http\Controllers\AgendaTelponController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
 use App\Http\Controllers\Faktur\AdministrasiFakturController;
@@ -312,6 +315,10 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             BarangController::class,
             'indexKartuGudang',
         ])->name('kartu-gudang.index');
+        Route::get('/kartu-gudang/{barang_id}/detail', [
+            BarangController::class,
+            'detailKartuGudang',
+        ])->name('kartu-gudang.detail');
         Route::get('/kartu-gudang/{barang_id}', [
             BarangController::class,
             'createKartuGudang',
@@ -423,105 +430,105 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
         // Surat Agenda Telpon
         Route::get('/agenda-telpon/', [
-            AdministrasiSuratController::class,
-            'indexAgendaTelpon',
+            AgendaTelponController::class,
+            'index',
         ])->name('administrasi.agenda-telpon.index');
 
         Route::get('/agenda-telpon/create', [
-            AdministrasiSuratController::class,
-            'createAgendaTelpon',
+            AgendaTelponController::class,
+            'create',
         ])->name('administrasi.agenda-telpon.create');
 
         Route::get('/agenda-telpon/{id}', [
-            AdministrasiSuratController::class,
-            'showAgendaTelpon',
+            AgendaTelponController::class,
+            'show',
         ])->name('administrasi.agenda-telpon.show');
 
         Route::post('/agenda-telpon/', [
-            AdministrasiSuratController::class,
-            'storeAgendaTelpon',
+            AgendaTelponController::class,
+            'store',
         ])->name('administrasi.agenda-telpon.store');
 
         Route::patch('/administrasi/agenda-telpon/{id}/update-done', [
-            AdministrasiSuratController::class,
+            AgendaTelponController::class,
             'updateIsDone',
         ])->name('administrasi.agenda-telpon.update-done');
 
         Route::patch('/administrasi/agenda-telpon/{id}', [
-            AdministrasiSuratController::class,
-            'updateAgendaTelpon',
+            AgendaTelponController::class,
+            'update',
         ])->name('administrasi.agenda-telpon.update');
 
         Route::delete('/agenda-telpon/{agendaId}', [
-            AdministrasiSuratController::class,
-            'destroyAgendaTelpon',
+            AgendaTelponController::class,
+            'destroy',
         ])->name('administrasi.agenda-telpon.destroy');
 
         // Agenda Perjalanan
         Route::get('/agenda-perjalanan/', [
-            AdministrasiSuratController::class,
-            'indexAgendaPerjalanan',
+            AgendaPerjalananController::class,
+            'index',
         ])->name('administrasi.agenda-perjalanan.index');
 
         Route::get('/agenda-perjalanan/create', [
-            AdministrasiSuratController::class,
-            'createAgendaPerjalanan',
+            AgendaPerjalananController::class,
+            'create',
         ])->name('administrasi.agenda-perjalanan.create');
 
         Route::get('/agenda-perjalanan/{id}', [
-            AdministrasiSuratController::class,
-            'showAgendaPerjalanan',
+            AgendaPerjalananController::class,
+            'show',
         ])->name('administrasi.agenda-perjalanan.show');
 
         Route::get('/agenda-perjalanan/{id}/pdf', [
-            AdministrasiSuratController::class,
-            'pdfAgendaPerjalanan',
+            AgendaPerjalananController::class,
+            'pdf',
         ])->name('administrasi.agenda-perjalanan.pdf');
 
         Route::get('/agenda-perjalanan/{id}/pdf-surat-tugas', [
-            AdministrasiSuratController::class,
+            AgendaPerjalananController::class,
             'pdfSuratTugas',
         ])->name('administrasi.agenda-perjalanan.pdf-surat-tugas');
 
         Route::post('/agenda-perjalanan/', [
-            AdministrasiSuratController::class,
-            'storeAgendaPerjalanan',
+            AgendaPerjalananController::class,
+            'store',
         ])->name('administrasi.agenda-perjalanan.store');
 
         Route::delete('/agenda-perjalanan/{agendaId}', [
-            AdministrasiSuratController::class,
-            'destroyAgendaPerjalanan',
+            AgendaPerjalananController::class,
+            'destroy',
         ])->name('administrasi.agenda-perjalanan.destroy');
 
         // Janji Temu
         Route::get('/janji-temu/', [
-            AdministrasiSuratController::class,
-            'indexJanjiTemu',
+            AgendaJanjiTemuController::class,
+            'index',
         ])->name('administrasi.janji-temu.index');
 
         Route::get('/janji-temu/create', [
-            AdministrasiSuratController::class,
-            'createJanjiTemu',
+            AgendaJanjiTemuController::class,
+            'create',
         ])->name('administrasi.janji-temu.create');
 
         Route::get('/janji-temu/{id}', [
-            AdministrasiSuratController::class,
-            'showJanjiTemu',
+            AgendaJanjiTemuController::class,
+            'show',
         ])->name('administrasi.janji-temu.show');
 
         Route::get('/janji-temu/{id}/pdf', [
-            AdministrasiSuratController::class,
-            'pdfJanjiTemu',
+            AgendaJanjiTemuController::class,
+            'pdf',
         ])->name('administrasi.janji-temu.pdf');
 
         Route::post('/janji-temu/', [
-            AdministrasiSuratController::class,
-            'storeJanjiTemu',
+            AgendaJanjiTemuController::class,
+            'store',
         ])->name('administrasi.janji-temu.store');
 
         Route::delete('/janji-temu/{agendaId}', [
-            AdministrasiSuratController::class,
-            'destroyJanjiTemu',
+            AgendaJanjiTemuController::class,
+            'destroy',
         ])->name('administrasi.janji-temu.destroy');
 
         // Surat Undangan Rapat

@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 @section('page-title', 'Kartu Gudang | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
-@section('section-heading', 'List Kartu Gudang')
+@section('section-heading', 'Daftar Barang & Kartu Gudang')
 @section('section-row')
 
     <div class="alert alert-success d-flex align-items-center mb-4 shadow-sm" role="alert">
@@ -14,104 +14,117 @@
             </small>
         </div>
     </div>
-    @forelse ($barang as $item)
-        <div class="card shadow-sm mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center pb-0 flex-wrap">
-                <div class="mb-2 mb-md-0">
-                    <h6 class="mb-0">
-                        <strong>{{ $item->kode_barang }}</strong> — {{ $item->nama }}
-                    </h6>
-                    <small class="text-muted d-block mt-1">
-                        Harga Beli Unit: Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} |
-                        Harga Jual Unit: Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }} |
-                        Jumlah Unit Per-Kemasan: {{ $item->jumlah_unit_per_kemasan }}
-                    </small>
-                    <div class="mt-2 text-primary">
-                        <small>
-                            <strong>Kalkulasi Persediaan:</strong>
-                            {{ $item->saldo_akhir }} unit (Saldo Akhir) × Rp
-                            {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }} (Harga Beli)
-                            = <strong>Rp {{ number_format($item->nilai_persediaan, 0, ',', '.') }}</strong>
-                        </small>
-                    </div>
-                </div>
-                <div>
-                    <a href="{{ route('kartu-gudang.create', ['barang_id' => $item->id]) }}" class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-circle"></i> Tambah Data
-                    </a>
-                </div>
-            </div>
 
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm kartu-gudang-table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Tanggal</th>
-                                <th>Diterima</th>
-                                <th>Dikeluarkan</th>
-                                <th>Uraian</th>
-                                <th>Saldo Persatuan</th>
-                                <th>Saldo Perkemasan</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($item->kartuGudang as $kartu)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $kartu->tanggal->format('d-m-Y') }}</td>
-                                    <td>{{ $kartu->diterima }}</td>
-                                    <td>{{ $kartu->dikeluarkan }}</td>
-                                    <td>{{ $kartu->uraian }}</td>
-                                    <td>{{ $kartu->saldo_persatuan }}</td>
-                                    <td>{{ $kartu->saldo_perkemasan }}</td>
-                                    <td>
-                                        <form action="{{ route('kartu-gudang.destroy', $kartu->id) }}" method="POST"
-                                            class="d-inline" onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-3">
-                                        <em>Tidak ada data kartu gudang untuk barang ini.</em>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-box-seam me-2"></i>Daftar Barang & Ringkasan Stok Gudang</h5>
+                <small class="text-muted">Klik tombol "Detail" pada baris barang untuk melihat riwayat mutasi kartu gudang lengkap.</small>
+            </div>
+            <div>
+                <a href="{{ route('barang.create') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Master Barang
+                </a>
             </div>
         </div>
-    @empty
-        <div class="alert alert-info">
-            Tidak ada barang yang tersedia.
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle table-striped" id="tableBarangKartuGudang">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 50px;">No</th>
+                            <th>Kode Barang</th>
+                            <th>Nama Barang</th>
+                            <th>Isi / Kemas</th>
+                            <th>Batas Stok</th>
+                            <th>Saldo Unit</th>
+                            <th>Saldo Kemasan</th>
+                            <th>Harga Beli / Unit</th>
+                            <th>Nilai Persediaan</th>
+                            <th class="text-center" style="width: 140px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($barang as $item)
+                            @php
+                                $saldoUnit = $item->saldo_akhir ?? 0;
+                                $saldoKemasFormatted = $item->formatSaldoPerkemasan($saldoUnit);
+                            @endphp
+                            <tr>
+                                <td class="text-center">{{ $loop->iteration }}</td>
+                                <td><span class="badge bg-secondary font-monospace">{{ $item->kode_barang }}</span></td>
+                                <td class="fw-bold">{{ $item->nama }}</td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-body border">
+                                        1 kemas = {{ $item->jumlah_unit_per_kemasan }} unit
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="d-block text-muted">Min: <strong class="text-danger">{{ $item->jumlah_min }}</strong></small>
+                                    <small class="d-block text-muted">Max: <strong class="text-success">{{ $item->jumlah_max }}</strong></small>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-primary">{{ number_format($saldoUnit, 0, ',', '.') }}</span>
+                                    <small class="text-muted">unit</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-white px-2 py-1">
+                                        <i class="bi bi-boxes me-1"></i>{{ $saldoKemasFormatted }}
+                                    </span>
+                                </td>
+                                <td>Rp {{ number_format($item->harga_beli_per_unit, 0, ',', '.') }}</td>
+                                <td>
+                                    <strong class="text-success">Rp {{ number_format($item->nilai_persediaan, 0, ',', '.') }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('kartu-gudang.detail', $item->id) }}" class="btn btn-primary" title="Lihat Detail Riwayat Kartu Gudang">
+                                            <i class="bi bi-eye me-1"></i> Detail
+                                        </a>
+                                        <a href="{{ route('kartu-gudang.create', ['barang_id' => $item->id]) }}" class="btn btn-outline-success" title="Tambah Transaksi Stok">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="text-center py-4 text-muted">
+                                    <em>Belum ada barang yang terdaftar. Silakan tambahkan barang terlebih dahulu.</em>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    @endforelse
+    </div>
 @endsection
 
 @push('script')
     <script>
         $(document).ready(function() {
-            $('.kartu-gudang-table').each(function() {
-                $(this).DataTable({
-                    searching: true,
-                    paging: false,
-                    info: true,
-                    ordering: true,
-                    responsive: true,
-                    columnDefs: [{
-                        targets: "_all",
-                        defaultContent: ""
-                    }]
-                });
+            $('#tableBarangKartuGudang').DataTable({
+                searching: true,
+                paging: true,
+                pageLength: 10,
+                info: true,
+                ordering: true,
+                responsive: true,
+                language: {
+                    search: "Cari Barang:",
+                    lengthMenu: "Tampilkan _MENU_ data per halaman",
+                    zeroRecords: "Tidak ditemukan barang yang cocok",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ barang",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 barang",
+                    infoFiltered: "(disaring dari _MAX_ total barang)",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikutnya",
+                        previous: "Sebelumnya"
+                    }
+                }
             });
         });
 

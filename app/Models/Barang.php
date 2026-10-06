@@ -47,4 +47,31 @@ class Barang extends Model
 
         return $latestKartu ? $latestKartu->saldo_persatuan : 0;
     }
+
+    public function formatSaldoPerkemasan(int $saldoUnit): string
+    {
+        $unitPerKemasan = $this->jumlah_unit_per_kemasan ?: 1;
+
+        if ($unitPerKemasan <= 1) {
+            return $saldoUnit.' unit';
+        }
+
+        if ($saldoUnit === 0) {
+            return '0 kemas';
+        }
+
+        $isNegative = $saldoUnit < 0;
+        $absSaldo = abs($saldoUnit);
+
+        $kemas = intdiv($absSaldo, $unitPerKemasan);
+        $sisa = $absSaldo % $unitPerKemasan;
+
+        $prefix = $isNegative ? '-' : '';
+
+        if ($sisa === 0) {
+            return "{$prefix}{$kemas} kemas";
+        }
+
+        return "{$prefix}{$kemas} kemas + {$sisa} unit";
+    }
 }
