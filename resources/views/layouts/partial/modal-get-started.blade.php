@@ -22,8 +22,10 @@
 
                 <ol class="mb-4">
                     <li>Buka menu di sidebar untuk mengakses fitur utama seperti <strong>Barang</strong>,
-                        <strong>Debitur-Kreditur</strong>, <strong>Pendapatan</strong>, <strong>Pengeluaran Kas Perusahaan</strong>,
-                        dan <strong>Neraca</strong>.</li>
+                        <strong>Debitur-Kreditur</strong>, <strong>Pendapatan</strong>, <strong>Pengeluaran Kas
+                            Perusahaan</strong>,
+                        dan <strong>Neraca</strong>.
+                    </li>
                     <li>Tambahkan terlebih dahulu <a href="{{ route('barang.create') }}"><strong>Data
                                 Barang</strong></a> dan <a
                             href="{{ route('debitur-kreditur.list') }}"><strong>Kreditur-Debitur</strong></a>.</li>
@@ -32,7 +34,8 @@
                     <li>Masukan data pendapatan penjualan melalui menu <a
                             href="{{ route('keuangan.pendapatan.create') }}"><strong>Pendapatan</strong></a>.</li>
                     <li>Masukan data pengeluaran pembelian melalui menu <a
-                            href="{{ route('keuangan.pengeluaran.create') }}"><strong>Pengeluaran Kas Perusahaan</strong></a>.</li>
+                            href="{{ route('keuangan.pengeluaran.create') }}"><strong>Pengeluaran Kas
+                                Perusahaan</strong></a>.</li>
                     <li>Untuk melihat hasil <a href="{{ route('laporan-keuangan.rugi-laba') }}"><strong>Rugi
                                 Laba</strong></a> dan <a
                             href="{{ route('laporan-keuangan.neraca-akhir') }}"><strong>Neraca Akhir</strong></a> dapat
@@ -52,34 +55,3 @@
         </div>
     </div>
 </div>
-
-<!-- Floating Button Styling -->
-<style>
-    .fab-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 45px;
-        height: 45px;
-        z-index: 1050;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.5;
-        transition: all 0.3s ease;
-    }
-
-    .fab-btn i {
-        font-size: 1.5rem !important;
-    }
-
-    .fab-btn:hover {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-
-    .modal-body a {
-        color: #007bff;
-        text-decoration: none;
-    }
-</style>

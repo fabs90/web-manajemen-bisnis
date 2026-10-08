@@ -9,7 +9,8 @@
                 Selamat Datang, {{ Auth::user()->name ?? 'Pengguna Baru' }}! 🎉
             </h1>
             <p class="lead text-secondary mt-3">
-                Akun Anda telah berhasil dibuat. Langkah selanjutnya, mari pelajari cara menggunakan <strong>TRANSDIGITAL</strong>
+                Akun Anda telah berhasil dibuat. Langkah selanjutnya, mari pelajari cara menggunakan
+                <strong>TRANSDIGITAL</strong>
                 untuk mengelola administrasi dan transaksi bisnis Anda secara efisien.
             </p>
         </div>
@@ -17,11 +18,8 @@
         <!-- Video Section -->
         <div class="d-flex justify-content-center mb-5">
             <div class="ratio ratio-16x9 shadow-lg rounded-4 overflow-hidden" style="max-width: 900px; width: 100%;">
-                <iframe
-                    id="video-player"
-                    src="https://www.youtube.com/embed/-xuUehefw7Y?enablejsapi=1&rel=0&version=3"
-                    title="Panduan Singkat TRANSDIGITAL"
-                    allowfullscreen
+                <iframe id="video-player" src="https://www.youtube.com/embed/-xuUehefw7Y?enablejsapi=1&rel=0&version=3"
+                    title="Panduan Singkat TRANSDIGITAL" allowfullscreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
                 </iframe>
             </div>
@@ -81,25 +79,3 @@
         </div>
     </div>
 @endsection
-
-@push('script')
-<script>
-    const player = new YT.Player('video-player', {
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-
-    function onPlayerReady(event) {
-        event.target.playVideo();
-    }
-
-    function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.ENDED) {
-            // Handle video end event
-            event.target.stopVideo();
-        }
-    }
-</script>
-@endpush

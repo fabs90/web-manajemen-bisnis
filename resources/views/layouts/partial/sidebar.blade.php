@@ -134,10 +134,12 @@
                     </a>
                     <ul class="submenu">
                         <li class="submenu-item {{ Request::routeIs('retur.list-penjualan') ? 'active' : '' }}">
-                            <a href="{{ route('retur.list-penjualan') }}" class="submenu-link">List Retur Penjualan</a>
+                            <a href="{{ route('retur.list-penjualan') }}" class="submenu-link">List Retur
+                                Penjualan</a>
                         </li>
                         <li class="submenu-item {{ Request::routeIs('retur.list-pembelian') ? 'active' : '' }}">
-                            <a href="{{ route('retur.list-pembelian') }}" class="submenu-link">List Retur Pembelian</a>
+                            <a href="{{ route('retur.list-pembelian') }}" class="submenu-link">List Retur
+                                Pembelian</a>
                         </li>
                     </ul>
                 </li>
@@ -178,23 +180,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    document.getElementById('logout-link')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Apakah Anda yakin?',
-            text: 'Anda akan keluar dari sistem ini.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Keluar',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('logout-form').submit();
-            }
-        });
-    });
-</script>

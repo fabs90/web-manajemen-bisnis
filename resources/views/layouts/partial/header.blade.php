@@ -14,27 +14,13 @@
     <link rel="stylesheet" href="{{ asset('dist/assets/compiled/css/iconly.css') }}">
     <link rel="stylesheet" href="{{ asset('datatables/datatables.min.css') }}">
     <link rel="stylesheet" href="{{ asset('select2/select2.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"
+        integrity="sha384-Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('dist/assets/dashboard.css') }}">
+
     @stack('styles')
 
     <script src="{{ asset('dist/assets/static/js/initTheme.js') }}"></script>
-    <style>
-        @media (min-width: 1200px) {
-            #sidebar:not(.active) .sidebar-wrapper {
-                left: -300px !important;
-            }
-            #sidebar:not(.active) ~ #main {
-                margin-left: 0 !important;
-            }
-            #main {
-                transition: margin-left 0.3s ease-out;
-            }
-            .sidebar-wrapper {
-                transition: left 0.3s ease-out;
-            }
-        }
-    </style>
 </head>
 
 <body>

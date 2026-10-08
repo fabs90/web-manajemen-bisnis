@@ -2,65 +2,6 @@
 
 @section('page-title', 'Dashboard | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')
 @section('section-heading', 'Dashboard')
-
-@push('styles')
-    <style>
-        /* DataTables Dark Mode Fixes */
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_length select,
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter input {
-            background-color: #1b1b29;
-            color: #c2c2d9;
-            border-color: #435ebe;
-        }
-
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_info,
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate {
-            color: #c2c2d9 !important;
-        }
-
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
-            color: #c2c2d9 !important;
-            border: 1px solid transparent;
-        }
-
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current,
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-            background: #435ebe !important;
-            border-color: #435ebe !important;
-            color: white !important;
-        }
-
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background: #25396f !important;
-            border-color: #435ebe !important;
-            color: white !important;
-        }
-
-        html[data-bs-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-            color: #607080 !important;
-        }
-
-        html[data-bs-theme="dark"] table.dataTable {
-            border-color: #343a40 !important;
-        }
-
-        html[data-bs-theme="dark"] table.dataTable thead th {
-            border-bottom: 2px solid #435ebe !important;
-            color: #e9ecef;
-        }
-
-        html[data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
-            --bs-table-accent-bg: rgba(255, 255, 255, 0.02);
-        }
-
-        /* Grouping row contrast in dark mode */
-        html[data-bs-theme="dark"] .table-secondary.fw-bold {
-            background-color: #25396f !important;
-            color: #e9ecef !important;
-        }
-    </style>
-@endpush
-
 @section('section-row')
     <!-- Greetings Card -->
     <div class="row">
@@ -469,7 +410,9 @@
     </div>
 @endsection
 @push('script')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"
+        integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous">
+    </script>
     <script>
         $(document).ready(function() {
             const tableOptions = {

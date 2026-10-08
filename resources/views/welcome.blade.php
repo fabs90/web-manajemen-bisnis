@@ -4,7 +4,8 @@
 
 @section('content')
     <section id="home" class="hero text-white text-center py-5"
-        style="background-image: url('https://images.unsplash.com/photo-1541064828014-503911d13103?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870'); background-size: cover; background-position: center; position: relative;">
+        style="background-image: url('{{ asset('dist/assets/static/images/nelayan.jpg') }}'); background-size: cover;
+        background-position: center; position: relative;">
         <div class="overlay"
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
         </div>
@@ -77,11 +78,12 @@
                     <h2 class="mb-4 fw-bold" style="color: #3bb273;">Hubungi Kami</h2>
                     <p class="mb-4" style="color: #3bb273;">Ada pertanyaan? Jangan ragu untuk menghubungi kami. Tim kami
                         siap membantu Anda.</p>
-                    <img src="{{asset("dist/assets/static/images/bg-warung.webp")}}"
-                        alt="Contact Us" class="img-fluid rounded shadow" style="max-height: 300px;">
+                    <img src="{{ asset('dist/assets/static/images/bg-warung.webp') }}" alt="Contact Us"
+                        class="img-fluid rounded shadow" style="max-height: 300px;">
                 </div>
                 <div class="col-md-6">
                     <form class="bg-white p-4 rounded shadow" action="https://formspree.io/f/xqagvwpg" method="POST">
+                        @csrf
                         <div class="mb-3">
                             <label for="name" class="form-label fw-bold" style="color: #3bb273;">Nama</label>
                             <input type="text" class="form-control" id="name" name="name"

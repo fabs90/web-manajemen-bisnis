@@ -5,18 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Home | TRANSDIGITAL - Pengelolaan Administrasi dan Transaksi Bisnis')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <!--page icon-->
     <link rel="icon" href="{{ asset('dist/assets/static/images/logo_square.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('dist/landing-page/landing-page.css') }}">
 </head>
 
 <body>
-    <header>
+    <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center fw-bold text-decoration-none" href="#">
-                    <img src="{{ asset('dist/assets/static/images/logo_square.png') }}" alt="Logo" 
+                    <img src="{{ asset('dist/assets/static/images/logo_square.png') }}" alt="Logo"
                         style="width: 60px !important; height: 60px !important; object-fit: contain !important;">
                     <div>
                         <span class="tagline small d-none d-lg-block">Administrasi Efektif & Otomatisasi Laporan
@@ -37,9 +38,9 @@
         </nav>
     </header>
     @if (session('success'))
-    <div id="notification" class="notification">
-        {{ session('success') }}
-    </div>
+        <div id="notification" class="notification">
+            {{ session('success') }}
+        </div>
     @endif
     <main>
         @yield('content')
@@ -49,52 +50,10 @@
         <p class="m-0">&copy; 2025 Website Pembukuan. Semua hak dilindungi.</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Smooth scroll untuk navigasi
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // Animasi fade-in pada scroll
-        window.addEventListener('scroll', function() {
-            const elements = document.querySelectorAll('.card');
-            elements.forEach(el => {
-                if (el.getBoundingClientRect().top < window.innerHeight) {
-                    el.style.opacity = '1';
-                    el.style.transform = 'translateY(0)';
-                }
-            });
-        });
-
-        // Inisialisasi opacity awal untuk animasi
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                card.style.transition = 'opacity 0.5s, transform 0.5s';
-            });
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-              const notif = document.getElementById("notification");
-              if (notif) {
-                  notif.classList.add("show");
-
-                  // otomatis hilang setelah 3 detik
-                  setTimeout(() => {
-                      notif.classList.remove("show");
-                      notif.classList.add("hide");
-                  }, 3000);
-              }
-          });
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous">
     </script>
+    <script src="{{ asset('js/homepage.js') }}"></script>
 </body>
 
 </html>
