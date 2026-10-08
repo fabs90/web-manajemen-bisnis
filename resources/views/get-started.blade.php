@@ -79,3 +79,9 @@
         </div>
     </div>
 @endsection
+
+@push('script')
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="{{ asset('js/get-started.js') }}"></script>
+@endpush
+

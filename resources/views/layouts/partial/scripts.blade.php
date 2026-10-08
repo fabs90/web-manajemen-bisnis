@@ -15,7 +15,6 @@
             integrity="sha384-nLoOnA/BDh8A/jxqtckg4DumuCGOBYUnNJLZdQz/zfYNp3wcjGSoWTAzgko06G/2" crossorigin="anonymous">
         </script>
         <script src="{{ asset('dist/assets/rupiah-helper.js') }}"></script>
-        <script src="{{ asset('js/get-started.js') }}"></script>
         <script src="{{ asset('js/sidebar-dashboard.js') }}"></script>
         @stack('script')
         </body>
