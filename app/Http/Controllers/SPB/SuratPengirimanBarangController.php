@@ -7,6 +7,7 @@ use App\Http\Requests\SuratPengirimanBarangRequest;
 use App\Models\SPB\SuratPengirimanBarang;
 use App\Models\SPP\SuratPesananPenjualan;
 use App\Services\SuratPengirimanBarangService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -19,7 +20,7 @@ class SuratPengirimanBarangController extends Controller
             'pesananPenjualan.pelanggan',
             'user',
         ])
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->get();
 
         return view(
@@ -34,7 +35,7 @@ class SuratPengirimanBarangController extends Controller
             'pelanggan',
             'details',
         ])
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->whereDoesntHave('suratPengirimanBarang')
             ->get();
 
@@ -46,7 +47,7 @@ class SuratPengirimanBarangController extends Controller
                 'nomor_pesanan_pembelian' => $item->nomor_pesanan_penjualan,
                 'tanggal_kirim_pesanan_pembelian' => $item->tanggal_kirim_pesanan_penjualan ? $item->tanggal_kirim_pesanan_penjualan->format('Y-m-d') : null,
                 'pelanggan' => $item->pelanggan,
-                'pesananPembelianDetail' => $item->details->map(fn ($d) => (object) [
+                'pesananPembelianDetail' => $item->details->map(fn($d) => (object) [
                     'id' => $d->id,
                     'nama_barang' => $d->nama_barang,
                     'kuantitas' => $d->kuantitas,
@@ -62,7 +63,7 @@ class SuratPengirimanBarangController extends Controller
         $dataSpb = SuratPengirimanBarang::with([
             'pesananPenjualan',
             'suratPengirimanBarangDetail.pesananPenjualanDetail',
-        ])->where('id', $id)->firstOrFail();
+        ])->where('user_id', Auth::id())->firstOrFail($id);
 
         return view('administrasi.surat.surat-pengiriman-barang.edit', compact('dataSpb'));
     }
@@ -76,7 +77,7 @@ class SuratPengirimanBarangController extends Controller
         } catch (Throwable $th) {
             report($th);
             Log::error(
-                'Gagal generate PDF Surat Pengiriman): '.$th->getMessage(),
+                'Gagal generate PDF Surat Pengiriman): ' . $th->getMessage(),
             );
 
             return back()
@@ -104,7 +105,7 @@ class SuratPengirimanBarangController extends Controller
         } catch (Throwable $th) {
             report($th);
             Log::error(
-                'Gagal menambahkan Surat Pengiriman Barang (SPB): '.
+                'Gagal menambahkan Surat Pengiriman Barang (SPB): ' .
                 $th->getMessage(),
             );
 
@@ -133,7 +134,7 @@ class SuratPengirimanBarangController extends Controller
         } catch (Throwable $th) {
             report($th);
             Log::error(
-                'Gagal mengubah Surat Pengiriman Barang (SPB): '.
+                'Gagal mengubah Surat Pengiriman Barang (SPB): ' .
                 $th->getMessage(),
             );
 
@@ -141,7 +142,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal mengubah Surat Pengiriman Barang (SPB): '.
+                    'Gagal mengubah Surat Pengiriman Barang (SPB): ' .
                     $th->getMessage(),
                 );
         }
@@ -162,7 +163,7 @@ class SuratPengirimanBarangController extends Controller
         } catch (Throwable $th) {
             report($th);
             Log::error(
-                'Gagal menghapus Surat Pengiriman Barang (SPB): '.
+                'Gagal menghapus Surat Pengiriman Barang (SPB): ' .
                 $th->getMessage(),
             );
 
@@ -170,7 +171,7 @@ class SuratPengirimanBarangController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menghapus Surat Pengiriman Barang (SPB): '.
+                    'Gagal menghapus Surat Pengiriman Barang (SPB): ' .
                     $th->getMessage(),
                 );
         }

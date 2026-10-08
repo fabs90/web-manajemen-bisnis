@@ -38,7 +38,7 @@ class SuratPesananPelangganController extends Controller
         } catch (\Throwable $th) {
             report($th);
             Log::error(
-                'Gagal menambahkan SPP Pelanggan: '.
+                'Gagal menambahkan SPP Pelanggan: ' .
                 $th->getMessage(),
             );
 
@@ -46,7 +46,7 @@ class SuratPesananPelangganController extends Controller
                 ->withInput()
                 ->with(
                     'error',
-                    'Gagal menambahkan Pesanan Pembelian dari Pelanggan: '.
+                    'Gagal menambahkan Pesanan Pembelian dari Pelanggan: ' .
                     $th->getMessage(),
                 );
         }
@@ -60,9 +60,9 @@ class SuratPesananPelangganController extends Controller
             return back()->with('success', 'Surat Pesanan Penjualan berhasil dihapus.');
         } catch (\Throwable $th) {
             report($th);
-            Log::error('Gagal menghapus SPP Pelanggan: '.$th->getMessage());
+            Log::error('Gagal menghapus SPP Pelanggan: ' . $th->getMessage());
 
-            return back()->with('error', 'Gagal menghapus Pesanan Pembelian dari Pelanggan: '.$th->getMessage());
+            return back()->with('error', 'Gagal menghapus Pesanan Pembelian dari Pelanggan: ' . $th->getMessage());
         }
     }
 
@@ -72,7 +72,7 @@ class SuratPesananPelangganController extends Controller
             return $service->generatePdf($id);
         } catch (\Throwable $th) {
             report($th);
-            Log::error('Gagal generate PDF SPP Pelanggan: '.$th->getMessage());
+            Log::error('Gagal generate PDF SPP Pelanggan: ' . $th->getMessage());
 
             return back()->with('error', 'Gagal generate PDF Pesanan Pembelian dari Pelanggan.');
         }
