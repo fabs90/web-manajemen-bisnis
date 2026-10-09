@@ -3,8 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -71,11 +72,6 @@ class User extends Authenticatable
         return $this->hasMany(Pelanggan::class);
     }
 
-    public function supplier()
-    {
-        return $this->hasMany(Supplier::class);
-    }
-
     public function barang()
     {
         return $this->hasMany(Barang::class);
@@ -110,5 +106,20 @@ class User extends Authenticatable
     public function agendaTelpon()
     {
         return $this->hasMany(AgendaTelpon::class);
+    }
+
+    public function organizations()
+    {
+        return $this->belongsToMany(Organization::class, 'organization_members')
+            ->withPivot('role')->withTimestamps();
+    }
+
+    public function currentOrganization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
+    }
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
     }
 }
