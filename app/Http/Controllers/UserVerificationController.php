@@ -77,13 +77,13 @@ class UserVerificationController extends Controller
 
     public function generateAndSendOtp(User $user)
     {
-        $otp = random_int(100000, 999999);
+        $plainOtp = (string) random_int(100000, 999999);
         $expiresAt = Carbon::now('Asia/Makassar')->addMinutes(30);
-        $user->otp = $otp;
+        $user->otp = hash('sha256', $plainOtp);
         $user->otp_expires_at = $expiresAt;
         $user->save();
         Mail::to($user->email)->send(
-            new MailSend($otp, $user->name, $user->email),
+            new MailSend($plainOtp, $user->name, $user->email),
         );
 
         return redirect()

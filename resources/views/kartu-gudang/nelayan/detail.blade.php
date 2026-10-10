@@ -119,7 +119,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($barang->kartuGudang as $kartu)
+                        @foreach ($barang->kartuGudang as $kartu)
                             <tr>
                                 <td class="text-center">{{ $loop->iteration }}</td>
                                 <td>{{ $kartu->tanggal ? $kartu->tanggal->format('d-m-Y') : '-' }}</td>
@@ -158,13 +158,7 @@
                                     </form>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
-                                    <em>Belum ada mutasi kartu gudang untuk barang ini.</em>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -183,7 +177,6 @@
                 ordering: true,
                 responsive: true,
                 language: {
-                    search: "Cari Riwayat:",
                     lengthMenu: "Tampilkan _MENU_ data",
                     zeroRecords: "Tidak ditemukan data yang cocok",
                     info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ transaksi",

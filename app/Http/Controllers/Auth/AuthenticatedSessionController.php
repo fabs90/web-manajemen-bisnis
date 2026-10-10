@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Mail\MailSend;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
@@ -48,8 +49,13 @@ class AuthenticatedSessionController extends Controller
                     // Auth::guard("web")->logout();
                     // $request->session()->invalidate();
                     // $request->session()->regenerateToken();
+                    $plainOtp = (string) random_int(100000, 999999);
+                    $user->otp = hash('sha256', $plainOtp);
+                    $user->otp_expires_at = Carbon::now('Asia/Makassar')->addMinutes(10);
+                    $user->save();
+
                     Mail::to($user->email)->send(
-                        new MailSend($user->otp, $user->name, $user->email),
+                        new MailSend($plainOtp, $user->name, $user->email),
                     );
 
                     return redirect()

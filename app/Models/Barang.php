@@ -39,13 +39,18 @@ class Barang extends Model
         return $this->hasOne(KartuGudang::class)->latestOfMany();
     }
 
-    public function getSaldoAkhir()
+    public function getSaldoAkhir(): int|float
     {
-        $latestKartu = $this->kartuGudang()
-            ->orderBy('created_at', 'desc')
-            ->first();
+        $lastKartu = $this->relationLoaded('kartuGudang')
+            ? $this->kartuGudang->sortByDesc('id')->first()
+            : $this->kartuGudang()->orderByDesc('id')->first();
 
-        return $latestKartu ? $latestKartu->saldo_persatuan : 0;
+        return $lastKartu ? $lastKartu->saldo_persatuan : 0;
+    }
+
+    public function getSaldoAkhirAttribute(): int|float
+    {
+        return $this->getSaldoAkhir();
     }
 
     public function formatSaldoPerkemasan(?int $saldoUnit = 0): string
@@ -73,5 +78,17 @@ class Barang extends Model
         }
 
         return "{$prefix}{$kemas} kemas + {$sisa} unit";
+    }
+
+    public function hargaPersediaan(?string $role = null): float
+    {
+        return $role === 'nelayan'
+            ? (float) $this->harga_jual_per_unit
+            : (float) $this->harga_beli_per_unit;
+    }
+
+    public function nilaiPersediaan(?string $role = null): float
+    {
+        return (float) ($this->getSaldoAkhir() * $this->hargaPersediaan($role));
     }
 }

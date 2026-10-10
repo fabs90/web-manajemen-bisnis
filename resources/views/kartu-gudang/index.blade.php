@@ -66,7 +66,7 @@
                                     <td>
                                         <strong class="text-success">
                                             Rp
-                                            {{ number_format(($item->saldo_akhir ?? 0) * $item->harga_jual_per_unit, 0, ',', '.') }}
+                                            {{ number_format($item->nilai_persediaan, 0, ',', '.') }}
                                         </strong>
                                     </td>
                                     <td class="text-center">
