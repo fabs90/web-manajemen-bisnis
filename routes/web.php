@@ -10,6 +10,7 @@ use App\Http\Controllers\AgendaTelponController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DebiturController;
 use App\Http\Controllers\Faktur\AdministrasiFakturController;
+use App\Http\Controllers\KartuGudangController;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\KasKecilController;
 use App\Http\Controllers\ManajemenKasKecilController;
@@ -312,24 +313,24 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
         // Kartu Gudang
         Route::get('/kartu-gudang', [
-            BarangController::class,
-            'indexKartuGudang',
+            KartuGudangController::class,
+            'index',
         ])->name('kartu-gudang.index');
         Route::get('/kartu-gudang/{barang_id}/detail', [
-            BarangController::class,
-            'detailKartuGudang',
+            KartuGudangController::class,
+            'detail',
         ])->name('kartu-gudang.detail');
         Route::get('/kartu-gudang/{barang_id}', [
-            BarangController::class,
-            'createKartuGudang',
+            KartuGudangController::class,
+            'create',
         ])->name('kartu-gudang.create');
         Route::post('/kartu-gudang/{barang_id}', [
-            BarangController::class,
-            'storeKartuGudang',
+            KartuGudangController::class,
+            'store',
         ])->name('kartu-gudang.store');
         Route::delete('/kartu-gudang/{id}', [
-            BarangController::class,
-            'deleteKartuGudang',
+            KartuGudangController::class,
+            'destroy',
         ])->name('kartu-gudang.destroy');
     });
 

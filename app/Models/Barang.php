@@ -48,7 +48,7 @@ class Barang extends Model
         return $latestKartu ? $latestKartu->saldo_persatuan : 0;
     }
 
-    public function formatSaldoPerkemasan(int $saldoUnit): string
+    public function formatSaldoPerkemasan(?int $saldoUnit = 0): string
     {
         $unitPerKemasan = $this->jumlah_unit_per_kemasan ?: 1;
 

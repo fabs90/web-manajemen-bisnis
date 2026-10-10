@@ -16,20 +16,38 @@ class StoreBarangRequest extends FormRequest
     }
 
     /**
+     * Prepare inputs before validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (auth()->user()?->role === 'nelayan') {
+            $this->merge([
+                'jumlah_max' => $this->jumlah_max ?? 0,
+                'jumlah_min' => $this->jumlah_min ?? 0,
+                'jumlah_unit_per_kemasan' => $this->jumlah_unit_per_kemasan ?? 1,
+                'harga_beli_per_kemas' => $this->harga_beli_per_kemas ?? 0,
+                'harga_beli_per_unit' => $this->harga_beli_per_unit ?? 0,
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $isNelayan = auth()->user()?->role === 'nelayan';
+
         return [
             'kode_barang' => ['required', 'string', 'max:100'],
             'nama' => ['required', 'string', 'max:255'],
-            'jumlah_max' => ['required', 'integer', 'min:0'],
-            'jumlah_min' => ['required', 'integer', 'min:0'],
-            'jumlah_unit_per_kemasan' => ['required', 'integer', 'min:0'],
-            'harga_beli_per_kemas' => ['required', 'numeric', 'min:0'],
-            'harga_beli_per_unit' => ['required', 'numeric', 'min:0'],
+            'jumlah_max' => [$isNelayan ? 'nullable' : 'required', 'integer', 'min:0'],
+            'jumlah_min' => [$isNelayan ? 'nullable' : 'required', 'integer', 'min:0'],
+            'jumlah_unit_per_kemasan' => [$isNelayan ? 'nullable' : 'required', 'integer', 'min:0'],
+            'harga_beli_per_kemas' => [$isNelayan ? 'nullable' : 'required', 'numeric', 'min:0'],
+            'harga_beli_per_unit' => [$isNelayan ? 'nullable' : 'required', 'numeric', 'min:0'],
             'harga_jual_per_unit' => ['required', 'numeric', 'min:0'],
         ];
     }

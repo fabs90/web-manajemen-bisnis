@@ -26,8 +26,10 @@
                         <div>
                             <span class="badge bg-secondary font-monospace mb-1">{{ $barang->kode_barang }}</span>
                             <h4 class="mb-0 fw-bold">{{ $barang->nama }}</h4>
-                            <small class="text-muted">1 Kemasan = <strong>{{ $barang->jumlah_unit_per_kemasan }}</strong>
-                                Unit</small>
+                            <small class="text-muted">
+                                1 Kemasan = <strong>{{ $barang->jumlah_unit_per_kemasan }}</strong>
+                                Unit
+                            </small>
                         </div>
                     </div>
                     <hr class="my-3">
