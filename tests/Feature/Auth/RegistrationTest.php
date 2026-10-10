@@ -1,6 +1,8 @@
 <?php
 
+use App\Mail\MailSend;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
@@ -9,6 +11,8 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    Mail::fake();
+
     $response = $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -19,6 +23,15 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('account-verification.show', absolute: false));
+
+    $user = User::where('email', 'test@example.com')->first();
+    expect($user)->not->toBeNull();
+
+    Mail::assertSent(MailSend::class, function ($mail) use ($user) {
+        return strlen((string) $mail->otp) === 6
+            && ctype_digit((string) $mail->otp)
+            && hash_equals($user->otp, hash('sha256', (string) $mail->otp));
+    });
 });
 
 test('registration fails with human friendly errors when input is invalid', function () {

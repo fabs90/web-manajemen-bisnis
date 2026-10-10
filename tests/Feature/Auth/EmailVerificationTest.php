@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\MailSend;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -7,7 +8,7 @@ use Illuminate\Support\Facades\Mail;
 test('account verification screen can be rendered', function () {
     $user = User::factory()->create([
         'is_verified' => false,
-        'otp' => '123456',
+        'otp' => hash('sha256', '123456'),
         'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
     ]);
 
@@ -19,7 +20,7 @@ test('account verification screen can be rendered', function () {
 test('account can be verified with valid OTP', function () {
     $user = User::factory()->create([
         'is_verified' => false,
-        'otp' => '123456',
+        'otp' => hash('sha256', '123456'),
         'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
     ]);
 
@@ -34,7 +35,7 @@ test('account can be verified with valid OTP', function () {
 test('account verification returns human friendly error with invalid OTP', function () {
     $user = User::factory()->create([
         'is_verified' => false,
-        'otp' => '123456',
+        'otp' => hash('sha256', '123456'),
         'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
     ]);
 
@@ -52,7 +53,7 @@ test('user can request resend OTP', function () {
 
     $user = User::factory()->create([
         'is_verified' => false,
-        'otp' => '123456',
+        'otp' => hash('sha256', '123456'),
         'otp_expires_at' => Carbon::now('Asia/Makassar')->addMinutes(30),
     ]);
 
@@ -60,4 +61,8 @@ test('user can request resend OTP', function () {
 
     $response->assertRedirect(route('account-verification.show'));
     $response->assertSessionHas('status', 'Kode OTP baru telah berhasil dikirim ke email Anda.');
+
+    Mail::assertSent(MailSend::class, function ($mail) use ($user) {
+        return strlen($mail->otp) === 6 && ctype_digit((string) $mail->otp) && hash_equals($user->fresh()->otp, hash('sha256', (string) $mail->otp));
+    });
 });

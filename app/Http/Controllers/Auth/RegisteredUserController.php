@@ -58,7 +58,8 @@ class RegisteredUserController extends Controller
             'role.required' => 'Silakan pilih jenis akun.',
             'role.in' => 'Jenis akun yang dipilih tidak valid.',
         ]);
-        $otp = hash('sha256', (string) random_int(100000, 999999));
+        $plainOtp = (string) random_int(100000, 999999);
+        $hashedOtp = hash('sha256', $plainOtp);
         $expiresAt = Carbon::now('Asia/Makassar')->addMinutes(10);
         $user = User::create([
             'name' => $request->name,
@@ -67,7 +68,7 @@ class RegisteredUserController extends Controller
             'role' => $request->role ?? 'ukm',
             'is_verified' => false,
             'remember_token' => Str::random(60),
-            'otp' => $otp,
+            'otp' => $hashedOtp,
             'otp_expires_at' => $expiresAt,
             'alamat' => null,
             'nomor_telepon' => null,
@@ -79,7 +80,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Mail::to($user->email)->send(
-            new MailSend($otp, $user->name, $user->email),
+            new MailSend($plainOtp, $user->name, $user->email),
         );
 
         Auth::login($user);
