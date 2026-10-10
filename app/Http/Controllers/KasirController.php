@@ -178,14 +178,18 @@ class KasirController extends Controller
                 }
             }
 
+            $isNonTunai = in_array(strtolower(str_replace([' ', '-'], '_', $namaPembayaran)), ['transfer_bank', 'qris']);
+            $uangBayar = $isNonTunai ? ($request->uang_bayar ?: $request->grand_total) : $request->uang_bayar;
+            $uangKembalian = $isNonTunai ? 0 : ($request->uang_kembalian ?? 0);
+
             // Simpan Log Transaksi Kasir
             KasirTransactionLog::create([
                 'user_id' => $userId,
                 'journal_entry_id' => $entry->id,
                 'uraian' => "Penjualan Kasir - Pembayaran: {$namaPembayaran}",
                 'tanggal_transaksi' => now(),
-                'bayar' => $request->uang_bayar,
-                'kembalian' => $request->uang_kembalian,
+                'bayar' => $uangBayar,
+                'kembalian' => $uangKembalian,
                 'jumlah' => $request->grand_total,
                 'diskon' => $request->diskon_total ?? 0,
                 'paket_diskon_id' => $request->paket_diskon_id,
@@ -207,8 +211,8 @@ class KasirController extends Controller
                 'userId' => $userId,
                 'diskon' => $request->diskon_total ?? 0,
                 'total' => $request->grand_total,
-                'bayar' => $request->uang_bayar,
-                'kembali' => $request->uang_kembalian,
+                'bayar' => $uangBayar,
+                'kembali' => $uangKembalian,
             ];
 
         } catch (\Exception $e) {
