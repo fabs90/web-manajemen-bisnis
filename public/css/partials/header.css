@@ -1,3 +1,66 @@
+.kasir-card {
+    border-radius: 14px;
+}
+
+.total-box {
+    background: #222;
+    color: #0f0;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 12px;
+    text-align: right;
+}
+
+#kembalian {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+}
+
+#bayar {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+    border: 2px solid #007bff;
+}
+
+.btn-action {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.keranjang-table td,
+.keranjang-table th {
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.status-kurang {
+    color: #b30000 !important;
+}
+
+.status-cukup {
+    color: #008000 !important;
+}
+
+/* Loading Overlay */
+#page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 @media (min-width: 1200px) {
     #sidebar:not(.active) .sidebar-wrapper {
         left: -300px !important;

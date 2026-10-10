@@ -108,16 +108,19 @@
 
                 <li class="sidebar-item has-sub {{ Request::is('dashboard/barang*') ? 'active' : '' }}">
                     <a href="#" class="sidebar-link">
-                        <i class="bi bi-archive-fill"></i>
-                        <span>Barang</span>
+                        <i class="bi {{ auth()->user()?->role === 'nelayan' ? 'bi-water' : 'bi-archive-fill' }}"></i>
+                        <span>{{ auth()->user()?->role === 'nelayan' ? 'Hasil Tangkapan' : 'Barang' }}</span>
                     </a>
                     <ul class="submenu">
                         <li
                             class="submenu-item {{ Request::is('dashboard/barang') || Request::is('dashboard/barang/list*') || Request::is('dashboard/barang/create*') || Request::is('dashboard/barang/detail*') ? 'active' : '' }}">
-                            <a href="{{ route('barang.index') }}" class="submenu-link">List Barang</a>
+                            <a href="{{ route('barang.index') }}"
+                                class="submenu-link">{{ auth()->user()?->role === 'nelayan' ? 'Daftar Tangkapan' : 'List Barang' }}</a>
                         </li>
                         <li class="submenu-item {{ Request::is('dashboard/barang/kartu-gudang*') ? 'active' : '' }}">
-                            <a href="{{ route('kartu-gudang.index') }}" class="submenu-link">Atur Kartu Gudang</a>
+                            <a href="{{ route('kartu-gudang.index') }}" class="submenu-link">
+                                {{ auth()->user()?->role === 'nelayan' ? 'Stok Ikan' : 'Kartu Gudang' }}
+                            </a>
                         </li>
                     </ul>
                 </li>

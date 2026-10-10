@@ -16,6 +16,7 @@
         </script>
         <script src="{{ asset('dist/assets/rupiah-helper.js') }}"></script>
         <script src="{{ asset('js/sidebar-dashboard.js') }}"></script>
+        <script src="{{ asset('js/kasir.js') }}"></script>
         @stack('script')
         </body>
 
