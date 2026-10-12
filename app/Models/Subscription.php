@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Subscription extends Model
 {
     protected $guarded = [];
+
     protected function casts(): array
     {
         return [
@@ -21,22 +22,27 @@ class Subscription extends Model
             'canceled_at' => 'datetime',
         ];
     }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
     }
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
     }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
+
     public function owner(): User|Organization
     {
         return $this->organization ?? $this->user;
@@ -46,11 +52,22 @@ class Subscription extends Model
     public function scopeLapsed(Builder $q): Builder
     {
         $cutoff = now()->subDays(config('subscription.grace_days'));
+
         return $q->where('status', SubscriptionStatus::Active)->whereNotNull('ends_at')
-            ->where(fn($q) => $q
-                ->where(fn($q) => $q->where('ends_at', '<', now())
-                    ->whereHas('plan', fn($p) => $p->where('billing_type', BillingType::OneTime)))
-                ->orWhere(fn($q) => $q->where('ends_at', '<', $cutoff)
-                    ->whereHas('plan', fn($p) => $p->where('billing_type', BillingType::Recurring))));
+            ->where(fn ($q) => $q
+                ->where(fn ($q) => $q->where('ends_at', '<', now())
+                    ->whereHas('plan', fn ($p) => $p->where('billing_type', BillingType::OneTime)))
+                ->orWhere(fn ($q) => $q->where('ends_at', '<', $cutoff)
+                    ->whereHas('plan', fn ($p) => $p->where('billing_type', BillingType::Recurring))));
+    }
+
+    public static function ownerColumn(User|Organization $owner): string
+    {
+        return $owner instanceof Organization ? 'organization_id' : 'user_id';
+    }
+
+    public function scopeForOwner(Builder $query, User|Organization $owner): Builder
+    {
+        return $query->where(static::ownerColumn($owner), $owner->id);
     }
 }

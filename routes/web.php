@@ -76,7 +76,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified'])->group(function () {
     // =============================
     // 🖨️ GROUP: PRINTER
     // =============================
-    Route::prefix('dashboard/printer')->group(function () {
+    Route::prefix('dashboard/printer')->middleware('feature:thermal_printer')->group(function () {
         Route::get('/', [PrinterController::class, 'index'])->name('printer.index');
         Route::post('/update', [PrinterController::class, 'update'])->name('printer.update');
     });

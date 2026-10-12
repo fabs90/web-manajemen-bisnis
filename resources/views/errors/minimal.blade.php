@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -50,7 +51,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .error-message {
@@ -96,26 +97,29 @@
         }
     </style>
 </head>
+
 <body>
     <div class="error-card">
         <h1 class="error-code">
             @yield('code')
         </h1>
-        
+
         <h2 class="error-message">
             @yield('message')
         </h2>
-        
+
         <p class="error-desc">
             Maaf, sepertinya ada sesuatu yang salah atau halaman tidak dapat diakses saat ini.
         </p>
-        
-        <a href="{{ url('/') }}" class="btn-home">
+
+        <a href="{{ route('dashboard') }}" class="btn-home">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
             </svg>
             Kembali ke Beranda
         </a>
     </div>
 </body>
+
 </html>

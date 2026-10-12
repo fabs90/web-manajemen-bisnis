@@ -2,8 +2,12 @@
 
 namespace App\Providers;
 
+use App\Enum\Feature;
+use App\Models\User;
+use App\Services\Subscription\EntitlementService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(EntitlementService::class);
     }
 
     /**
@@ -28,5 +32,6 @@ class AppServiceProvider extends ServiceProvider
             });
 
         });
+        Gate::define('feature', fn (User $user, Feature $feature) => $user->hasFeature($feature));
     }
 }

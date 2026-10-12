@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\checkIsAdmin;
+use App\Http\Middleware\EnsureFeature;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Middleware\EnsureUserIsVerified;
 use App\Http\Middleware\PreventBackHistory;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensureUserIsVerified' => EnsureUserIsVerified::class,
             'ensureProfileCompleted' => EnsureProfileComplete::class,
             'checkIsAdmin' => checkIsAdmin::class,
+            'feature' => EnsureFeature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

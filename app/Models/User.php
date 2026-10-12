@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enum\Feature;
+use App\Enum\PlanScope;
+use App\Services\Subscription\EntitlementService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -66,6 +69,11 @@ class User extends Authenticatable
         return $this->is_verified;
     }
 
+    public function planScope(): PlanScope
+    {
+        return PlanScope::User;
+    }
+
     // Relasi ke master data
     public function pelanggan()
     {
@@ -118,8 +126,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Organization::class, 'organization_id');
     }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function hasFeature(Feature|string $feature): bool
+    {
+        return app(EntitlementService::class)->canAccess($this, $feature);
+    }
+
+    public function featureCodes(): array
+    {
+        return app(EntitlementService::class)->features($this);
     }
 }
