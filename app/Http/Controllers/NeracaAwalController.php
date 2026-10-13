@@ -32,13 +32,21 @@ class NeracaAwalController extends Controller
     {
         $userId = Auth::id();
         $user = Auth::user()->name;
+        $userRole = Auth::user()?->role ?? 'ukm';
         $debitur = Pelanggan::where('user_id', $userId)
             ->where('jenis', 'debitur')
             ->get();
         $kreditur = Pelanggan::where('user_id', $userId)
             ->where('jenis', 'kreditur')
             ->get();
-        $barang = Barang::where('user_id', $userId)->get();
+        $barang = Barang::where('user_id', $userId)
+            ->with('kartuGudang')
+            ->get()
+            ->each(function (Barang $b) use ($userRole) {
+                $b->setAttribute('saldo_akhir', $b->getSaldoAkhir());
+                $b->setAttribute('harga_persediaan', $b->hargaPersediaan($userRole));
+                $b->setAttribute('nilai_persediaan', $b->nilaiPersediaan($userRole));
+            });
         $kartuGudang = KartuGudang::where('user_id', $userId)
             ->latest()
             ->get();
@@ -63,10 +71,26 @@ class NeracaAwalController extends Controller
             $totalHutang = collect($validated['hutang'] ?? [])->sum('jumlah');
             $totalPiutang = collect($validated['piutang'] ?? [])->sum('jumlah');
 
+            $totalPersediaan = (float) ($validated['total_persediaan'] ?? 0);
+            if (! empty($validated['barang_ids'])) {
+                $userRole = Auth::user()?->role;
+                $barangList = Barang::whereIn('id', $validated['barang_ids'])
+                    ->where('user_id', $userId)
+                    ->with('kartuGudang')
+                    ->get();
+                $calculatedPersediaan = (float) $barangList->sum(function (Barang $b) use ($userRole) {
+                    return $b->nilaiPersediaan($userRole);
+                });
+
+                if ($totalPersediaan <= 0 && $calculatedPersediaan > 0) {
+                    $totalPersediaan = $calculatedPersediaan;
+                }
+            }
+
             $totalDebit = collect([
                 $validated['kas'],
                 $totalPiutang,
-                $validated['total_persediaan'] ?? 0,
+                $totalPersediaan,
                 $validated['tanah_bangunan'] ?? 0,
                 $validated['kendaraan'] ?? 0,
                 $validated['meubel_peralatan'] ?? 0,
@@ -116,13 +140,13 @@ class NeracaAwalController extends Controller
             }
 
             // C. Persediaan Barang Dagang (1105)
-            if (($validated['total_persediaan'] ?? 0) > 0) {
-                $accounts['1105']->update(['opening_balance' => $validated['total_persediaan']]);
+            if ($totalPersediaan > 0) {
+                $accounts['1105']->update(['opening_balance' => $totalPersediaan]);
                 JournalItem::create([
                     'user_id' => $userId,
                     'journal_entry_id' => $entry->id,
                     'account_id' => $accounts['1105']->id,
-                    'debit' => $validated['total_persediaan'],
+                    'debit' => $totalPersediaan,
                     'credit' => 0,
                 ]);
 
