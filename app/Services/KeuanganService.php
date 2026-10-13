@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KartuGudang;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class KeuanganService
@@ -137,6 +138,7 @@ class KeuanganService
     {
         $startDate = $dateRange[0];
         $endDate = $dateRange[1];
+        $userRole = User::where('id', $userId)->value('role') ?? 'ukm';
 
         $barang = Barang::where('user_id', $userId)->get();
 
@@ -147,7 +149,7 @@ class KeuanganService
                 ->oldest('id')
                 ->first();
             if ($firstKartu) {
-                $persediaanAwal += ($firstKartu->saldo_persatuan * $b->harga_beli_per_unit);
+                $persediaanAwal += ($firstKartu->saldo_persatuan * $b->hargaPersediaan($userRole));
             }
         }
 
@@ -158,7 +160,7 @@ class KeuanganService
                 ->latest('id')
                 ->first();
             if ($lastKartu) {
-                $persediaanAkhir += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
+                $persediaanAkhir += ($lastKartu->saldo_persatuan * $b->hargaPersediaan($userRole));
             }
         }
 
@@ -310,6 +312,7 @@ class KeuanganService
         $saldoPiutang = $this->getAccountBalance($userId, '1104', $date);
 
         // Gunakan saldo persediaan dari KartuGudang agar akurat dengan fisik gudang
+        $userRole = User::where('id', $userId)->value('role') ?? 'ukm';
         $barang = Barang::where('user_id', $userId)->get();
         $nilaiPersediaan = 0;
         foreach ($barang as $b) {
@@ -318,7 +321,7 @@ class KeuanganService
                 ->latest('id')
                 ->first();
             if ($lastKartu) {
-                $nilaiPersediaan += ($lastKartu->saldo_persatuan * $b->harga_beli_per_unit);
+                $nilaiPersediaan += ($lastKartu->saldo_persatuan * $b->hargaPersediaan($userRole));
             }
         }
 

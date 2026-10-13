@@ -159,12 +159,12 @@
 
         {{-- Persediaan Barang Dagangan --}}
         <hr>
-        <legend>Persediaan Barang Dagangan<span class="text-danger">*</span></legend>
+        <legend>{{ auth()->user()?->role === 'nelayan' ? 'Persediaan Hasil Tangkapan' : 'Persediaan Barang Dagangan' }}<span class="text-danger">*</span></legend>
 
         <div class="mb-3">
             <p>
-                Tidak ada nama barang?
-                <a href="{{ route('barang.create') }}" target="_blank">Tambah Data Barang Disini</a>
+                Tidak ada nama {{ auth()->user()?->role === 'nelayan' ? 'hasil tangkapan' : 'barang' }}?
+                <a href="{{ route('barang.create') }}" target="_blank">Tambah Data {{ auth()->user()?->role === 'nelayan' ? 'Tangkapan' : 'Barang' }} Disini</a>
             </p>
             <select id="barang_select" name="barang_ids[]" class="form-select @error('barang_ids') is-invalid @enderror"
                 multiple>
@@ -179,16 +179,16 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
 
-            <small class="text-muted">Pilih satu atau lebih barang untuk menghitung total nilai persediaan.</small>
+            <small class="text-muted">Pilih satu atau lebih {{ auth()->user()?->role === 'nelayan' ? 'hasil tangkapan' : 'barang' }} untuk menghitung total nilai persediaan.</small>
         </div>
 
 
         <table class="table table-bordered" id="tabel-persediaan" style="display:none;">
             <thead class="table-light">
                 <tr>
-                    <th>Nama Barang</th>
-                    <th>Harga per Kemas</th>
-                    <th>Saldo per Kemas</th>
+                    <th>Nama {{ auth()->user()?->role === 'nelayan' ? 'Hasil Tangkapan' : 'Barang' }}</th>
+                    <th>{{ auth()->user()?->role === 'nelayan' ? 'Harga Jual per Kg' : 'Harga Beli per Unit' }}</th>
+                    <th>{{ auth()->user()?->role === 'nelayan' ? 'Saldo Akhir (Kg)' : 'Saldo Akhir (Unit)' }}</th>
                     <th>Total Nilai</th>
                 </tr>
             </thead>
@@ -348,26 +348,34 @@
                 }
             });
 
-            // Inisialisasi Select2
-            $('#barang_select').on('change', function() {
-                const selectedIds = $(this).val() || [];
+            // Inisialisasi Tabel & Perhitungan Persediaan Barang / Tangkapan
+            const barangData = @json($barang);
+            const isNelayan = @json(auth()->user()?->role === 'nelayan');
+            const unitLabel = isNelayan ? 'kg' : 'unit';
+            const table = document.getElementById("tabel-persediaan");
+            const tbody = table.querySelector("tbody");
+            const grandTotalCell = document.getElementById("grand-total");
+
+            function updatePersediaanTable() {
+                const selectedIds = $('#barang_select').val() || [];
                 tbody.innerHTML = ''; // reset tabel
 
                 let grandTotal = 0;
 
                 selectedIds.forEach(id => {
                     const b = barangData.find(x => x.id == id);
-                    const kartu = kartuGudang.find(k => k.barang_id == id);
-                    const harga = b?.harga_beli_per_kemas || 0;
-                    const saldo = kartu?.saldo_perkemasan || 0;
-                    const total = harga * saldo;
+                    if (!b) return;
+
+                    const harga = Number(b.harga_persediaan ?? (isNelayan ? b.harga_jual_per_unit : b.harga_beli_per_unit) ?? 0);
+                    const saldo = Number(b.saldo_akhir ?? 0);
+                    const total = Number(b.nilai_persediaan ?? (saldo * harga));
                     grandTotal += total;
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${b?.nama ?? '-'}</td>
+                        <td>${b.nama ?? '-'}</td>
                         <td>Rp ${harga.toLocaleString('id-ID')}</td>
-                        <td>${saldo}</td>
+                        <td>${saldo.toLocaleString('id-ID')} ${unitLabel}</td>
                         <td>Rp ${total.toLocaleString('id-ID')}</td>
                     `;
                     tbody.appendChild(row);
@@ -379,42 +387,13 @@
 
                 // simpan total ke hidden input agar bisa dikirim ke backend
                 document.getElementById('total_persediaan').value = grandTotal;
-            });
+            }
 
-            const barangData = @json($barang);
-            const kartuGudang = @json($kartuGudang);
-            const table = document.getElementById("tabel-persediaan");
-            const tbody = table.querySelector("tbody");
-            const grandTotalCell = document.getElementById("grand-total");
+            $('#barang_select').on('change', updatePersediaanTable);
 
-            $('#barang_select').on('change', function() {
-                const selectedIds = $(this).val() || [];
-                tbody.innerHTML = ''; // reset tabel
-
-                let grandTotal = 0;
-
-                selectedIds.forEach(id => {
-                    const b = barangData.find(x => x.id == id);
-                    const kartu = kartuGudang.find(k => k.barang_id == id);
-                    const harga = b?.harga_beli_per_kemas || 0;
-                    const saldo = kartu?.saldo_perkemasan || 0;
-                    const total = harga * saldo;
-                    grandTotal += total;
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                           <td>${b?.nama ?? '-'}</td>
-                           <td>Rp ${harga.toLocaleString('id-ID')}</td>
-                           <td>${saldo}</td>
-                           <td>Rp ${total.toLocaleString('id-ID')}</td>
-                       `;
-                    tbody.appendChild(row);
-                });
-
-                // tampilkan / sembunyikan tabel
-                table.style.display = selectedIds.length ? 'table' : 'none';
-                grandTotalCell.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
-            });
+            if ($('#barang_select').val() && $('#barang_select').val().length > 0) {
+                updatePersediaanTable();
+            }
 
             // === Toggle Piutang Section ===
             const tidakAdaPiutang = document.getElementById('tidak_ada_piutang');

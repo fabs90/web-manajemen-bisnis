@@ -82,6 +82,8 @@ class Barang extends Model
 
     public function hargaPersediaan(?string $role = null): float
     {
+        $role = $role ?? $this->user?->role ?? auth()->user()?->role;
+
         return $role === 'nelayan'
             ? (float) $this->harga_jual_per_unit
             : (float) $this->harga_beli_per_unit;
@@ -90,5 +92,15 @@ class Barang extends Model
     public function nilaiPersediaan(?string $role = null): float
     {
         return (float) ($this->getSaldoAkhir() * $this->hargaPersediaan($role));
+    }
+
+    public function getHargaPersediaanAttribute(): float
+    {
+        return $this->hargaPersediaan();
+    }
+
+    public function getNilaiPersediaanAttribute(): float
+    {
+        return $this->nilaiPersediaan();
     }
 }
