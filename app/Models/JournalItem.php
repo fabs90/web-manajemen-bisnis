@@ -12,7 +12,15 @@ class JournalItem extends Model
 {
     use ClearsDashboardCache, HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'user_id',
+        'journal_entry_id',
+        'account_id',
+        'sub_ledger_type',
+        'sub_ledger_id',
+        'debit',
+        'credit',
+    ];
 
     protected function casts(): array
     {

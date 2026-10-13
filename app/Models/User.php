@@ -34,9 +34,12 @@ class User extends Authenticatable
         'ttd_pemimpin',
         'otp',
         'otp_expires_at',
+        'qris_image',
         'is_printer_enabled',
         'printer_store_name',
         'nama_pimpinan',
+        'organization_id',
+        'email_verified_at',
     ];
 
     /**

@@ -8,11 +8,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'subscription_id',
+        'provider',
+        'reference',
+        'provider_transaction_id',
+        'amount',
+        'status',
+        'checkout_url',
+        'paid_at',
+        'payload',
+    ];
+
     protected function casts(): array
     {
         return ['status' => PaymentStatus::class, 'paid_at' => 'datetime', 'payload' => 'array'];
     }
+
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);

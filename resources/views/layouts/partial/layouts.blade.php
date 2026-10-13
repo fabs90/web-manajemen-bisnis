@@ -5,5 +5,6 @@
 @include('layouts.partial.content')
 
 @include('layouts.partial.modal-get-started')
+@include('layouts.partial.modal-feature-locked')
 
 @include('layouts.partial.scripts')

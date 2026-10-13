@@ -164,10 +164,24 @@
                 </li>
 
                 <li class="sidebar-item {{ Request::is('dashboard/printer*') ? 'active' : '' }}">
-                    <a href="{{ route('printer.index') }}" class="sidebar-link">
-                        <i class="bi bi-printer"></i>
-                        <span>Printer Thermal</span>
-                    </a>
+                    @if (auth()->user()->hasFeature(\App\Enum\Feature::ThermalPrinter))
+                        <a href="{{ route('printer.index') }}" class="sidebar-link">
+                            <i class="bi bi-printer"></i>
+                            <span>Printer Thermal</span>
+                        </a>
+                    @else
+                        <a href="javascript:void(0)"
+                            class="sidebar-link opacity-75 d-flex justify-content-between align-items-center"
+                            data-bs-toggle="modal" data-bs-target="#featureLockedModal"
+                            data-feature-name="Printer Thermal"
+                            data-feature-desc="Cetak struk kasir secara instan menggunakan printer thermal Bluetooth atau USB.">
+                            <div>
+                                <i class="bi bi-printer"></i>
+                                <span>Printer Thermal</span>
+                            </div>
+                            <span class="badge bg-warning text-dark"><i class="bi bi-lock-fill"></i> PRO</span>
+                        </a>
+                    @endif
                 </li>
 
                 <li class="sidebar-item">

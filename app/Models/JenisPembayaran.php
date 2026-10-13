@@ -8,5 +8,7 @@ class JenisPembayaran extends Model
 {
     protected $table = 'jenis_pembayaran';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'nama',
+    ];
 }

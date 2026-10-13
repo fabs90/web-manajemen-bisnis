@@ -12,7 +12,13 @@ class JournalEntry extends Model
 {
     use ClearsDashboardCache, HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'user_id',
+        'reference_number',
+        'date',
+        'description',
+        'transaction_type',
+    ];
 
     protected function casts(): array
     {

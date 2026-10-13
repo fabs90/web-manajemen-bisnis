@@ -11,7 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Subscription extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'organization_id',
+        'plan_id',
+        'replace_subscription_id',
+        'status',
+        'starts_at',
+        'ends_at',
+        'canceled_at',
+    ];
 
     protected function casts(): array
     {

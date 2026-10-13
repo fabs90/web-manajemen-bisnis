@@ -11,7 +11,17 @@ class Account extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'user_id',
+        'code',
+        'name',
+        'category',
+        'sub_category',
+        'normal_balance',
+        'opening_balance',
+        'requires_sub_ledger',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

@@ -8,8 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class PlanFeature extends Model
 {
     public $timestamps = false;
+
     public $incrementing = false;
-    protected $guarded = [];
+
+    protected $fillable = [
+        'plan_id',
+        'feature',
+    ];
+
     protected function casts(): array
     {
         return ['feature' => Feature::class];

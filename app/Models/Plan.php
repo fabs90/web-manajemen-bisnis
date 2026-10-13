@@ -4,13 +4,21 @@ namespace App\Models;
 
 use App\Enum\BillingType;
 use App\Enum\PlanScope;
-use FontLib\TrueType\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Plan extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'code',
+        'name',
+        'scope',
+        'billing_type',
+        'price',
+        'duration_days',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

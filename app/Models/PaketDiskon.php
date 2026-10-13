@@ -10,7 +10,15 @@ class PaketDiskon extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'user_id',
+        'barang_id',
+        'nama_paket',
+        'jenis_diskon',
+        'nilai_diskon',
+        'minimal_pembelian',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

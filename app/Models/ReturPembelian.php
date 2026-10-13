@@ -9,7 +9,15 @@ class ReturPembelian extends Model
 {
     protected $table = 'retur_pembelian';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'nomor_retur',
+        'tanggal',
+        'pesanan_pembelian_id',
+        'supplier_id',
+        'alasan_pengembalian',
+        'total',
+        'user_id',
+    ];
 
     public function detail()
     {
