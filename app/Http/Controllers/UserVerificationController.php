@@ -13,7 +13,7 @@ class UserVerificationController extends Controller
 {
     public function show()
     {
-        if (! Auth::check()) {
+        if (!Auth::check()) {
             return redirect()
                 ->route('login')
                 ->with('errors', 'Silakan login terlebih dahulu');
@@ -37,6 +37,7 @@ class UserVerificationController extends Controller
             $user->is_verified = true;
             $user->otp = null;
             $user->otp_expires_at = null;
+            $user->email_verified_at = now();
             $user->save();
 
             return redirect()
@@ -55,7 +56,7 @@ class UserVerificationController extends Controller
     public function resetEmail(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|unique:users,email,'.$request->user()->id,
+            'email' => 'required|email|unique:users,email,' . $request->user()->id,
         ], [
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',

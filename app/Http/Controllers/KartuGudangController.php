@@ -29,6 +29,10 @@ class KartuGudangController extends Controller
 
         $totalNilaiPersediaan = $barang->sum('nilai_persediaan');
 
+        if (auth()->user()->role === 'nelayan') {
+            return view('kartu-gudang.nelayan.index', compact('barang', 'totalNilaiPersediaan'));
+        }
+
         return view('kartu-gudang.index', compact('barang', 'totalNilaiPersediaan'));
     }
 

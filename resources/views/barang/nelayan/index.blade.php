@@ -23,7 +23,7 @@
                                 <th>Kode</th>
                                 <th>Nama Hasil Tangkapan</th>
                                 <th>Satuan Jual</th>
-                                <th>Harga Jual (per-Kg)</th>
+                                <th>Harga Jual (per Satuan)</th>
                                 <th style="width: 15%;">Aksi</th>
                             </tr>
                         </thead>
@@ -34,7 +34,7 @@
                                     <td><span class="badge bg-light-primary text-primary">{{ $item->kode_barang }}</span>
                                     </td>
                                     <td><strong>{{ $item->nama }}</strong></td>
-                                    <td><span class="badge bg-light-info text-info">Kilogram (Kg)</span></td>
+                                    <td><span class="badge bg-light-info text-info">{{ $item->satuan_label === 'Kg' ? 'Kilogram (Kg)' : $item->satuan_label }}</span></td>
                                     <td>Rp {{ number_format($item->harga_jual_per_unit, 0, ',', '.') }}</td>
                                     <td>
                                         <a href="{{ route('barang.show', $item->id) }}" class="btn btn-sm btn-warning"

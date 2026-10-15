@@ -27,14 +27,16 @@
                             <span class="badge bg-secondary font-monospace mb-1">{{ $barang->kode_barang }}</span>
                             <h4 class="mb-0 fw-bold">{{ $barang->nama }}</h4>
                             <small class="text-muted d-block">
-                                Satuan: <strong>Per-kilogram (Kg)</strong> &bull; 1 unit = 1 kilogram
+                                Satuan:
+                                <strong>{{ $barang->satuan_label === 'Kg' ? 'Per-kilogram (Kg)' : 'Per-' . $barang->satuan_label }}</strong>
+                                &bull; 1 unit = 1 {{ strtolower($barang->satuan_label) }}
                             </small>
                         </div>
                     </div>
                     <hr class="my-3">
                     <div class="row g-2 small text-muted">
                         <div class="col-12">
-                            Harga Jual (per-Kg): <br><strong>Rp
+                            Harga Jual (per-{{ $barang->satuan_label }}): <br><strong>Rp
                                 {{ number_format($barang->harga_jual_per_unit, 0, ',', '.') }}</strong>
                         </div>
                     </div>
@@ -44,13 +46,14 @@
                     <div class="row g-3">
                         <div class="col-sm-6">
                             <div class="p-3 rounded-3 border h-100">
-                                <small class="text-muted d-block fw-bold text-uppercase">Saldo Akhir (per-Kg)</small>
+                                <small class="text-muted d-block fw-bold text-uppercase">Saldo Akhir
+                                    (per-{{ $barang->satuan_label }})</small>
                                 <div class="fs-3 fw-bold text-primary mt-1">
                                     {{ number_format($barang->saldo_akhir ?? 0, 0, ',', '.') }}
-                                    <span class="fs-6 fw-normal text-muted">Kg</span>
+                                    <span class="fs-6 fw-normal text-muted">{{ $barang->satuan_label }}</span>
                                 </div>
                                 <small class="text-muted mt-2 d-block">
-                                    Total ikan per-kilogram tersedia di gudang
+                                    Total ikan per-{{ strtolower($barang->satuan_label) }} tersedia di gudang
                                 </small>
                             </div>
                         </div>
@@ -59,10 +62,10 @@
                             <div class="p-3 rounded-3 border h-100">
                                 <small class="text-muted d-block fw-bold text-uppercase">Konversi Satuan</small>
                                 <div class="fs-4 fw-bold text-info mt-1">
-                                    1 Unit = 1 Kg
+                                    1 Unit = 1 {{ $barang->satuan_label }}
                                 </div>
                                 <small class="text-muted mt-2 d-block">
-                                    Khusus ikan: 1 unit dicatat setara 1 kilogram
+                                    1 unit dicatat setara 1 {{ strtolower($barang->satuan_label) }}
                                 </small>
                             </div>
                         </div>
@@ -74,13 +77,17 @@
                                     <small class="fw-bold d-block text-uppercase">Total Potensi Nilai Jual Stok Ikan
                                         Ini</small>
                                     @if (($barang->harga_beli_per_unit ?? 0) > 0)
-                                        <span class="small">{{ number_format($barang->saldo_akhir ?? 0, 0, ',', '.') }} kg
+                                        <span class="small">{{ number_format($barang->saldo_akhir ?? 0, 0, ',', '.') }}
+                                            {{ strtolower($barang->satuan_label) }}
                                             × Rp
-                                            {{ number_format($barang->harga_beli_per_unit, 0, ',', '.') }} / kg</span>
+                                            {{ number_format($barang->harga_beli_per_unit, 0, ',', '.') }} /
+                                            {{ strtolower($barang->satuan_label) }}</span>
                                     @else
-                                        <span class="small">{{ number_format($barang->saldo_akhir ?? 0, 0, ',', '.') }} kg
+                                        <span class="small">{{ number_format($barang->saldo_akhir ?? 0, 0, ',', '.') }}
+                                            {{ strtolower($barang->satuan_label) }}
                                             × Rp
-                                            {{ number_format($barang->harga_jual_per_unit, 0, ',', '.') }} / kg</span>
+                                            {{ number_format($barang->harga_jual_per_unit, 0, ',', '.') }} /
+                                            {{ strtolower($barang->satuan_label) }}</span>
                                     @endif
                                 </div>
                                 <h4 class="mb-0 fw-bold">
@@ -112,9 +119,9 @@
                             <th class="text-center" style="width: 50px;">No</th>
                             <th>Tanggal</th>
                             <th>Uraian / Keterangan</th>
-                            <th class="text-end">Diterima (Kg)</th>
-                            <th class="text-end">Dikeluarkan (Kg)</th>
-                            <th class="text-end">Stok (Kg)</th>
+                            <th class="text-end">Diterima ({{ $barang->satuan_label }})</th>
+                            <th class="text-end">Dikeluarkan ({{ $barang->satuan_label }})</th>
+                            <th class="text-end">Stok ({{ $barang->satuan_label }})</th>
                             <th class="text-center" style="width: 80px;">Aksi</th>
                         </tr>
                     </thead>
@@ -128,7 +135,7 @@
                                     @if ($kartu->diterima > 0)
                                         <span
                                             class="text-success fw-bold">+{{ number_format($kartu->diterima, 0, ',', '.') }}
-                                            kg</span>
+                                            {{ strtolower($barang->satuan_label) }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -137,14 +144,14 @@
                                     @if ($kartu->dikeluarkan > 0)
                                         <span
                                             class="text-danger fw-bold">-{{ number_format($kartu->dikeluarkan, 0, ',', '.') }}
-                                            kg</span>
+                                            {{ strtolower($barang->satuan_label) }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td class="text-end fw-bold text-primary">
                                     {{ number_format($kartu->saldo_persatuan, 0, ',', '.') }}
-                                    <small class="text-muted fw-normal">kg</small>
+                                    <small class="text-muted fw-normal">{{ strtolower($barang->satuan_label) }}</small>
                                 </td>
                                 <td class="text-center">
                                     <form action="{{ route('kartu-gudang.destroy', $kartu->id) }}" method="POST"

@@ -36,7 +36,7 @@ class AuthenticatedSessionController extends Controller
         switch ($user->role) {
             case 'superadmin':
                 return redirect()->intended(
-                    route('superadmin.dashboard', absolute: false),
+                    route('superadmin.index', absolute: false),
                 );
             case 'ukm':
             case 'nelayan':
@@ -66,9 +66,9 @@ class AuthenticatedSessionController extends Controller
                             'Silakan masukkan kode OTP yang telah kami kirim ke email Anda.',
                         );
                 }
-                // return redirect()->intended(
-                //     route("dashboard", absolute: false),
-                // );
+            // return redirect()->intended(
+            //     route("dashboard", absolute: false),
+            // );
             default:
                 return redirect()->intended(
                     route('dashboard', absolute: false),
