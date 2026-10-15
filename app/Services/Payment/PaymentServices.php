@@ -39,6 +39,7 @@ class PaymentServices
         $subscription->loadMissing('plan');
         $provider = $provider ?? config('payment.default');
 
+        // buat payment row baru
         $payment = Payment::create([
             'subscription_id' => $subscription->id,
             'provider' => $provider,

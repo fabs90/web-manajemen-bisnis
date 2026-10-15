@@ -97,7 +97,7 @@ class SubscriptionService
                 ->lockForUpdate()
                 ->findOrFail($subscription->id);
 
-            if ($data->status !== SubscriptionStatus::Pending) {
+            if ($data->status === SubscriptionStatus::Pending) {
                 return $data;
             }
 
@@ -128,9 +128,10 @@ class SubscriptionService
         });
     }
 
-    public function cancel(Subscription $subscription, User|Organization $owner): Subscription
+    public function changePlan(Subscription $subscription, Plan $plan): Subscription
     {
-        return DB::transaction(function () use ($subscription, $owner) {
+        return DB::transaction(function () use ($subscription, $plan) {
+            $owner = $subscription->owner();
             $subscription = Subscription::with('plan')
                 ->forOwner($owner)
                 ->lockForUpdate()
@@ -141,17 +142,28 @@ class SubscriptionService
                 'ends_at' => now(),
             ]);
 
-            return $subscription;
+            return $this->subscribe($plan, $owner, replaces: $subscription);
         });
     }
 
-    public function changePlan(Subscription $subscription, Plan $plan): Subscription
+    public function cancel(Subscription $subscription, User|Organization $owner): Subscription
     {
-        return DB::transaction(function () use ($subscription, $plan) {
-            $owner = $subscription->owner();
-            $this->cancel($subscription, $owner);
+        return DB::transaction(function () use ($subscription, $owner) {
+            $subscription = Subscription::with('plan')
+                ->forOwner($owner)
+                ->lockForUpdate()
+                ->findOrFail($subscription->id);
 
-            return $this->subscribe($plan, $owner, replaces: $subscription);
+            if ($subscription->status === SubscriptionStatus::Cancelled) {
+                return $subscription;
+            }
+
+            $subscription->update([
+                'status' => SubscriptionStatus::Cancelled,
+                'canceled_at' => now(),
+            ]);
+
+            return $subscription;
         });
     }
 }

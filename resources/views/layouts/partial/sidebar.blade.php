@@ -163,6 +163,13 @@
                     </a>
                 </li>
 
+                <li class="sidebar-item {{ Request::is('dashboard/subscriptions*') ? 'active' : '' }}">
+                    <a href="{{ route('subscriptions.index') }}" class="sidebar-link">
+                        <i class="bi bi-credit-card-2-front"></i>
+                        <span>Paket & Langganan</span>
+                    </a>
+                </li>
+
                 <li class="sidebar-item {{ Request::is('dashboard/printer*') ? 'active' : '' }}">
                     @if (auth()->user()->hasFeature(\App\Enum\Feature::ThermalPrinter))
                         <a href="{{ route('printer.index') }}" class="sidebar-link">

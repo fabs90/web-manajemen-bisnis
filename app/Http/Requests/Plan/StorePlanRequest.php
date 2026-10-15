@@ -47,7 +47,7 @@ class StorePlanRequest extends FormRequest
                 'string',
                 'max:50',
                 'regex:/^[A-Z0-9_\-]+$/',
-                Rule::unique('plans', 'code'),
+                Rule::unique('plans', 'code')->ignore($this->route('plan')),
             ],
             'plan_name' => [
                 'required',

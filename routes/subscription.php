@@ -13,6 +13,12 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
     Route::get('dashboard/subscriptions/success', [SubscriptionCheckoutController::class, 'success'])
         ->name('subscriptions.success');
+
+    Route::post('dashboard/subscriptions/{subscription}/renew', [SubscriptionCheckoutController::class, 'renew'])
+        ->name('subscriptions.renew');
+
+    Route::post('dashboard/subscriptions/{subscription}/cancel', [SubscriptionCheckoutController::class, 'cancel'])
+        ->name('subscriptions.cancel');
 });
 
 Route::post('webhooks/payments/{provider}', PaymentHookController::class)

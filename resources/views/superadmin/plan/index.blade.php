@@ -354,12 +354,19 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            <button type="button"
-                                                class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                                data-bs-toggle="modal" data-bs-target="#modal-plan-{{ $item->id }}"
-                                                title="Lihat Rincian Paket">
-                                                <i class="bi bi-eye me-1"></i> Detail
-                                            </button>
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-primary rounded-pill px-2 px-md-3"
+                                                    data-bs-toggle="modal" data-bs-target="#modal-plan-{{ $item->id }}"
+                                                    title="Lihat Rincian Paket">
+                                                    <i class="bi bi-eye me-1"></i> Detail
+                                                </button>
+                                                <a href="{{ route('superadmin.plan.edit', $item) }}"
+                                                    class="btn btn-sm btn-outline-warning rounded-pill px-2 px-md-3"
+                                                    title="Edit Paket">
+                                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -496,7 +503,10 @@
                         </div>
                     </div>
 
-                    <div class="modal-footer bg-light border-top py-2">
+                    <div class="modal-footer bg-light border-top py-2 d-flex justify-content-between">
+                        <a href="{{ route('superadmin.plan.edit', $item) }}" class="btn btn-warning px-4 rounded-pill">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Paket
+                        </a>
                         <button type="button" class="btn btn-secondary px-4 rounded-pill"
                             data-bs-dismiss="modal">Tutup</button>
                     </div>

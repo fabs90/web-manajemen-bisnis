@@ -38,5 +38,8 @@ Route::middleware(['web', 'auth', 'checkIsAdmin'])
                 Route::get('/', [PlanController::class, 'index'])->name('index');
                 Route::get('/create', [PlanController::class, 'create'])->name('create');
                 Route::post('/', [PlanController::class, 'store'])->name('store');
+                Route::get('/{plan}/edit', [PlanController::class, 'edit'])->name('edit');
+                Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
+                Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
             });
     });

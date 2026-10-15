@@ -35,13 +35,14 @@ class EntitlementService
         return Subscription::query()
             ->join('plans', 'plans.id', '=', 'subscriptions.plan_id')
             ->join('plan_features', 'plan_features.plan_id', '=', 'plans.id')
-            ->where('subscriptions.status', SubscriptionStatus::Active)
+            ->whereIn('subscriptions.status', [SubscriptionStatus::Active, SubscriptionStatus::Cancelled])
             ->where('subscriptions.starts_at', '<=', $now)
             ->where(fn ($q) => $q
                 ->whereNull('subscriptions.ends_at')
                 ->orWhere('subscriptions.ends_at', '>', $now)
-                // grace period: hanya recurring
-                ->orWhere(fn ($q) => $q->where('plans.billing_type', BillingType::Recurring)
+                // grace period: hanya recurring untuk active
+                ->orWhere(fn ($q) => $q->where('subscriptions.status', SubscriptionStatus::Active)
+                    ->where('plans.billing_type', BillingType::Recurring)
                     ->where('subscriptions.ends_at', '>', $graceCutoff)))
             ->where(function ($q) use ($user, $orgId) {
                 $q->where('subscriptions.user_id', $user->id);

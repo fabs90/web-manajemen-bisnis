@@ -3,8 +3,10 @@
 use App\Enum\BillingType;
 use App\Enum\Feature;
 use App\Enum\PlanScope;
+use App\Enum\SubscriptionStatus;
 use App\Models\Plan;
 use App\Models\PlanFeature;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Services\Plan\PlanService;
 
@@ -31,23 +33,51 @@ beforeEach(function () {
 */
 
 test('guests are redirected to login when accessing plan routes', function (string $method, string $route, array $data = []) {
-    $response = $this->{$method}($route, $data);
+    $plan = Plan::create([
+        'code' => 'GUEST_TEST',
+        'name' => 'Guest Test',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 10000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    $resolvedRoute = str_replace('{id}', (string) $plan->id, $route);
+
+    $response = $this->{$method}($resolvedRoute, $data);
 
     $response->assertRedirect(route('login'));
 })->with([
     'index' => ['get', '/superadmin/plan'],
     'create' => ['get', '/superadmin/plan/create'],
     'store' => ['post', '/superadmin/plan', []],
+    'edit' => ['get', '/superadmin/plan/{id}/edit'],
+    'update' => ['put', '/superadmin/plan/{id}', []],
 ]);
 
 test('non-admin users are forbidden from accessing plan routes', function (string $method, string $route, array $data = []) {
-    $response = $this->actingAs($this->regularUser)->{$method}($route, $data);
+    $plan = Plan::create([
+        'code' => 'AUTH_TEST',
+        'name' => 'Auth Test',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 10000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    $resolvedRoute = str_replace('{id}', (string) $plan->id, $route);
+
+    $response = $this->actingAs($this->regularUser)->{$method}($resolvedRoute, $data);
 
     $response->assertForbidden();
 })->with([
     'index' => ['get', '/superadmin/plan'],
     'create' => ['get', '/superadmin/plan/create'],
     'store' => ['post', '/superadmin/plan', []],
+    'edit' => ['get', '/superadmin/plan/{id}/edit'],
+    'update' => ['put', '/superadmin/plan/{id}', []],
 ]);
 
 /*
@@ -394,4 +424,398 @@ test('store plan redirects back with error and preserves old input when service 
     $response->assertSessionHas('error', 'Gagal membuat paket. Silakan coba beberapa saat lagi.');
     $response->assertSessionHasInput('plan_code', 'FAIL_TEST');
     $response->assertSessionHasInput('plan_name', 'Fail Test Plan');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Edit Action
+|--------------------------------------------------------------------------
+*/
+
+test('superadmin can view edit plan page with prefilled data', function () {
+    $plan = Plan::create([
+        'code' => 'TEST_EDIT_PAGE',
+        'name' => 'Paket Edit Test',
+        'scope' => PlanScope::Organization,
+        'billing_type' => BillingType::Recurring,
+        'price' => 150000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    PlanFeature::create([
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    $response = $this->actingAs($this->superadmin)
+        ->get(route('superadmin.plan.edit', $plan));
+
+    $response->assertSuccessful();
+    $response->assertViewIs('superadmin.plan.edit');
+    $response->assertViewHas('plan', fn ($viewPlan) => $viewPlan->id === $plan->id);
+    $response->assertSee('TEST_EDIT_PAGE');
+    $response->assertSee('Paket Edit Test');
+    $response->assertSee('150000');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Update Action
+|--------------------------------------------------------------------------
+*/
+
+test('superadmin can successfully update plan attributes and features', function () {
+    $plan = Plan::create([
+        'code' => 'PLAN_ORIGINAL',
+        'name' => 'Paket Lama',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    PlanFeature::create([
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    $payload = [
+        'plan_code' => 'PLAN_UPDATED',
+        'plan_name' => 'Paket Baru Terupdate',
+        'scope' => PlanScope::Organization->value,
+        'billing_type' => BillingType::OneTime->value,
+        'plan_price' => 300000,
+        'plan_duration' => null,
+        'features' => [Feature::EmailDispatch->value, Feature::FinancialReport->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->put(route('superadmin.plan.update', $plan), $payload);
+
+    $response->assertRedirect(route('superadmin.plan.index'));
+    $response->assertSessionHas('success', 'Paket berhasil diperbarui.');
+
+    $this->assertDatabaseHas('plans', [
+        'id' => $plan->id,
+        'code' => 'PLAN_UPDATED',
+        'name' => 'Paket Baru Terupdate',
+        'scope' => PlanScope::Organization->value,
+        'billing_type' => BillingType::OneTime->value,
+        'price' => 300000,
+        'duration_days' => null,
+    ]);
+
+    $this->assertDatabaseHas('plan_features', [
+        'plan_id' => $plan->id,
+        'feature' => Feature::EmailDispatch->value,
+    ]);
+    $this->assertDatabaseHas('plan_features', [
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport->value,
+    ]);
+});
+
+test('update plan allows keeping the same plan code', function () {
+    $plan = Plan::create([
+        'code' => 'SAME_CODE',
+        'name' => 'Paket Nama Awal',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    PlanFeature::create([
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    $payload = [
+        'plan_code' => 'SAME_CODE',
+        'plan_name' => 'Paket Nama Baru',
+        'scope' => PlanScope::User->value,
+        'billing_type' => BillingType::Recurring->value,
+        'plan_price' => 125000,
+        'plan_duration' => 60,
+        'features' => [Feature::FinancialReport->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->put(route('superadmin.plan.update', $plan), $payload);
+
+    $response->assertRedirect(route('superadmin.plan.index'));
+    $response->assertSessionHas('success', 'Paket berhasil diperbarui.');
+
+    $this->assertDatabaseHas('plans', [
+        'id' => $plan->id,
+        'code' => 'SAME_CODE',
+        'name' => 'Paket Nama Baru',
+        'price' => 125000,
+        'duration_days' => 60,
+    ]);
+});
+
+test('update plan fails when plan code is already taken by another plan', function () {
+    Plan::create([
+        'code' => 'ANOTHER_PLAN',
+        'name' => 'Paket Lain',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    $myPlan = Plan::create([
+        'code' => 'MY_PLAN',
+        'name' => 'Paket Saya',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    $payload = [
+        'plan_code' => 'ANOTHER_PLAN',
+        'plan_name' => 'Coba Pakai Kode Lain',
+        'scope' => PlanScope::User->value,
+        'billing_type' => BillingType::Recurring->value,
+        'plan_price' => 100000,
+        'plan_duration' => 30,
+        'features' => [Feature::FinancialReport->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->put(route('superadmin.plan.update', $myPlan), $payload);
+
+    $response->assertSessionHasErrors('plan_code');
+});
+
+test('update plan redirects back with error and preserves old input when service throws exception', function () {
+    $plan = Plan::create([
+        'code' => 'FAIL_UPDATE',
+        'name' => 'Fail Update Plan',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    mock(PlanService::class)
+        ->shouldReceive('update')
+        ->once()
+        ->andThrow(new Exception('Database error during update'));
+
+    $payload = [
+        'plan_code' => 'FAIL_UPDATE',
+        'plan_name' => 'Modified Name',
+        'scope' => PlanScope::User->value,
+        'billing_type' => BillingType::Recurring->value,
+        'plan_price' => 100000,
+        'plan_duration' => 30,
+        'features' => [Feature::FinancialReport->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->from(route('superadmin.plan.edit', $plan))
+        ->put(route('superadmin.plan.update', $plan), $payload);
+
+    $response->assertRedirect(route('superadmin.plan.edit', $plan));
+    $response->assertSessionHas('error', 'Gagal memperbarui paket. Silakan coba beberapa saat lagi.');
+    $response->assertSessionHasInput('plan_name', 'Modified Name');
+});
+
+test('superadmin cannot change scope of a plan that is already used by subscriptions', function () {
+    $plan = Plan::create([
+        'code' => 'USED_PLAN_SCOPE',
+        'name' => 'Used Plan Scope Test',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 150000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    PlanFeature::create([
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    Subscription::create([
+        'user_id' => $this->regularUser->id,
+        'plan_id' => $plan->id,
+        'status' => SubscriptionStatus::Active,
+        'starts_at' => now(),
+        'ends_at' => now()->addDays(30),
+    ]);
+
+    $payload = [
+        'plan_code' => 'USED_PLAN_SCOPE',
+        'plan_name' => 'Used Plan Changed Scope',
+        'scope' => PlanScope::Organization->value, // Attempt to change scope
+        'billing_type' => BillingType::Recurring->value,
+        'plan_price' => 150000,
+        'plan_duration' => 30,
+        'features' => [Feature::FinancialReport->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->put(route('superadmin.plan.update', $plan), $payload);
+
+    $response->assertSessionHasErrors('scope');
+
+    // Verify DB was NOT updated
+    expect($plan->fresh()->scope)->toBe(PlanScope::User);
+});
+
+test('superadmin cannot change billing_type of a plan that is already used by subscriptions', function () {
+    $plan = Plan::create([
+        'code' => 'USED_PLAN_BILLING',
+        'name' => 'Used Plan Billing Test',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 150000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    PlanFeature::create([
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    Subscription::create([
+        'user_id' => $this->regularUser->id,
+        'plan_id' => $plan->id,
+        'status' => SubscriptionStatus::Active,
+        'starts_at' => now(),
+        'ends_at' => now()->addDays(30),
+    ]);
+
+    $payload = [
+        'plan_code' => 'USED_PLAN_BILLING',
+        'plan_name' => 'Used Plan Changed Billing',
+        'scope' => PlanScope::User->value,
+        'billing_type' => BillingType::OneTime->value, // Attempt to change billing_type
+        'plan_price' => 150000,
+        'plan_duration' => null,
+        'features' => [Feature::FinancialReport->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->put(route('superadmin.plan.update', $plan), $payload);
+
+    $response->assertSessionHasErrors('billing_type');
+
+    // Verify DB was NOT updated
+    expect($plan->fresh()->billing_type)->toBe(BillingType::Recurring);
+});
+
+test('superadmin can successfully update features, name, price, and deactivate a used plan', function () {
+    $plan = Plan::create([
+        'code' => 'USED_PLAN_FEATURE_EDIT',
+        'name' => 'Paket Lama Aktif',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+
+    PlanFeature::create([
+        'plan_id' => $plan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    Subscription::create([
+        'user_id' => $this->regularUser->id,
+        'plan_id' => $plan->id,
+        'status' => SubscriptionStatus::Active,
+        'starts_at' => now(),
+        'ends_at' => now()->addDays(30),
+    ]);
+
+    $payload = [
+        'plan_code' => 'USED_PLAN_FEATURE_EDIT',
+        'plan_name' => 'Paket Nama Baru',
+        'scope' => PlanScope::User->value,
+        'billing_type' => BillingType::Recurring->value,
+        'plan_price' => 200000,
+        'plan_duration' => 30,
+        'is_active' => false,
+        'features' => [Feature::ThermalPrinter->value, Feature::AdministrationDocuments->value],
+    ];
+
+    $response = $this->actingAs($this->superadmin)
+        ->put(route('superadmin.plan.update', $plan), $payload);
+
+    $response->assertRedirect(route('superadmin.plan.index'));
+    $response->assertSessionHas('success', 'Paket berhasil diperbarui.');
+
+    $freshPlan = $plan->fresh();
+    expect($freshPlan->name)->toBe('Paket Nama Baru')
+        ->and($freshPlan->price)->toBe(200000)
+        ->and($freshPlan->is_active)->toBeFalse()
+        ->and($freshPlan->scope)->toBe(PlanScope::User)
+        ->and($freshPlan->billing_type)->toBe(BillingType::Recurring);
+
+    // Verify features were updated
+    expect($freshPlan->features()->map(fn ($f) => $f->value)->toArray())
+        ->toEqualCanonicalizing([
+            Feature::ThermalPrinter->value,
+            Feature::AdministrationDocuments->value,
+        ]);
+});
+
+test('edit view displays locked indicators when plan is used and normal when unused', function () {
+    $unusedPlan = Plan::create([
+        'code' => 'UNUSED_PLAN',
+        'name' => 'Unused Plan',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+    PlanFeature::create([
+        'plan_id' => $unusedPlan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+
+    $usedPlan = Plan::create([
+        'code' => 'USED_PLAN_VIEW',
+        'name' => 'Used Plan View',
+        'scope' => PlanScope::User,
+        'billing_type' => BillingType::Recurring,
+        'price' => 100000,
+        'duration_days' => 30,
+        'is_active' => true,
+    ]);
+    PlanFeature::create([
+        'plan_id' => $usedPlan->id,
+        'feature' => Feature::FinancialReport,
+    ]);
+    Subscription::create([
+        'user_id' => $this->regularUser->id,
+        'plan_id' => $usedPlan->id,
+        'status' => SubscriptionStatus::Active,
+        'starts_at' => now(),
+        'ends_at' => now()->addDays(30),
+    ]);
+
+    // View unused plan
+    $responseUnused = $this->actingAs($this->superadmin)->get(route('superadmin.plan.edit', $unusedPlan));
+    $responseUnused->assertSuccessful();
+    $responseUnused->assertDontSee('Terkunci (Sudah Dipakai)');
+
+    // View used plan
+    $responseUsed = $this->actingAs($this->superadmin)->get(route('superadmin.plan.edit', $usedPlan));
+    $responseUsed->assertSuccessful();
+    $responseUsed->assertSee('Terkunci (Sudah Dipakai)');
+    $responseUsed->assertSee('Keputusan Bisnis & Akses Pelanggan:');
 });

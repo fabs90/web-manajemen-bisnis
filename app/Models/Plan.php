@@ -34,6 +34,20 @@ class Plan extends Model
         return $this->hasMany(PlanFeature::class);
     }
 
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function isUsed(): bool
+    {
+        if (isset($this->subscriptions_count)) {
+            return $this->subscriptions_count > 0;
+        }
+
+        return $this->subscriptions()->exists();
+    }
+
     public function features(): Collection
     {
         return $this->planFeatures->pluck('feature');
