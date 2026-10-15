@@ -29,6 +29,10 @@ class KartuGudangController extends Controller
 
         $totalNilaiPersediaan = $barang->sum('nilai_persediaan');
 
+        if (auth()->user()->role === 'nelayan') {
+            return view('kartu-gudang.nelayan.index', compact('barang', 'totalNilaiPersediaan'));
+        }
+
         return view('kartu-gudang.index', compact('barang', 'totalNilaiPersediaan'));
     }
 
@@ -42,7 +46,7 @@ class KartuGudangController extends Controller
             ])
             ->find($barang_id);
 
-        if (!$barang) {
+        if (! $barang) {
             return redirect()
                 ->route('kartu-gudang.index')
                 ->with('error', 'Barang tidak ditemukan.');
@@ -66,7 +70,7 @@ class KartuGudangController extends Controller
     {
         $barang = Barang::where('user_id', auth()->id())->find($barang_id);
 
-        if (!$barang) {
+        if (! $barang) {
             return redirect()
                 ->route('kartu-gudang.index')
                 ->with('error', 'Barang tidak ditemukan.');
@@ -124,9 +128,9 @@ class KartuGudangController extends Controller
             if ($inventoryAccount && $modalAccount && ($diterima > 0 || $dikeluarkan > 0)) {
                 $journalEntry = JournalEntry::create([
                     'user_id' => auth()->id(),
-                    'reference_number' => 'KG-' . date('Ymd', strtotime($request->tanggal)) . '-' . strtoupper(Str::random(6)),
+                    'reference_number' => 'KG-'.date('Ymd', strtotime($request->tanggal)).'-'.strtoupper(Str::random(6)),
                     'date' => $request->tanggal,
-                    'description' => 'Penyesuaian Kartu Gudang: ' . $barang->nama . ' (' . $request->uraian . ')',
+                    'description' => 'Penyesuaian Kartu Gudang: '.$barang->nama.' ('.$request->uraian.')',
                     'transaction_type' => 'penyesuaian-kartu-gudang',
                 ]);
 
@@ -175,7 +179,7 @@ class KartuGudangController extends Controller
                 ->route('kartu-gudang.detail', ['barang_id' => $barangId])
                 ->with(
                     'success',
-                    'Kartu gudang ' . $barang->nama . ' berhasil ditambahkan.',
+                    'Kartu gudang '.$barang->nama.' berhasil ditambahkan.',
                 );
         } catch (Exception $e) {
             DB::rollBack();
@@ -200,7 +204,7 @@ class KartuGudangController extends Controller
                 JournalEntry::where('user_id', auth()->id())
                     ->where('transaction_type', 'penyesuaian-kartu-gudang')
                     ->where('date', $kartuGudang->tanggal)
-                    ->where('description', 'Penyesuaian Kartu Gudang: ' . $kartuGudang->barang->nama . ' (' . $kartuGudang->uraian . ')')
+                    ->where('description', 'Penyesuaian Kartu Gudang: '.$kartuGudang->barang->nama.' ('.$kartuGudang->uraian.')')
                     ->delete();
             }
 
@@ -216,7 +220,7 @@ class KartuGudangController extends Controller
 
             return redirect()
                 ->route('kartu-gudang.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat menghapus data: '.$e->getMessage());
         }
     }
 }

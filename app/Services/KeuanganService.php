@@ -32,24 +32,40 @@ class KeuanganService
             $sales['returPenjualan'] -
             $sales['potonganPenjualan'];
 
-        // In periodic inventory system:
-        // Pembelian = total of 'membeli_barang' debit to 1105
-        $pembelianKredit = $this->getPembelianKreditTotal($userId, $dateRange);
-        $pembelianTunai = $this->getPembelianTunaiTotal($userId, $dateRange);
-        $returPembelian = $this->getReturPembelianTotal($userId, $dateRange);
-        $potonganPembelian = $operating['potonganPembelian'] ?? 0;
+        $userRole = User::where('id', $userId)->value('role') ?? 'ukm';
+        $isNelayan = $userRole === 'nelayan';
 
-        $pembelianBersih = $pembelianKredit + $pembelianTunai - $returPembelian - $potonganPembelian;
-
-        // HPP: Gunakan total HPP dari jurnal (perpetual) jika ada, atau gunakan rumus periodik (Awal + Pembelian - Akhir)
-        $hppPerpetual = $this->getHppTotal($userId, $dateRange);
-        if ($hppPerpetual > 0) {
-            $hpp = $hppPerpetual;
+        // For fisherman (nelayan), fish catches have no buy price (only sell price).
+        // Catch results are direct products rather than purchased merchandise.
+        // Therefore, purchasing merchandise and merchandise HPP do not apply (HPP = 0).
+        if ($isNelayan) {
+            $pembelianKredit = 0.0;
+            $pembelianTunai = 0.0;
+            $returPembelian = 0.0;
+            $potonganPembelian = 0.0;
+            $pembelianBersih = 0.0;
+            $hpp = 0.0;
+            $labaKotor = $penjualanBersih;
         } else {
-            $hpp = max(0, $inventory['persediaanAwal'] + $pembelianBersih - $inventory['persediaanAkhir']);
-        }
+            // In periodic inventory system:
+            // Pembelian = total of 'membeli_barang' debit to 1105
+            $pembelianKredit = $this->getPembelianKreditTotal($userId, $dateRange);
+            $pembelianTunai = $this->getPembelianTunaiTotal($userId, $dateRange);
+            $returPembelian = $this->getReturPembelianTotal($userId, $dateRange);
+            $potonganPembelian = $operating['potonganPembelian'] ?? 0;
 
-        $labaKotor = $penjualanBersih - $hpp;
+            $pembelianBersih = $pembelianKredit + $pembelianTunai - $returPembelian - $potonganPembelian;
+
+            // HPP: Gunakan total HPP dari jurnal (perpetual) jika ada, atau gunakan rumus periodik (Awal + Pembelian - Akhir)
+            $hppPerpetual = $this->getHppTotal($userId, $dateRange);
+            if ($hppPerpetual > 0) {
+                $hpp = $hppPerpetual;
+            } else {
+                $hpp = max(0, $inventory['persediaanAwal'] + $pembelianBersih - $inventory['persediaanAkhir']);
+            }
+
+            $labaKotor = $penjualanBersih - $hpp;
+        }
 
         $labaOperasional = $labaKotor - $operating['biayaOperasional'];
 

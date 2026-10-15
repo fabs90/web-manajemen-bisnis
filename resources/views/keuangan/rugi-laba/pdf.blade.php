@@ -189,7 +189,7 @@
             {{-- 8-11 --}}
             <tr>
                 <td class="text-center">8</td>
-                <td>Persediaan Awal</td>
+                <td>{{ ($userProfile->role ?? auth()->user()?->role) === 'nelayan' ? 'Persediaan Hasil Tangkapan Awal' : 'Persediaan Awal' }}</td>
                 <td></td>
                 <td class="text-right">Rp {{ number_format($persediaanAwal, 0, ',', '.') }}</td>
                 <td></td>
@@ -203,7 +203,7 @@
             </tr>
             <tr class="bg-light">
                 <td class="text-center">10</td>
-                <td class="fw-bold">Barang Tersedia Dijual</td>
+                <td class="fw-bold">{{ ($userProfile->role ?? auth()->user()?->role) === 'nelayan' ? 'Tangkapan Siap Dijual' : 'Barang Tersedia Dijual' }}</td>
                 <td></td>
                 <td class="text-right fw-bold">Rp
                     {{ number_format($persediaanAwal + $pembelianBersih, 0, ',', '.') }}</td>
@@ -211,7 +211,7 @@
             </tr>
             <tr>
                 <td class="text-center">11</td>
-                <td>Persediaan Akhir</td>
+                <td>{{ ($userProfile->role ?? auth()->user()?->role) === 'nelayan' ? 'Persediaan Hasil Tangkapan Akhir' : 'Persediaan Akhir' }}</td>
                 <td></td>
                 <td class="text-right">Rp {{ number_format($persediaanAkhir, 0, ',', '.') }}</td>
                 <td></td>

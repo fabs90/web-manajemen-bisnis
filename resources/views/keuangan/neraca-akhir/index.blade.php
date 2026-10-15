@@ -21,7 +21,7 @@
                         <td class="text-end">Rp {{ number_format($saldoPiutang, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <td>Persediaan Barang Dagang Akhir</td>
+                        <td>{{ auth()->user()?->role === 'nelayan' ? 'Persediaan Hasil Tangkapan' : 'Persediaan Barang Dagang Akhir' }}</td>
                         <td class="text-end">Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}</td>
                     </tr>
 

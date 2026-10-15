@@ -83,7 +83,8 @@
                         {{-- 5. Persediaan Awal --}}
                         <tr>
                             <td class="text-center">5</td>
-                            <td><strong>Persediaan Barang Dagang Awal</strong></td>
+                            <td><strong>{{ auth()->user()?->role === 'nelayan' ? 'Persediaan Hasil Tangkapan Awal' : 'Persediaan Barang Dagang Awal' }}</strong>
+                            </td>
                             <td></td>
                             <td class="text-end">Rp {{ number_format($persediaanAwal, 0, ',', '.') }}</td>
                             <td></td>
@@ -135,7 +136,8 @@
                         </tr>
                         <tr>
                             <td class="text-center">11</td>
-                            <td>Persediaan Barang Dagang Akhir</td>
+                            <td>{{ auth()->user()?->role === 'nelayan' ? 'Persediaan Hasil Tangkapan Akhir' : 'Persediaan Barang Dagang Akhir' }}
+                            </td>
                             <td></td>
                             <td class="text-end text-decoration-underline">Rp
                                 {{ number_format($persediaanAkhir, 0, ',', '.') }} -</td>
@@ -155,7 +157,8 @@
                         {{-- 13. Laba Kotor --}}
                         <tr class="{{ $labaKotor >= 0 ? 'table-success' : 'table-danger' }}">
                             <td class="text-center">13</td>
-                            <td class="text-center"><strong>{{ $labaKotor >= 0 ? 'Laba Kotor' : 'Rugi Kotor' }}</strong></td>
+                            <td class="text-center"><strong>{{ $labaKotor >= 0 ? 'Laba Kotor' : 'Rugi Kotor' }}</strong>
+                            </td>
                             <td></td>
                             <td></td>
                             <td class="text-end"><strong>Rp {{ number_format($labaKotor, 0, ',', '.') }}</strong></td>
@@ -224,7 +227,7 @@
                         {{-- 20. Pajak --}}
                         <tr class="table-warning">
                             <td class="text-center">20</td>
-                            <td>Pajak UKM dan Nelayan 5%</td>
+                            <td>Pajak UKM dan Nelayan 15%</td>
                             <td></td>
                             <td></td>
                             <td class="text-end text-decoration-underline">Rp {{ number_format($pajak, 0, ',', '.') }} -

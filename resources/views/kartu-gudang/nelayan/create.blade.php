@@ -27,12 +27,12 @@
                             <div class="col-6 text-center">
                                 <small class="text-muted d-block text-uppercase small fw-bold">Stok Saat Ini</small>
                                 <span class="fs-4 fw-bold text-primary">{{ number_format($stokKg, 0, ',', '.') }}</span>
-                                <small class="d-block text-muted">Kg</small>
+                                <small class="d-block text-muted">{{ $barang->satuan_label }}</small>
                             </div>
                             <div class="col-6 text-center border-start">
-                                <small class="text-muted d-block text-uppercase small fw-bold">Harga Jual / Kg</small>
+                                <small class="text-muted d-block text-uppercase small fw-bold">Harga Jual / {{ $barang->satuan_label }}</small>
                                 <span class="fs-5 fw-bold text-success">Rp {{ number_format($barang->harga_jual_per_unit, 0, ',', '.') }}</span>
-                                <small class="d-block text-muted">Per-kilogram</small>
+                                <small class="d-block text-muted">Per-{{ strtolower($barang->satuan_label) }}</small>
                             </div>
                         </div>
 
@@ -40,11 +40,11 @@
                             <h6 class="fw-bold mb-2 small text-uppercase text-muted">Detail Satuan</h6>
                             <div class="d-flex justify-content-between mb-1">
                                 <span class="small">Satuan Utama</span>
-                                <span class="small fw-bold">Kilogram (Kg)</span>
+                                <span class="small fw-bold">{{ $barang->satuan_label === 'Kg' ? 'Kilogram (Kg)' : $barang->satuan_label }}</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="small">Konversi Sistem</span>
-                                <span class="small fw-bold text-info">1 Unit = 1 Kg</span>
+                                <span class="small fw-bold text-info">1 Unit = 1 {{ $barang->satuan_label }}</span>
                             </div>
                         </div>
                     </div>
@@ -104,7 +104,7 @@
 
                                 <div class="col-12">
                                     <hr class="my-2">
-                                    <p class="text-muted small fw-bold text-uppercase mb-3">Detail Pergerakan Ikan (Per-Kilogram)
+                                    <p class="text-muted small fw-bold text-uppercase mb-3">Detail Pergerakan Ikan (Per-{{ $barang->satuan_label }})
                                     </p>
                                 </div>
 
@@ -112,15 +112,15 @@
                                     <div
                                         class="p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3">
                                         <label for="diterima" class="form-label fw-bold text-success">
-                                            <i class="bi bi-arrow-down-left-circle me-1"></i> Ikan Masuk (Per-kg)
+                                            <i class="bi bi-arrow-down-left-circle me-1"></i> Ikan Masuk (Per-{{ strtolower($barang->satuan_label) }})
                                         </label>
                                         <div class="input-group">
                                             <input type="number" class="form-control form-control-lg border-success"
                                                 id="diterima" name="diterima" placeholder="0" min="0"
                                                 value="{{ old('diterima', 0) }}">
-                                            <span class="input-group-text bg-success text-white border-success">Kg</span>
+                                            <span class="input-group-text bg-success text-white border-success">{{ $barang->satuan_label }}</span>
                                         </div>
-                                        <div class="form-text text-success small mt-2">Gunakan jika ada hasil tangkapan baru yang masuk (1 unit = 1 kg).</div>
+                                        <div class="form-text text-success small mt-2">Gunakan jika ada hasil tangkapan baru yang masuk (1 unit = 1 {{ strtolower($barang->satuan_label) }}).</div>
                                     </div>
                                 </div>
 
@@ -128,15 +128,15 @@
                                     <div
                                         class="p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3">
                                         <label for="dikeluarkan" class="form-label fw-bold text-danger">
-                                            <i class="bi bi-arrow-up-right-circle me-1"></i> Ikan Keluar (Per-kg)
+                                            <i class="bi bi-arrow-up-right-circle me-1"></i> Ikan Keluar (Per-{{ strtolower($barang->satuan_label) }})
                                         </label>
                                         <div class="input-group">
                                             <input type="number" class="form-control form-control-lg border-danger"
                                                 id="dikeluarkan" name="dikeluarkan" placeholder="0" min="0"
                                                 value="{{ old('dikeluarkan', 0) }}">
-                                            <span class="input-group-text bg-danger text-white border-danger">Kg</span>
+                                            <span class="input-group-text bg-danger text-white border-danger">{{ $barang->satuan_label }}</span>
                                         </div>
-                                        <div class="form-text text-danger small mt-2">Gunakan jika ada ikan yang terjual atau keluar gudang (1 unit = 1 kg).</div>
+                                        <div class="form-text text-danger small mt-2">Gunakan jika ada ikan yang terjual atau keluar gudang (1 unit = 1 {{ strtolower($barang->satuan_label) }}).</div>
                                     </div>
                                 </div>
                             </div>

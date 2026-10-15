@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBarangRequest extends FormRequest
 {
@@ -27,6 +28,7 @@ class UpdateBarangRequest extends FormRequest
                 'jumlah_unit_per_kemasan' => $this->jumlah_unit_per_kemasan ?? 1,
                 'harga_beli_per_kemas' => $this->harga_beli_per_kemas ?? 0,
                 'harga_beli_per_unit' => $this->harga_beli_per_unit ?? 0,
+                'satuan' => $this->satuan ?: 'Kg',
             ]);
         }
     }
@@ -39,10 +41,19 @@ class UpdateBarangRequest extends FormRequest
     public function rules(): array
     {
         $isNelayan = auth()->user()?->role === 'nelayan';
+        $barangId = $this->route('id') ?? $this->route('barang');
 
         return [
-            'kode_barang' => ['required', 'string', 'max:255'],
+            'kode_barang' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('barang', 'kode_barang')
+                    ->where(fn ($query) => $query->where('user_id', auth()->id()))
+                    ->ignore($barangId),
+            ],
             'nama' => ['required', 'string', 'max:255'],
+            'satuan' => ['nullable', 'string', 'max:50'],
             'jumlah_max' => [$isNelayan ? 'nullable' : 'required', 'integer', 'min:0'],
             'jumlah_min' => [$isNelayan ? 'nullable' : 'required', 'integer', 'min:0'],
             'jumlah_unit_per_kemasan' => [$isNelayan ? 'nullable' : 'required', 'integer', $isNelayan ? 'min:0' : 'min:1'],
@@ -63,6 +74,7 @@ class UpdateBarangRequest extends FormRequest
             'kode_barang.required' => 'Kode barang wajib diisi.',
             'kode_barang.string' => 'Kode barang harus berupa teks.',
             'kode_barang.max' => 'Kode barang tidak boleh lebih dari 255 karakter.',
+            'kode_barang.unique' => 'Kode barang ini sudah digunakan.',
 
             'nama.required' => 'Nama barang wajib diisi.',
             'nama.string' => 'Nama barang harus berupa teks.',

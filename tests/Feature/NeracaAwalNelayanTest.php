@@ -58,8 +58,8 @@ test('nelayan create view renders with catch specific labels and correct invento
 
     $response->assertSuccessful();
     $response->assertSee('Persediaan Hasil Tangkapan');
-    $response->assertSee('Harga Jual per Kg');
-    $response->assertSee('Saldo Akhir (Kg)');
+    $response->assertSee('Harga Jual per Satuan');
+    $response->assertSee('Saldo Akhir');
     $response->assertSee('Ikan Tongkol Segar');
 });
 

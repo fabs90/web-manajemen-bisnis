@@ -15,6 +15,7 @@ class Barang extends Model
     protected $fillable = [
         'kode_barang',
         'nama',
+        'satuan',
         'user_id',
         'jumlah_max',
         'jumlah_min',
@@ -39,6 +40,17 @@ class Barang extends Model
         return $this->hasOne(KartuGudang::class)->latestOfMany();
     }
 
+    public function getSatuanLabelAttribute(): string
+    {
+        if (! empty($this->satuan)) {
+            return $this->satuan;
+        }
+
+        $role = $this->user?->role ?? auth()->user()?->role;
+
+        return $role === 'nelayan' ? 'Kg' : 'Unit';
+    }
+
     public function getSaldoAkhir(): int|float
     {
         $lastKartu = $this->relationLoaded('kartuGudang')
@@ -56,9 +68,10 @@ class Barang extends Model
     public function formatSaldoPerkemasan(?int $saldoUnit = 0): string
     {
         $unitPerKemasan = $this->jumlah_unit_per_kemasan ?: 1;
+        $unitLabel = strtolower($this->satuan_label);
 
         if ($unitPerKemasan <= 1) {
-            return $saldoUnit.' unit';
+            return $saldoUnit.' '.$unitLabel;
         }
 
         if ($saldoUnit === 0) {

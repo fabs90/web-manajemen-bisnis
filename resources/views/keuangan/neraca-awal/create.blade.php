@@ -187,8 +187,8 @@
             <thead class="table-light">
                 <tr>
                     <th>Nama {{ auth()->user()?->role === 'nelayan' ? 'Hasil Tangkapan' : 'Barang' }}</th>
-                    <th>{{ auth()->user()?->role === 'nelayan' ? 'Harga Jual per Kg' : 'Harga Beli per Unit' }}</th>
-                    <th>{{ auth()->user()?->role === 'nelayan' ? 'Saldo Akhir (Kg)' : 'Saldo Akhir (Unit)' }}</th>
+                    <th>{{ auth()->user()?->role === 'nelayan' ? 'Harga Jual per Satuan' : 'Harga Beli per Unit' }}</th>
+                    <th>{{ auth()->user()?->role === 'nelayan' ? 'Saldo Akhir' : 'Saldo Akhir (Unit)' }}</th>
                     <th>Total Nilai</th>
                 </tr>
             </thead>
@@ -371,11 +371,12 @@
                     const total = Number(b.nilai_persediaan ?? (saldo * harga));
                     grandTotal += total;
 
+                    const itemUnit = b.satuan || unitLabel;
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${b.nama ?? '-'}</td>
                         <td>Rp ${harga.toLocaleString('id-ID')}</td>
-                        <td>${saldo.toLocaleString('id-ID')} ${unitLabel}</td>
+                        <td>${saldo.toLocaleString('id-ID')} ${itemUnit}</td>
                         <td>Rp ${total.toLocaleString('id-ID')}</td>
                     `;
                     tbody.appendChild(row);

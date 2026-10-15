@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KasKecil;
+use App\Models\User;
 use App\Services\KeuanganService;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -107,11 +108,12 @@ class PageController extends Controller
             }
 
             // Total Persediaan (Diambil dari Kartu Gudang agar sinkron dengan menu Kartu Gudang)
+            $userRole = User::where('id', $userId)->value('role') ?? 'ukm';
             $totalPersediaan = 0;
             foreach ($barangDenganKartuTerbaru as $b) {
                 $lastKartu = $b->kartuGudang->first();
                 $saldoAkhir = $lastKartu ? $lastKartu->saldo_persatuan : 0;
-                $totalPersediaan += ($saldoAkhir * $b->harga_beli_per_unit);
+                $totalPersediaan += ($saldoAkhir * $b->hargaPersediaan($userRole));
             }
 
             // Total Kas Kecil (Account code: 1102)
