@@ -10,6 +10,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Services\Subscription\SubscriptionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -26,36 +27,45 @@ class PaymentServices
 
     public function checkout(Subscription $subscription, User $payer, ?string $provider = null): Payment
     {
-        $existingPayment = $subscription->payments()
-            ->where('status', PaymentStatus::Pending)
-            ->whereNotNull('checkout_url')
-            ->latest()
-            ->first();
+        // Kunci proses berdasarkan subscription ID selama maks 15 detik
+        return Cache::lock('checkout_subscription_'.$subscription->id, 15)->block(10, function () use ($subscription, $payer, $provider) {
 
-        if ($existingPayment) {
-            return $existingPayment;
-        }
+            $existingPayment = $subscription->payments()
+                ->where('status', PaymentStatus::Pending)
+                ->whereNotNull('checkout_url')
+                ->latest()
+                ->first();
 
-        $subscription->loadMissing('plan');
-        $provider = $provider ?? config('payment.default');
+            if ($existingPayment) {
+                return $existingPayment;
+            }
 
-        // buat payment row baru
-        $payment = Payment::create([
-            'subscription_id' => $subscription->id,
-            'provider' => $provider,
-            'reference' => 'PAY-'.Str::ulid(),
-            'amount' => $subscription->plan->price,
-            'status' => PaymentStatus::Pending,
-        ]);
+            $subscription->loadMissing('plan');
+            $provider = $provider ?? config('payment.default');
 
-        // kirim ke midtrans
-        $result = $this->gateway($provider)->createCheckout($payment, $payer);
-        // kirim payment url dari midtrans
-        $payment->update([
-            'checkout_url' => $result->url,
-        ]);
+            $payment = Payment::create([
+                'subscription_id' => $subscription->id,
+                'provider' => $provider,
+                'reference' => 'PAY-'.Str::ulid(),
+                'amount' => $subscription->plan->price,
+                'status' => PaymentStatus::Pending,
+            ]);
 
-        return $payment;
+            try {
+                // Request ke Midtrans
+                $result = $this->gateway($provider)->createCheckout($payment, $payer);
+
+                $payment->update([
+                    'checkout_url' => $result->url,
+                ]);
+
+                return $payment;
+            } catch (\Throwable $e) {
+                // Jika Midtrans gagal, hapus atau gagalkan payment record
+                $payment->update(['status' => PaymentStatus::Failed]);
+                throw $e;
+            }
+        });
     }
 
     public function handleWebhook(string $provider, Request $request): void

@@ -755,6 +755,11 @@
                                                     <span class="badge badge-soft-success py-2 px-2">
                                                         <i class="bi bi-check2-all me-1"></i> Selesai
                                                     </span>
+                                                    <a href="{{ route('subscriptions.invoice', $sub->id) }}" target="_blank"
+                                                        class="btn btn-sm btn-outline-secondary rounded-pill px-2 shadow-sm"
+                                                        title="Cetak Bukti Pembayaran / Invoice">
+                                                        <i class="bi bi-printer me-1"></i> Invoice
+                                                    </a>
                                                 @endif
 
                                                 @if ($sub->status->value === 'active' && (!$sub->ends_at || !$sub->ends_at->isPast()))

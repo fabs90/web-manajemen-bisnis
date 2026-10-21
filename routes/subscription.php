@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Payment\PaymentHookController;
 use App\Http\Controllers\Subscription\SubscriptionCheckoutController;
+use App\Http\Controllers\Subscription\SubscriptionInvoiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileCompleted'])->group(function () {
@@ -19,6 +20,9 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
 
     Route::post('dashboard/subscriptions/{subscription}/cancel', [SubscriptionCheckoutController::class, 'cancel'])
         ->name('subscriptions.cancel');
+
+    Route::get('dashboard/subscriptions/{subscription}/invoice', [SubscriptionInvoiceController::class, 'invoice'])
+        ->name('subscriptions.invoice');
 });
 
 Route::post('webhooks/payments/{provider}', PaymentHookController::class)
