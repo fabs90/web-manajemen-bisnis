@@ -18,6 +18,7 @@
         integrity="sha384-Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('dist/assets/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/partials/header.css') }}">
+    <link rel="preconnect" href="https://challenges.cloudflare.com" />
 
     @stack('styles')
 

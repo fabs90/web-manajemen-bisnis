@@ -10,6 +10,7 @@
     <!--page icon-->
     <link rel="icon" href="{{ asset('dist/assets/static/images/logo_square.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('dist/landing-page/landing-page.css') }}">
+    <link rel="preconnect" href="https://challenges.cloudflare.com" />
 </head>
 
 <body>
@@ -50,6 +51,7 @@
         <p class="m-0">&copy; 2025 Website Pembukuan. Semua hak dilindungi.</p>
     </footer>
 
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous">
     </script>

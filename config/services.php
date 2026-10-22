@@ -39,4 +39,9 @@ return [
         'webhook' => env('N8N_WEBHOOK'),
     ],
 
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SERVER_KEY'),
+    ],
+
 ];
