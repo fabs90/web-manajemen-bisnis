@@ -48,4 +48,9 @@ return [
         'is_3ds' => true,
     ],
 
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SERVER_KEY'),
+    ],
+
 ];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\Turnstile;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,6 +32,7 @@ class LoginRequest extends FormRequest
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
             'role' => ['required', 'string', 'in:ukm,nelayan,koperasi'],
+            'cf-turnstile-response' => ['required', new Turnstile],
         ];
     }
 
@@ -47,6 +49,7 @@ class LoginRequest extends FormRequest
             'password.required' => 'Kata sandi wajib diisi.',
             'role.required' => 'Silakan pilih jenis akun terlebih dahulu.',
             'role.in' => 'Jenis akun yang dipilih tidak valid.',
+            'cf-turnstile-response.required' => 'Anti-bot verification wajib diisi.',
         ];
     }
 

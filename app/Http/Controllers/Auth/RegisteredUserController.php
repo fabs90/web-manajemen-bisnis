@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Mail\MailSend;
 use App\Models\User;
 use Database\Seeders\DefaultAccountSeeder;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -33,39 +32,18 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                'unique:'.User::class,
-            ],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:ukm,nelayan,koperasi,superadmin'],
-        ], [
-            'name.required' => 'Nama UMKM/perusahaan wajib diisi.',
-            'name.max' => 'Nama UMKM/perusahaan maksimal 255 karakter.',
-            'email.required' => 'Alamat email wajib diisi.',
-            'email.email' => 'Format alamat email tidak valid.',
-            'email.unique' => 'Alamat email ini sudah terdaftar. Silakan gunakan email lain atau masuk ke akun Anda.',
-            'password.required' => 'Kata sandi wajib diisi.',
-            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
-            'role.required' => 'Silakan pilih jenis akun.',
-            'role.in' => 'Jenis akun yang dipilih tidak valid.',
-        ]);
+        $validated = $request->validated();
+
         $plainOtp = (string) random_int(100000, 999999);
         $hashedOtp = hash('sha256', $plainOtp);
         $expiresAt = Carbon::now('Asia/Makassar')->addMinutes(10);
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'ukm',
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'] ?? 'ukm',
             'is_verified' => false,
             'remember_token' => Str::random(60),
             'otp' => $hashedOtp,

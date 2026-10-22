@@ -98,6 +98,8 @@
                             <label for="message" class="form-label fw-bold" style="color: #3bb273;">Pesan</label>
                             <textarea class="form-control" id="message" rows="4" name="message" placeholder="Tulis pesan Anda di sini"></textarea>
                         </div>
+                        <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"
+                            data-theme="light" data-size="normal"></div>
                         <button type="submit" class="btn btn-primary w-100"
                             style="background-color: #1b3a5a; border-color: #1b3a5a;">Kirim Pesan</button>
                     </form>
