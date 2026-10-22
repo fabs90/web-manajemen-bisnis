@@ -76,14 +76,16 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
         Route::delete('/janji-temu/{agendaId}', [AgendaJanjiTemuController::class, 'destroy'])->name('administrasi.janji-temu.destroy');
 
         // Surat Undangan Rapat
-        Route::get('/surat-undangan-rapat/', [SuratUndanganRapatController::class, 'index'])->name('administrasi.surat-undangan-rapat.index');
-        Route::get('/surat-undangan-rapat/create', [SuratUndanganRapatController::class, 'create'])->name('administrasi.surat-undangan-rapat.create');
-        Route::get('/surat-undangan-rapat/{id}/pdf', [SuratUndanganRapatController::class, 'generatePdf'])->name('administrasi.surat-undangan-rapat.pdf');
-        Route::get('/surat-undangan-rapat/{id}/lampiran', [SuratUndanganRapatController::class, 'viewLampiran'])->name('administrasi.surat-undangan-rapat.view-lampiran');
-        Route::post('/surat-undangan-rapat/', [SuratUndanganRapatController::class, 'store'])->name('administrasi.surat-undangan-rapat.store');
-        Route::get('/surat-undangan-rapat/{id}/edit', [SuratUndanganRapatController::class, 'edit'])->name('administrasi.surat-undangan-rapat.edit');
-        Route::put('/surat-undangan-rapat/{id}', [SuratUndanganRapatController::class, 'update'])->name('administrasi.surat-undangan-rapat.update');
-        Route::delete('/surat-undangan-rapat/{agendaId}', [SuratUndanganRapatController::class, 'destroy'])->name('administrasi.surat-undangan-rapat.destroy');
+        Route::prefix('surat-undangan-rapat')->middleware(['feature:meeting_management', 'feature:administration_documents'])->name('administrasi.surat-undangan-rapat.')->group(function () {
+            Route::get('/surat-undangan-rapat/', [SuratUndanganRapatController::class, 'index'])->name('index');
+            Route::get('/surat-undangan-rapat/create', [SuratUndanganRapatController::class, 'create'])->name('create');
+            Route::get('/surat-undangan-rapat/{id}/pdf', [SuratUndanganRapatController::class, 'generatePdf'])->name('pdf');
+            Route::get('/surat-undangan-rapat/{id}/lampiran', [SuratUndanganRapatController::class, 'viewLampiran'])->name('view-lampiran');
+            Route::post('/surat-undangan-rapat/', [SuratUndanganRapatController::class, 'store'])->name('store');
+            Route::get('/surat-undangan-rapat/{id}/edit', [SuratUndanganRapatController::class, 'edit'])->name('edit');
+            Route::put('/surat-undangan-rapat/{id}', [SuratUndanganRapatController::class, 'update'])->name('update');
+            Route::delete('/surat-undangan-rapat/{agendaId}', [SuratUndanganRapatController::class, 'destroy'])->name('destroy');
+        });
 
         // Rapat
         Route::get('/rapat', [NotulenRapatController::class, 'index'])->name('administrasi.rapat.index');

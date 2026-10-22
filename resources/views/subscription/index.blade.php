@@ -451,11 +451,7 @@
                     <p class="text-muted small mb-0">Pilih paket terbaik yang sesuai dengan kebutuhan operasional bisnis
                         Anda.</p>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light text-muted border">
-                        <i class="bi bi-shield-lock me-1"></i> Pembayaran Aman via Midtrans
-                    </span>
-                </div>
+
             </div>
 
             <div class="row g-4">
@@ -568,7 +564,8 @@
                                                 method="POST" class="form-cancel-subscription"
                                                 data-plan-name="{{ $plan->name }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-1 fw-semibold">
+                                                <button type="submit"
+                                                    class="btn btn-outline-danger btn-sm w-100 py-1 fw-semibold">
                                                     <i class="bi bi-x-circle me-1"></i> Batalkan Langganan
                                                 </button>
                                             </form>
@@ -755,7 +752,8 @@
                                                     <span class="badge badge-soft-success py-2 px-2">
                                                         <i class="bi bi-check2-all me-1"></i> Selesai
                                                     </span>
-                                                    <a href="{{ route('subscriptions.invoice', $sub->id) }}" target="_blank"
+                                                    <a href="{{ route('subscriptions.invoice', $sub->id) }}"
+                                                        target="_blank"
                                                         class="btn btn-sm btn-outline-secondary rounded-pill px-2 shadow-sm"
                                                         title="Cetak Bukti Pembayaran / Invoice">
                                                         <i class="bi bi-printer me-1"></i> Invoice
@@ -764,8 +762,7 @@
 
                                                 @if ($sub->status->value === 'active' && (!$sub->ends_at || !$sub->ends_at->isPast()))
                                                     <form action="{{ route('subscriptions.cancel', $sub->id) }}"
-                                                        method="POST"
-                                                        class="form-cancel-subscription d-inline"
+                                                        method="POST" class="form-cancel-subscription d-inline"
                                                         data-plan-name="{{ $sub->plan?->name ?? 'paket ini' }}">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-outline-danger"
@@ -827,7 +824,8 @@
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         title: 'Batalkan Langganan?',
-                        text: 'Apakah Anda yakin ingin membatalkan langganan ' + planName + '? Anda tetap dapat menikmati akses hingga masa aktif berakhir.',
+                        text: 'Apakah Anda yakin ingin membatalkan langganan ' + planName +
+                            '? Anda tetap dapat menikmati akses hingga masa aktif berakhir.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',

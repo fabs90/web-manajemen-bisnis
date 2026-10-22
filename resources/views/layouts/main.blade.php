@@ -415,6 +415,16 @@
     </script>
     <script>
         $(document).ready(function() {
+            // error handling
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '{{ session('error') }}',
+                });
+            @endif
+
+
             const tableOptions = {
                 responsive: true,
                 order: [],

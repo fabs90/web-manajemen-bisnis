@@ -69,10 +69,24 @@
                             <a href="{{ route('laporan-keuangan.neraca-awal.index') }}" class="submenu-link">Neraca
                                 Awal</a>
                         </li>
-                        <li
-                            class="submenu-item {{ Request::is('dashboard/laporan-keuangan/rugi-laba*') ? 'active' : '' }}">
-                            <a href="{{ route('laporan-keuangan.rugi-laba') }}" class="submenu-link">Rugi Laba</a>
-                        </li>
+                        @if (auth()->user()->hasFeature(\App\Enum\Feature::FinancialReport))
+                            <li
+                                class="submenu-item {{ Request::is('dashboard/laporan-keuangan/rugi-laba*') ? 'active' : '' }}">
+                                <a href="{{ route('laporan-keuangan.rugi-laba') }}" class="submenu-link">Rugi Laba</a>
+                            </li>
+                        @else
+                            <a href="javascript:void(0)"
+                                class="sidebar-link opacity-75 d-flex justify-content-between align-items-center"
+                                data-bs-toggle="modal" data-bs-target="#featureLockedModal"
+                                data-feature-name="Printer Thermal"
+                                data-feature-desc="Cetak struk kasir secara instan menggunakan printer thermal Bluetooth atau USB.">
+                                <div>
+                                    <span>Rugi Laba</span>
+                                </div>
+                                <span class="badge bg-warning text-dark"><i class="bi bi-lock-fill"></i> PRO</span>
+                            </a>
+                        @endif
+
                         <li
                             class="submenu-item {{ Request::is('dashboard/laporan-keuangan/neraca-akhir*') ? 'active' : '' }}">
                             <a href="{{ route('laporan-keuangan.neraca-akhir') }}" class="submenu-link">Neraca

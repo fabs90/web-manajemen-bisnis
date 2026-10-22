@@ -63,7 +63,7 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
         Route::delete('/neraca-awal/{id}', [NeracaAwalController::class, 'destroy'])->name('laporan-keuangan.neraca-awal.destroy');
 
         // Rugi Laba
-        Route::get('/rugi-laba', [RugiLabaController::class, 'index'])->name('laporan-keuangan.rugi-laba');
+        Route::get('/rugi-laba', [RugiLabaController::class, 'index'])->middleware('feature:financial_report')->name('laporan-keuangan.rugi-laba');
         Route::get('/rugi-laba/pdf-export', [RugiLabaController::class, 'exportToPdf'])->name('laporan-keuangan.rugi-laba.pdf');
 
         // Neraca Akhir

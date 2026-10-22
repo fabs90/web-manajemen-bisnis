@@ -354,3 +354,19 @@
         })();
     </script>
 @endsection
+
+@push('script')
+    <script>
+        // error handling
+        $(document).ready(function() {
+            // error handling
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '{{ session('error') }}',
+                });
+            @endif
+        })
+    </script>
+@endpush
