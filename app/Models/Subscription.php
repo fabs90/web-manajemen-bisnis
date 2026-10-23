@@ -42,6 +42,11 @@ class Subscription extends Model
         return $this->belongsTo(Organization::class);
     }
 
+    public function owner(): User|Organization
+    {
+        return $this->user ?? $this->organization;
+    }
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
@@ -52,22 +57,26 @@ class Subscription extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function owner(): User|Organization
-    {
-        return $this->organization ?? $this->user;
-    }
-
     // Untuk scheduler: yang sudah lewat masa aktif (+ grace khusus recurring)
     public function scopeLapsed(Builder $q): Builder
     {
         $cutoff = now()->subDays(config('subscription.grace_days'));
 
         return $q->where('status', SubscriptionStatus::Active)->whereNotNull('ends_at')
-            ->where(fn ($q) => $q
-                ->where(fn ($q) => $q->where('ends_at', '<', now())
-                    ->whereHas('plan', fn ($p) => $p->where('billing_type', BillingType::OneTime)))
-                ->orWhere(fn ($q) => $q->where('ends_at', '<', $cutoff)
-                    ->whereHas('plan', fn ($p) => $p->where('billing_type', BillingType::Recurring))));
+            ->where(fn($q) => $q
+                ->where(fn($q) => $q->where('ends_at', '<', now())
+                    ->whereHas('plan', fn($p) => $p->where('billing_type', BillingType::OneTime)))
+                ->orWhere(fn($q) => $q->where('ends_at', '<', $cutoff)
+                    ->whereHas('plan', fn($p) => $p->where('billing_type', BillingType::Recurring))));
+    }
+
+    public function scopeRenewalNotice(Builder $q): Builder
+    {
+        $notice = config('subscription.renewal_notice_days');
+
+        return $q->where('status', SubscriptionStatus::Active)
+            ->whereNotNull('ends_at')
+            ->whereBetween('ends_at', [now(), now()->addDays($notice)]);
     }
 
     public static function ownerColumn(User|Organization $owner): string
@@ -78,5 +87,10 @@ class Subscription extends Model
     public function scopeForOwner(Builder $query, User|Organization $owner): Builder
     {
         return $query->where(static::ownerColumn($owner), $owner->id);
+    }
+
+    public function receipentEmail(): ?string
+    {
+        return $this->owner()?->email;
     }
 }

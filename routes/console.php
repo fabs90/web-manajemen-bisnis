@@ -14,3 +14,6 @@ Schedule::command('logs:delete-old')
     ->at('02:00')
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('subscription:expire-lapsed')->dailyAt('00:05');
+Schedule::command('subscription:send-subscription-renewal-notice')->dailyAt('09:00');

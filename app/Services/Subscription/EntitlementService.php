@@ -22,7 +22,7 @@ class EntitlementService
 
     public function features(User $user, ?Organization $org = null): array
     {
-        $orgId = $org?->id ?? $user->current_organization_id;
+        $orgId = $org?->id ?? $user->organization_id;
 
         return $this->memo["{$user->id}:{$orgId}"] ??= $this->query($user, $orgId);
     }
@@ -37,18 +37,18 @@ class EntitlementService
             ->join('plan_features', 'plan_features.plan_id', '=', 'plans.id')
             ->whereIn('subscriptions.status', [SubscriptionStatus::Active, SubscriptionStatus::Cancelled])
             ->where('subscriptions.starts_at', '<=', $now)
-            ->where(fn ($q) => $q
+            ->where(fn($q) => $q
                 ->whereNull('subscriptions.ends_at')
                 ->orWhere('subscriptions.ends_at', '>', $now)
                 // grace period: hanya recurring untuk active
-                ->orWhere(fn ($q) => $q->where('subscriptions.status', SubscriptionStatus::Active)
+                ->orWhere(fn($q) => $q->where('subscriptions.status', SubscriptionStatus::Active)
                     ->where('plans.billing_type', BillingType::Recurring)
                     ->where('subscriptions.ends_at', '>', $graceCutoff)))
             ->where(function ($q) use ($user, $orgId) {
                 $q->where('subscriptions.user_id', $user->id);
                 if ($orgId) {
-                    $q->orWhere(fn ($q) => $q->where('subscriptions.organization_id', $orgId)
-                        ->whereExists(fn ($s) => $s->from('organization_members')->selectRaw('1')
+                    $q->orWhere(fn($q) => $q->where('subscriptions.organization_id', $orgId)
+                        ->whereExists(fn($s) => $s->from('organization_members')->selectRaw('1')
                             ->whereColumn('organization_members.organization_id', 'subscriptions.organization_id')
                             ->where('organization_members.user_id', $user->id)));
                 }
