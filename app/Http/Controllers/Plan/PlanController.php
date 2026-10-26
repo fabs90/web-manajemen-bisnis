@@ -13,11 +13,12 @@ class PlanController extends Controller
 {
     public function __construct(
         protected PlanService $planService
-    ) {}
+    ) {
+    }
 
     public function index()
     {
-        $plan = Plan::with('planFeatures')->get();
+        $plan = Plan::with('planFeatures')->withSubscriptionsCount()->get();
 
         return view('superadmin.plan.index', compact('plan'));
     }
@@ -77,7 +78,7 @@ class PlanController extends Controller
                 'exception' => $th,
             ]);
 
-            return back()->withInput()->with('error', 'Gagal menghapus paket: '.$th->getMessage());
+            return back()->withInput()->with('error', 'Gagal menghapus paket: ' . $th->getMessage());
         }
     }
 }

@@ -345,7 +345,7 @@
                                         <td>
                                             @if ($item->is_active)
                                                 <span class="badge badge-soft-success py-2 px-3">
-                                                    <span class="pulse-dot active"></span> Aktif
+                                                    <span class="pulse-dot active"></span>Aktif
                                                 </span>
                                             @else
                                                 <span class="badge badge-soft-danger py-2 px-3">
@@ -357,7 +357,8 @@
                                             <div class="d-flex justify-content-center gap-1">
                                                 <button type="button"
                                                     class="btn btn-sm btn-outline-primary rounded-pill px-2 px-md-3"
-                                                    data-bs-toggle="modal" data-bs-target="#modal-plan-{{ $item->id }}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modal-plan-{{ $item->id }}"
                                                     title="Lihat Rincian Paket">
                                                     <i class="bi bi-eye me-1"></i> Detail
                                                 </button>
@@ -443,6 +444,26 @@
                                     <span class="text-muted small d-block">Tarif Paket</span>
                                     <strong class="text-primary d-block mt-1">
                                         Rp {{ number_format($item->price, 0, ',', '.') }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="p-3 rounded-3 bg-light text-center border">
+                                    <span class="text-muted small d-block">Subscriber Aktif</span>
+                                    <strong class="text-dark d-block mt-1">
+                                        {{ $item->countSubscriptions() }}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 rounded-3 bg-light text-center border">
+                                    <span class="text-muted small d-block">Total Revenue</span>
+                                    <strong class="text-dark d-block mt-1">
+                                        Rp{{ number_format($item->revenueEstimated(), 0, ',', '.') }}
                                     </strong>
                                 </div>
                             </div>

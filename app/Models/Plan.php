@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enum\BillingType;
 use App\Enum\PlanScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -39,17 +40,28 @@ class Plan extends Model
         return $this->hasMany(Subscription::class);
     }
 
-    public function isUsed(): bool
-    {
-        if (isset($this->subscriptions_count)) {
-            return $this->subscriptions_count > 0;
-        }
-
-        return $this->subscriptions()->exists();
-    }
-
     public function features(): Collection
     {
         return $this->planFeatures->pluck('feature');
+    }
+
+    public function scopeWithSubscriptionsCount(Builder $query): Builder
+    {
+        return $query->withCount('subscriptions');
+    }
+
+    public function countSubscriptions(): int
+    {
+        return $this->subscriptions_count = $this->subscriptions_count ?? $this->subscriptions()->count();
+    }
+
+    public function isUsed(): bool
+    {
+        return $this->countSubscriptions() > 0;
+    }
+
+    public function revenueEstimated(): float
+    {
+        return $this->price * $this->countSubscriptions();
     }
 }
