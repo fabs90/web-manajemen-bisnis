@@ -482,7 +482,12 @@
 
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="badge badge-soft-primary">
-                                    {{ strtoupper($plan->billing_type->value) }}
+                                    @if ($plan->billing_type->value == 'one_time')
+                                        <i class="bi bi-infinity text-success"></i> <strong>Akses Permanen</strong>
+                                    @else
+                                        <i class="bi bi-calendar3 text-success"></i>
+                                        <strong>{{ $plan->duration_days }} Hari</strong>
+                                    @endif
                                 </span>
                                 <span class="plan-code-badge">{{ $plan->code }}</span>
                             </div>
