@@ -2,8 +2,11 @@
 
 use App\Models\Account;
 use App\Models\Barang;
+use App\Models\JenisPembayaran;
 use App\Models\JournalEntry;
+use App\Models\JournalItem;
 use App\Models\KartuGudang;
+use App\Models\KasirTransactionLog;
 use App\Models\User;
 use App\Services\KeuanganService;
 use Database\Seeders\DefaultAccountSeeder;
@@ -455,4 +458,244 @@ test('nelayan laba rugi calculation sets HPP and purchases to 0 with gross profi
     $neracaResponse = $this->actingAs($this->nelayan)->get(route('laporan-keuangan.neraca-akhir'));
     $neracaResponse->assertSuccessful();
     $neracaResponse->assertSee('Persediaan Hasil Tangkapan');
+});
+
+test('skenario A B C: input, hapus, dan input ulang hasil tangkapan menyinkronkan Kas, Rugi Laba, dan General Ledger secara akurat', function () {
+    DefaultAccountSeeder::seedForUser($this->nelayan->id);
+    $jenisTunai = JenisPembayaran::create(['nama' => 'Tunai']);
+    $keuanganService = app(KeuanganService::class);
+
+    // =========================================================================
+    // SKENARIO A: Input Hasil Tangkapan, Stok Kartu Gudang, dan Transaksi Kasir
+    // =========================================================================
+    $this->actingAs($this->nelayan)->post(route('barang.store'), [
+        'kode_barang' => 'IKN-PATIN-01',
+        'nama' => 'Ikan Patin',
+        'satuan' => 'Kg',
+        'harga_jual_per_unit' => 60000,
+    ])->assertRedirect(route('barang.create'));
+
+    $ikanPatin = Barang::where('user_id', $this->nelayan->id)->where('kode_barang', 'IKN-PATIN-01')->firstOrFail();
+
+    // Input hasil tangkapan ke Kartu Gudang: 10 Kg @ Rp 60.000 = Rp 600.000
+    $this->actingAs($this->nelayan)->post(route('kartu-gudang.store', $ikanPatin->id), [
+        'tanggal' => now()->format('Y-m-d'),
+        'uraian' => 'Hasil Tangkapan Sore',
+        'diterima' => 10,
+        'dikeluarkan' => 0,
+    ])->assertRedirect(route('kartu-gudang.detail', ['barang_id' => $ikanPatin->id]));
+
+    $kgMasuk = KartuGudang::where('barang_id', $ikanPatin->id)->firstOrFail();
+    expect($kgMasuk->journal_entry_id)->not->toBeNull();
+
+    // Transaksi penjualan Kasir atas hasil tangkapan: 2 Kg @ Rp 60.000 = Rp 120.000
+    $this->actingAs($this->nelayan)->post(route('keuangan.kasir.store'), [
+        'jenis_pembayaran_id' => $jenisTunai->id,
+        'id_barang_terjual' => [$ikanPatin->id],
+        'jumlah_barang_dijual' => [2],
+        'grand_total' => 120000,
+        'diskon_total' => 0,
+        'uang_bayar' => 120000,
+        'uang_kembalian' => 0,
+    ])->assertSessionHas('success');
+
+    // Verifikasi Skenario A: Kas, Rugi/Laba, Neraca, dan General Ledger
+    $labaRugiA = $keuanganService->hitungLabaRugi(null, null, $this->nelayan->id);
+    $neracaA = $keuanganService->hitungNeraca(null, $this->nelayan->id);
+    $totalDebitA = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('debit');
+    $totalCreditA = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('credit');
+
+    expect($neracaA['totalKas'])->toBe(120000.0)
+        ->and($labaRugiA['totalPenjualan'])->toBe(120000.0)
+        ->and($labaRugiA['penjualanBersih'])->toBe(120000.0)
+        ->and($labaRugiA['persediaanAkhir'])->toBe(480000.0) // Sisa 8 Kg * 60.000
+        ->and($totalDebitA)->toBe(720000.0) // 600.000 (KG) + 120.000 (Kasir)
+        ->and($totalCreditA)->toBe(720000.0)
+        ->and($totalDebitA)->toBe($totalCreditA);
+
+    // =========================================================================
+    // SKENARIO B: Hapus Hasil Tangkapan -> Kas, Rugi/Laba, dan GL terkoreksi
+    // =========================================================================
+    $this->actingAs($this->nelayan)
+        ->delete(route('barang.destroy', $ikanPatin->id))
+        ->assertRedirect(route('barang.index'))
+        ->assertSessionHas('success');
+
+    $this->assertDatabaseMissing('barang', ['id' => $ikanPatin->id]);
+    $this->assertDatabaseMissing('kartu_gudang', ['barang_id' => $ikanPatin->id]);
+
+    $labaRugiB = $keuanganService->hitungLabaRugi(null, null, $this->nelayan->id);
+    $neracaB = $keuanganService->hitungNeraca(null, $this->nelayan->id);
+    $totalDebitB = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('debit');
+    $totalCreditB = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('credit');
+
+    expect((float) $neracaB['totalKas'])->toBe(0.0)
+        ->and((float) $labaRugiB['totalPenjualan'])->toBe(0.0)
+        ->and((float) $labaRugiB['penjualanBersih'])->toBe(0.0)
+        ->and((float) $labaRugiB['persediaanAkhir'])->toBe(0.0)
+        ->and($totalDebitB)->toBe(0.0)
+        ->and($totalCreditB)->toBe(0.0)
+        ->and(JournalEntry::where('user_id', $this->nelayan->id)->count())->toBe(0)
+        ->and(KasirTransactionLog::where('user_id', $this->nelayan->id)->count())->toBe(0);
+
+    // =========================================================================
+    // SKENARIO C: Input Ulang Hasil Tangkapan -> Tidak Duplikat & Akurat
+    // =========================================================================
+    $this->actingAs($this->nelayan)->post(route('barang.store'), [
+        'kode_barang' => 'IKN-PATIN-01',
+        'nama' => 'Ikan Patin',
+        'satuan' => 'Kg',
+        'harga_jual_per_unit' => 60000,
+    ])->assertRedirect(route('barang.create'));
+
+    $ikanPatinBaru = Barang::where('user_id', $this->nelayan->id)->where('kode_barang', 'IKN-PATIN-01')->firstOrFail();
+
+    $this->actingAs($this->nelayan)->post(route('kartu-gudang.store', $ikanPatinBaru->id), [
+        'tanggal' => now()->format('Y-m-d'),
+        'uraian' => 'Tangkapan Input Ulang',
+        'diterima' => 5,
+        'dikeluarkan' => 0,
+    ])->assertRedirect(route('kartu-gudang.detail', ['barang_id' => $ikanPatinBaru->id]));
+
+    $this->actingAs($this->nelayan)->post(route('keuangan.kasir.store'), [
+        'jenis_pembayaran_id' => $jenisTunai->id,
+        'id_barang_terjual' => [$ikanPatinBaru->id],
+        'jumlah_barang_dijual' => [1],
+        'grand_total' => 60000,
+        'diskon_total' => 0,
+        'uang_bayar' => 60000,
+        'uang_kembalian' => 0,
+    ])->assertSessionHas('success');
+
+    $labaRugiC = $keuanganService->hitungLabaRugi(null, null, $this->nelayan->id);
+    $neracaC = $keuanganService->hitungNeraca(null, $this->nelayan->id);
+    $totalDebitC = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('debit');
+    $totalCreditC = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('credit');
+
+    expect($neracaC['totalKas'])->toBe(60000.0)
+        ->and($labaRugiC['totalPenjualan'])->toBe(60000.0)
+        ->and($labaRugiC['persediaanAkhir'])->toBe(240000.0) // Sisa 4 Kg * 60.000
+        ->and($totalDebitC)->toBe(360000.0) // 300.000 (KG) + 60.000 (Kasir)
+        ->and($totalCreditC)->toBe(360000.0)
+        ->and(JournalEntry::where('user_id', $this->nelayan->id)->count())->toBe(2)
+        ->and(KasirTransactionLog::where('user_id', $this->nelayan->id)->count())->toBe(1);
+});
+
+test('penghapusan salah satu hasil tangkapan pada transaksi Kasir multi-item hanya menyesuaikan porsi item yang dihapus tanpa menghapus item lain', function () {
+    DefaultAccountSeeder::seedForUser($this->nelayan->id);
+    $jenisTunai = JenisPembayaran::create(['nama' => 'Tunai']);
+    $keuanganService = app(KeuanganService::class);
+
+    $ikanBass = Barang::create([
+        'user_id' => $this->nelayan->id,
+        'kode_barang' => 'IKN-BASS-01',
+        'nama' => 'Ikan Bass',
+        'satuan' => 'Kg',
+        'harga_jual_per_unit' => 60000,
+        'harga_beli_per_unit' => 0,
+    ]);
+
+    $ikanPatin = Barang::create([
+        'user_id' => $this->nelayan->id,
+        'kode_barang' => 'IKN-PATIN-02',
+        'nama' => 'Ikan Patin',
+        'satuan' => 'Kg',
+        'harga_jual_per_unit' => 40000,
+        'harga_beli_per_unit' => 0,
+    ]);
+
+    // Tambah stok masing-masing 10 Kg
+    $this->actingAs($this->nelayan)->post(route('kartu-gudang.store', $ikanBass->id), [
+        'tanggal' => now()->format('Y-m-d'),
+        'uraian' => 'Stok Bass',
+        'diterima' => 10,
+        'dikeluarkan' => 0,
+    ]);
+    $this->actingAs($this->nelayan)->post(route('kartu-gudang.store', $ikanPatin->id), [
+        'tanggal' => now()->format('Y-m-d'),
+        'uraian' => 'Stok Patin',
+        'diterima' => 10,
+        'dikeluarkan' => 0,
+    ]);
+
+    // Transaksi Kasir gabungan: 3 Kg Ikan Bass (180.000) + 3 Kg Ikan Patin (120.000) = 300.000
+    $this->actingAs($this->nelayan)->post(route('keuangan.kasir.store'), [
+        'jenis_pembayaran_id' => $jenisTunai->id,
+        'id_barang_terjual' => [$ikanBass->id, $ikanPatin->id],
+        'jumlah_barang_dijual' => [3, 3],
+        'grand_total' => 300000,
+        'diskon_total' => 0,
+        'uang_bayar' => 300000,
+        'uang_kembalian' => 0,
+    ])->assertSessionHas('success');
+
+    // Hapus hanya Ikan Patin (yang porsinya Rp 120.000)
+    $this->actingAs($this->nelayan)
+        ->delete(route('barang.destroy', $ikanPatin->id))
+        ->assertRedirect(route('barang.index'));
+
+    // Pastikan transaksi Ikan Bass (Rp 180.000) tetap utuh dan seimbang
+    $labaRugi = $keuanganService->hitungLabaRugi(null, null, $this->nelayan->id);
+    $neraca = $keuanganService->hitungNeraca(null, $this->nelayan->id);
+    $totalDebit = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('debit');
+    $totalCredit = (float) JournalItem::where('user_id', $this->nelayan->id)->sum('credit');
+
+    expect($neraca['totalKas'])->toBe(180000.0)
+        ->and($labaRugi['totalPenjualan'])->toBe(180000.0)
+        ->and($labaRugi['persediaanAkhir'])->toBe(420000.0) // 7 Kg Bass * 60.000
+        ->and($totalDebit)->toBe($totalCredit)
+        ->and((float) KasirTransactionLog::where('user_id', $this->nelayan->id)->first()->jumlah)->toBe(180000.0);
+});
+
+test('skenario D: kegagalan di tengah proses penghapusan hasil tangkapan melakukan rollback penuh tanpa meninggalkan data terhapus sebagian', function () {
+    DefaultAccountSeeder::seedForUser($this->nelayan->id);
+    $jenisTunai = JenisPembayaran::create(['nama' => 'Tunai']);
+
+    $ikan = Barang::create([
+        'user_id' => $this->nelayan->id,
+        'kode_barang' => 'IKN-RB-01',
+        'nama' => 'Ikan Kerapu Rollback',
+        'satuan' => 'Kg',
+        'harga_jual_per_unit' => 100000,
+        'harga_beli_per_unit' => 0,
+    ]);
+
+    $this->actingAs($this->nelayan)->post(route('kartu-gudang.store', $ikan->id), [
+        'tanggal' => now()->format('Y-m-d'),
+        'uraian' => 'Tangkapan Pagi',
+        'diterima' => 10,
+        'dikeluarkan' => 0,
+    ]);
+
+    $this->actingAs($this->nelayan)->post(route('keuangan.kasir.store'), [
+        'jenis_pembayaran_id' => $jenisTunai->id,
+        'id_barang_terjual' => [$ikan->id],
+        'jumlah_barang_dijual' => [2],
+        'grand_total' => 200000,
+        'diskon_total' => 0,
+        'uang_bayar' => 200000,
+        'uang_kembalian' => 0,
+    ]);
+
+    // Simulasikan kegagalan (exception) setelah baris pertama KartuGudang dihapus di dalam transaksi
+    Barang::deleting(function (Barang $model) use ($ikan) {
+        if ($model->id === $ikan->id) {
+            throw new RuntimeException('Simulasi kegagalan database saat menghapus hasil tangkapan');
+        }
+    });
+
+    $response = $this->actingAs($this->nelayan)->delete(route('barang.destroy', $ikan->id));
+    $response->assertRedirect(route('barang.index'));
+    $response->assertSessionHas('error');
+
+    // Bersihkan event listener model
+    Barang::flushEventListeners();
+
+    // Pastikan seluruh data (Barang, 2 baris KartuGudang, 2 JournalEntry, 4 JournalItem, dan KasirTransactionLog) utuh kembali karena rollback
+    expect(Barang::where('id', $ikan->id)->exists())->toBeTrue()
+        ->and(KartuGudang::where('barang_id', $ikan->id)->count())->toBe(2)
+        ->and(JournalEntry::where('user_id', $this->nelayan->id)->count())->toBe(2)
+        ->and(KasirTransactionLog::where('user_id', $this->nelayan->id)->count())->toBe(1)
+        ->and((float) JournalItem::where('user_id', $this->nelayan->id)->sum('debit'))
+        ->toBe((float) JournalItem::where('user_id', $this->nelayan->id)->sum('credit'));
 });

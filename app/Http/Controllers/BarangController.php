@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBarangRequest;
 use App\Http\Requests\UpdateBarangRequest;
 use App\Models\Barang;
-use App\Models\KartuGudang;
+use App\Services\KeuanganService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class BarangController extends Controller
 {
@@ -95,7 +97,7 @@ class BarangController extends Controller
             ->with('success', 'Barang berhasil diperbarui.');
     }
 
-    public function destroy(int|string $id): RedirectResponse
+    public function destroy(int|string $id, KeuanganService $keuanganService): RedirectResponse
     {
         $barang = Barang::where('user_id', auth()->id())->find($id);
         if (! $barang) {
@@ -104,13 +106,20 @@ class BarangController extends Controller
             ]);
         }
 
-        // hapus kartu gudang nya juga
-        KartuGudang::where('barang_id', $barang->id)->delete();
+        try {
+            DB::transaction(function () use ($barang, $keuanganService) {
+                $keuanganService->syncDeleteBarang($barang);
+            });
 
-        $barang->delete();
+            return redirect()
+                ->route('barang.index')
+                ->with('success', 'Barang berhasil dihapus.');
+        } catch (Throwable $e) {
+            Log::error('Gagal menghapus barang: '.$e->getMessage());
 
-        return redirect()
-            ->route('barang.index')
-            ->with('success', 'Barang berhasil dihapus.');
+            return redirect()
+                ->route('barang.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus data barang: '.$e->getMessage());
+        }
     }
 }

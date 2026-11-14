@@ -29,8 +29,10 @@ return new class extends Migration
             $table->index(['status', 'ends_at']);
         });
         // Add check constraint for one owner user/organization
-        DB::statement('ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_one_owner
-            CHECK ((user_id IS NULL) <> (organization_id IS NULL))');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_one_owner
+                CHECK ((user_id IS NULL) <> (organization_id IS NULL))');
+        }
 
         Schema::create('payments', function (Blueprint $table) {
             $table->id();

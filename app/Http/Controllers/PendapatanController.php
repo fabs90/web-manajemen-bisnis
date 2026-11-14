@@ -265,11 +265,19 @@ class PendapatanController extends Controller
             $userId = auth()->id();
             $entry = JournalEntry::where('id', $id)->where('user_id', $userId)->firstOrFail();
 
+            $affectedBarangIds = KartuGudang::where('journal_entry_id', $entry->id)
+                ->pluck('barang_id')
+                ->unique();
+
             // Hapus KartuGudang terkait
             KartuGudang::where('journal_entry_id', $entry->id)->delete();
 
             // Hapus JournalEntry (akan cascade ke JournalItems)
             $entry->delete();
+
+            foreach ($affectedBarangIds as $barangId) {
+                KartuGudang::recalculateBalances((int) $barangId);
+            }
 
             DB::commit();
 
@@ -372,9 +380,17 @@ class PendapatanController extends Controller
             $entry = $item->journalEntry;
 
             if ($entry) {
+                $affectedBarangIds = KartuGudang::where('journal_entry_id', $entry->id)
+                    ->pluck('barang_id')
+                    ->unique();
+
                 // Hapus KartuGudang terkait jika ada
                 KartuGudang::where('journal_entry_id', $entry->id)->delete();
                 $entry->delete();
+
+                foreach ($affectedBarangIds as $barangId) {
+                    KartuGudang::recalculateBalances((int) $barangId);
+                }
             } else {
                 $item->delete();
             }

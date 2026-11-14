@@ -24,8 +24,10 @@ return new class extends Migration
             $table->timestamps();
         });
         // Add check constraint for recurring plans, only one time plans can have null/permanent duration
-        DB::statement("ALTER TABLE plans ADD CONSTRAINT plans_recurring_has_duration
-            CHECK (billing_type = 'one_time' OR duration_days IS NOT NULL)");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE plans ADD CONSTRAINT plans_recurring_has_duration
+                CHECK (billing_type = 'one_time' OR duration_days IS NOT NULL)");
+        }
 
         Schema::create('plan_features', function (Blueprint $table) {
             $table->foreignId('plan_id')->constrained('plans')->onDelete('cascade');

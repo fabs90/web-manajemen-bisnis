@@ -70,4 +70,33 @@ class KartuGudang extends Model
 
         return "{$prefix}{$kemas} kemas + {$sisa} unit";
     }
+
+    /**
+     * Recalculate running balances (saldo_persatuan and saldo_perkemasan) for a Barang.
+     */
+    public static function recalculateBalances(int $barangId): void
+    {
+        $barang = Barang::find($barangId);
+        $unitPerKemasan = (int) ($barang?->jumlah_unit_per_kemasan ?? 1);
+
+        $records = self::where('barang_id', $barangId)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $runningBalance = 0;
+
+        foreach ($records as $record) {
+            $runningBalance += ((int) $record->diterima - (int) $record->dikeluarkan);
+            $saldoKemasan = $unitPerKemasan > 0
+                ? (int) ceil($runningBalance / $unitPerKemasan)
+                : 0;
+
+            if ((int) $record->saldo_persatuan !== $runningBalance || (int) $record->saldo_perkemasan !== $saldoKemasan) {
+                $record->update([
+                    'saldo_persatuan' => $runningBalance,
+                    'saldo_perkemasan' => $saldoKemasan,
+                ]);
+            }
+        }
+    }
 }

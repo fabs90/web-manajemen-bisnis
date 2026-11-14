@@ -7,8 +7,10 @@ use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KartuGudang;
+use App\Models\KasirTransactionLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class KeuanganService
 {
@@ -401,6 +403,248 @@ class KeuanganService
             return (float) ($debit - $credit);
         } else {
             return (float) ($credit - $debit);
+        }
+    }
+
+    /**
+     * Synchronously delete a Barang (Hasil Tangkapan / Master Barang) along with its
+     * KartuGudang records and clean up or adjust all related financial journals,
+     * KasirTransactionLogs, and General Ledger entries.
+     */
+    public function syncDeleteBarang(Barang $barang): void
+    {
+        $userId = (int) $barang->user_id;
+        $namaBarang = $barang->nama;
+
+        $kartuGudangList = KartuGudang::where('barang_id', $barang->id)
+            ->with('barang')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($kartuGudangList as $kartu) {
+            $this->syncDeleteKartuGudang($kartu, false);
+        }
+
+        $hasOtherSameName = Barang::where('user_id', $userId)
+            ->where('id', '!=', $barang->id)
+            ->where('nama', $namaBarang)
+            ->exists();
+
+        if (! $hasOtherSameName) {
+            JournalEntry::where('user_id', $userId)
+                ->where('transaction_type', 'penyesuaian-kartu-gudang')
+                ->where('description', 'like', 'Penyesuaian Kartu Gudang: '.$namaBarang.' (%')
+                ->get()
+                ->each(fn (JournalEntry $entry) => $entry->delete());
+        }
+
+        $barang->delete();
+
+        Cache::forget("dashboard_data_{$userId}");
+    }
+
+    /**
+     * Synchronously delete a single KartuGudang record and clean up or adjust its
+     * related JournalEntry, JournalItems, and KasirTransactionLog.
+     */
+    public function syncDeleteKartuGudang(KartuGudang $kartuGudang, bool $recalculateBalances = true): void
+    {
+        $barang = $kartuGudang->relationLoaded('barang')
+            ? $kartuGudang->barang
+            : Barang::find($kartuGudang->barang_id);
+
+        $barangId = (int) $kartuGudang->barang_id;
+        $userId = (int) $kartuGudang->user_id;
+
+        $entry = $kartuGudang->journal_entry_id
+            ? JournalEntry::with(['items.account', 'kasir'])->find($kartuGudang->journal_entry_id)
+            : null;
+
+        if ($barang) {
+            $legacyQuery = JournalEntry::where('user_id', $userId)
+                ->where('transaction_type', 'penyesuaian-kartu-gudang')
+                ->whereDate('date', $kartuGudang->tanggal)
+                ->where('description', 'Penyesuaian Kartu Gudang: '.$barang->nama.' ('.$kartuGudang->uraian.')');
+
+            if ($entry && $entry->transaction_type === 'penyesuaian-kartu-gudang') {
+                $legacyQuery->where('id', '!=', $entry->id);
+            }
+
+            if (! $entry || $entry->transaction_type !== 'penyesuaian-kartu-gudang') {
+                $legacyEntry = $legacyQuery->first();
+                $legacyEntry?->delete();
+            }
+        }
+
+        if ($entry) {
+            $this->adjustOrDeleteLinkedJournalEntry($entry, $kartuGudang, $barang);
+        }
+
+        $kartuGudang->delete();
+
+        if ($recalculateBalances) {
+            KartuGudang::recalculateBalances($barangId);
+        }
+
+        Cache::forget("dashboard_data_{$userId}");
+    }
+
+    /**
+     * Adjust or delete a JournalEntry when one of its linked KartuGudang records is removed.
+     */
+    private function adjustOrDeleteLinkedJournalEntry(
+        JournalEntry $entry,
+        KartuGudang $kartuGudang,
+        ?Barang $barang
+    ): void {
+        $type = $entry->transaction_type;
+
+        if ($type === 'penyesuaian-kartu-gudang') {
+            $entry->delete();
+
+            return;
+        }
+
+        if ($type === 'neraca_awal') {
+            $userRole = User::where('id', $entry->user_id)->value('role') ?? 'ukm';
+            $netQty = (float) $kartuGudang->diterima - (float) $kartuGudang->dikeluarkan;
+            $itemValue = max(0.0, $netQty * ($barang ? $barang->hargaPersediaan($userRole) : 0.0));
+
+            if ($itemValue > 0) {
+                $persediaanItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '1105' && $i->debit > 0);
+                $modalItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '3100' && $i->credit > 0);
+
+                if ($persediaanItem) {
+                    $newPersediaanDebit = max(0.0, (float) $persediaanItem->debit - $itemValue);
+                    $persediaanItem->account?->update(['opening_balance' => $newPersediaanDebit]);
+
+                    if ($newPersediaanDebit <= 0) {
+                        $persediaanItem->delete();
+                    } else {
+                        $persediaanItem->update(['debit' => $newPersediaanDebit]);
+                    }
+                }
+
+                if ($modalItem) {
+                    $newModalCredit = max(0.0, (float) $modalItem->credit - $itemValue);
+                    $modalItem->account?->update(['opening_balance' => $newModalCredit]);
+
+                    if ($newModalCredit <= 0) {
+                        $modalItem->delete();
+                    } else {
+                        $modalItem->update(['credit' => $newModalCredit]);
+                    }
+                }
+            }
+
+            $entry->load('items');
+            if ($entry->items->isEmpty() || (float) $entry->items->sum('debit') <= 0) {
+                $entry->delete();
+            }
+
+            return;
+        }
+
+        $remainingKartu = KartuGudang::where('journal_entry_id', $entry->id)
+            ->where('id', '!=', $kartuGudang->id)
+            ->with('barang')
+            ->get();
+
+        if ($remainingKartu->isEmpty()) {
+            KasirTransactionLog::where('journal_entry_id', $entry->id)->delete();
+            $entry->delete();
+
+            return;
+        }
+
+        if (in_array($type, ['pendapatan_tunai', 'penjualan'], true)) {
+            $deletedGross = (float) $kartuGudang->dikeluarkan * (float) ($barang?->harga_jual_per_unit ?? 0.0);
+            $remainingGross = (float) $remainingKartu->sum(function (KartuGudang $k): float {
+                return (float) $k->dikeluarkan * (float) ($k->barang?->harga_jual_per_unit ?? 0.0);
+            });
+
+            $revenueItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '4101' && $i->credit > 0);
+            $discountItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '4102' && $i->debit > 0);
+            $cashOrPiutangItem = $entry->items->first(fn (JournalItem $i) => in_array($i->account?->code, ['1101', '1103', '1104'], true) && $i->debit > 0);
+
+            $currentCredit = (float) ($revenueItem?->credit ?? 0.0);
+            $newCredit = $remainingGross > 0 ? $remainingGross : max(0.0, $currentCredit - $deletedGross);
+            $currentDiscount = $discountItem ? (float) $discountItem->debit : 0.0;
+            $newDiscount = min($currentDiscount, $newCredit);
+            $newNetDebit = max(0.0, $newCredit - $newDiscount);
+
+            if ($newCredit <= 0) {
+                KasirTransactionLog::where('journal_entry_id', $entry->id)->delete();
+                $entry->delete();
+
+                return;
+            }
+
+            if ($revenueItem) {
+                $revenueItem->update(['credit' => $newCredit]);
+            }
+
+            if ($cashOrPiutangItem) {
+                $cashOrPiutangItem->update(['debit' => $newNetDebit]);
+            }
+
+            if ($discountItem) {
+                if ($newDiscount <= 0) {
+                    $discountItem->delete();
+                } else {
+                    $discountItem->update(['debit' => $newDiscount]);
+                }
+            }
+
+            $deletedCost = (float) $kartuGudang->dikeluarkan * (float) ($barang?->harga_beli_per_unit ?? 0.0);
+            $hppItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '5101' && $i->debit > 0);
+            $invItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '1105' && $i->credit > 0);
+
+            if ($hppItem && $invItem && $deletedCost > 0) {
+                $newCost = max(0.0, (float) $hppItem->debit - $deletedCost);
+                if ($newCost <= 0) {
+                    $hppItem->delete();
+                    $invItem->delete();
+                } else {
+                    $hppItem->update(['debit' => $newCost]);
+                    $invItem->update(['credit' => $newCost]);
+                }
+            }
+
+            foreach ($entry->kasir as $log) {
+                $newBayar = (float) $log->bayar;
+                $newKembalian = max(0.0, $newBayar - $newNetDebit);
+                $log->update([
+                    'jumlah' => $newNetDebit,
+                    'diskon' => $newDiscount,
+                    'kembalian' => $newKembalian,
+                ]);
+            }
+
+            return;
+        }
+
+        $unitPrice = in_array($type, ['retur_penjualan', 'return_penjualan'], true)
+            ? (float) ($barang?->harga_jual_per_unit ?? 0.0)
+            : (float) ($barang?->harga_beli_per_unit ?? 0.0);
+        $qty = max((float) $kartuGudang->diterima, (float) $kartuGudang->dikeluarkan);
+        $deletedAmount = $qty * $unitPrice;
+
+        if ($deletedAmount > 0) {
+            $primaryDebit = $entry->items->first(fn (JournalItem $i) => $i->debit > 0);
+            $primaryCredit = $entry->items->first(fn (JournalItem $i) => $i->credit > 0);
+
+            if ($primaryDebit && $primaryCredit) {
+                $newDebit = max(0.0, (float) $primaryDebit->debit - $deletedAmount);
+                $newCredit = max(0.0, (float) $primaryCredit->credit - $deletedAmount);
+
+                if ($newDebit <= 0 || $newCredit <= 0) {
+                    $entry->delete();
+                } else {
+                    $primaryDebit->update(['debit' => $newDebit]);
+                    $primaryCredit->update(['credit' => $newCredit]);
+                }
+            }
         }
     }
 }

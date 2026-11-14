@@ -7,12 +7,14 @@ use App\Models\Account;
 use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\KartuGudang;
+use App\Services\KeuanganService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
 class KartuGudangController extends Controller
 {
@@ -110,7 +112,7 @@ class KartuGudangController extends Controller
                 ? (int) ceil($saldoPersatuanBaru / $barang->jumlah_unit_per_kemasan)
                 : 0;
 
-            KartuGudang::create([
+            $kartuGudang = KartuGudang::create([
                 'user_id' => auth()->id(),
                 'barang_id' => $barangId,
                 'tanggal' => $request->tanggal,
@@ -124,6 +126,7 @@ class KartuGudangController extends Controller
             // Penjurnalan (Account 1105 - Persediaan Barang)
             $inventoryAccount = Account::where('user_id', auth()->id())->where('code', '1105')->first();
             $modalAccount = Account::where('user_id', auth()->id())->where('code', '3100')->first(); // Menggunakan Modal Pemilik sebagai akun penyeimbang
+            $hargaSatuan = $barang->hargaPersediaan(auth()->user()?->role);
 
             if ($inventoryAccount && $modalAccount && ($diterima > 0 || $dikeluarkan > 0)) {
                 $journalEntry = JournalEntry::create([
@@ -134,8 +137,10 @@ class KartuGudangController extends Controller
                     'transaction_type' => 'penyesuaian-kartu-gudang',
                 ]);
 
+                $kartuGudang->update(['journal_entry_id' => $journalEntry->id]);
+
                 if ($diterima > 0) {
-                    $amount = $diterima * $barang->harga_beli_per_unit;
+                    $amount = $diterima * $hargaSatuan;
 
                     // Debit: Persediaan Barang
                     $journalEntry->items()->create([
@@ -153,7 +158,7 @@ class KartuGudangController extends Controller
                         'credit' => $amount,
                     ]);
                 } elseif ($dikeluarkan > 0) {
-                    $amount = $dikeluarkan * $barang->harga_beli_per_unit;
+                    $amount = $dikeluarkan * $hargaSatuan;
 
                     // Debit: Modal
                     $journalEntry->items()->create([
@@ -192,32 +197,23 @@ class KartuGudangController extends Controller
         }
     }
 
-    public function destroy(int|string $id): RedirectResponse
+    public function destroy(int|string $id, KeuanganService $keuanganService): RedirectResponse
     {
         try {
-            DB::beginTransaction();
-            $kartuGudang = KartuGudang::with('barang')->where('user_id', auth()->id())->where('id', $id)->firstOrFail();
+            $kartuGudang = KartuGudang::with('barang')
+                ->where('user_id', auth()->id())
+                ->where('id', $id)
+                ->firstOrFail();
             $barangId = $kartuGudang->barang_id;
 
-            // Hapus Journal Entry terkait
-            if ($kartuGudang->barang) {
-                JournalEntry::where('user_id', auth()->id())
-                    ->where('transaction_type', 'penyesuaian-kartu-gudang')
-                    ->where('date', $kartuGudang->tanggal)
-                    ->where('description', 'Penyesuaian Kartu Gudang: '.$kartuGudang->barang->nama.' ('.$kartuGudang->uraian.')')
-                    ->delete();
-            }
-
-            $kartuGudang->delete();
-
-            DB::commit();
+            DB::transaction(function () use ($kartuGudang, $keuanganService) {
+                $keuanganService->syncDeleteKartuGudang($kartuGudang, true);
+            });
 
             return redirect()
                 ->route('kartu-gudang.detail', ['barang_id' => $barangId])
                 ->with('success', 'Kartu gudang berhasil dihapus.');
-        } catch (Exception $e) {
-            DB::rollBack();
-
+        } catch (Throwable $e) {
             return redirect()
                 ->route('kartu-gudang.index')
                 ->with('error', 'Terjadi kesalahan saat menghapus data: '.$e->getMessage());

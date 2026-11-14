@@ -237,6 +237,10 @@ class KasirController extends Controller
             $journalEntryId = $log->journal_entry_id;
 
             if ($journalEntryId) {
+                $affectedBarangIds = KartuGudang::where('journal_entry_id', $journalEntryId)
+                    ->pluck('barang_id')
+                    ->unique();
+
                 // Hapus kartu gudang terkait
                 KartuGudang::where('journal_entry_id', $journalEntryId)->delete();
                 // Hapus jurnal entry (ini akan men-cascade hapus ke journal_items dan kasir_transaction_logs)
@@ -245,6 +249,10 @@ class KasirController extends Controller
                     $journalEntry->delete();
                 } else {
                     $log->delete();
+                }
+
+                foreach ($affectedBarangIds as $barangId) {
+                    KartuGudang::recalculateBalances((int) $barangId);
                 }
             } else {
                 $log->delete();
