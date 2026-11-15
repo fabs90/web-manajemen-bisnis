@@ -78,9 +78,9 @@ test('perhitungan pajak UMKM dan Nelayan sesuai skenario batas omzet Rp500.000.0
         ->and($rugiLabaResponse->viewData('labaSetelahPajak'))->toBe($labaRugi['labaSetelahPajak']);
 
     if ($expectedTax > 0) {
-        $rugiLabaResponse->assertSee('Pajak UKM dan Nelayan (0,5%)');
+        $rugiLabaResponse->assertSee('Pajak (0,5%)');
     } else {
-        $rugiLabaResponse->assertSee('Pajak UKM dan Nelayan (0% - Bebas Pajak / PTKP)');
+        $rugiLabaResponse->assertSee('Pajak (0% - Bebas Pajak / PTKP)');
     }
 
     $neracaResponse = $this->get(route('laporan-keuangan.neraca-akhir'));

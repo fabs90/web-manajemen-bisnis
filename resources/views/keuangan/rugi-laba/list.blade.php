@@ -230,8 +230,8 @@
                             $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
                             $pajakLabel = $isUmkmOrNelayan
                                 ? ($pajak > 0
-                                    ? 'Pajak UKM dan Nelayan (0,5%)'
-                                    : 'Pajak UKM dan Nelayan (0% - Bebas Pajak / PTKP)')
+                                    ? 'Pajak (0,5%)'
+                                    : 'Pajak (0% - Bebas Pajak / PTKP)')
                                 : 'Pajak (15%)';
                         @endphp
                         <tr class="table-warning">
