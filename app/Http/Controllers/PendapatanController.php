@@ -56,7 +56,7 @@ class PendapatanController extends Controller
                 'pemesanan-barang',
             ])
             ->with(['items.account', 'kasir'])
-            ->latest('created_at')
+            ->latest()
             ->get();
 
         $allDatas = $journalEntries->map(function ($entry) use ($kasId, $pendapatanId, $piutangId, $potonganId) {
@@ -305,11 +305,7 @@ class PendapatanController extends Controller
             ->with(['items.account', 'items.subLedger', 'kartuGudang.barang', 'kasir'])
             ->firstOrFail();
 
-        $isEditable = $entry->kasir->isEmpty()
-            && ! str_starts_with((string) $entry->reference_number, 'KASIR-')
-            && $entry->transaction_type !== 'penjualan';
-
-        return view('keuangan.pendapatan.show', compact('entry', 'isEditable'));
+        return view('keuangan.pendapatan.show', compact('entry'));
     }
 
     public function edit(int $id)
@@ -320,10 +316,8 @@ class PendapatanController extends Controller
             ->with(['items.account', 'items.subLedger', 'kasir'])
             ->firstOrFail();
 
-        if ($entry->kasir->isNotEmpty() || str_starts_with((string) $entry->reference_number, 'KASIR-') || $entry->transaction_type === 'penjualan') {
-            return redirect()
-                ->route('keuangan.pendapatan.list')
-                ->with('error', 'Transaksi dari Kasir atau Faktur Penjualan tidak dapat diubah melalui menu Penerimaan Kas.');
+        if ($entry->kasir->isNotEmpty()) {
+            return redirect()->route('keuangan.kasir.edit', $entry->kasir->first()->id);
         }
 
         $accounts = Account::where('user_id', $userId)->get()->keyBy('code');

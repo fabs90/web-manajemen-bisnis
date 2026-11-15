@@ -11,10 +11,12 @@ use App\Models\KartuGudang;
 use App\Models\KasirTransactionLog;
 use App\Models\PaketDiskon;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class KasirController extends Controller
 {
@@ -227,6 +229,238 @@ class KasirController extends Controller
         }
 
         return redirect()->back()->with('success', 'Transaksi berhasil')->with('receipt', $receiptData);
+    }
+
+    public function edit(int $id): View
+    {
+        $userId = auth()->id();
+        $log = KasirTransactionLog::with(['journalEntry.kartuGudang.barang', 'journalEntry.items.account'])
+            ->where('user_id', $userId)
+            ->findOrFail($id);
+
+        $jenisPembayaran = JenisPembayaran::select('id', 'nama')->get();
+        $barang = Barang::with('latestKartuGudang')
+            ->where('user_id', $userId)
+            ->orderBy('nama')
+            ->get();
+
+        $paketDiskons = PaketDiskon::where('user_id', $userId)
+            ->where('is_active', true)
+            ->get();
+
+        $existingItems = collect();
+        $qtyByBarangId = [];
+        if ($log->journalEntry && $log->journalEntry->kartuGudang) {
+            foreach ($log->journalEntry->kartuGudang as $kg) {
+                if ((float) $kg->dikeluarkan <= 0 || ! $kg->barang) {
+                    continue;
+                }
+
+                $qty = (int) round((float) $kg->dikeluarkan);
+                $harga = (float) $kg->barang->harga_jual_per_unit;
+                $existingItems->push((object) [
+                    'barang_id' => $kg->barang_id,
+                    'nama' => $kg->barang->nama,
+                    'qty' => $qty,
+                    'harga' => $harga,
+                    'subtotal' => $qty * $harga,
+                ]);
+                $qtyByBarangId[$kg->barang_id] = ($qtyByBarangId[$kg->barang_id] ?? 0) + $qty;
+            }
+        }
+
+        $selectedPaymentName = 'tunai';
+        if (str_contains((string) $log->uraian, 'Pembayaran: ')) {
+            $parts = explode('Pembayaran: ', (string) $log->uraian);
+            $selectedPaymentName = strtolower(trim($parts[1] ?? 'tunai'));
+        }
+
+        $selectedJenisPembayaranId = null;
+        foreach ($jenisPembayaran as $jp) {
+            if (strtolower(trim($jp->nama)) === $selectedPaymentName) {
+                $selectedJenisPembayaranId = $jp->id;
+                break;
+            }
+        }
+
+        if ($selectedJenisPembayaranId === null && $jenisPembayaran->isNotEmpty()) {
+            $selectedJenisPembayaranId = $jenisPembayaran->first()->id;
+        }
+
+        return view(
+            'keuangan.kasir.edit',
+            compact(
+                'log',
+                'barang',
+                'jenisPembayaran',
+                'paketDiskons',
+                'existingItems',
+                'qtyByBarangId',
+                'selectedJenisPembayaranId',
+                'selectedPaymentName'
+            ),
+        );
+    }
+
+    public function update(KasirRequest $request, int $id): RedirectResponse
+    {
+        DB::beginTransaction();
+        try {
+            $userId = auth()->id();
+            $log = KasirTransactionLog::where('user_id', $userId)->findOrFail($id);
+            $entry = JournalEntry::where('id', $log->journal_entry_id)
+                ->where('user_id', $userId)
+                ->firstOrFail();
+
+            $jenisPembayaran = JenisPembayaran::findOrFail($request->jenis_pembayaran_id);
+            $namaPembayaran = $jenisPembayaran ? $jenisPembayaran->nama : 'tunai';
+
+            $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
+
+            if (! isset($accounts['1101']) || ! isset($accounts['4101'])) {
+                throw new \Exception('Akun Kas Utama (1101) atau Pendapatan Penjualan (4101) tidak ditemukan.');
+            }
+
+            if ($request->diskon_total > 0 && ! isset($accounts['4102'])) {
+                throw new \Exception('Akun Potongan Penjualan (4102) tidak ditemukan.');
+            }
+
+            $oldKartuGudangs = KartuGudang::where('journal_entry_id', $entry->id)->get();
+            $affectedBarangIds = $oldKartuGudangs->pluck('barang_id')->unique()->values();
+
+            KartuGudang::where('journal_entry_id', $entry->id)->delete();
+            foreach ($affectedBarangIds as $barangId) {
+                KartuGudang::recalculateBalances((int) $barangId);
+            }
+
+            $entry->items()->delete();
+
+            $entry->items()->create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'account_id' => $accounts['1101']->id,
+                'debit' => $request->grand_total,
+                'credit' => 0,
+            ]);
+
+            if ($request->diskon_total > 0) {
+                $entry->items()->create([
+                    'user_id' => $userId,
+                    'journal_entry_id' => $entry->id,
+                    'account_id' => $accounts['4102']->id,
+                    'debit' => $request->diskon_total,
+                    'credit' => 0,
+                ]);
+            }
+
+            $pendapatanTotal = $request->grand_total + ($request->diskon_total ?? 0);
+            $entry->items()->create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'account_id' => $accounts['4101']->id,
+                'debit' => 0,
+                'credit' => $pendapatanTotal,
+            ]);
+
+            if ($request->filled('id_barang_terjual')) {
+                foreach ($request->id_barang_terjual as $index => $barangId) {
+                    if (! $barangId) {
+                        continue;
+                    }
+
+                    $detailBarang = Barang::where('id', $barangId)
+                        ->where('user_id', $userId)
+                        ->first();
+                    if (! $detailBarang) {
+                        throw new \Exception(
+                            "Barang dengan ID {$barangId} tidak valid atau bukan milik Anda.",
+                        );
+                    }
+
+                    $barangItem = KartuGudang::where('barang_id', $barangId)
+                        ->where('user_id', $userId)
+                        ->latest('id')
+                        ->first();
+
+                    if (! $barangItem) {
+                        throw new \Exception(
+                            "Kartu gudang untuk barang ID {$barangId} tidak ditemukan.",
+                        );
+                    }
+
+                    $saldoSatuanAwal = $barangItem->saldo_persatuan;
+                    $unitPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
+                    $jumlahDijual = $request->jumlah_barang_dijual[$index] ?? 0;
+
+                    if ($saldoSatuanAwal < $jumlahDijual) {
+                        throw new \Exception(
+                            "Saldo barang {$detailBarang->nama} tidak mencukupi. Tersedia: {$saldoSatuanAwal}, Dibutuhkan: {$jumlahDijual}",
+                        );
+                    }
+
+                    $saldoSatuanBaru = $saldoSatuanAwal - $jumlahDijual;
+                    $saldoPerKemasanBaru = $unitPerKemasan > 0
+                        ? ceil($saldoSatuanBaru / $unitPerKemasan)
+                        : 0;
+
+                    KartuGudang::create([
+                        'barang_id' => $barangId,
+                        'tanggal' => $entry->date ?? now(),
+                        'diterima' => 0,
+                        'dikeluarkan' => $jumlahDijual,
+                        'uraian' => 'Pendapatan Kasir Tunai: '.
+                            $detailBarang->nama.
+                            ' - '.
+                            Carbon::now('Asia/Jakarta')->format('d/m/Y H:i'),
+                        'saldo_persatuan' => $saldoSatuanBaru,
+                        'saldo_perkemasan' => $saldoPerKemasanBaru,
+                        'journal_entry_id' => $entry->id,
+                        'user_id' => $userId,
+                    ]);
+
+                    if (! $affectedBarangIds->contains($barangId)) {
+                        $affectedBarangIds->push($barangId);
+                    }
+                }
+            }
+
+            foreach ($affectedBarangIds as $barangId) {
+                KartuGudang::recalculateBalances((int) $barangId);
+            }
+
+            $isNonTunai = in_array(strtolower(str_replace([' ', '-'], '_', $namaPembayaran)), ['transfer_bank', 'qris']);
+            $uangBayar = $isNonTunai ? ($request->uang_bayar ?: $request->grand_total) : $request->uang_bayar;
+            $uangKembalian = $isNonTunai ? 0 : ($request->uang_kembalian ?? 0);
+
+            $log->update([
+                'uraian' => "Penjualan Kasir - Pembayaran: {$namaPembayaran}",
+                'bayar' => $uangBayar,
+                'kembalian' => $uangKembalian,
+                'jumlah' => $request->grand_total,
+                'diskon' => $request->diskon_total ?? 0,
+                'paket_diskon_id' => $request->paket_diskon_id,
+            ]);
+
+            $entry->touch();
+
+            DB::commit();
+
+            Cache::forget("dashboard_data_{$userId}");
+
+            return redirect()
+                ->route('keuangan.kasir.index')
+                ->with('success', 'Transaksi kasir berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error occurred while updating kasir transaction', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi Error: '.$e->getMessage());
+        }
     }
 
     public function destroy($id)

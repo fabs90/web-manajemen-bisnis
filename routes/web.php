@@ -230,6 +230,14 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'keuangan.kasir.store',
         );
 
+        Route::get('/kasir/{id}/edit', [KasirController::class, 'edit'])->name(
+            'keuangan.kasir.edit',
+        );
+
+        Route::put('/kasir/{id}', [KasirController::class, 'update'])->name(
+            'keuangan.kasir.update',
+        );
+
         Route::delete('/kasir/{id}', [KasirController::class, 'destroy'])->name(
             'keuangan.kasir.destroy',
         );

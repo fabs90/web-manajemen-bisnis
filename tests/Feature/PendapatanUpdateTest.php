@@ -191,7 +191,7 @@ it('updates pelunasan piutang without falsely failing against its own previous p
     expect($kasSaldo)->toBe(350000.0);
 });
 
-it('forbids editing kasir transactions from pendapatan menu', function () {
+it('allows editing kasir transactions from pendapatan menu', function () {
     $user = createVerifiedUser();
     $accounts = setupPendapatanAccounts($user);
 
@@ -208,14 +208,33 @@ it('forbids editing kasir transactions from pendapatan menu', function () {
         'debit' => 50000,
         'credit' => 0,
     ]);
+    $kasirEntry->items()->create([
+        'user_id' => $user->id,
+        'account_id' => $accounts['4101']->id,
+        'debit' => 0,
+        'credit' => 50000,
+    ]);
 
     $this->actingAs($user)
         ->get(route('keuangan.pendapatan.show', $kasirEntry->id))
         ->assertSuccessful()
-        ->assertDontSee(route('keuangan.pendapatan.edit', $kasirEntry->id));
+        ->assertSee(route('keuangan.pendapatan.edit', $kasirEntry->id));
 
     $this->actingAs($user)
         ->get(route('keuangan.pendapatan.edit', $kasirEntry->id))
+        ->assertSuccessful();
+
+    $this->actingAs($user)
+        ->put(route('keuangan.pendapatan.update', $kasirEntry->id), [
+            'uraian_pendapatan' => 'Penjualan Kasir Edited',
+            'tanggal' => '2026-06-02',
+            'jenis_pendapatan' => 'lain_lain',
+            'jumlah' => 75000,
+            'biaya_lain' => 0,
+        ])
         ->assertRedirect(route('keuangan.pendapatan.list'))
-        ->assertSessionHas('error');
+        ->assertSessionHas('success');
+
+    $kasirEntry->refresh();
+    expect($kasirEntry->description)->toBe('Penjualan Kasir Edited');
 });

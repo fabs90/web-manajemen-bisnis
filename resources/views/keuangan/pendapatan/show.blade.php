@@ -105,11 +105,9 @@
                 <a href="{{ route('keuangan.pendapatan.list') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
-                @if ($isEditable ?? false)
-                    <a href="{{ route('keuangan.pendapatan.edit', $entry->id) }}" class="btn btn-warning text-white">
-                        <i class="bi bi-pencil-square"></i> Edit
-                    </a>
-                @endif
+                <a href="{{ route('keuangan.pendapatan.edit', $entry->id) }}" class="btn btn-warning text-white">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
             </div>
         </div>
     </div>

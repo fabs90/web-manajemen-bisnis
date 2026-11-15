@@ -37,7 +37,7 @@
                         <th>Subtotal</th>
                         <th>Diskon</th>
                         <th>Total Bayar</th>
-                        <th style="width: 120px">Aksi</th>
+                        <th style="width: 150px">Aksi</th>
                     </tr>
                 </thead>
 
@@ -57,6 +57,10 @@
                                     data-bs-target="#detailModal{{ $item->id }}" title="Lihat Detail Barang">
                                     <i class="bi bi-eye"></i>
                                 </button>
+                                <a href="{{ route('keuangan.kasir.edit', $item->id) }}"
+                                    class="btn btn-warning btn-sm text-white" title="Edit Transaksi">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
                                 <form action="{{ route('keuangan.kasir.destroy', ['id' => $item->id]) }}" method="POST"
                                     class="d-inline" onsubmit="return confirm('Hapus transaksi ini?')">
                                     @csrf

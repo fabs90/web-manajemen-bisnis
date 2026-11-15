@@ -233,17 +233,9 @@ class PengeluaranController extends Controller
             ->with(['items.account', 'items.subLedger'])
             ->firstOrFail();
 
-        $isPengisianKasKecil = $entry->transaction_type === 'kas_kecil'
-            && PengisianKasKecilLog::where('journal_entry_id', $entry->id)->exists();
-
-        $canEdit = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang'])
-            || $isPengisianKasKecil;
-
-        if (! $canEdit) {
-            return redirect()
-                ->route('keuangan.pengeluaran.list')
-                ->with('error', 'Transaksi ini berasal dari modul lain dan tidak dapat diubah di menu Pengeluaran.');
-        }
+        $jenisKeperluan = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang', 'kas_kecil'])
+            ? $entry->transaction_type
+            : 'lain_lain';
 
         $kreditur = Pelanggan::where('user_id', $userId)
             ->where('jenis', 'kreditur')
@@ -277,7 +269,9 @@ class PengeluaranController extends Controller
             }
         }
 
-        $jenisKeperluan = $entry->transaction_type;
+        $jenisKeperluan = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang', 'kas_kecil'])
+            ? $entry->transaction_type
+            : 'lain_lain';
         $utangItem = $entry->items->firstWhere('account.code', '2101');
         $kasItem = $entry->items->firstWhere('account.code', '1101');
         $kasKecilItem = $entry->items->firstWhere('account.code', '1102');
@@ -404,11 +398,7 @@ class PengeluaranController extends Controller
                 ->get();
         }
 
-        $isPengisianKasKecil = $entry->transaction_type === 'kas_kecil'
-            && PengisianKasKecilLog::where('journal_entry_id', $entry->id)->exists();
-
-        $isEditable = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang'])
-            || $isPengisianKasKecil;
+        $isEditable = true;
 
         return view('keuangan.pengeluaran.show', compact('entry', 'barangDibeli', 'isEditable'));
     }

@@ -259,10 +259,6 @@ class PendapatanService
             ->with(['items', 'kasir'])
             ->firstOrFail();
 
-        if ($entry->kasir->isNotEmpty() || str_starts_with((string) $entry->reference_number, 'KASIR-') || $entry->transaction_type === 'penjualan') {
-            throw new \Exception('Transaksi dari Kasir atau Faktur Penjualan tidak dapat diubah melalui menu Penerimaan Kas.');
-        }
-
         $transactionType = $request->jenis_pendapatan === 'lain_lain' ? 'pendapatan_lain' : 'pendapatan_tunai';
 
         $entry->update([
@@ -306,6 +302,17 @@ class PendapatanService
 
             if ($biayaLain > 0) {
                 $this->storeBiayaLain($request, $userId, $accounts, $entry);
+            }
+        }
+
+        if ($entry->kasir->isNotEmpty()) {
+            $kasDebit = (float) $entry->items()->where('account_id', $accounts['1101']->id)->sum('debit');
+            foreach ($entry->kasir as $kasirLog) {
+                $kasirLog->update([
+                    'tanggal_transaksi' => $request->tanggal,
+                    'uraian' => $request->uraian_pendapatan,
+                    'jumlah' => $kasDebit,
+                ]);
             }
         }
 

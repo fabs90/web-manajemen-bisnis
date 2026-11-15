@@ -428,10 +428,6 @@ class PengeluaranService
 
             $entry = JournalEntry::where('id', $id)->where('user_id', $userId)->firstOrFail();
 
-            if (in_array($entry->transaction_type, ['pemesanan-barang', 'agenda_perjalanan'])) {
-                throw new Exception('Transaksi dari SPP atau Agenda Perjalanan tidak dapat diubah dari menu Pengeluaran.');
-            }
-
             $oldType = $entry->transaction_type;
             $newType = $validated['jenis_keperluan'];
             $oldDate = $entry->date?->format('Y-m-d');
@@ -440,10 +436,6 @@ class PengeluaranService
             $existingPengisianLog = $oldType === 'kas_kecil'
                 ? PengisianKasKecilLog::where('journal_entry_id', $entry->id)->first()
                 : null;
-
-            if ($oldType === 'kas_kecil' && $existingPengisianLog === null) {
-                throw new Exception('Pengeluaran dari modul Kas Kecil tidak dapat diubah dari menu Pengeluaran.');
-            }
 
             // 1. Tangani KartuGudang lama jika sebelumnya membeli_barang
             $affectedBarangIds = collect();

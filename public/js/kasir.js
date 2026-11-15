@@ -355,4 +355,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
+
+    if (keranjangTable && keranjangTable.querySelectorAll('tr').length > 0) {
+        hitungTotal();
+    }
 });
