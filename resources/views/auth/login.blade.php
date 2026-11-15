@@ -49,7 +49,7 @@
             data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div>
         <div id="turnstile-error" class="alert danger" style="display: none; margin-top: 10px;" role="alert"></div>
 
-        <button id="btn-submit" type="submit" class="btn-primary" disabled>Masuk</button>
+        <button id="btn-submit" type="submit" class="btn-primary">Masuk</button>
         <p class="register-text">
             Belum punya akun?
             <a href="{{ route('register') }}">Daftar sekarang</a>

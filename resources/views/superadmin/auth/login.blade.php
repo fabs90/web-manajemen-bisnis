@@ -31,7 +31,7 @@
             data-expired-callback="onTurnstileExpired"></div>
         <div id="turnstile-error" class="alert danger" style="display: none; margin-top: 10px;" role="alert"></div>
         <input type="hidden" name="role" value="superadmin">
-        <button id="btn-submit" type="submit" class="btn-primary" disabled>Masuk</button>
+        <button id="btn-submit" type="submit" class="btn-primary">Masuk</button>
     </form>
 @endsection
 
