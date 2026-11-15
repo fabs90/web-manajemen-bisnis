@@ -302,9 +302,23 @@
             </tr>
 
             {{-- 20. Pajak --}}
+            @php
+                $userRole = ($userProfile?->role ?? auth()->user()?->role) ?? 'ukm';
+                $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
+                $pajakLabel = $isUmkmOrNelayan
+                    ? ($pajak > 0
+                        ? 'Pajak UKM dan Nelayan (0,5%)'
+                        : 'Pajak UKM dan Nelayan (0% - Bebas Pajak / PTKP)')
+                    : 'Pajak (15%)';
+            @endphp
             <tr>
                 <td class="text-center">20</td>
-                <td>Pajak (15%)</td>
+                <td>
+                    {{ $pajakLabel }}
+                    @if ($isUmkmOrNelayan)
+                        <br><span style="font-size: 10px; color: #6c757d;">Keterangan: Omzet &le; Rp500.000.000 tidak dikenakan pajak (0% / bebas pajak), omzet &gt; Rp500.000.000 dikenakan pajak 0,5%.</span>
+                    @endif
+                </td>
                 <td></td>
                 <td></td>
                 <td class="text-right">Rp {{ number_format($pajak, 0, ',', '.') }}</td>

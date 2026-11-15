@@ -445,8 +445,8 @@ test('nelayan laba rugi calculation sets HPP and purchases to 0 with gross profi
         ->and($labaRugi['biayaOperasional'])->toBe(200000.0)
         ->and($labaRugi['labaOperasional'])->toBe(800000.0)
         ->and($labaRugi['labaSebelumPajak'])->toBe(800000.0)
-        ->and($labaRugi['pajak'])->toBe(800000.0 * 0.15)
-        ->and($labaRugi['labaSetelahPajak'])->toBe(800000.0 * 0.85);
+        ->and($labaRugi['pajak'])->toBe(0.0)
+        ->and($labaRugi['labaSetelahPajak'])->toBe(800000.0);
 
     // Test Rugi Laba view as nelayan
     $response = $this->actingAs($this->nelayan)->get(route('laporan-keuangan.rugi-laba'));

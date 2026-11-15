@@ -16,6 +16,38 @@ class KeuanganService
 {
     private const TAX_RATE = 0.15;
 
+    private const UMKM_NELAYAN_TAX_THRESHOLD = 500000000;
+
+    private const UMKM_NELAYAN_TAX_RATE = 0.005;
+
+    /**
+     * Hitung tarif pajak yang berlaku berdasarkan role dan omzet bruto periode.
+     */
+    public function getPajakRate(float $omzet, float $labaSebelumPajak = 0, string $userRole = 'ukm'): float
+    {
+        if (in_array($userRole, ['ukm', 'nelayan'], true)) {
+            return $omzet > self::UMKM_NELAYAN_TAX_THRESHOLD ? self::UMKM_NELAYAN_TAX_RATE : 0.0;
+        }
+
+        return $labaSebelumPajak > 0 ? self::TAX_RATE : 0.0;
+    }
+
+    /**
+     * Hitung nominal pajak terpusat berdasarkan role, omzet bruto, dan laba sebelum pajak.
+     */
+    public function hitungPajak(float $omzet, float $labaSebelumPajak = 0, string $userRole = 'ukm'): float
+    {
+        if (in_array($userRole, ['ukm', 'nelayan'], true)) {
+            if ($omzet > self::UMKM_NELAYAN_TAX_THRESHOLD) {
+                return $omzet * self::UMKM_NELAYAN_TAX_RATE;
+            }
+
+            return 0.0;
+        }
+
+        return $labaSebelumPajak > 0 ? $labaSebelumPajak * self::TAX_RATE : 0.0;
+    }
+
     public function hitungLabaRugi($startDate = null, $endDate = null, ?int $userId = null)
     {
         $userId = $userId ?? Auth::id();
@@ -73,11 +105,14 @@ class KeuanganService
 
         $labaSebelumPajak = $labaOperasional + $operating['totalPendapatanBiayaLain'];
 
-        $pajak = $labaSebelumPajak > 0 ? $labaSebelumPajak * self::TAX_RATE : 0;
+        $omzet = (float) ($sales['totalPenjualan'] + max(0, $operating['pendapatanLain']));
+        $pajakRate = $this->getPajakRate($omzet, (float) $labaSebelumPajak, $userRole);
+        $pajak = $this->hitungPajak($omzet, (float) $labaSebelumPajak, $userRole);
         $labaSetelahPajak = $labaSebelumPajak - $pajak;
 
         return array_merge($sales, $inventory, $operating, [
             'penjualanBersih' => $penjualanBersih,
+            'omzet' => $omzet,
             'pembelianKredit' => $pembelianKredit,
             'pembelianTunai' => $pembelianTunai,
             'returPembelian' => $returPembelian,
@@ -87,6 +122,7 @@ class KeuanganService
             'labaKotor' => $labaKotor,
             'labaOperasional' => $labaOperasional,
             'labaSebelumPajak' => $labaSebelumPajak,
+            'pajakRate' => $pajakRate,
             'pajak' => $pajak,
             'labaSetelahPajak' => $labaSetelahPajak,
         ]);
@@ -354,11 +390,10 @@ class KeuanganService
         $hutangBank = $this->getAccountBalance($userId, '2201', $date);
         $saldoHutang = $hutangUsaha + $hutangBank;
 
-        // Laba all time untuk pajak & laba periode berjalan
-        $allTimeLabaRugi = $this->hitungLabaRugi('1970-01-01', $date, $userId);
+        // Pajak & laba periode tahun berjalan
         $dataLabaRugi = $this->hitungLabaRugi(date('Y-01-01', strtotime($date)), $date, $userId);
 
-        $pajak = $allTimeLabaRugi['pajak'];
+        $pajak = $dataLabaRugi['pajak'];
         $labaBersih = $dataLabaRugi['labaSetelahPajak'];
 
         // Modal dihitung sesuai ketentuan: Total Aktiva - Hutang - Pajak - Laba

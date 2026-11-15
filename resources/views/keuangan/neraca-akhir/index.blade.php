@@ -55,8 +55,16 @@
                         <td>Hutang</td>
                         <td class="text-end">Rp {{ number_format($saldoHutang, 0, ',', '.') }}</td>
                     </tr>
+                    @php
+                        $isUmkmOrNelayan = in_array(auth()->user()?->role ?? 'ukm', ['ukm', 'nelayan'], true);
+                    @endphp
                     <tr>
-                        <td>Pajak</td>
+                        <td>
+                            Pajak
+                            @if ($isUmkmOrNelayan)
+                                <br><small class="text-muted">Omzet &le; Rp500.000.000 tidak dikenakan pajak (0%), omzet &gt; Rp500.000.000 dikenakan 0,5%.</small>
+                            @endif
+                        </td>
                         <td class="text-end">Rp {{ number_format($pajak, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
