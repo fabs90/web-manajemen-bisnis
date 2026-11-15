@@ -53,7 +53,7 @@ class KeuanganService
         $userId = $userId ?? Auth::id();
         $startDate = $startDate ?? now()->startOfYear()->format('Y-m-d');
         $endDate = $endDate ?? now()->endOfYear()->format('Y-m-d');
-        $dateRange = [$startDate.' 00:00:00', $endDate.' 23:59:59'];
+        $dateRange = [$startDate . ' 00:00:00', $endDate . ' 23:59:59'];
 
         // === GATHER METRICS ===
         $sales = $this->getSalesMetrics($userId, $dateRange);
@@ -101,9 +101,9 @@ class KeuanganService
             $labaKotor = $penjualanBersih - $hpp;
         }
 
-        $labaOperasional = $labaKotor - $operating['biayaOperasional'];
+        // $labaOperasional = $labaKotor - $operating['biayaOperasional'];
 
-        $labaSebelumPajak = $labaOperasional + $operating['totalPendapatanBiayaLain'];
+        $labaSebelumPajak = $labaKotor + $operating['totalPendapatanBiayaLain'];
 
         $omzet = (float) ($sales['totalPenjualan'] + max(0, $operating['pendapatanLain']));
         $pajakRate = $this->getPajakRate($omzet, (float) $labaSebelumPajak, $userRole);
@@ -120,7 +120,7 @@ class KeuanganService
             'pembelianBersih' => $pembelianBersih,
             'hpp' => $hpp,
             'labaKotor' => $labaKotor,
-            'labaOperasional' => $labaOperasional,
+            // 'labaOperasional' => $labaOperasional,
             'labaSebelumPajak' => $labaSebelumPajak,
             'pajakRate' => $pajakRate,
             'pajak' => $pajak,
@@ -155,14 +155,14 @@ class KeuanganService
         $potonganItems = $items->filter(function ($item) use ($potonganPenjualanId, $returTypes) {
             return $potonganPenjualanId &&
                 $item->account_id == $potonganPenjualanId &&
-                ! in_array($item->journalEntry->transaction_type ?? '', $returTypes);
+                !in_array($item->journalEntry->transaction_type ?? '', $returTypes);
         });
 
         $otherRevenueItems = $items->filter(function ($item) use ($potonganPenjualanId, $returTypes) {
             $isRetur = in_array($item->journalEntry->transaction_type ?? '', $returTypes);
             $isPotongan = $potonganPenjualanId && $item->account_id == $potonganPenjualanId;
 
-            return ! $isRetur && ! $isPotongan;
+            return !$isRetur && !$isPotongan;
         });
 
         // Normal balance for revenue is Credit.
@@ -236,7 +236,7 @@ class KeuanganService
 
             if ($pengeluaranKas > 0 || $keluarKasKecil > 0) {
                 $biayaKotor = $entry->items->filter(function ($item) {
-                    return $item->debit > 0 && ! in_array($item->account->code, ['1101', '1103', '2101']);
+                    return $item->debit > 0 && !in_array($item->account->code, ['1101', '1103', '2101']);
                 })->sum('debit');
                 $totalTunai += $biayaKotor;
             }
@@ -248,7 +248,7 @@ class KeuanganService
     private function getPembelianKreditTotal(int $userId, array $dateRange): float
     {
         $hutangAccount = Account::where('user_id', $userId)->where('code', '2101')->first();
-        if (! $hutangAccount) {
+        if (!$hutangAccount) {
             return 0;
         }
 
@@ -266,7 +266,7 @@ class KeuanganService
     private function getReturPembelianTotal(int $userId, array $dateRange): float
     {
         $persediaanAccount = Account::where('user_id', $userId)->where('code', '1105')->first();
-        if (! $persediaanAccount) {
+        if (!$persediaanAccount) {
             return 0;
         }
 
@@ -284,7 +284,7 @@ class KeuanganService
     private function getHppTotal(int $userId, array $dateRange): float
     {
         $hppAccount = Account::where('user_id', $userId)->where('code', '5101')->first();
-        if (! $hppAccount) {
+        if (!$hppAccount) {
             return 0;
         }
 
@@ -324,7 +324,7 @@ class KeuanganService
 
         // BIAYA OPERASIONAL: Seluruh beban non-pembelian barang
         $biayaOperasionalItems = $items->filter(function ($item) {
-            return ! in_array($item->journalEntry->transaction_type ?? '', ['membeli_barang', 'membayar_hutang']);
+            return !in_array($item->journalEntry->transaction_type ?? '', ['membeli_barang', 'membayar_hutang']);
         });
 
         $biayaOperasional = $biayaOperasionalItems->sum('debit') - $biayaOperasionalItems->sum('credit');
@@ -341,7 +341,7 @@ class KeuanganService
         $pendapatanLain = $pendapatanLainItems->sum('credit') - $pendapatanLainItems->sum('debit');
 
         $biayaAdministrasiBank = 0; // If specific account exists, use it.
-        $totalPendapatanBiayaLain = $pendapatanLain - $biayaAdministrasiBank;
+        $totalPendapatanBiayaLain = $pendapatanLain - $biayaOperasional - $biayaAdministrasiBank;
 
         return compact(
             'biayaOperasional',
@@ -420,7 +420,7 @@ class KeuanganService
     private function getAccountBalance(int $userId, string $accountCode, string $date): float
     {
         $account = Account::where('user_id', $userId)->where('code', $accountCode)->first();
-        if (! $account) {
+        if (!$account) {
             return 0;
         }
 
@@ -465,12 +465,12 @@ class KeuanganService
             ->where('nama', $namaBarang)
             ->exists();
 
-        if (! $hasOtherSameName) {
+        if (!$hasOtherSameName) {
             JournalEntry::where('user_id', $userId)
                 ->where('transaction_type', 'penyesuaian-kartu-gudang')
-                ->where('description', 'like', 'Penyesuaian Kartu Gudang: '.$namaBarang.' (%')
+                ->where('description', 'like', 'Penyesuaian Kartu Gudang: ' . $namaBarang . ' (%')
                 ->get()
-                ->each(fn (JournalEntry $entry) => $entry->delete());
+                ->each(fn(JournalEntry $entry) => $entry->delete());
         }
 
         $barang->delete();
@@ -499,13 +499,13 @@ class KeuanganService
             $legacyQuery = JournalEntry::where('user_id', $userId)
                 ->where('transaction_type', 'penyesuaian-kartu-gudang')
                 ->whereDate('date', $kartuGudang->tanggal)
-                ->where('description', 'Penyesuaian Kartu Gudang: '.$barang->nama.' ('.$kartuGudang->uraian.')');
+                ->where('description', 'Penyesuaian Kartu Gudang: ' . $barang->nama . ' (' . $kartuGudang->uraian . ')');
 
             if ($entry && $entry->transaction_type === 'penyesuaian-kartu-gudang') {
                 $legacyQuery->where('id', '!=', $entry->id);
             }
 
-            if (! $entry || $entry->transaction_type !== 'penyesuaian-kartu-gudang') {
+            if (!$entry || $entry->transaction_type !== 'penyesuaian-kartu-gudang') {
                 $legacyEntry = $legacyQuery->first();
                 $legacyEntry?->delete();
             }
@@ -546,8 +546,8 @@ class KeuanganService
             $itemValue = max(0.0, $netQty * ($barang ? $barang->hargaPersediaan($userRole) : 0.0));
 
             if ($itemValue > 0) {
-                $persediaanItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '1105' && $i->debit > 0);
-                $modalItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '3100' && $i->credit > 0);
+                $persediaanItem = $entry->items->first(fn(JournalItem $i) => $i->account?->code === '1105' && $i->debit > 0);
+                $modalItem = $entry->items->first(fn(JournalItem $i) => $i->account?->code === '3100' && $i->credit > 0);
 
                 if ($persediaanItem) {
                     $newPersediaanDebit = max(0.0, (float) $persediaanItem->debit - $itemValue);
@@ -598,9 +598,9 @@ class KeuanganService
                 return (float) $k->dikeluarkan * (float) ($k->barang?->harga_jual_per_unit ?? 0.0);
             });
 
-            $revenueItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '4101' && $i->credit > 0);
-            $discountItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '4102' && $i->debit > 0);
-            $cashOrPiutangItem = $entry->items->first(fn (JournalItem $i) => in_array($i->account?->code, ['1101', '1103', '1104'], true) && $i->debit > 0);
+            $revenueItem = $entry->items->first(fn(JournalItem $i) => $i->account?->code === '4101' && $i->credit > 0);
+            $discountItem = $entry->items->first(fn(JournalItem $i) => $i->account?->code === '4102' && $i->debit > 0);
+            $cashOrPiutangItem = $entry->items->first(fn(JournalItem $i) => in_array($i->account?->code, ['1101', '1103', '1104'], true) && $i->debit > 0);
 
             $currentCredit = (float) ($revenueItem?->credit ?? 0.0);
             $newCredit = $remainingGross > 0 ? $remainingGross : max(0.0, $currentCredit - $deletedGross);
@@ -632,8 +632,8 @@ class KeuanganService
             }
 
             $deletedCost = (float) $kartuGudang->dikeluarkan * (float) ($barang?->harga_beli_per_unit ?? 0.0);
-            $hppItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '5101' && $i->debit > 0);
-            $invItem = $entry->items->first(fn (JournalItem $i) => $i->account?->code === '1105' && $i->credit > 0);
+            $hppItem = $entry->items->first(fn(JournalItem $i) => $i->account?->code === '5101' && $i->debit > 0);
+            $invItem = $entry->items->first(fn(JournalItem $i) => $i->account?->code === '1105' && $i->credit > 0);
 
             if ($hppItem && $invItem && $deletedCost > 0) {
                 $newCost = max(0.0, (float) $hppItem->debit - $deletedCost);
@@ -666,8 +666,8 @@ class KeuanganService
         $deletedAmount = $qty * $unitPrice;
 
         if ($deletedAmount > 0) {
-            $primaryDebit = $entry->items->first(fn (JournalItem $i) => $i->debit > 0);
-            $primaryCredit = $entry->items->first(fn (JournalItem $i) => $i->credit > 0);
+            $primaryDebit = $entry->items->first(fn(JournalItem $i) => $i->debit > 0);
+            $primaryCredit = $entry->items->first(fn(JournalItem $i) => $i->credit > 0);
 
             if ($primaryDebit && $primaryCredit) {
                 $newDebit = max(0.0, (float) $primaryDebit->debit - $deletedAmount);

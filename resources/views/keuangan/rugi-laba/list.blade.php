@@ -164,38 +164,28 @@
                             <td class="text-end"><strong>Rp {{ number_format($labaKotor, 0, ',', '.') }}</strong></td>
                         </tr>
 
-                        {{-- 14. Biaya Operasional --}}
-                        <tr class="table-warning">
-                            <td class="text-center">14</td>
-                            <td>Biaya Operasional</td>
-                            <td></td>
-                            <td></td>
-                            <td class="text-end text-decoration-underline">Rp
-                                {{ number_format($biayaOperasional, 0, ',', '.') }} -</td>
-                        </tr>
-
-                        {{-- 15. Laba Operasional --}}
-                        <tr class="{{ $labaOperasional >= 0 ? 'table-success' : 'table-danger' }}">
-                            <td class="text-center">15</td>
-                            <td class="text-center">
-                                <strong>{{ $labaOperasional >= 0 ? 'Laba Operasional' : 'Rugi Operasional' }}</strong>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td class="text-end"><strong>Rp {{ number_format($labaOperasional, 0, ',', '.') }}</strong>
-                            </td>
-                        </tr>
-
-                        {{-- 16-17. Pendapatan/Biaya lain --}}
+                        {{-- 14. Pendapatan Lain-lain --}}
                         <tr>
-                            <td class="text-center">16</td>
+                            <td class="text-center">14</td>
                             <td>Pendapatan Lain-lain</td>
                             <td></td>
                             <td class="text-end">Rp {{ number_format($pendapatanLain, 0, ',', '.') }}</td>
                             <td></td>
                         </tr>
+
+                        {{-- 15. Biaya Operasional --}}
+                        <tr class="table-warning">
+                            <td class="text-center">15</td>
+                            <td>Biaya Operasional</td>
+                            <td></td>
+                            <td class="text-end">Rp
+                                {{ number_format($biayaOperasional, 0, ',', '.') }} -</td>
+                            <td></td>
+                        </tr>
+
+                        {{-- 16. Biaya Administrasi Bank --}}
                         <tr>
-                            <td class="text-center">17</td>
+                            <td class="text-center">16</td>
                             <td>Biaya Administrasi Bank</td>
                             <td></td>
                             <td class="text-end text-decoration-underline">Rp
@@ -203,20 +193,21 @@
                             <td></td>
                         </tr>
 
-                        {{-- 18. Total Pendapatan dan Biaya Lain-lain --}}
+                        {{-- 17. Total Pendapatan dan Biaya Lain-lain --}}
                         <tr class="table-info">
-                            <td class="text-center">18</td>
+                            <td class="text-center">17</td>
                             <td><strong>Total Pendapatan dan Biaya Lain-lain</strong></td>
                             <td></td>
                             <td></td>
                             <td class="text-end text-decoration-underline"><strong>Rp
                                     {{ number_format(abs($totalPendapatanBiayaLain), 0, ',', '.') }}
-                                    {{ $totalPendapatanBiayaLain >= 0 ? '+' : '-' }}</strong></td>
+                                    {{ $totalPendapatanBiayaLain >= 0 ? '+' : '-' }}</strong>
+                            </td>
                         </tr>
 
-                        {{-- 19. Laba Sebelum Pajak --}}
+                        {{-- 18. Laba Sebelum Pajak --}}
                         <tr class="table-primary">
-                            <td class="text-center">19</td>
+                            <td class="text-center">18</td>
                             <td class="text-center"><strong>Laba Sebelum Pajak</strong></td>
                             <td></td>
                             <td></td>
@@ -224,7 +215,7 @@
                             </td>
                         </tr>
 
-                        {{-- 20. Pajak --}}
+                        {{-- 19. Pajak --}}
                         @php
                             $userRole = auth()->user()?->role ?? 'ukm';
                             $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
@@ -235,11 +226,12 @@
                                 : 'Pajak (15%)';
                         @endphp
                         <tr class="table-warning">
-                            <td class="text-center">20</td>
+                            <td class="text-center">19</td>
                             <td>
                                 {{ $pajakLabel }}
                                 @if ($isUmkmOrNelayan)
-                                    <br><small class="text-muted">Keterangan: Omzet &le; Rp500.000.000 tidak dikenakan pajak (0% / bebas pajak), omzet &gt; Rp500.000.000 dikenakan pajak 0,5%.</small>
+                                    <br><small class="text-muted">Keterangan: Omzet &le; Rp500.000.000 tidak dikenakan pajak
+                                        (0% / bebas pajak), omzet &gt; Rp500.000.000 dikenakan pajak 0,5%.</small>
                                 @endif
                             </td>
                             <td></td>
@@ -248,9 +240,9 @@
                             </td>
                         </tr>
 
-                        {{-- 21. Laba Bersih --}}
+                        {{-- 20. Laba Bersih --}}
                         <tr class="table-success text-white bg-success">
-                            <td class="text-center">21</td>
+                            <td class="text-center">20</td>
                             <td class="text-center"><strong>Laba Bersih</strong></td>
                             <td></td>
                             <td></td>
