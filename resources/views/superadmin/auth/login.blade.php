@@ -27,9 +27,11 @@
             </div>
         </div>
         <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-theme="light"
-            data-size="normal"></div>
+            data-size="normal" data-callback="onTurnstileSuccess" data-error-callback="onTurnstileError"
+            data-expired-callback="onTurnstileExpired"></div>
+        <div id="turnstile-error" class="alert danger" style="display: none; margin-top: 10px;" role="alert"></div>
         <input type="hidden" name="role" value="superadmin">
-        <button id="btn-submit" type="submit" class="btn-primary">Masuk</button>
+        <button id="btn-submit" type="submit" class="btn-primary" disabled>Masuk</button>
     </form>
 @endsection
 

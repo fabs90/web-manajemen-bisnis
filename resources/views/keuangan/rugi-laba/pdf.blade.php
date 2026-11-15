@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -7,31 +7,12 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 12px;
             line-height: 1.4;
-            color: #000;
-            margin: 0;
-            padding: 0;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            table-layout: fixed;
-        }
-
-        th,
-        td {
-            border: 1px solid #000;
-            padding: 6px;
-            word-wrap: break-word;
-            vertical-align: top;
-        }
-
-        .table-no-border td {
-            border: none !important;
-            padding: 2px 0;
+        .fw-bold {
+            font-weight: bold;
         }
 
         .text-center {
@@ -46,25 +27,61 @@
             text-align: left;
         }
 
-        .fw-bold {
-            font-weight: bold;
-        }
-
         .text-underline {
             text-decoration: underline;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 25px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+            border: 1px solid #000;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #000;
+            padding: 6px;
+            word-wrap: break-word;
+            vertical-align: middle;
+        }
+
+        .table thead {
+            background-color: #f0f0f0;
+        }
+
+        .table-no-border {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table-no-border td,
+        .table-no-border th {
+            border: none !important;
+            padding: 2px 0;
+            vertical-align: middle;
         }
 
         .bg-light {
             background-color: #f2f2f2;
         }
 
-        .bg-dark {
-            background-color: #333;
-            color: #fff;
-        }
-
         .indent {
-            padding-left: 18px;
+            padding-left: 18px !important;
         }
 
         .line {
@@ -88,8 +105,9 @@
                 @endif
             </td>
             <td width="70%" class="text-center">
-                <div style="font-size:16px; font-weight:bold; text-transform:uppercase;">
-                    {{ $userProfile->name ?? config('app.name') }}</div>
+                <div style="font-size:16px; font-weight:bold;" class="uppercase">
+                    {{ $userProfile->name ?? config('app.name') }}
+                </div>
                 <div style="font-size:11px;">{{ $userProfile->alamat ?? '' }}</div>
                 <div style="font-size:11px;">Telp: {{ $userProfile->nomor_telepon ?? '-' }} | Email:
                     {{ $userProfile->email ?? '-' }}</div>
@@ -100,23 +118,17 @@
 
     <div class="line"></div>
 
-    {{-- HEADER TABEL --}}
-    <table class="table-no-border" style="margin-top: 0; margin-bottom: 15px;">
-        <tr>
-            <td class="text-center fw-bold" style="font-size: 14px;">LAPORAN LABA RUGI</td>
-        </tr>
-        <tr>
-            <td class="text-center" style="font-size: 12px;">Periode: {{ $startDate }} s/d {{ $endDate }}</td>
-        </tr>
-    </table>
+    {{-- JUDUL --}}
+    <h3 class="text-center fw-bold uppercase" style="margin-bottom: 4px;">LAPORAN LABA RUGI</h3>
+    <div class="text-center mb-3" style="font-size: 11px;">Periode: {{ $startDate }} s/d {{ $endDate }}</div>
 
     {{-- LAPORAN LABA RUGI - 5 KOLOM --}}
-    <table>
+    <table class="table">
         <thead>
-            <tr class="bg-dark">
+            <tr>
                 <th class="text-center" width="5%">NO</th>
-                <th width="35%">URAIAN</th>
-                <th class="text-center" colspan=2 width="40%">JUMLAH</th>
+                <th class="text-left" width="35%">URAIAN</th>
+                <th class="text-center" colspan="2" width="40%">JUMLAH</th>
                 <th class="text-center" width="20%">TOTAL</th>
             </tr>
         </thead>

@@ -45,9 +45,11 @@
         </div>
 
         <div class="cf-turnstile" name="cf-turnstile-response" data-sitekey="{{ config('services.turnstile.site_key') }}"
-            data-theme="light" data-size="normal"></div>
+            data-theme="light" data-size="normal" data-callback="onTurnstileSuccess"
+            data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div>
+        <div id="turnstile-error" class="alert danger" style="display: none; margin-top: 10px;" role="alert"></div>
 
-        <button id="btn-submit" type="submit" class="btn-primary">Masuk</button>
+        <button id="btn-submit" type="submit" class="btn-primary" disabled>Masuk</button>
         <p class="register-text">
             Belum punya akun?
             <a href="{{ route('register') }}">Daftar sekarang</a>
