@@ -410,9 +410,7 @@
     </div>
 @endsection
 @push('script')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"
-        integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous">
-    </script>
+    <script src="{{ asset('dist/assets/extensions/chart.js/chart.umd.js') }}"></script>
     <script>
         $(document).ready(function() {
             const tableOptions = {
