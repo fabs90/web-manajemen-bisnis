@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PengeluaranRequest;
+use App\Http\Requests\UpdatePengeluaranRequest;
 use App\Models\Account;
 use App\Models\Barang;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Models\KartuGudang;
 use App\Models\Pelanggan;
+use App\Models\PengisianKasKecilLog;
 use App\Models\SPP\SuratPesananPembelian;
 use App\Services\PengeluaranService;
 use Illuminate\Http\RedirectResponse;
@@ -32,8 +34,12 @@ class PengeluaranController extends Controller
             ->latest()
             ->get();
 
+        $pengisianKasKecilEntryIds = PengisianKasKecilLog::where('user_id', $userId)
+            ->pluck('journal_entry_id')
+            ->flip();
+
         // Map ke format yang diharapkan view
-        $allDatas = $journalEntries->map(function ($entry) {
+        $allDatas = $journalEntries->map(function ($entry) use ($pengisianKasKecilEntryIds) {
             $hutangItem = $entry->items->firstWhere('account.code', '2101');
             $kasItem = $entry->items->firstWhere('account.code', '1101');
 
@@ -43,6 +49,9 @@ class PengeluaranController extends Controller
 
             // Total biaya kotor (debit pada akun selain kas/bank/hutang)
             $biayaKotor = $entry->items->filter(fn ($item) => $item->debit > 0 && ! in_array($item->account->code, ['1101', '1103', '2101']))->sum('debit');
+
+            $isEditable = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang'])
+                || ($entry->transaction_type === 'kas_kecil' && $pengisianKasKecilEntryIds->has($entry->id));
 
             return (object) [
                 'id' => $entry->id,
@@ -56,6 +65,7 @@ class PengeluaranController extends Controller
                 'jumlah_pengeluaran' => $entry->items->where('account.code', '1101')->sum('credit') + $entry->items->where('account.code', '1103')->sum('credit'),
                 'transaction_type' => $entry->transaction_type,
                 'hutang' => collect($entry->transaction_type === 'membayar_hutang' ? [$entry] : []), // Untuk deteksi pelunasan di view
+                'is_editable' => $isEditable,
             ];
         });
 
@@ -215,6 +225,160 @@ class PengeluaranController extends Controller
         }
     }
 
+    public function edit(int $id): View|RedirectResponse
+    {
+        $userId = auth()->id();
+        $entry = JournalEntry::where('id', $id)
+            ->where('user_id', $userId)
+            ->with(['items.account', 'items.subLedger'])
+            ->firstOrFail();
+
+        $isPengisianKasKecil = $entry->transaction_type === 'kas_kecil'
+            && PengisianKasKecilLog::where('journal_entry_id', $entry->id)->exists();
+
+        $canEdit = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang'])
+            || $isPengisianKasKecil;
+
+        if (! $canEdit) {
+            return redirect()
+                ->route('keuangan.pengeluaran.list')
+                ->with('error', 'Transaksi ini berasal dari modul lain dan tidak dapat diubah di menu Pengeluaran.');
+        }
+
+        $kreditur = Pelanggan::where('user_id', $userId)
+            ->where('jenis', 'kreditur')
+            ->get();
+
+        $barang = Barang::where('user_id', $userId)->get();
+
+        $utangAccount = Account::where('user_id', $userId)->where('code', '2101')->first();
+        $listHutang = collect();
+        if ($utangAccount) {
+            $items = JournalItem::where('user_id', $userId)
+                ->where('account_id', $utangAccount->id)
+                ->where('journal_entry_id', '!=', $entry->id)
+                ->with(['journalEntry', 'subLedger'])
+                ->get()
+                ->groupBy('sub_ledger_id');
+
+            foreach ($items as $pelangganId => $pelangganItems) {
+                $saldo = $pelangganItems->sum('credit') - $pelangganItems->sum('debit');
+                if ($saldo > 0) {
+                    $lastItem = $pelangganItems->sortByDesc('id')->first();
+                    $listHutang->push((object) [
+                        'id' => $lastItem->id,
+                        'pelanggan_id' => $pelangganId,
+                        'uraian' => 'Hutang kepada '.($lastItem->subLedger->nama ?? 'Unknown'),
+                        'tanggal' => $lastItem->journalEntry->date ?? now(),
+                        'saldo' => $saldo,
+                        'pelanggan' => $lastItem->subLedger,
+                    ]);
+                }
+            }
+        }
+
+        $jenisKeperluan = $entry->transaction_type;
+        $utangItem = $entry->items->firstWhere('account.code', '2101');
+        $kasItem = $entry->items->firstWhere('account.code', '1101');
+        $kasKecilItem = $entry->items->firstWhere('account.code', '1102');
+        $expenseDebits = $entry->items->filter(fn ($item) => $item->debit > 0 && $item->account->category === 'expense')->values();
+        $potonganPembelian = (int) round((float) $entry->items->filter(fn ($item) => $item->credit > 0 && $item->account->category === 'expense')->sum('credit'));
+
+        $jenisPengeluaran = ($utangItem && (float) $utangItem->credit > 0) ? 'kredit' : 'tunai';
+        $namaKreditur = $utangItem?->sub_ledger_id;
+
+        $uraianPengeluaran = $entry->description;
+        $uraianPengeluaran = preg_replace('/^Pengeluaran lain-lain:\s*/', '', $uraianPengeluaran);
+        $uraianPengeluaran = preg_replace('/^Pembelian barang:\s*/', '', $uraianPengeluaran);
+        $uraianPengeluaran = preg_replace('/^Pelunasan hutang - [^:]+:\s*/', '', $uraianPengeluaran);
+        $uraianPengeluaran = preg_replace('/^Pengisian Kas Kecil:\s*/', '', $uraianPengeluaran);
+        $uraianPengeluaran = preg_replace('/ \((berhutang|Secara kredit) kepada .*\)$/', '', $uraianPengeluaran);
+
+        $jumlahManual = 0;
+        $biayaLain = 0;
+        $adminBank = 0;
+        $selectedHutangId = null;
+
+        if ($jenisKeperluan === 'lain_lain') {
+            $firstExpense = $expenseDebits->first();
+            $jumlahManual = $firstExpense ? (int) round((float) $firstExpense->debit) : 0;
+            $biayaLain = $expenseDebits->count() > 1
+                ? (int) round((float) $expenseDebits->slice(1)->sum('debit'))
+                : 0;
+        } elseif ($jenisKeperluan === 'membayar_hutang') {
+            $jumlahManual = $utangItem ? (int) round((float) $utangItem->debit) : 0;
+            $biayaLain = (int) round((float) $expenseDebits->sum('debit'));
+            $matchedHutang = $listHutang->firstWhere('pelanggan_id', $utangItem?->sub_ledger_id);
+            $selectedHutangId = $matchedHutang?->id;
+        } elseif ($jenisKeperluan === 'kas_kecil') {
+            $jumlahManual = $kasKecilItem ? (int) round((float) $kasKecilItem->debit) : 0;
+            $biayaLain = (int) round((float) $expenseDebits->sum('debit'));
+        } elseif ($jenisKeperluan === 'membeli_barang') {
+            $biayaLain = (int) round((float) $expenseDebits->sum('debit'));
+        }
+
+        $totalKeluar = $jenisPengeluaran === 'tunai'
+            ? ($kasItem ? (int) round((float) $kasItem->credit) : 0)
+            : ($utangItem ? (int) round((float) $utangItem->credit) : 0);
+
+        $barangDibeli = collect();
+        if ($jenisKeperluan === 'membeli_barang') {
+            $barangDibeli = KartuGudang::with('barang')
+                ->where('journal_entry_id', $entry->id)
+                ->get();
+
+            if ($barangDibeli->isEmpty()) {
+                $barangDibeli = KartuGudang::with('barang')
+                    ->where('user_id', $userId)
+                    ->whereDate('tanggal', $entry->date)
+                    ->where('uraian', $uraianPengeluaran)
+                    ->where('diterima', '>', 0)
+                    ->get();
+            }
+        }
+
+        return view('keuangan.pengeluaran.edit', compact(
+            'entry',
+            'kreditur',
+            'barang',
+            'listHutang',
+            'uraianPengeluaran',
+            'jenisPengeluaran',
+            'jenisKeperluan',
+            'namaKreditur',
+            'jumlahManual',
+            'potonganPembelian',
+            'biayaLain',
+            'adminBank',
+            'totalKeluar',
+            'selectedHutangId',
+            'barangDibeli'
+        ));
+    }
+
+    public function update(UpdatePengeluaranRequest $request, int $id): RedirectResponse
+    {
+        try {
+            $this->pengeluaranService->update($id, $request->validated(), auth()->id());
+
+            return redirect()
+                ->route('keuangan.pengeluaran.list')
+                ->with('success', 'Data pengeluaran berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            report($e);
+            Log::error('Gagal memperbarui pengeluaran', [
+                'error' => $e->getMessage(),
+                'input' => $request->all(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui pengeluaran: '.$e->getMessage());
+        }
+    }
+
     public function show(int $id): View
     {
         $userId = auth()->id();
@@ -240,7 +404,13 @@ class PengeluaranController extends Controller
                 ->get();
         }
 
-        return view('keuangan.pengeluaran.show', compact('entry', 'barangDibeli'));
+        $isPengisianKasKecil = $entry->transaction_type === 'kas_kecil'
+            && PengisianKasKecilLog::where('journal_entry_id', $entry->id)->exists();
+
+        $isEditable = in_array($entry->transaction_type, ['membeli_barang', 'lain_lain', 'membayar_hutang'])
+            || $isPengisianKasKecil;
+
+        return view('keuangan.pengeluaran.show', compact('entry', 'barangDibeli', 'isEditable'));
     }
 
     public function destroyHutang(int $id): RedirectResponse

@@ -251,4 +251,66 @@ class PendapatanService
             'credit' => $request->biaya_lain,
         ]);
     }
+
+    public function updatePendapatan($request, int $id, int $userId, $accounts): JournalEntry
+    {
+        $entry = JournalEntry::where('id', $id)
+            ->where('user_id', $userId)
+            ->with(['items', 'kasir'])
+            ->firstOrFail();
+
+        if ($entry->kasir->isNotEmpty() || str_starts_with((string) $entry->reference_number, 'KASIR-') || $entry->transaction_type === 'penjualan') {
+            throw new \Exception('Transaksi dari Kasir atau Faktur Penjualan tidak dapat diubah melalui menu Penerimaan Kas.');
+        }
+
+        $transactionType = $request->jenis_pendapatan === 'lain_lain' ? 'pendapatan_lain' : 'pendapatan_tunai';
+
+        $entry->update([
+            'date' => $request->tanggal,
+            'description' => $request->uraian_pendapatan,
+            'transaction_type' => $transactionType,
+        ]);
+
+        $entry->items()->delete();
+
+        $biayaLain = (int) ($request->biaya_lain ?? 0);
+
+        if ($request->jenis_pendapatan === 'lain_lain') {
+            $totalAmount = (int) $request->jumlah + $biayaLain;
+            $this->storeLainLain($request, $userId, $accounts, $entry, $totalAmount);
+
+            if ($biayaLain > 0) {
+                $this->storeBiayaLain($request, $userId, $accounts, $entry);
+            }
+        } elseif ($request->jenis_pendapatan === 'kredit') {
+            $kreditAmount = (int) $request->jumlah + (int) ($request->jumlah_kredit ?? 0);
+            $subledgerId = $request->nama_pelanggan;
+
+            $entry->items()->create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'account_id' => $accounts['1101']->id,
+                'debit' => $kreditAmount + $biayaLain,
+                'credit' => 0,
+            ]);
+
+            $entry->items()->create([
+                'user_id' => $userId,
+                'journal_entry_id' => $entry->id,
+                'account_id' => $accounts['1104']->id,
+                'debit' => 0,
+                'credit' => $kreditAmount,
+                'sub_ledger_type' => 'App\Models\Pelanggan',
+                'sub_ledger_id' => $subledgerId,
+            ]);
+
+            if ($biayaLain > 0) {
+                $this->storeBiayaLain($request, $userId, $accounts, $entry);
+            }
+        }
+
+        $entry->touch();
+
+        return $entry;
+    }
 }

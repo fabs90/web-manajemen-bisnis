@@ -307,7 +307,7 @@ class PengeluaranService
             }
         }
 
-        $this->tambahBarangKeGudang($data, $userId);
+        $this->tambahBarangKeGudang($data, $userId, $entry->id);
     }
 
     private function processKasKecil(array $data, int $userId, $accounts): void
@@ -385,7 +385,7 @@ class PengeluaranService
         ]);
     }
 
-    private function tambahBarangKeGudang(array $data, int $userId): void
+    private function tambahBarangKeGudang(array $data, int $userId, ?int $journalEntryId = null): void
     {
         if (empty($data['barang_dibeli']) || empty($data['jumlah_barang_dibeli'])) {
             return;
@@ -395,11 +395,13 @@ class PengeluaranService
             $jumlahDibeli = (int) $data['jumlah_barang_dibeli'][$index];
 
             $detailBarang = Barang::where('id', $barangId)->where('user_id', $userId)->firstOrFail();
-            $barangItem = KartuGudang::where('barang_id', $barangId)->where('user_id', $userId)->latest()->first();
+            $barangItem = KartuGudang::where('barang_id', $barangId)->where('user_id', $userId)->latest('id')->first();
 
             $pcsPerKemasan = $detailBarang->jumlah_unit_per_kemasan;
             $saldoSatuanBaru = ($barangItem->saldo_persatuan ?? 0) + $jumlahDibeli;
-            $saldoPerKemasanBaru = ($barangItem->saldo_perkemasan ?? 0) + round($jumlahDibeli / $pcsPerKemasan, 0);
+            $saldoPerKemasanBaru = $pcsPerKemasan > 0
+                ? ($barangItem->saldo_perkemasan ?? 0) + round($jumlahDibeli / $pcsPerKemasan, 0)
+                : 0;
 
             KartuGudang::create([
                 'barang_id' => $barangId,
@@ -409,6 +411,409 @@ class PengeluaranService
                 'uraian' => $data['uraian_pengeluaran'],
                 'saldo_persatuan' => $saldoSatuanBaru,
                 'saldo_perkemasan' => $saldoPerKemasanBaru,
+                'journal_entry_id' => $journalEntryId,
+                'user_id' => $userId,
+            ]);
+        }
+    }
+
+    public function update(int $id, array $validated, int $userId): void
+    {
+        DB::transaction(function () use ($id, $validated, $userId) {
+            $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
+
+            if ($accounts->isEmpty()) {
+                throw new Exception('Akun belum diatur. Silakan atur akun di Neraca Awal.');
+            }
+
+            $entry = JournalEntry::where('id', $id)->where('user_id', $userId)->firstOrFail();
+
+            if (in_array($entry->transaction_type, ['pemesanan-barang', 'agenda_perjalanan'])) {
+                throw new Exception('Transaksi dari SPP atau Agenda Perjalanan tidak dapat diubah dari menu Pengeluaran.');
+            }
+
+            $oldType = $entry->transaction_type;
+            $newType = $validated['jenis_keperluan'];
+            $oldDate = $entry->date?->format('Y-m-d');
+            $oldDescription = $entry->description;
+
+            $existingPengisianLog = $oldType === 'kas_kecil'
+                ? PengisianKasKecilLog::where('journal_entry_id', $entry->id)->first()
+                : null;
+
+            if ($oldType === 'kas_kecil' && $existingPengisianLog === null) {
+                throw new Exception('Pengeluaran dari modul Kas Kecil tidak dapat diubah dari menu Pengeluaran.');
+            }
+
+            // 1. Tangani KartuGudang lama jika sebelumnya membeli_barang
+            $affectedBarangIds = collect();
+            if ($oldType === 'membeli_barang') {
+                $oldKartuGudangs = KartuGudang::where('journal_entry_id', $entry->id)->get();
+
+                if ($oldKartuGudangs->isEmpty()) {
+                    $oldUraian = str_replace('Pembelian barang: ', '', $oldDescription);
+                    $oldUraian = preg_replace('/ \(Secara kredit kepada .*\)$/', '', $oldUraian);
+
+                    $oldKartuGudangs = KartuGudang::where('user_id', $userId)
+                        ->whereDate('tanggal', $oldDate)
+                        ->where('uraian', $oldUraian)
+                        ->where('diterima', '>', 0)
+                        ->get();
+                }
+
+                $affectedBarangIds = $affectedBarangIds->merge($oldKartuGudangs->pluck('barang_id'));
+                KartuGudang::whereIn('id', $oldKartuGudangs->pluck('id'))->delete();
+            }
+
+            // 2. Hapus JournalItem lama
+            $entry->items()->delete();
+
+            // 3. Update JournalEntry & buat JournalItem baru sesuai jenis_keperluan
+            switch ($newType) {
+                case 'lain_lain':
+                    $this->applyLainLainUpdate($entry, $validated, $userId, $accounts);
+                    break;
+
+                case 'membayar_hutang':
+                    $this->applyMembayarHutangUpdate($entry, $validated, $userId, $accounts);
+                    break;
+
+                case 'membeli_barang':
+                    $this->applyMembeliBarangUpdate($entry, $validated, $userId, $accounts);
+                    if (! empty($validated['barang_dibeli'])) {
+                        $affectedBarangIds = $affectedBarangIds->merge($validated['barang_dibeli']);
+                    }
+                    break;
+
+                case 'kas_kecil':
+                    $this->applyKasKecilUpdate($entry, $validated, $userId, $accounts, $existingPengisianLog);
+                    break;
+            }
+
+            // 4. Jika sebelumnya kas_kecil tetapi sekarang bukan, hapus log & hitung ulang saldo KasKecil
+            if ($oldType === 'kas_kecil' && $newType !== 'kas_kecil') {
+                PengisianKasKecilLog::where('journal_entry_id', $entry->id)->delete();
+                $kasKecil = KasKecil::where('nomor_referensi', $entry->reference_number)
+                    ->where('user_id', $userId)
+                    ->first();
+
+                if ($kasKecil !== null) {
+                    $deletedId = $kasKecil->id;
+                    $kasKecil->delete();
+                    KasKecil::recalculateBalances($userId, $deletedId);
+                }
+            }
+
+            // 5. Hitung ulang saldo KartuGudang untuk semua barang yang terdampak
+            foreach ($affectedBarangIds->filter()->unique() as $barangId) {
+                KartuGudang::recalculateBalances((int) $barangId);
+            }
+
+            $entry->touch();
+        });
+    }
+
+    private function applyLainLainUpdate(JournalEntry $entry, array $data, int $userId, $accounts): void
+    {
+        $baseAmount = $data['jumlah_manual'] ?? 0;
+        $potongan = $data['potongan_pembelian'] ?? 0;
+        $biayaLain = $data['biaya_lain'] ?? 0;
+        $adminBank = $data['admin_bank'] ?? 0;
+        $totalKeluar = $data['jumlah'] ?? ($baseAmount - $potongan + $biayaLain + $adminBank);
+
+        $description = 'Pengeluaran lain-lain: '.$data['uraian_pengeluaran'];
+        if (($data['jenis_pengeluaran'] ?? 'tunai') !== 'tunai' && ! empty($data['nama_kreditur'])) {
+            $kreditur = Pelanggan::find($data['nama_kreditur']);
+            if ($kreditur) {
+                $description .= ' (berhutang kepada '.$kreditur->nama.')';
+            }
+        }
+
+        $entry->update([
+            'date' => $data['tanggal'],
+            'description' => $description,
+            'transaction_type' => 'lain_lain',
+        ]);
+
+        $expenseAccountId = $accounts['5202']->id ?? $accounts->firstWhere('category', 'expense')->id;
+
+        $entry->items()->create([
+            'user_id' => $userId,
+            'account_id' => $expenseAccountId,
+            'debit' => $baseAmount,
+            'credit' => 0,
+        ]);
+
+        if ($biayaLain > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => $biayaLain,
+                'credit' => 0,
+            ]);
+        }
+
+        if ($potongan > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => 0,
+                'credit' => $potongan,
+            ]);
+        }
+
+        if ($adminBank > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => $adminBank,
+                'credit' => 0,
+            ]);
+        }
+
+        if ($data['jenis_pengeluaran'] == 'tunai') {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $accounts['1101']->id,
+                'debit' => 0,
+                'credit' => $totalKeluar,
+            ]);
+        } else {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $accounts['2101']->id,
+                'sub_ledger_type' => Pelanggan::class,
+                'sub_ledger_id' => $data['nama_kreditur'],
+                'debit' => 0,
+                'credit' => $totalKeluar,
+            ]);
+        }
+    }
+
+    private function applyMembayarHutangUpdate(JournalEntry $entry, array $data, int $userId, $accounts): void
+    {
+        $jumlahBayar = $data['jumlah_manual'] ?? 0;
+        $adminBank = $data['admin_bank'] ?? 0;
+        $potongan = $data['potongan_pembelian'] ?? 0;
+        $biayaLain = $data['biaya_lain'] ?? 0;
+        $totalKeluar = $data['jumlah'] ?? ($jumlahBayar + $adminBank - $potongan + $biayaLain);
+
+        $hutangItem = JournalItem::findOrFail($data['hutang_id']);
+
+        $entry->update([
+            'date' => $data['tanggal'],
+            'description' => 'Pelunasan hutang - '.($hutangItem->subLedger->nama ?? 'Unknown').': '.$data['uraian_pengeluaran'],
+            'transaction_type' => 'membayar_hutang',
+        ]);
+
+        $entry->items()->create([
+            'user_id' => $userId,
+            'account_id' => $accounts['2101']->id,
+            'sub_ledger_type' => Pelanggan::class,
+            'sub_ledger_id' => $hutangItem->sub_ledger_id,
+            'debit' => $jumlahBayar,
+            'credit' => 0,
+        ]);
+
+        $expenseAccountId = $accounts['5202']->id ?? $accounts->firstWhere('category', 'expense')->id;
+
+        if ($adminBank + $biayaLain > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => $adminBank + $biayaLain,
+                'credit' => 0,
+            ]);
+        }
+
+        if ($potongan > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => 0,
+                'credit' => $potongan,
+            ]);
+        }
+
+        $entry->items()->create([
+            'user_id' => $userId,
+            'account_id' => $accounts['1101']->id,
+            'debit' => 0,
+            'credit' => $totalKeluar,
+        ]);
+    }
+
+    private function applyMembeliBarangUpdate(JournalEntry $entry, array $data, int $userId, $accounts): void
+    {
+        $potongan = $data['potongan_pembelian'] ?? 0;
+        $biayaLain = $data['biaya_lain'] ?? 0;
+        $adminBank = $data['admin_bank'] ?? 0;
+
+        $baseAmount = 0;
+        if (! empty($data['barang_dibeli'])) {
+            foreach ($data['barang_dibeli'] as $index => $barangId) {
+                $qty = $data['jumlah_barang_dibeli'][$index] ?? 0;
+                $barang = Barang::find($barangId);
+                $baseAmount += ($barang->harga_beli_per_unit ?? 0) * $qty;
+            }
+        }
+
+        $totalKeluar = $data['jumlah'] ?? ($baseAmount - $potongan + $biayaLain + $adminBank);
+
+        $description = 'Pembelian barang: '.$data['uraian_pengeluaran'];
+        if (($data['jenis_pengeluaran'] ?? 'tunai') !== 'tunai' && ! empty($data['nama_kreditur'])) {
+            $kreditur = Pelanggan::find($data['nama_kreditur']);
+            if ($kreditur) {
+                $description .= ' (Secara kredit kepada '.$kreditur->nama.')';
+            }
+        }
+
+        $entry->update([
+            'date' => $data['tanggal'],
+            'description' => $description,
+            'transaction_type' => 'membeli_barang',
+        ]);
+
+        $entry->items()->create([
+            'user_id' => $userId,
+            'account_id' => $accounts['1105']->id,
+            'debit' => $baseAmount,
+            'credit' => 0,
+        ]);
+
+        $expenseAccountId = $accounts['5202']->id ?? $accounts->firstWhere('category', 'expense')->id;
+
+        if ($biayaLain + $adminBank > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => $biayaLain + $adminBank,
+                'credit' => 0,
+            ]);
+        }
+
+        if ($potongan > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => 0,
+                'credit' => $potongan,
+            ]);
+        }
+
+        if ($data['jenis_pengeluaran'] == 'tunai') {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $accounts['1101']->id,
+                'debit' => 0,
+                'credit' => $totalKeluar,
+            ]);
+        } else {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $accounts['2101']->id,
+                'sub_ledger_type' => Pelanggan::class,
+                'sub_ledger_id' => $data['nama_kreditur'],
+                'debit' => 0,
+                'credit' => $totalKeluar,
+            ]);
+        }
+
+        $this->tambahBarangKeGudang($data, $userId, $entry->id);
+    }
+
+    private function applyKasKecilUpdate(
+        JournalEntry $entry,
+        array $data,
+        int $userId,
+        $accounts,
+        ?PengisianKasKecilLog $existingLog
+    ): void {
+        $baseAmount = $data['jumlah_manual'] ?? 0;
+        $potongan = $data['potongan_pembelian'] ?? 0;
+        $biayaLain = $data['biaya_lain'] ?? 0;
+        $adminBank = $data['admin_bank'] ?? 0;
+        $totalKeluar = $data['jumlah'] ?? ($baseAmount - $potongan + $biayaLain + $adminBank);
+
+        $entry->update([
+            'date' => $data['tanggal'],
+            'description' => 'Pengisian Kas Kecil: '.$data['uraian_pengeluaran'],
+            'transaction_type' => 'kas_kecil',
+        ]);
+
+        $entry->items()->create([
+            'user_id' => $userId,
+            'account_id' => $accounts['1102']->id,
+            'debit' => $baseAmount,
+            'credit' => 0,
+        ]);
+
+        $expenseAccountId = $accounts['5202']->id ?? $accounts->firstWhere('category', 'expense')->id;
+
+        if ($biayaLain + $adminBank > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => $biayaLain + $adminBank,
+                'credit' => 0,
+            ]);
+        }
+
+        if ($potongan > 0) {
+            $entry->items()->create([
+                'user_id' => $userId,
+                'account_id' => $expenseAccountId,
+                'debit' => 0,
+                'credit' => $potongan,
+            ]);
+        }
+
+        $entry->items()->create([
+            'user_id' => $userId,
+            'account_id' => $accounts['1101']->id,
+            'debit' => 0,
+            'credit' => $totalKeluar,
+        ]);
+
+        $kasKecil = $existingLog?->kasKecil
+            ?? KasKecil::where('nomor_referensi', $entry->reference_number)
+                ->where('user_id', $userId)
+                ->first();
+
+        if ($kasKecil !== null) {
+            $kasKecil->update([
+                'tanggal' => $data['tanggal'],
+                'penerimaan' => $baseAmount,
+            ]);
+
+            if ($existingLog !== null) {
+                $existingLog->update([
+                    'uraian' => 'Pengisian kas kecil: '.$data['uraian_pengeluaran'],
+                    'jumlah' => $baseAmount,
+                    'tanggal_transaksi' => $data['tanggal'],
+                ]);
+            }
+
+            KasKecil::recalculateBalances($userId, $kasKecil->id, true);
+        } else {
+            $latestKasKecil = KasKecil::where('user_id', $userId)->latest('id')->first();
+            $saldoAkhir = ($latestKasKecil->saldo_akhir ?? 0) + $baseAmount;
+
+            $kasKecil = KasKecil::create([
+                'user_id' => $userId,
+                'tanggal' => $data['tanggal'],
+                'nomor_referensi' => $entry->reference_number,
+                'penerimaan' => $baseAmount,
+                'pengeluaran' => 0,
+                'saldo_akhir' => $saldoAkhir,
+            ]);
+
+            PengisianKasKecilLog::create([
+                'journal_entry_id' => $entry->id,
+                'kas_kecil_id' => $kasKecil->id,
+                'uraian' => 'Pengisian kas kecil: '.$data['uraian_pengeluaran'],
+                'jumlah' => $baseAmount,
+                'tanggal_transaksi' => $data['tanggal'],
                 'user_id' => $userId,
             ]);
         }

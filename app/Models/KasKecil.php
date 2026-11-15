@@ -42,9 +42,9 @@ class KasKecil extends Model
     }
 
     /**
-     * Recalculate running balances of Petty Cash records for a user after a specific record is deleted.
+     * Recalculate running balances of Petty Cash records for a user after (or starting from) a specific record.
      */
-    public static function recalculateBalances(int $userId, int $afterId): void
+    public static function recalculateBalances(int $userId, int $afterId, bool $inclusive = false): void
     {
         $previousRecord = self::where('user_id', $userId)
             ->where('id', '<', $afterId)
@@ -56,8 +56,9 @@ class KasKecil extends Model
             $runningBalance = $previousRecord->saldo_akhir;
         }
 
+        $operator = $inclusive ? '>=' : '>';
         $subsequentRecords = self::where('user_id', $userId)
-            ->where('id', '>', $afterId)
+            ->where('id', $operator, $afterId)
             ->orderBy('id', 'asc')
             ->get();
 

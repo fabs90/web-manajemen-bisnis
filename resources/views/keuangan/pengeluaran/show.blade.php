@@ -84,10 +84,15 @@
             </div>
         @endif
         
-        <div class="mt-3">
+        <div class="mt-3 d-flex gap-2">
             <a href="{{ route('keuangan.pengeluaran.list') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
+            @if ($isEditable ?? false)
+                <a href="{{ route('keuangan.pengeluaran.edit', $entry->id) }}" class="btn btn-warning text-white">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
+            @endif
         </div>
     </div>
 </div>

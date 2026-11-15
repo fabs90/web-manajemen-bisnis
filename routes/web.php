@@ -115,10 +115,20 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'show',
         ])->name('keuangan.pendapatan.show');
 
+        Route::get('/pendapatan/{id}/edit', [
+            PendapatanController::class,
+            'edit',
+        ])->name('keuangan.pendapatan.edit');
+
         Route::post('/pendapatan', [
             PendapatanController::class,
             'store',
         ])->name('keuangan.pendapatan.store');
+
+        Route::put('/pendapatan/{id}', [
+            PendapatanController::class,
+            'update',
+        ])->name('keuangan.pendapatan.update');
 
         Route::delete('/pendapatan/{id}', [
             PendapatanController::class,
@@ -156,10 +166,20 @@ Route::middleware(['web', 'auth', 'ensureUserIsVerified', 'ensureProfileComplete
             'show',
         ])->name('keuangan.pengeluaran.show');
 
+        Route::get('/pengeluaran/{id}/edit', [
+            PengeluaranController::class,
+            'edit',
+        ])->name('keuangan.pengeluaran.edit');
+
         Route::post('/pengeluaran', [
             PengeluaranController::class,
             'store',
         ])->name('keuangan.pengeluaran.store');
+
+        Route::put('/pengeluaran/{id}', [
+            PengeluaranController::class,
+            'update',
+        ])->name('keuangan.pengeluaran.update');
 
         Route::delete('/pengeluaran/{id}', [
             PengeluaranController::class,

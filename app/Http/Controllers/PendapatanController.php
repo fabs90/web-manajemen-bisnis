@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PendapatanRequest;
+use App\Http\Requests\UpdatePendapatanRequest;
 use App\Models\Account;
 use App\Models\Barang;
 use App\Models\Faktur\FakturPenjualan;
@@ -54,8 +55,8 @@ class PendapatanController extends Controller
                 'agenda_perjalanan',
                 'pemesanan-barang',
             ])
-            ->with(['items.account'])
-            ->latest()
+            ->with(['items.account', 'kasir'])
+            ->latest('created_at')
             ->get();
 
         $allDatas = $journalEntries->map(function ($entry) use ($kasId, $pendapatanId, $piutangId, $potonganId) {
@@ -70,9 +71,13 @@ class PendapatanController extends Controller
             $piutangDagang = $piutangId ? ($entry->items->where('account_id', $piutangId)->sum('debit') + $entry->items->where('account_id', $piutangId)->sum('credit')) : 0;
             $potonganPenjualan = $potonganId ? $entry->items->where('account_id', $potonganId)->sum('debit') : 0;
 
+            $isEditable = $entry->kasir->isEmpty()
+                && ! str_starts_with((string) $entry->reference_number, 'KASIR-')
+                && $entry->transaction_type !== 'penjualan';
+
             return (object) [
                 'id' => $entry->id,
-                'tanggal' => $entry->created_at,
+                'tanggal' => $entry->date,
                 'uraian' => $entry->description,
                 'piutang_dagang' => $piutangDagang,
                 'penjualan_tunai' => $penjualanTunai,
@@ -80,6 +85,7 @@ class PendapatanController extends Controller
                 'potongan_penjualan' => $potonganPenjualan,
                 'lain_lain' => $isPendapatanLain ? $totalPenjualan : 0,
                 'uang_diterima' => $uangDiterima,
+                'is_editable' => $isEditable,
             ];
         });
 
@@ -296,10 +302,116 @@ class PendapatanController extends Controller
         $userId = auth()->id();
         $entry = JournalEntry::where('id', $id)
             ->where('user_id', $userId)
-            ->with(['items.account', 'items.subLedger', 'kartuGudang.barang'])
+            ->with(['items.account', 'items.subLedger', 'kartuGudang.barang', 'kasir'])
             ->firstOrFail();
 
-        return view('keuangan.pendapatan.show', compact('entry'));
+        $isEditable = $entry->kasir->isEmpty()
+            && ! str_starts_with((string) $entry->reference_number, 'KASIR-')
+            && $entry->transaction_type !== 'penjualan';
+
+        return view('keuangan.pendapatan.show', compact('entry', 'isEditable'));
+    }
+
+    public function edit(int $id)
+    {
+        $userId = auth()->id();
+        $entry = JournalEntry::where('id', $id)
+            ->where('user_id', $userId)
+            ->with(['items.account', 'items.subLedger', 'kasir'])
+            ->firstOrFail();
+
+        if ($entry->kasir->isNotEmpty() || str_starts_with((string) $entry->reference_number, 'KASIR-') || $entry->transaction_type === 'penjualan') {
+            return redirect()
+                ->route('keuangan.pendapatan.list')
+                ->with('error', 'Transaksi dari Kasir atau Faktur Penjualan tidak dapat diubah melalui menu Penerimaan Kas.');
+        }
+
+        $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
+        $piutangId = $accounts->has('1104') ? $accounts['1104']->id : null;
+        $pendapatanId = $accounts->has('4101') ? $accounts['4101']->id : null;
+
+        $piutangItem = $piutangId ? $entry->items->firstWhere('account_id', $piutangId) : null;
+        $jenisPendapatan = ($entry->transaction_type !== 'pendapatan_lain' && $piutangItem && (float) $piutangItem->credit > 0)
+            ? 'kredit'
+            : 'lain_lain';
+
+        $pendapatanItems = $pendapatanId ? $entry->items->where('account_id', $pendapatanId)->values() : collect();
+        $jumlah = 0;
+        $biayaLain = 0;
+        $jumlahKredit = 0;
+        $selectedPelangganId = null;
+
+        if ($jenisPendapatan === 'kredit') {
+            $jumlahKredit = (int) round((float) $piutangItem->credit);
+            $selectedPelangganId = $piutangItem->sub_ledger_id;
+            $biayaLain = (int) round((float) $pendapatanItems->sum('credit'));
+        } else {
+            $firstPendapatan = $pendapatanItems->first();
+            $jumlah = $firstPendapatan ? (int) round((float) $firstPendapatan->credit) : 0;
+            $biayaLain = $pendapatanItems->count() > 1
+                ? (int) round((float) $pendapatanItems->slice(1)->sum('credit'))
+                : 0;
+        }
+
+        $debitur = Pelanggan::where('user_id', $userId)
+            ->where('jenis', 'debitur')
+            ->orderBy('nama')
+            ->get();
+
+        $listPiutang = collect();
+        if ($piutangId) {
+            $activePiutang = JournalItem::where('user_id', $userId)
+                ->where('account_id', $piutangId)
+                ->where('journal_entry_id', '!=', $entry->id)
+                ->with(['journalEntry', 'subLedger'])
+                ->get()
+                ->groupBy('sub_ledger_id');
+
+            foreach ($activePiutang as $pelangganId => $items) {
+                $saldo = $items->sum('debit') - $items->sum('credit');
+                if ($saldo > 0) {
+                    $firstItem = $items->first();
+                    $listPiutang->push((object) [
+                        'kode' => $firstItem->id,
+                        'pelanggan_id' => $pelangganId,
+                        'pelanggan' => $firstItem->subLedger,
+                        'saldo' => $saldo,
+                    ]);
+                }
+            }
+        }
+
+        return view('keuangan.pendapatan.edit', compact(
+            'entry',
+            'jenisPendapatan',
+            'jumlah',
+            'biayaLain',
+            'jumlahKredit',
+            'selectedPelangganId',
+            'debitur',
+            'listPiutang'
+        ));
+    }
+
+    public function update(UpdatePendapatanRequest $request, int $id)
+    {
+        $userId = auth()->id();
+        $accounts = Account::where('user_id', $userId)->get()->keyBy('code');
+
+        DB::beginTransaction();
+        try {
+            $this->pendapatanService->updatePendapatan($request, $id, $userId, $accounts);
+
+            DB::commit();
+
+            return redirect()->route('keuangan.pendapatan.list')->with('success', 'Data penerimaan berhasil diperbarui');
+        } catch (\Exception $e) {
+            report($e);
+            DB::rollBack();
+            Log::error('Gagal memperbarui pendapatan: '.$e->getMessage());
+
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui: '.$e->getMessage());
+        }
     }
 
     public function createLain()
