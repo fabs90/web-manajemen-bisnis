@@ -272,7 +272,8 @@
                 <td class="text-center">16</td>
                 <td>Biaya Administrasi Bank</td>
                 <td></td>
-                <td class="text-right text-underline">Rp {{ number_format($biayaAdministrasiBank, 0, ',', '.') }} -</td>
+                <td class="text-right text-underline">Rp {{ number_format($biayaAdministrasiBank, 0, ',', '.') }} -
+                </td>
                 <td></td>
             </tr>
 
@@ -298,15 +299,10 @@
 
             {{-- 19. Pajak --}}
             @php
-                $userRole = $userProfile?->role ?? auth()->user()?->role ?? 'ukm';
+                $userRole = $userProfile?->role ?? (auth()->user()?->role ?? 'ukm');
                 $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
                 $isKoperasi = $userRole === 'koperasi';
-                $isOmzetTaxRole = $isUmkmOrNelayan || $isKoperasi;
-                $pajakLabel = $isOmzetTaxRole
-                    ? ($pajak > 0
-                        ? 'Pajak (0,5%)'
-                        : 'Pajak (0% - Bebas Pajak / PTKP)')
-                    : 'Pajak (15%)';
+                $pajakLabel = $pajak > 0 ? 'Pajak (0,5%)' : 'Pajak (0% - Bebas Pajak / PTKP)';
             @endphp
             <tr>
                 <td class="text-center">19</td>

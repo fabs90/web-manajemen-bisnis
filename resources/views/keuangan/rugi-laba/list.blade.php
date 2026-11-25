@@ -220,12 +220,7 @@
                             $userRole = auth()->user()?->role ?? 'ukm';
                             $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
                             $isKoperasi = $userRole === 'koperasi';
-                            $isOmzetTaxRole = $isUmkmOrNelayan || $isKoperasi;
-                            $pajakLabel = $isOmzetTaxRole
-                                ? ($pajak > 0
-                                    ? 'Pajak (0,5%)'
-                                    : 'Pajak (0% - Bebas Pajak / PTKP)')
-                                : 'Pajak (15%)';
+                            $pajakLabel = $pajak > 0 ? 'Pajak (0,5%)' : 'Pajak (0% - Bebas Pajak / PTKP)';
                         @endphp
                         <tr class="table-warning">
                             <td class="text-center">19</td>

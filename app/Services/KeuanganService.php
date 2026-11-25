@@ -14,30 +14,29 @@ use Illuminate\Support\Facades\Cache;
 
 class KeuanganService
 {
-    private const TAX_RATE = 0.15;
 
-    private const KOPERASI_TAX_RATE = 0.005;
+    private const OMZET_TAX_RATE = 0.005;
 
     private const KOPERASI_TAX_THRESHOLD = 4800000000;
 
     private const UMKM_NELAYAN_TAX_THRESHOLD = 500000000;
-
-    private const UMKM_NELAYAN_TAX_RATE = 0.005;
 
     /**
      * Hitung tarif pajak yang berlaku berdasarkan role dan omzet bruto periode.
      */
     public function getPajakRate(float $omzet, float $labaSebelumPajak = 0, string $userRole = 'ukm'): float
     {
-        if (in_array($userRole, ['ukm', 'nelayan'], true)) {
-            return $omzet > self::UMKM_NELAYAN_TAX_THRESHOLD ? self::UMKM_NELAYAN_TAX_RATE : 0.0;
+        $threshold = match ($userRole) {
+            'ukm', 'nelayan' => self::UMKM_NELAYAN_TAX_THRESHOLD,
+            'koperasi' => self::KOPERASI_TAX_THRESHOLD,
+            default => null,
+        };
+
+        if ($threshold === null) {
+            return 0.0;
         }
 
-        if ($userRole === 'koperasi') {
-            return $omzet > self::KOPERASI_TAX_THRESHOLD ? self::KOPERASI_TAX_RATE : 0.0;
-        }
-
-        return $labaSebelumPajak > 0 ? self::TAX_RATE : 0.0;
+        return $omzet > $threshold ? self::OMZET_TAX_RATE : 0.0;
     }
 
     /**
@@ -45,23 +44,9 @@ class KeuanganService
      */
     public function hitungPajak(float $omzet, float $labaSebelumPajak = 0, string $userRole = 'ukm'): float
     {
-        if (in_array($userRole, ['ukm', 'nelayan'], true)) {
-            if ($omzet > self::UMKM_NELAYAN_TAX_THRESHOLD) {
-                return $omzet * self::UMKM_NELAYAN_TAX_RATE;
-            }
+        $rate = $this->getPajakRate($omzet, $labaSebelumPajak, $userRole);
 
-            return 0.0;
-        }
-
-        if ($userRole === 'koperasi') {
-            if ($omzet > self::KOPERASI_TAX_THRESHOLD) {
-                return $omzet * self::KOPERASI_TAX_RATE;
-            }
-
-            return 0.0;
-        }
-
-        return $labaSebelumPajak > 0 ? $labaSebelumPajak * self::TAX_RATE : 0.0;
+        return $rate > 0 ? $omzet * $rate : 0.0;
     }
 
     public function hitungLabaRugi($startDate = null, $endDate = null, ?int $userId = null)
