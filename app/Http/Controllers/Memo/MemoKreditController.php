@@ -56,6 +56,7 @@ class MemoKreditController extends Controller
     public function createPenjual($sppId)
     {
         $spp = SuratPesananPembelian::with('supplier', 'pesananPembelianDetail', 'pesananPembelianDetail.barang')
+            ->where('user_id', auth()->id())
             ->findOrFail($sppId);
 
         return view('administrasi.surat.memo-kredit.create-penjual', compact('spp'));
@@ -101,7 +102,9 @@ class MemoKreditController extends Controller
             'suratPengirimanBarang',
             'suratPengirimanBarang.pesananPenjualan',
             'suratPengirimanBarang.suratPengirimanBarangDetail.pesananPenjualanDetail'
-        )->findOrFail($fakturId);
+        )
+            ->where('user_id', auth()->id())
+            ->findOrFail($fakturId);
 
         return view('administrasi.surat.memo-kredit.create', compact('faktur'));
     }

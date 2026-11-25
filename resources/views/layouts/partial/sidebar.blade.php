@@ -166,7 +166,7 @@
                 <li class="sidebar-item {{ Request::is('dashboard/printer*') ? 'active' : '' }}">
                     <a href="{{ route('printer.index') }}" class="sidebar-link">
                         <i class="bi bi-printer"></i>
-                        <span>Printer Thermal</span>
+                        <span>Printer</span>
                     </a>
                 </li>
 

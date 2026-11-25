@@ -79,7 +79,7 @@ class SuratMasukController extends Controller
     {
         $surat = AgendaSuratMasuk::where('user_id', auth()->id())
             ->where('id', $id)
-            ->first();
+            ->firstOrFail();
 
         return view(
             'administrasi.surat.surat-masuk.create-disposisi',
@@ -175,11 +175,19 @@ class SuratMasukController extends Controller
         DB::beginTransaction();
         try {
             $agendaSuratMasuk = DB::table('agenda_surat_masuk')->where('user_id', auth()->id())->where('id', $id)->first();
+            if (! $agendaSuratMasuk) {
+                DB::rollBack();
+
+                return redirect()
+                    ->route('administrasi.surat-masuk.index')
+                    ->with('error', 'Agenda surat masuk tidak ditemukan.');
+            }
+
             if ($agendaSuratMasuk->file_surat) {
                 $this->fileUploadService->delete($agendaSuratMasuk->file_surat);
-                if ($agendaSuratMasuk->ttd_pimpinan) {
-                    $this->fileUploadService->delete($agendaSuratMasuk->ttd_pimpinan);
-                }
+            }
+            if ($agendaSuratMasuk->ttd_pimpinan) {
+                $this->fileUploadService->delete($agendaSuratMasuk->ttd_pimpinan);
             }
             DB::table('agenda_surat_masuk')->where('user_id', auth()->id())->where('id', $id)->delete();
             DB::commit();

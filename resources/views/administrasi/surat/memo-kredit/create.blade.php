@@ -19,6 +19,19 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+
+        {{-- Alert Validasi --}}
+        @if ($errors->any())
+            <div class="alert alert-warning alert-dismissible fade show">
+                <strong>Perhatian!</strong> Harap periksa kembali data yang diinput:
+                <ul class="mb-0 mt-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
         <div class="card p-4 shadow">
             <h5 class="text-center fw-bold mb-4">MEMO KREDIT</h5>
             <form action="{{ route('administrasi.memo-kredit.store') }}" method="POST">
@@ -368,14 +381,18 @@
 
         addBtn.addEventListener('click', () => {
             let tbody = document.querySelector('#table-retur tbody');
+            let existingSelected = [...document.querySelectorAll('select[name="barang_id[]"]')].map(s => s.value);
             let clone = tbody.rows[0].cloneNode(true);
 
             clone.querySelectorAll('input').forEach(input => input.value = "");
-            clone.querySelector('select').selectedIndex = 0;
+
+            let newSelect = clone.querySelector('select');
+            let firstAvailableIndex = [...newSelect.options].findIndex(opt => !existingSelected.includes(opt.value));
+            newSelect.selectedIndex = firstAvailableIndex >= 0 ? firstAvailableIndex : 0;
 
             tbody.appendChild(clone);
 
-            autoFillPrice(clone.querySelector('select')); // ⬅️ NEW!
+            autoFillPrice(newSelect);
             updateRowNumber();
             updateSelectOptions();
         });

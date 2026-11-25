@@ -1,6 +1,6 @@
 @extends('layouts.partial.layouts')
 @section('page-title', 'Pengaturan Printer | TRANSDIGITAL')
-@section('section-heading', 'Pengaturan Printer Thermal')
+@section('section-heading', 'Pengaturan Printer')
 @section('section-row')
 
     <div class="row">

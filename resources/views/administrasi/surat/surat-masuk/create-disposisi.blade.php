@@ -141,7 +141,7 @@
 
 @endsection
 
-@push('scripts')
+@push('script')
     <script>
         @if (session('error'))
             Swal.fire({

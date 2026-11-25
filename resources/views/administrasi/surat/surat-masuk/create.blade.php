@@ -6,6 +6,18 @@
 @section('section-row')
 
     <div class="container">
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Perhatian!</strong> Terjadi kesalahan pada input:
+                <ul class="mb-0 mt-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <div class="card mb-4">
             <div class="card-header fw-bold">
                 <div class="d-flex justify-content-between align-items-center">
@@ -68,35 +80,6 @@
 @endsection
 @push('script')
     <script>
-        $('.table-agenda').DataTable({
-            paging: true,
-            pageLength: 10,
-            ordering: true,
-            responsive: false,
-            info: false,
-            language: {
-                emptyTable: "Tidak ada data untuk ditampilkan",
-                search: "Cari:"
-            }
-        });
-
-        function confirmDelete(id) {
-            Swal.fire({
-                title: 'Yakin ingin menghapus?',
-                text: "Data surat akan dihapus permanen!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('delete-form-' + id).submit();
-                }
-            });
-        }
-
         // -----------------------------
         // SweetAlert feedback dari session
         // -----------------------------
