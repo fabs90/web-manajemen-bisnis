@@ -22,7 +22,8 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($entries as $item)
+            @if (count($entries ?? []) > 0)
+                @foreach($entries as $item)
                 <tr>
                     <td><strong>{{ $item->reference_number }}</strong></td>
                     <td>{{ $item->date->format('d/m/Y') }}</td>
@@ -43,13 +44,14 @@
                         </form>
                     </td>
                 </tr>
-            @empty
+                @endforeach
+            @else
                 <tr>
                     <td colspan="8" class="text-center text-muted py-3">
                         <em>Belum ada data Neraca Awal.</em>
                     </td>
                 </tr>
-            @endforelse
+            @endif
         </tbody>
     </table>
 

@@ -8,7 +8,8 @@
         <!-- Summary and Action Button -->
         <div class="row mb-4">
             <div class="col-md-12 d-flex justify-content-between align-items-center">
-                <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#createFormCollapse" aria-expanded="false" aria-controls="createFormCollapse">
+                <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#createFormCollapse" aria-expanded="false" aria-controls="createFormCollapse">
                     <i class="bi bi-plus-circle me-1"></i> Tambah Data Baru
                 </button>
             </div>
@@ -18,7 +19,8 @@
         <div class="collapse {{ $errors->any() ? 'show' : '' }} mb-4" id="createFormCollapse">
             <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0 small text-uppercase text-white fw-bold"><i class="bi bi-pencil-square me-2"></i>Form Tambah Debitur/Kreditur</h5>
+                    <h5 class="mb-0 small text-uppercase text-white fw-bold"><i class="bi bi-pencil-square me-2"></i>Form
+                        Tambah Debitur/Kreditur</h5>
                 </div>
                 <div class="card-body p-4">
                     <form action="{{ route('debitur-kreditur.store') }}" method="post" id="createForm">
@@ -41,32 +43,43 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="nama" class="form-label fw-bold small">Nama Perusahaan/Perorangan <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama perusahaan/perorangan" required value="{{ old('nama') }}">
+                                <label for="nama" class="form-label fw-bold small">Nama Perusahaan/Perorangan <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nama" name="nama"
+                                    placeholder="Masukkan nama perusahaan/perorangan" required value="{{ old('nama') }}">
                             </div>
                             <div class="col-md-6">
-                                <label for="jenis" class="form-label fw-bold small">Jenis <span class="text-danger">*</span></label>
+                                <label for="jenis" class="form-label fw-bold small">Jenis <span
+                                        class="text-danger">*</span></label>
                                 <select class="form-select" id="jenis" name="jenis" required>
-                                    <option value="debitur" {{ old('jenis') == 'debitur' ? 'selected' : '' }}>Debitur (Orang yang berhutang ke kita / Pelanggan)</option>
-                                    <option value="kreditur" {{ old('jenis') == 'kreditur' ? 'selected' : '' }}>Kreditur (Tempat kita berhutang / Supplier)</option>
+                                    <option value="debitur" {{ old('jenis') == 'debitur' ? 'selected' : '' }}>Debitur (Orang
+                                        yang berhutang ke kita / Pelanggan)</option>
+                                    <option value="kreditur" {{ old('jenis') == 'kreditur' ? 'selected' : '' }}>Kreditur
+                                        (Tempat kita berhutang / Supplier)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="kontak" class="form-label fw-bold small">Nomor Telepon/WhatsApp <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="kontak" name="kontak" placeholder="0812xxxx" required value="{{ old('kontak') }}">
+                                <label for="kontak" class="form-label fw-bold small">Nomor Telepon/WhatsApp <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="kontak" name="kontak"
+                                    placeholder="0812xxxx" required value="{{ old('kontak') }}">
                             </div>
                             <div class="col-md-6">
-                                <label for="email" class="form-label fw-bold small">Alamat Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="nama@email.com" required value="{{ old('email') }}">
+                                <label for="email" class="form-label fw-bold small">Alamat Email <span
+                                        class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    placeholder="nama@email.com" required value="{{ old('email') }}">
                             </div>
                             <div class="col-12">
-                                <label for="alamat" class="form-label fw-bold small">Alamat Lengkap <span class="text-danger">*</span></label>
+                                <label for="alamat" class="form-label fw-bold small">Alamat Lengkap <span
+                                        class="text-danger">*</span></label>
                                 <textarea class="form-control" id="alamat" name="alamat" rows="2" placeholder="Alamat lengkap..." required>{{ old('alamat') }}</textarea>
                             </div>
                             <div class="col-12 text-end mt-4">
                                 <button type="reset" class="btn btn-light px-4 me-2">Reset</button>
                                 <button type="submit" class="btn btn-primary px-5" id="btnSubmit">
-                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status"
+                                        aria-hidden="true"></span>
                                     <span class="btn-text"><i class="bi bi-check-circle me-1"></i> Simpan Data</span>
                                 </button>
                             </div>
@@ -91,46 +104,45 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($pelanggan as $item)
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold text-success">{{ $item->nama }}</div>
-                                        <small class="text-muted d-block text-truncate" style="max-width: 200px;">{{ $item->alamat }}</small>
-                                    </td>
-                                    <td>{{ $item->kontak }}</td>
-                                    <td>{{ $item->email }}</td>
-                                    <td>
-                                        @if ($item->jenis == 'debitur')
-                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill">
-                                                <i class="bi bi-person-up me-1"></i> Debitur
-                                            </span>
-                                        @else
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
-                                                <i class="bi bi-person-down me-1"></i> Kreditur
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group shadow-sm">
-                                            <form action="{{ route('debitur-kreditur.destroy', $item->id) }}" method="POST" class="d-inline"
-                                                onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-outline-danger btn-sm border-0" title="Hapus">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
-                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                        Belum ada data debitur atau kreditur.
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @if (count($pelanggan ?? []) > 0)
+                                @foreach ($pelanggan as $item)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-success">{{ $item->nama }}</div>
+                                            <small class="text-muted d-block text-truncate"
+                                                style="max-width: 200px;">{{ $item->alamat }}</small>
+                                        </td>
+                                        <td>{{ $item->kontak }}</td>
+                                        <td>{{ $item->email }}</td>
+                                        <td>
+                                            @if ($item->jenis == 'debitur')
+                                                <span
+                                                    class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-person-up me-1"></i> Debitur
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-person-down me-1"></i> Kreditur
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group shadow-sm">
+                                                <form action="{{ route('debitur-kreditur.destroy', $item->id) }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-outline-danger btn-sm border-0" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -146,6 +158,9 @@
                 searching: true,
                 paging: true,
                 responsive: true,
+                language: {
+                    emptyTable: '<div class="py-4 text-muted">Belum ada data debitur atau kreditur.</div>',
+                },
             });
 
             // Loading button on submit

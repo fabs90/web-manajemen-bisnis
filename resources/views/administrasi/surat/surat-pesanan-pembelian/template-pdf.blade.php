@@ -151,7 +151,8 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($data->pesananPembelianDetail as $detail)
+            @if (count($data->pesananPembelianDetail ?? []) > 0)
+                @foreach($data->pesananPembelianDetail as $detail)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td class="text-center">{{ $detail->kuantitas }} {{ $detail->satuan ?? '' }}</td>
@@ -159,11 +160,12 @@
                     <td class="text-right">Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($detail->total, 0, ',', '.') }}</td>
                 </tr>
-            @empty
+                @endforeach
+            @else
                 <tr>
                     <td colspan="5" class="text-center">Tidak ada item</td>
                 </tr>
-            @endforelse
+            @endif
 
             {{-- Baris kosong tetap memiliki border karena CSS di atas --}}
             @for ($i = count($data->pesananPembelianDetail) + 1; $i <= 5; $i++)

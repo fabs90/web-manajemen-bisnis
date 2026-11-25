@@ -45,7 +45,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($barang as $item)
+                        @if (count($barang ?? []) > 0)
+                            @foreach ($barang as $item)
                             @php
                                 $saldoUnit = $item->saldo_akhir ?? 0;
                             @endphp
@@ -81,14 +82,15 @@
                                     </div>
                                 </td>
                             </tr>
-                        @empty
+                            @endforeach
+                        @else
                             <tr>
                                 <td colspan="8" class="text-center py-4 text-muted">
                                     <em>Belum ada hasil tangkapan yang terdaftar. Silakan tambahkan hasil tangkapan terlebih
                                         dahulu.</em>
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>

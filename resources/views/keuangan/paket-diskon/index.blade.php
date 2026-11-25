@@ -31,7 +31,8 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($paketDiskons as $diskon)
+                @if (count($paketDiskons ?? []) > 0)
+                    @foreach ($paketDiskons as $diskon)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td class="fw-bold">{{ $diskon->nama_paket }}</td>
@@ -76,11 +77,12 @@
                             </form>
                         </td>
                     </tr>
-                @empty
+                    @endforeach
+                @else
                     <tr>
                         <td colspan="7" class="text-center text-muted">Belum ada paket diskon yang dibuat.</td>
                     </tr>
-                @endforelse
+                @endif
             </tbody>
         </table>
     </div>

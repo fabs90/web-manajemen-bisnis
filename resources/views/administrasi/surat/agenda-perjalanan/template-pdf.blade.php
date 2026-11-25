@@ -232,17 +232,19 @@
             <td>Telepon</td>
             <td>Jenis</td>
         </tr>
-        @forelse($agendaPerjalanan->agendaPerjalananKontak as $kontak)
+        @if (count($agendaPerjalanan->agendaPerjalananKontak ?? []) > 0)
+            @foreach($agendaPerjalanan->agendaPerjalananKontak as $kontak)
             <tr>
                 <td class="text-center">{{ $kontak->nama ?? '-' }}</td>
                 <td class="text-center">{{ $kontak->telepon ?? '-' }}</td>
                 <td class="text-center">{{ $kontak->jenis ?? '-' }}</td>
             </tr>
-        @empty
+            @endforeach
+        @else
             <tr>
                 <td colspan="3" class="text-center">Tidak ada data kontak.</td>
             </tr>
-        @endforelse
+        @endif
     </table>
 
     {{-- RINCIAN BIAYA --}}

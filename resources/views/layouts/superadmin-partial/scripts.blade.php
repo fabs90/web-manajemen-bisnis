@@ -7,7 +7,7 @@
 <script src="{{ asset('datatables/datatables.min.js') }}"></script>
 <script src="{{ asset('select2/select2.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.10.5"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.all.min.js') }}"></script>
 <script src="{{ asset('dist/assets/rupiah-helper.js') }}"></script>
 @stack('script')
 </body>

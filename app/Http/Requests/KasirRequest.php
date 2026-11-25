@@ -23,7 +23,7 @@ class KasirRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $grandTotal = $this->has('grand_total')
-            ? (float) str_replace(['Rp', '.', ' '], '', (string) $this->grand_total)
+            ? $this->parseNominal($this->grand_total)
             : 0.0;
 
         $jenisPembayaran = $this->filled('jenis_pembayaran_id')
@@ -34,7 +34,7 @@ class KasirRequest extends FormRequest
 
         if ($isNonTunai) {
             $uangBayar = $this->filled('uang_bayar')
-                ? (float) str_replace(['Rp', '.', ' '], '', (string) $this->uang_bayar)
+                ? $this->parseNominal($this->uang_bayar)
                 : $grandTotal;
 
             $this->merge([
@@ -46,13 +46,27 @@ class KasirRequest extends FormRequest
             $this->merge([
                 'grand_total' => $grandTotal,
                 'uang_bayar' => $this->filled('uang_bayar')
-                    ? (float) str_replace(['Rp', '.', ' '], '', (string) $this->uang_bayar)
+                    ? $this->parseNominal($this->uang_bayar)
                     : null,
                 'uang_kembalian' => $this->filled('uang_kembalian')
-                    ? (float) str_replace(['Rp', '.', ' '], '', (string) $this->uang_kembalian)
+                    ? $this->parseNominal($this->uang_kembalian)
                     : null,
             ]);
         }
+    }
+
+    private function parseNominal(mixed $value): float
+    {
+        $stringValue = trim((string) $value);
+        if ($stringValue === '') {
+            return 0.0;
+        }
+
+        if (is_numeric($stringValue)) {
+            return (float) $stringValue;
+        }
+
+        return (float) str_replace(['Rp', '.', ' '], '', $stringValue);
     }
 
     /**

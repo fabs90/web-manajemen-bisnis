@@ -31,7 +31,8 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($barang as $index => $item)
+                @if (count($barang ?? []) > 0)
+                    @foreach($barang as $index => $item)
                     <tr>
                         <td>{{ $item->kode_barang }}</td>
                         <td><strong>{{ $item->nama }}</strong></td>
@@ -55,13 +56,14 @@
                             </form>
                         </td>
                     </tr>
-                @empty
+                    @endforeach
+                @else
                     <tr>
                         <td colspan="8" class="text-center text-muted py-3">
                             <em>Tidak ada data barang.</em>
                         </td>
                     </tr>
-                @endforelse
+                @endif
             </tbody>
                     </table>
                 </div>

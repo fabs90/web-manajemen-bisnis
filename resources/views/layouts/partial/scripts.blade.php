@@ -11,9 +11,7 @@
         <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.10.5"
             integrity="sha384-+xRXcGmExqvIzpl6UBfbrBkXyyxIDFnxQtfyoOiXSx0/ri19w6ifNhXjPLMxLwXM" crossorigin="anonymous">
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-            integrity="sha384-nLoOnA/BDh8A/jxqtckg4DumuCGOBYUnNJLZdQz/zfYNp3wcjGSoWTAzgko06G/2" crossorigin="anonymous">
-        </script>
+        <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.all.min.js') }}"></script>
         <script src="{{ asset('dist/assets/rupiah-helper.js') }}"></script>
         <script src="{{ asset('js/sidebar-dashboard.js') }}"></script>
         <script src="{{ asset('js/kasir.js') }}"></script>

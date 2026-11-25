@@ -201,7 +201,8 @@
                                                                 }
                                                             }
                                                         @endphp
-                                                        @forelse($details as $detail)
+                                                        @if (count($details ?? []) > 0)
+                                                            @foreach($details as $detail)
                                                             @php
                                                                 $harga = $detail->harga ?? 0;
                                                                 $subtotal =
@@ -214,12 +215,13 @@
                                                                 <td>Rp {{ number_format($harga, 0, ',', '.') }}</td>
                                                                 <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                                                             </tr>
-                                                        @empty
+                                                            @endforeach
+                                                        @else
                                                             <tr>
                                                                 <td colspan="4" class="text-center">Tidak ada data
                                                                     barang.</td>
                                                             </tr>
-                                                        @endforelse
+                                                        @endif
                                                     </tbody>
                                                     <tfoot>
                                                         <tr>

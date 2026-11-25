@@ -117,7 +117,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($barang->kartuGudang as $kartu)
+                        @if (count($barang->kartuGudang ?? []) > 0)
+                            @foreach ($barang->kartuGudang as $kartu)
                             @php
                                 $formattedKemas = $kartu->formatSaldoPerkemasan($barang->jumlah_unit_per_kemasan);
                             @endphp
@@ -162,13 +163,14 @@
                                     </form>
                                 </td>
                             </tr>
-                        @empty
+                            @endforeach
+                        @else
                             <tr>
                                 <td colspan="8" class="text-center py-4 text-muted">
                                     <em>Belum ada mutasi kartu gudang untuk barang ini.</em>
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>

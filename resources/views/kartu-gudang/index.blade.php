@@ -45,7 +45,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($barang as $item)
+                        @if (count($barang ?? []) > 0)
+                            @foreach ($barang as $item)
                             @php
                                 $saldoUnit = $item->saldo_akhir ?? 0;
                                 $saldoKemasFormatted = $item->formatSaldoPerkemasan($saldoUnit);
@@ -93,13 +94,14 @@
                                     </div>
                                 </td>
                             </tr>
-                        @empty
+                            @endforeach
+                        @else
                             <tr>
                                 <td colspan="10" class="text-center py-4 text-muted">
                                     <em>Belum ada barang yang terdaftar. Silakan tambahkan barang terlebih dahulu.</em>
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>

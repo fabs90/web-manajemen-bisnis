@@ -290,7 +290,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (diskonTotal > subtotal) diskonTotal = subtotal;
 
-        const grandTotal = Math.max(0, subtotal - diskonTotal);
+        diskonTotal = Math.round(diskonTotal);
+        const grandTotal = Math.max(0, Math.round(subtotal - diskonTotal));
 
         const diskonBox = document.getElementById('diskon-box');
         const diskonTotalVal = document.getElementById('diskon-total-value');
@@ -305,6 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function hitungKembalian() {
         const total = parseFloat(grandTotalInput?.value) || 0;
+        const hasItemsInCart = !!(keranjangTable && keranjangTable.querySelectorAll('tr').length > 0);
         const nonTunai = isMetodeNonTunai();
 
         if (nonTunai) {
@@ -324,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 inputKembalianValue.value = 0;
             }
             if (btnSimpan) {
-                btnSimpan.disabled = !(total > 0 && selectJenisPembayaran?.value);
+                btnSimpan.disabled = !(hasItemsInCart && total >= 0 && selectJenisPembayaran?.value);
             }
             return;
         }
@@ -350,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 inputKembalian.value = 'Rp ' + selisih.toLocaleString('id-ID');
                 inputKembalianValue.value = selisih;
                 if (btnSimpan) {
-                    btnSimpan.disabled = !(total > 0 && bayar >= total && selectJenisPembayaran?.value);
+                    btnSimpan.disabled = !(hasItemsInCart && total >= 0 && bayar >= total && selectJenisPembayaran?.value);
                 }
             }
         }

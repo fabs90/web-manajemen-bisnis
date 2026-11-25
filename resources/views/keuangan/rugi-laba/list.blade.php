@@ -219,7 +219,9 @@
                         @php
                             $userRole = auth()->user()?->role ?? 'ukm';
                             $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
-                            $pajakLabel = $isUmkmOrNelayan
+                            $isKoperasi = $userRole === 'koperasi';
+                            $isOmzetTaxRole = $isUmkmOrNelayan || $isKoperasi;
+                            $pajakLabel = $isOmzetTaxRole
                                 ? ($pajak > 0
                                     ? 'Pajak (0,5%)'
                                     : 'Pajak (0% - Bebas Pajak / PTKP)')
@@ -232,6 +234,9 @@
                                 @if ($isUmkmOrNelayan)
                                     <br><small class="text-muted">Keterangan: Omzet &le; Rp500.000.000 tidak dikenakan pajak
                                         (0% / bebas pajak), omzet &gt; Rp500.000.000 dikenakan pajak 0,5%.</small>
+                                @elseif ($isKoperasi)
+                                    <br><small class="text-muted">Keterangan: Omzet &le; Rp4.800.000.000 tidak dikenakan pajak
+                                        (0% / bebas pajak), omzet &gt; Rp4.800.000.000 dikenakan pajak 0,5%.</small>
                                 @endif
                             </td>
                             <td></td>

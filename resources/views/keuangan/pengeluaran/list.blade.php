@@ -106,7 +106,8 @@
     </div>
 
     <h5 class="mt-5 mb-3">Semua Data Hutang Perusahaan</h5>
-    @forelse ($dataHutang as $pelangganId => $items)
+    @if (count($dataHutang ?? []) > 0)
+        @foreach ($dataHutang as $pelangganId => $items)
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-secondary text-white fw-bold">
                 {{ $items->first()->pelanggan->nama ?? 'Tidak diketahui' }}
@@ -190,7 +191,8 @@
                                                                                     });
                                                                             }
                                                                         @endphp
-                                                                        @forelse($details as $detail)
+                                                                        @if (count($details ?? []) > 0)
+                                                                            @foreach($details as $detail)
                                                                             @php
                                                                                 $hargaBeli = $detail->harga ?? 0;
                                                                                 $subtotal =
@@ -207,12 +209,13 @@
                                                                                     {{ number_format($subtotal, 0, ',', '.') }}
                                                                                 </td>
                                                                             </tr>
-                                                                        @empty
+                                                                            @endforeach
+                                                                        @else
                                                                             <tr>
                                                                                 <td colspan="4" class="text-center">Tidak
                                                                                     ada data barang.</td>
                                                                             </tr>
-                                                                        @endforelse
+                                                                        @endif
                                                                     </tbody>
                                                                     <tfoot>
                                                                         <tr>
@@ -265,11 +268,12 @@
                 </div>
             </div>
         </div>
-        @empty
-            <div class="alert alert-secondary text-center">
-                <em>Tidak ada data hutang.</em>
-            </div>
-        @endforelse
+        @endforeach
+    @else
+        <div class="alert alert-secondary text-center">
+            <em>Tidak ada data hutang.</em>
+        </div>
+    @endif
 
     @endsection
     @push('script')

@@ -127,14 +127,20 @@ test('neraca akhir menghitung pajak berdasarkan omzet tahun pajak berjalan tanpa
         ->and($neraca['totalPasiva'])->toBe($neraca['totalAktiva']);
 })->with(['ukm', 'nelayan']);
 
-test('role koperasi tetap menggunakan tarif pajak 15 persen dari laba sebelum pajak', function () {
+test('perhitungan pajak koperasi sesuai skenario batas omzet Rp4.800.000.000', function (float $omzet, float $expectedRate, float $expectedTax) {
     $user = createVerifiedUserWithRole('koperasi');
-    recordRevenueJournal($user, 100000000.0, now()->format('Y-m-d'), 'INV-KOP-001');
+    recordRevenueJournal($user, $omzet, now()->format('Y-m-d'), 'INV-KOP-001');
 
     $keuangan = app(KeuanganService::class);
     $labaRugi = $keuangan->hitungLabaRugi(null, null, $user->id);
 
-    expect($labaRugi['pajakRate'])->toBe(0.15)
-        ->and($labaRugi['pajak'])->toBe(15000000.0)
-        ->and($labaRugi['labaSetelahPajak'])->toBe(85000000.0);
-});
+    expect($labaRugi['omzet'])->toBe($omzet)
+        ->and($labaRugi['pajakRate'])->toBe($expectedRate)
+        ->and($labaRugi['pajak'])->toBe($expectedTax)
+        ->and($labaRugi['labaSetelahPajak'])->toBe($labaRugi['labaSebelumPajak'] - $expectedTax);
+})->with([
+    'koperasi omzet 100jt' => [100000000.0, 0.0, 0.0],
+    'koperasi omzet 4,8M' => [4800000000.0, 0.0, 0.0],
+    'koperasi omzet 4,8M + 1' => [4800000001.0, 0.005, 24000000.005],
+    'koperasi omzet 5M' => [5000000000.0, 0.005, 25000000.0],
+]);

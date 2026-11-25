@@ -174,6 +174,17 @@ class DefaultAccountSeeder extends Seeder
             ],
             [
                 'user_id' => $userId,
+                'code' => '4102',
+                'name' => 'Potongan Penjualan',
+                'category' => 'revenue',
+                'sub_category' => null,
+                'normal_balance' => 'debit',
+                'requires_sub_ledger' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'user_id' => $userId,
                 'code' => '5101',
                 'name' => 'Harga Pokok Penjualan (HPP)',
                 'category' => 'expense',

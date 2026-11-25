@@ -56,13 +56,17 @@
                         <td class="text-end">Rp {{ number_format($saldoHutang, 0, ',', '.') }}</td>
                     </tr>
                     @php
-                        $isUmkmOrNelayan = in_array(auth()->user()?->role ?? 'ukm', ['ukm', 'nelayan'], true);
+                        $userRole = auth()->user()?->role ?? 'ukm';
+                        $isUmkmOrNelayan = in_array($userRole, ['ukm', 'nelayan'], true);
+                        $isKoperasi = $userRole === 'koperasi';
                     @endphp
                     <tr>
                         <td>
                             Pajak
                             @if ($isUmkmOrNelayan)
                                 <br><small class="text-muted">Omzet &le; Rp500.000.000 tidak dikenakan pajak (0%), omzet &gt; Rp500.000.000 dikenakan 0,5%.</small>
+                            @elseif ($isKoperasi)
+                                <br><small class="text-muted">Omzet &le; Rp4.800.000.000 tidak dikenakan pajak (0%), omzet &gt; Rp4.800.000.000 dikenakan 0,5%.</small>
                             @endif
                         </td>
                         <td class="text-end">Rp {{ number_format($pajak, 0, ',', '.') }}</td>

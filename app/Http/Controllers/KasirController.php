@@ -69,7 +69,7 @@ class KasirController extends Controller
             }
 
             if ($request->diskon_total > 0 && ! isset($accounts['4102'])) {
-                throw new \Exception('Akun Potongan Penjualan (4102) tidak ditemukan.');
+                $accounts['4102'] = $this->ensurePotonganPenjualanAccount($userId);
             }
 
             // Jurnal Entri
@@ -322,7 +322,7 @@ class KasirController extends Controller
             }
 
             if ($request->diskon_total > 0 && ! isset($accounts['4102'])) {
-                throw new \Exception('Akun Potongan Penjualan (4102) tidak ditemukan.');
+                $accounts['4102'] = $this->ensurePotonganPenjualanAccount($userId);
             }
 
             $oldKartuGudangs = KartuGudang::where('journal_entry_id', $entry->id)->get();
@@ -507,5 +507,17 @@ class KasirController extends Controller
                 ->back()
                 ->with('error', 'Terjadi Error: '.$e->getMessage());
         }
+    }
+
+    private function ensurePotonganPenjualanAccount(int $userId): Account
+    {
+        return Account::firstOrCreate([
+            'user_id' => $userId,
+            'code' => '4102',
+        ], [
+            'name' => 'Potongan Penjualan',
+            'category' => 'revenue',
+            'normal_balance' => 'debit',
+        ]);
     }
 }

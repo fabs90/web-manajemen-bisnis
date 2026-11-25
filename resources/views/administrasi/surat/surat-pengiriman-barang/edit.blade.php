@@ -146,7 +146,8 @@
                                 </tr>
                             </thead>
                             <tbody id="tabel-barang">
-                                @forelse ($dataSpb->suratPengirimanBarangDetail as $i => $detail)
+                                @if (count($dataSpb->suratPengirimanBarangDetail ?? []) > 0)
+                                    @foreach ($dataSpb->suratPengirimanBarangDetail as $i => $detail)
                                     @php
                                         $sppDetail = $detail->pesananPenjualanDetail ?? $detail->pesananPembelianDetail;
                                         $kuantitasDipesan = $sppDetail->kuantitas ?? 0;
@@ -181,13 +182,14 @@
                                                 value="{{ old('items.' . $i . '.keterangan', $detail->keterangan) }}">
                                         </td>
                                     </tr>
-                                @empty
+                                    @endforeach
+                                @else
                                     <tr>
                                         <td colspan="5" class="text-center text-muted fst-italic">
                                             Tidak ada detail barang.
                                         </td>
                                     </tr>
-                                @endforelse
+                                @endif
                             </tbody>
                         </table>
                     </div>
