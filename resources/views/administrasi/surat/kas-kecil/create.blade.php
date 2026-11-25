@@ -26,7 +26,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
-        <form action="{{ route('administrasi.kas-kecil.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="form-kas-kecil" action="{{ route('administrasi.kas-kecil.store') }}" method="POST"
+            enctype="multipart/form-data">
             @csrf
             <h4 class="text-center mb-4"><strong>FORMULIR PERMINTAAN KAS KECIL</strong></h4>
 
@@ -146,7 +147,8 @@
 
                     <input type="file" name="ttd_nama_pemohon"
                         class="form-control mt-2 @error('ttd_nama_pemohon') is-invalid @enderror" accept="image/*">
-                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus transparan</small>
+                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus
+                        transparan</small>
                     @error('ttd_nama_pemohon')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
@@ -167,7 +169,8 @@
                     <input type="file" name="ttd_nama_atasan_langsung"
                         class="form-control mt-2 @error('ttd_nama_atasan_langsung') is-invalid @enderror"
                         accept="image/*">
-                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus transparan</small>
+                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus
+                        transparan</small>
                     @error('ttd_nama_atasan_langsung')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
@@ -188,7 +191,8 @@
                     <input type="file" name="ttd_nama_bagian_keuangan"
                         class="form-control mt-2 @error('ttd_nama_bagian_keuangan') is-invalid @enderror"
                         accept="image/*">
-                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus transparan</small>
+                    <small class="text-danger d-block text-start mt-1">* Tanda tangan yang diupload harus
+                        transparan</small>
                     @error('ttd_nama_bagian_keuangan')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
@@ -198,9 +202,14 @@
 
             {{-- Tombol Submit --}}
             <div class="mt-4 text-end">
-                <a href="{{ route('administrasi.kas-kecil.index') }}" class="btn btn-secondary">Kembali</a>
-                <button type="submit" class="btn btn-primary">
-                    Simpan Permintaan
+                <a href="{{ route('administrasi.kas-kecil.index') }}" id="btn-kembali"
+                    class="btn btn-secondary">Kembali</a>
+                <button type="submit" id="btn-submit" class="btn btn-primary">
+                    <span class="btn-text">Simpan Permintaan</span>
+                    <span class="btn-loading d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Menyimpan...
+                    </span>
                 </button>
             </div>
 
@@ -266,6 +275,43 @@
                     el.textContent = i + 1;
                 });
             }
+
+            // Loading state saat submit form
+            const formKasKecil = document.getElementById("form-kas-kecil");
+            const btnSubmit = document.getElementById("btn-submit");
+            const btnKembali = document.getElementById("btn-kembali");
+
+            function setButtonLoadingState(loading) {
+                if (btnSubmit) {
+                    btnSubmit.disabled = loading;
+                    btnSubmit.querySelector(".btn-text")?.classList.toggle("d-none", loading);
+                    btnSubmit.querySelector(".btn-loading")?.classList.toggle("d-none", !loading);
+                }
+                if (btnKembali) {
+                    btnKembali.classList.toggle("disabled", loading);
+                    if (loading) {
+                        btnKembali.setAttribute("aria-disabled", "true");
+                    } else {
+                        btnKembali.removeAttribute("aria-disabled");
+                    }
+                }
+            }
+
+            formKasKecil?.addEventListener("submit", function(e) {
+                if (e.defaultPrevented) {
+                    return;
+                }
+                if (!formKasKecil.checkValidity()) {
+                    return;
+                }
+                setButtonLoadingState(true);
+            });
+
+            window.addEventListener("pageshow", function(event) {
+                if (event.persisted) {
+                    setButtonLoadingState(false);
+                }
+            });
         });
     </script>
 @endpush

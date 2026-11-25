@@ -227,10 +227,11 @@
                             <td>
                                 {{ $pajakLabel }}
                                 @if ($isUmkmOrNelayan)
-                                    <br><small class="text-muted">Keterangan: Omzet &le; Rp500.000.000 tidak dikenakan pajak
+                                    <br><small class="text-black">Keterangan: Omzet &le; Rp500.000.000 tidak dikenakan pajak
                                         (0% / bebas pajak), omzet &gt; Rp500.000.000 dikenakan pajak 0,5%.</small>
                                 @elseif ($isKoperasi)
-                                    <br><small class="text-muted">Keterangan: Omzet &le; Rp4.800.000.000 tidak dikenakan pajak
+                                    <br><small class="text-black">Keterangan: Omzet &le; Rp4.800.000.000 tidak dikenakan
+                                        pajak
                                         (0% / bebas pajak), omzet &gt; Rp4.800.000.000 dikenakan pajak 0,5%.</small>
                                 @endif
                             </td>

@@ -16,6 +16,9 @@
         <script src="{{ asset('js/sidebar-dashboard.js') }}"></script>
         <script src="{{ asset('js/kasir.js') }}"></script>
         @stack('script')
+        @if (request()->routeIs('administrasi.*'))
+            @include('administrasi.partials.loading-overlay')
+        @endif
         </body>
 
         </html>
